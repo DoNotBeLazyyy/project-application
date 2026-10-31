@@ -108,14 +108,18 @@ export default function UserAccountMenu() {
                 onClick={handleOpen}
             >
                 {userProfile?.avatar_url
-                    ? <img
-                        alt=""
-                        className="h-9 object-cover rounded-full shrink-0 w-9"
-                        src={userProfile.avatar_url}
-                    />
-                    : <span className="bg-white/15 flex font-semibold h-9 items-center justify-center rounded-full shrink-0 text-sm text-white w-9">
-                        {initials}
-                    </span>}
+                    ? (
+                        <img
+                            alt=""
+                            className="h-9 object-cover rounded-full shrink-0 w-9"
+                            src={userProfile.avatar_url}
+                        />
+                    )
+                    : (
+                        <span className="bg-white/15 flex font-semibold h-9 items-center justify-center rounded-full shrink-0 text-sm text-white w-9">
+                            {initials}
+                        </span>
+                    )}
                 <span className="flex-col hidden items-start leading-tight min-w-0 sm:flex">
                     <span className="font-medium max-w-40 text-sm text-white truncate">
                         {displayName}
@@ -155,42 +159,57 @@ export default function UserAccountMenu() {
 
                 <div className="flex gap-1 px-3 py-1.5 bg-black/5 dark:bg-white/5 mx-3 my-1 rounded-lg">
                     <button
-                        type="button"
                         className={classMerge(
                             'flex flex-1 items-center justify-center gap-1.5 py-1 px-2 rounded text-xs font-medium transition-colors cursor-pointer',
                             themeMode === 'light'
                                 ? 'bg-(--mui-palette-primary-main) text-(--mui-palette-primary-contrastText)'
                                 : 'text-(--mui-palette-text-secondary) hover:bg-black/5 dark:hover:bg-white/10'
                         )}
+                        type="button"
                         onClick={() => setThemeMode('light')}
                     >
-                        <SunIcon size={14} weight={themeMode === 'light' ? 'fill' : 'regular'} />
+                        <SunIcon
+                            size={14}
+                            weight={themeMode === 'light'
+                                ? 'fill'
+                                : 'regular'}
+                        />
                         Light
                     </button>
                     <button
-                        type="button"
                         className={classMerge(
                             'flex flex-1 items-center justify-center gap-1.5 py-1 px-2 rounded text-xs font-medium transition-colors cursor-pointer',
                             themeMode === 'dark'
                                 ? 'bg-(--mui-palette-primary-main) text-(--mui-palette-primary-contrastText)'
                                 : 'text-(--mui-palette-text-secondary) hover:bg-black/5 dark:hover:bg-white/10'
                         )}
+                        type="button"
                         onClick={() => setThemeMode('dark')}
                     >
-                        <MoonIcon size={14} weight={themeMode === 'dark' ? 'fill' : 'regular'} />
+                        <MoonIcon
+                            size={14}
+                            weight={themeMode === 'dark'
+                                ? 'fill'
+                                : 'regular'}
+                        />
                         Dark
                     </button>
                     <button
-                        type="button"
                         className={classMerge(
                             'flex flex-1 items-center justify-center gap-1.5 py-1 px-2 rounded text-xs font-medium transition-colors cursor-pointer',
                             themeMode === 'system'
                                 ? 'bg-(--mui-palette-primary-main) text-(--mui-palette-primary-contrastText)'
                                 : 'text-(--mui-palette-text-secondary) hover:bg-black/5 dark:hover:bg-white/10'
                         )}
+                        type="button"
                         onClick={() => setThemeMode('system')}
                     >
-                        <DesktopIcon size={14} weight={themeMode === 'system' ? 'fill' : 'regular'} />
+                        <DesktopIcon
+                            size={14}
+                            weight={themeMode === 'system'
+                                ? 'fill'
+                                : 'regular'}
+                        />
                         System
                     </button>
                 </div>
@@ -233,10 +252,12 @@ export default function UserAccountMenu() {
                                 >
                                     {role.label}
                                 </span>
-                                {isActive && <CheckIcon
-                                    className="text-(--mui-tokens-color-common-white)"
-                                    size={16}
-                                />}
+                                {isActive && (
+                                    <CheckIcon
+                                        className="text-(--mui-tokens-color-common-white)"
+                                        size={16}
+                                    />
+                                )}
                             </span>
                         </MenuItem>
                     );

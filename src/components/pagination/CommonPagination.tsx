@@ -287,18 +287,22 @@ export default function CommonPagination({
                         prevButtonProps: handleButtonNavigationProps(isFirstPage, navigateToPreviousPage)
                     }}
                 />
-                {hasPaginationSelect && <PaginationSelect
-                    disabled={isLoading}
-                    options={resolvedRowsPerPageOptions}
-                    value={rowsPerPage}
-                    onChange={handleRowsPerPageChange}
-                />}
+                {hasPaginationSelect && (
+                    <PaginationSelect
+                        disabled={isLoading}
+                        options={resolvedRowsPerPageOptions}
+                        value={rowsPerPage}
+                        onChange={handleRowsPerPageChange}
+                    />
+                )}
             </div>
-            {hasPaginationRowsInfo && <PaginationInfo
-                endRow={end}
-                startRow={start}
-                totalElements={totalElements}
-            />}
+            {hasPaginationRowsInfo && (
+                <PaginationInfo
+                    endRow={end}
+                    startRow={start}
+                    totalElements={totalElements}
+                />
+            )}
         </div>
     );
 }

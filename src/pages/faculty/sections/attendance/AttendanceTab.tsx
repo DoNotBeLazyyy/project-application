@@ -78,7 +78,8 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
             setSessions(result.data);
             if (newSession) {
                 handleSelectSession(newSession);
-            } else if (result.data.length > 0) {
+            }
+            else if (result.data.length > 0) {
                 handleSelectSession(result.data[0]);
             }
         }
@@ -99,14 +100,14 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
 
     function handleStatusChange(recordId: string, status: AttendanceStatus) {
         setDraftRecords((prev) =>
-            prev.map((r) => (r.id === recordId ? { ...r, status } : r))
-        );
+            prev.map((r) => (r.id === recordId
+                ? { ...r, status }
+                : r)));
     }
 
     function handleMarkAllPresent() {
         setDraftRecords((prev) =>
-            prev.map((r) => ({ ...r, status: 'Present' }))
-        );
+            prev.map((r) => ({ ...r, status: 'Present' })));
     }
 
     async function handleSave() {
@@ -116,56 +117,72 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
             setRecords((prev) =>
                 prev.map((r) => {
                     const d = draftRecords.find((x) => x.id === r.id);
-                    return d ? { ...r, status: d.status, remarks: d.remarks } : r;
-                })
-            );
+                    return d
+                        ? {
+                            ...r, status: d.status, remarks: d.remarks
+                        }
+                        : r;
+                }));
         }
     }
 
     return (
         <div className="flex flex-col md:flex-row gap-4 h-full min-h-0">
             {/* Session List panel (Always visible on md+, toggled on mobile) */}
-            <div className={`h-full min-h-0 ${mobileView === 'records' ? 'hidden md:flex' : 'flex flex-1'}`}>
+            <div
+                className={`h-full min-h-0 ${mobileView === 'records'
+                    ? 'hidden md:flex'
+                    : 'flex flex-1'}`}
+            >
                 <AttendanceSessionList
                     selectedSessionId={selectedSession?.id}
                     sessions={sessions}
                     onCreateOpen={() => setIsCreateOpen(true)}
-                    onDelete={async (sessionId: string) => setPendingDeleteId(sessionId)}
+                    onDelete={async(sessionId: string) => setPendingDeleteId(sessionId)}
                     onSelectSession={handleSelectSession}
                 />
             </div>
 
             {/* Attendance Record List panel */}
-            <div className={`flex-1 h-full min-h-0 ${mobileView === 'sessions' ? 'hidden md:flex' : 'flex'}`}>
-                {selectedSession ? (
-                    <AttendanceRecordList
-                        draftRecords={draftRecords}
-                        isDirty={isDirty}
-                        records={records}
-                        selectedSession={selectedSession}
-                        onBackToSessions={() => setMobileView('sessions')}
-                        onMarkAllPresent={handleMarkAllPresent}
-                        onSave={handleSave}
-                        onStatusChange={handleStatusChange}
-                    />
-                ) : (
-                    <div className="flex flex-1 flex-col items-center justify-center p-8 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900">
-                        <CalendarDotsIcon size={36} className="text-slate-400 mb-2" />
-                        <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+            <div
+                className={`flex-1 h-full min-h-0 ${mobileView === 'sessions'
+                    ? 'hidden md:flex'
+                    : 'flex'}`}
+            >
+                {selectedSession
+                    ? (
+                        <AttendanceRecordList
+                            draftRecords={draftRecords}
+                            isDirty={isDirty}
+                            records={records}
+                            selectedSession={selectedSession}
+                            onBackToSessions={() => setMobileView('sessions')}
+                            onMarkAllPresent={handleMarkAllPresent}
+                            onSave={handleSave}
+                            onStatusChange={handleStatusChange}
+                        />
+                    )
+                    : (
+                        <div className="flex flex-1 flex-col items-center justify-center p-8 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900">
+                            <CalendarDotsIcon
+                                className="text-slate-400 mb-2"
+                                size={36}
+                            />
+                            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                             No Session Selected
-                        </h4>
-                        <p className="text-xs text-slate-500 mt-1">
+                            </h4>
+                            <p className="text-xs text-slate-500 mt-1">
                             Choose an attendance session from the list or create a new session to record student attendance.
-                        </p>
-                    </div>
-                )}
+                            </p>
+                        </div>
+                    )}
             </div>
 
             {/* Deleting a session removes that day's attendance, so it is confirmed like every other delete */}
             <DeletePromptModal
                 formButtonsProps={{
                     confirmProps: {
-                        onClick: async () => {
+                        onClick: async() => {
                             if (pendingDeleteId) {
                                 await handleDeleteSession(pendingDeleteId);
                             }

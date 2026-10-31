@@ -53,7 +53,10 @@ export default function QuestionCard({
                             onEdit(question);
                         }}
                     >
-                        <PencilIcon size={13} weight="bold" />
+                        <PencilIcon
+                            size={13}
+                            weight="bold"
+                        />
                     </CommonButton>
                     <CommonButton
                         color="error"
@@ -63,7 +66,10 @@ export default function QuestionCard({
                             onDelete(question.id);
                         }}
                     >
-                        <TrashIcon size={13} weight="bold" />
+                        <TrashIcon
+                            size={13}
+                            weight="bold"
+                        />
                     </CommonButton>
                     {isExpanded
                         ? <CaretUpIcon size={14} />

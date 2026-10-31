@@ -47,7 +47,8 @@ const DEFAULT_DISCUSSION_DRAFT: DiscussionComposerValues = {
 };
 
 function isBlank(value: unknown): boolean {
-    return !String(value ?? '').trim();
+    return !String(value ?? '')
+        .trim();
 }
 
 interface SectionDiscussionPanelProps {
@@ -214,23 +215,30 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                 <div className="flex flex-wrap gap-1.5 items-center">
                     {FILTER_OPTIONS.map((f) => (
                         <button
-                            key={f}
-                            type="button"
-                            onClick={() => setFilterMode(f)}
                             className={`px-3 py-1.5 text-xs rounded-full font-bold transition-all cursor-pointer ${
                                 filterMode === f
                                     ? 'bg-blue-600 text-white shadow-xs'
                                     : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                             }`}
+                            key={f}
+                            type="button"
+                            onClick={() => setFilterMode(f)}
                         >
-                            {f === 'All' ? `All Threads (${threads.length})` : f}
+                            {f === 'All'
+                                ? `All Threads (${threads.length})`
+                                : f}
                         </button>
                     ))}
                 </div>
 
                 <CommonButton
                     size="small"
-                    startIcon={<PlusIcon size={16} weight="bold" />}
+                    startIcon={(
+                        <PlusIcon
+                            size={16}
+                            weight="bold"
+                        />
+                    )}
                     variant="contained"
                     onClick={() => setIsCreateOpen(true)}
                 >
@@ -243,10 +251,15 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                 {filteredThreads.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900/50">
                         <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center mb-3">
-                            <ChatCircleTextIcon size={26} weight="duotone" />
+                            <ChatCircleTextIcon
+                                size={26}
+                                weight="duotone"
+                            />
                         </div>
                         <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                            No {filterMode !== 'All' ? filterMode.toLowerCase() : ''} discussions found
+                            No {filterMode !== 'All'
+                                ? filterMode.toLowerCase()
+                                : ''} discussions found
                         </h4>
                         <p className="text-xs text-slate-500 max-w-sm mt-1">
                             Start a discussion thread to engage students in questions, peer reviews, or topic debates.
@@ -256,13 +269,13 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
                         {filteredThreads.map((thread) => (
                             <div
-                                key={thread.id}
-                                onClick={() => setSelectedThreadId(thread.id)}
                                 className={`rounded-2xl p-4.5 border transition-all duration-200 flex flex-col justify-between cursor-pointer group shadow-2xs hover:shadow-md ${
                                     thread.is_pinned
                                         ? 'bg-amber-50/30 dark:bg-amber-950/20 border-amber-200/90 dark:border-amber-800/80 hover:border-amber-400'
                                         : 'bg-white dark:bg-zinc-900 border-slate-200/90 dark:border-zinc-800 hover:border-blue-400 dark:hover:border-blue-700'
                                 }`}
+                                key={thread.id}
+                                onClick={() => setSelectedThreadId(thread.id)}
                             >
                                 <div>
                                     {/* Badges Header */}
@@ -270,13 +283,19 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                                         <div className="flex items-center gap-1.5 flex-wrap">
                                             {thread.is_pinned && (
                                                 <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                                                    <PushPinIcon size={12} weight="fill" />
+                                                    <PushPinIcon
+                                                        size={12}
+                                                        weight="fill"
+                                                    />
                                                     Pinned
                                                 </span>
                                             )}
                                             {thread.is_resolved && (
                                                 <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                                    <CheckCircleIcon size={12} weight="fill" />
+                                                    <CheckCircleIcon
+                                                        size={12}
+                                                        weight="fill"
+                                                    />
                                                     Resolved
                                                 </span>
                                             )}
@@ -284,7 +303,10 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
 
                                         {/* Reply Counter Badge */}
                                         <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300">
-                                            <ChatDotsIcon size={13} weight="bold" />
+                                            <ChatDotsIcon
+                                                size={13}
+                                                weight="bold"
+                                            />
                                             {thread.reply_count}
                                         </span>
                                     </div>
@@ -355,18 +377,24 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                     <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
                         <div className="flex items-center gap-2">
                             <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 flex items-center justify-center">
-                                <ChatCircleTextIcon size={18} weight="duotone" />
+                                <ChatCircleTextIcon
+                                    size={18}
+                                    weight="duotone"
+                                />
                             </div>
                             <h3 className="font-bold text-base text-slate-900 dark:text-slate-100">
                                 New Discussion Thread
                             </h3>
                         </div>
                         <button
+                            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                             type="button"
                             onClick={handleRequestCloseComposer}
-                            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                         >
-                            <XIcon size={18} weight="bold" />
+                            <XIcon
+                                size={18}
+                                weight="bold"
+                            />
                         </button>
                     </div>
 
@@ -394,21 +422,28 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
 
                     <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-zinc-800">
                         <CommonButton
+                            disabled={isUploading}
                             size="small"
                             variant="outlined"
                             onClick={handleRequestCloseComposer}
-                            disabled={isUploading}
                         >
                             Cancel
                         </CommonButton>
                         <CommonButton
-                            size="small"
-                            startIcon={<PaperPlaneTiltIcon size={16} weight="bold" />}
-                            variant="contained"
                             disabled={isUploading}
+                            size="small"
+                            startIcon={(
+                                <PaperPlaneTiltIcon
+                                    size={16}
+                                    weight="bold"
+                                />
+                            )}
+                            variant="contained"
                             onClick={handleCreate}
                         >
-                            {isUploading ? 'Posting...' : 'Post Discussion'}
+                            {isUploading
+                                ? 'Posting...'
+                                : 'Post Discussion'}
                         </CommonButton>
                     </div>
                 </div>

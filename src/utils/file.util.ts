@@ -87,7 +87,8 @@ export async function triggerFileDownload(url: string, filename: string): Promis
         link.click();
         document.body.removeChild(link);
         setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-    } catch {
+    }
+    catch {
         const link = document.createElement('a');
         link.href = url;
         link.download = filename || 'download';

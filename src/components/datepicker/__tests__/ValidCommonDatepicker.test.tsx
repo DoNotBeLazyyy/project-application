@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
-import { CommonDatePicker } from '../ValidCommonDatepicker';
 import { setLastWindowFocusTime } from '@utils/form.util';
+import { describe, expect, it, vi } from 'vitest';
+
+import { CommonDatePicker } from '../ValidCommonDatepicker';
 
 describe('CommonDatePicker - Focus & Tab Revisit Behavior', () => {
     it('renders date picker sections properly', () => {
@@ -14,10 +15,11 @@ describe('CommonDatePicker - Focus & Tab Revisit Behavior', () => {
         );
 
         const monthSection = screen.getByRole('spinbutton', { name: 'Month' });
-        expect(monthSection).toBeDefined();
+        expect(monthSection)
+            .toBeDefined();
     });
 
-    it('does not open datepicker when focus is triggered by window / tab refocus', async () => {
+    it('does not open datepicker when focus is triggered by window / tab refocus', async() => {
         const handleOpen = vi.fn();
         const { container } = render(
             <CommonDatePicker
@@ -29,7 +31,8 @@ describe('CommonDatePicker - Focus & Tab Revisit Behavior', () => {
         );
 
         const inputBase = container.querySelector('.MuiPickersInputBase-root') as HTMLElement;
-        expect(inputBase).toBeDefined();
+        expect(inputBase)
+            .toBeDefined();
 
         // Simulate returning to the tab (window focus happens right before active element focus)
         setLastWindowFocusTime(Date.now());
@@ -40,7 +43,7 @@ describe('CommonDatePicker - Focus & Tab Revisit Behavior', () => {
         expect(handleOpen).not.toHaveBeenCalled();
     });
 
-    it('keeps the picker closed on focus so a date can be typed, and opens it from the calendar button', async () => {
+    it('keeps the picker closed on focus so a date can be typed, and opens it from the calendar button', async() => {
         const handleOpen = vi.fn();
         const { container } = render(
             <CommonDatePicker
@@ -52,7 +55,8 @@ describe('CommonDatePicker - Focus & Tab Revisit Behavior', () => {
         );
 
         const sectionsContainer = container.querySelector('.MuiPickersInputBase-sectionsContainer') as HTMLElement;
-        expect(sectionsContainer).toBeDefined();
+        expect(sectionsContainer)
+            .toBeDefined();
 
         setLastWindowFocusTime(0);
 
@@ -64,10 +68,11 @@ describe('CommonDatePicker - Focus & Tab Revisit Behavior', () => {
         expect(handleOpen).not.toHaveBeenCalled();
 
         fireEvent.click(container.querySelector('button') as HTMLElement);
-        expect(handleOpen).toHaveBeenCalled();
+        expect(handleOpen)
+            .toHaveBeenCalled();
     });
 
-    it('blurs active element after closing / picking date so focus does not remain', async () => {
+    it('blurs active element after closing / picking date so focus does not remain', async() => {
         const handleChange = vi.fn();
         const { container } = render(
             <CommonDatePicker
@@ -82,7 +87,8 @@ describe('CommonDatePicker - Focus & Tab Revisit Behavior', () => {
 
         // Focus inside
         monthSection.focus();
-        expect(document.activeElement).toBe(monthSection);
+        expect(document.activeElement)
+            .toBe(monthSection);
 
         // Simulate close
         const calendarButton = screen.getByRole('button', { name: /choose date/i });
@@ -90,8 +96,8 @@ describe('CommonDatePicker - Focus & Tab Revisit Behavior', () => {
 
         // When picker closes / accepts, blurPickerInput runs
         await waitFor(() => {
-            expect(container.contains(document.activeElement)).toBe(false);
+            expect(container.contains(document.activeElement))
+                .toBe(false);
         }, { timeout: 300 });
     });
 });
-

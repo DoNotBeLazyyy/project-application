@@ -11,9 +11,9 @@ interface DuplicateToSectionsModalProps {
     entityTitle: string;
     open: boolean;
     sectionId: string;
-    onClose: () => void;
+    onClose: VoidFunction;
     onConfirm: (sectionIds: string[]) => Promise<ServiceResult<null>>;
-    onDuplicated: () => void;
+    onDuplicated: VoidFunction;
 }
 
 export default function DuplicateToSectionsModal({
@@ -99,8 +99,19 @@ export default function DuplicateToSectionsModal({
                             }}
                         >
                             {isSelected
-                                ? <CheckCircleIcon className="shrink-0 text-(--mui-palette-primary-main)" size={20} weight="fill" />
-                                : <CircleIcon className="shrink-0 text-(--mui-palette-text-disabled)" size={20} />}
+                                ? (
+                                    <CheckCircleIcon
+                                        className="shrink-0 text-(--mui-palette-primary-main)"
+                                        size={20}
+                                        weight="fill"
+                                    />
+                                )
+                                : (
+                                    <CircleIcon
+                                        className="shrink-0 text-(--mui-palette-text-disabled)"
+                                        size={20}
+                                    />
+                                )}
                             <div className="flex flex-col">
                                 <span className="text-(--mui-palette-text-primary) text-sm">
                                     {section.course_code} — {section.section_code}

@@ -1,7 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
-import CommonModal from '@components/modal/CommonModal';
 import BulkImportModal from '@components/modal/BulkImportModal';
+import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import CommonSelect from '@components/select/CommonSelect';
@@ -12,21 +12,21 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSchoolYearOptions';
+import { useTermTypeOptions } from '@pages/admin/term-management/type/useTermTypeOptions';
+import CurriculumMapForm from '@pages/dean/curriculum-map-management/CurriculumMapForm';
+import CurriculumTermTable from '@pages/dean/curriculum-map-management/CurriculumTermTable';
+import { useActiveTermOptions } from '@pages/dean/curriculum-map-management/useActiveTermOptions';
+import { useCurriculumMapGrouped } from '@pages/dean/curriculum-map-management/useCurriculumMapGrouped';
+import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
 import {
     DotsThreeVerticalIcon, PlusIcon, PrinterIcon, TrashIcon, UploadSimpleIcon
 } from '@phosphor-icons/react';
-import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSchoolYearOptions';
-import { useTermTypeOptions } from '@pages/admin/term-management/type/useTermTypeOptions';
-import { useActiveTermOptions } from '@pages/dean/curriculum-map-management/useActiveTermOptions';
-import CurriculumMapForm from '@pages/dean/curriculum-map-management/CurriculumMapForm';
-import CurriculumTermTable from '@pages/dean/curriculum-map-management/CurriculumTermTable';
-import { useCurriculumMapGrouped } from '@pages/dean/curriculum-map-management/useCurriculumMapGrouped';
-import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
-import { getProgramById } from '@services/program/program.service';
-import { createCurriculumMapEntry, deleteCurriculumMapEntry, getCurriculumMap, updateCurriculumMapEntry } from '@services/curriculum-map.service';
 import { getCourses, listCourses } from '@services/course/course.service';
+import { createCurriculumMapEntry, deleteCurriculumMapEntry, getCurriculumMap, updateCurriculumMapEntry } from '@services/curriculum-map.service';
+import { getProgramById } from '@services/program/program.service';
+import { useToastStore } from '@stores/toast.store';
 import { BulkImportResult, CsvTemplateColumn } from '@type/bulk-import.type';
-
 import { CurriculumMapEntry, CurriculumMapFormValues } from '@type/curriculum-map.type';
 import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import {
@@ -34,21 +34,33 @@ import {
 } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
-import { useToastStore } from '@stores/toast.store';
-
 const CREATE_FORM_ID = 'create-curriculum-map-form';
 const UPDATE_FORM_ID = 'update-curriculum-map-form';
 
 // Rows are staged into the program's curriculum (validated by handleBulkImportCurriculum) and
 // saved through fn_bulk_create_curriculum_map. Courses may come from any department (e.g. General Education).
 const CURRICULUM_MAP_CSV_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'course_code', label: 'Course Code', hint: 'Existing course code from the program department, e.g. COCS101', sample: 'COCS101', aliases: ['course', 'code'] },
-    { key: 'year_level', label: 'Year Level', hint: 'Whole number from 1 to 6, e.g. 1', sample: '1', aliases: ['year', 'level'] },
-    { key: 'term_type_code', label: 'Term Type Code', hint: 'Optional - 1ST_SEM, 2ND_SEM or SUMMER (or the term type name); defaults to the selected term', sample: '1ST_SEM', required: false, aliases: ['term_type', 'semester_type'] },
-    { key: 'lecture_units', label: 'Lecture Units', hint: 'Optional override, number of 0 or more; defaults to the course units', sample: '3', required: false, aliases: ['lec_units', 'lecture'] },
-    { key: 'laboratory_units', label: 'Laboratory Units', hint: 'Optional override, number of 0 or more; defaults to the course units', sample: '0', required: false, aliases: ['lab_units', 'lab'] },
-    { key: 'sequence', label: 'Sequence', hint: 'Optional whole number of 1 or more, defaults to 1', sample: '1', required: false, aliases: ['order', 'seq'] },
-    { key: 'is_elective', label: 'Is Elective', hint: 'Optional - true or false, defaults to false', sample: 'false', required: false, aliases: ['elective'] }
+    {
+        key: 'course_code', label: 'Course Code', hint: 'Existing course code from the program department, e.g. COCS101', sample: 'COCS101', aliases: ['course', 'code']
+    },
+    {
+        key: 'year_level', label: 'Year Level', hint: 'Whole number from 1 to 6, e.g. 1', sample: '1', aliases: ['year', 'level']
+    },
+    {
+        key: 'term_type_code', label: 'Term Type Code', hint: 'Optional - 1ST_SEM, 2ND_SEM or SUMMER (or the term type name); defaults to the selected term', sample: '1ST_SEM', required: false, aliases: ['term_type', 'semester_type']
+    },
+    {
+        key: 'lecture_units', label: 'Lecture Units', hint: 'Optional override, number of 0 or more; defaults to the course units', sample: '3', required: false, aliases: ['lec_units', 'lecture']
+    },
+    {
+        key: 'laboratory_units', label: 'Laboratory Units', hint: 'Optional override, number of 0 or more; defaults to the course units', sample: '0', required: false, aliases: ['lab_units', 'lab']
+    },
+    {
+        key: 'sequence', label: 'Sequence', hint: 'Optional whole number of 1 or more, defaults to 1', sample: '1', required: false, aliases: ['order', 'seq']
+    },
+    {
+        key: 'is_elective', label: 'Is Elective', hint: 'Optional - true or false, defaults to false', sample: 'false', required: false, aliases: ['elective']
+    }
 ];
 
 interface CurriculumMapCsvRow {
@@ -384,7 +396,9 @@ export default function CurriculumMapManagement({
     async function handleCreateSubmit(values: CurriculumMapFormValues) {
         const [listRes, optRes] = await Promise.all([
             listCourses(1, 1000, '', [], effectiveDepartmentId
-                ? { department_ids: [effectiveDepartmentId], course_type_ids: [], is_active: 'All' }
+                ? {
+                    department_ids: [effectiveDepartmentId], course_type_ids: [], is_active: 'All'
+                }
                 : null),
             getCourses(undefined, effectiveDepartmentId || undefined)
         ]);
@@ -562,7 +576,9 @@ export default function CurriculumMapManagement({
 
         const [listRes, optRes] = await Promise.all([
             listCourses(1, 1000, '', [], effectiveDepartmentId
-                ? { department_ids: [effectiveDepartmentId], course_type_ids: [], is_active: 'All' }
+                ? {
+                    department_ids: [effectiveDepartmentId], course_type_ids: [], is_active: 'All'
+                }
                 : null),
             getCourses(undefined, effectiveDepartmentId || undefined)
         ]);
@@ -700,7 +716,9 @@ export default function CurriculumMapManagement({
     ): Promise<BulkImportResult> {
         const [listRes, optionsRes, allCoursesRes] = await Promise.all([
             listCourses(1, 1000, '', [], effectiveDepartmentId
-                ? { department_ids: [effectiveDepartmentId], course_type_ids: [], is_active: 'All' }
+                ? {
+                    department_ids: [effectiveDepartmentId], course_type_ids: [], is_active: 'All'
+                }
                 : null),
             getCourses(undefined, effectiveDepartmentId || undefined),
             getCourses()
@@ -813,22 +831,35 @@ export default function CurriculumMapManagement({
                 || termTypeOptions.find((t) => t.value === selectedTermTypeId);
 
             if (row.term_type_code) {
-                const targetCode = row.term_type_code.trim().toLowerCase();
+                const targetCode = row.term_type_code.trim()
+                    .toLowerCase();
                 const matchedTermType = activeTermOptions.find(
                     (t) =>
-                        t.label.trim().toLowerCase() === targetCode
-                        || t.code?.trim().toLowerCase() === targetCode
-                        || String(t.value).trim().toLowerCase() === targetCode
+                        t.label.trim()
+                            .toLowerCase() === targetCode
+                        || t.code?.trim()
+                            .toLowerCase() === targetCode
+                        || String(t.value)
+                            .trim()
+                            .toLowerCase() === targetCode
                 ) || allTermTypes.find(
                     (t) =>
-                        t.label.trim().toLowerCase() === targetCode
-                        || t.code?.trim().toLowerCase() === targetCode
-                        || String(t.value).trim().toLowerCase() === targetCode
+                        t.label.trim()
+                            .toLowerCase() === targetCode
+                        || t.code?.trim()
+                            .toLowerCase() === targetCode
+                        || String(t.value)
+                            .trim()
+                            .toLowerCase() === targetCode
                 ) || termTypeOptions.find(
                     (t) =>
-                        t.label.trim().toLowerCase() === targetCode
-                        || (t as { code?: string }).code?.trim().toLowerCase() === targetCode
-                        || String(t.value).trim().toLowerCase() === targetCode
+                        t.label.trim()
+                            .toLowerCase() === targetCode
+                        || (t as { code?: string }).code?.trim()
+                            .toLowerCase() === targetCode
+                        || String(t.value)
+                            .trim()
+                            .toLowerCase() === targetCode
                 );
                 if (!matchedTermType) {
                     errors.push(`Row ${rowNum}: Term Type '${row.term_type_code}' not found. Use 1ST_SEM, 2ND_SEM or SUMMER (or the term type name).`);
@@ -841,7 +872,8 @@ export default function CurriculumMapManagement({
             if (!termTypeId && activeTermOptions.length > 0) {
                 termTypeId = String(activeTermOptions[0].value);
                 termTypeObj = activeTermOptions[0];
-            } else if (!termTypeId && termTypeOptions.length > 0) {
+            }
+            else if (!termTypeId && termTypeOptions.length > 0) {
                 termTypeId = String(termTypeOptions[0].value);
                 termTypeObj = termTypeOptions[0];
             }
@@ -974,7 +1006,10 @@ export default function CurriculumMapManagement({
                             size="small"
                             onClick={handleOpenMenu}
                         >
-                            <DotsThreeVerticalIcon size={22} weight="bold" />
+                            <DotsThreeVerticalIcon
+                                size={22}
+                                weight="bold"
+                            />
                         </IconButton>
                         <Menu
                             anchorEl={menuAnchorEl}
@@ -990,7 +1025,8 @@ export default function CurriculumMapManagement({
                                 <MenuItem
                                     onClick={() => {
                                         handleCloseMenu(); handleOpenCreate();
-                                    }}>
+                                    }}
+                                >
                                     <ListItemIcon>
                                         <PlusIcon size={18} />
                                     </ListItemIcon>
@@ -1001,7 +1037,8 @@ export default function CurriculumMapManagement({
                                 <MenuItem
                                     onClick={() => {
                                         handleCloseMenu(); setIsBulkImportOpen(true);
-                                    }}>
+                                    }}
+                                >
                                     <ListItemIcon>
                                         <UploadSimpleIcon size={18} />
                                     </ListItemIcon>
@@ -1011,7 +1048,8 @@ export default function CurriculumMapManagement({
                             <MenuItem
                                 onClick={() => {
                                     handleCloseMenu(); window.print();
-                                }}>
+                                }}
+                            >
                                 <ListItemIcon>
                                     <PrinterIcon size={18} />
                                 </ListItemIcon>
@@ -1088,7 +1126,10 @@ export default function CurriculumMapManagement({
 
                                         {grouped.map(function({ key, label, terms }) {
                                             return (
-                                                <div className="flex flex-col gap-3" key={key}>
+                                                <div
+                                                    className="flex flex-col gap-3"
+                                                    key={key}
+                                                >
                                                     <h2 className="font-bold text-(--mui-palette-text-primary) text-center text-sm tracking-widest uppercase">
                                                         {label}
                                                     </h2>
@@ -1142,8 +1183,8 @@ export default function CurriculumMapManagement({
                         </CommonButton>
                         <CommonButton
                             disabled={createMethods.formState.isSubmitting}
-                            loading={createMethods.formState.isSubmitting}
                             form={CREATE_FORM_ID}
+                            loading={createMethods.formState.isSubmitting}
                             size="small"
                             type="submit"
                             variant="contained"
@@ -1193,8 +1234,8 @@ export default function CurriculumMapManagement({
                         </CommonButton>
                         <CommonButton
                             disabled={!updateDraft.hasRealChanges || updateMethods.formState.isSubmitting}
-                            loading={updateMethods.formState.isSubmitting}
                             form={UPDATE_FORM_ID}
+                            loading={updateMethods.formState.isSubmitting}
                             size="small"
                             type="submit"
                             variant="contained"

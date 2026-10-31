@@ -5,6 +5,7 @@ import {
     MapPinIcon
 } from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
+
 import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from './calendar.types';
 
 interface CalendarAgendaViewProps {
@@ -19,7 +20,9 @@ interface DateGroup {
 }
 
 function formatDateKey(d: Date): string {
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1)
+        .padStart(2, '0')}-${String(d.getDate())
+        .padStart(2, '0')}`;
 }
 
 export function CalendarAgendaView({
@@ -37,10 +40,14 @@ export function CalendarAgendaView({
         const q = searchQuery.toLowerCase();
         return events.filter(
             (ev) =>
-                ev.title.toLowerCase().includes(q) ||
-                ev.description?.toLowerCase().includes(q) ||
-                ev.location?.toLowerCase().includes(q) ||
-                ev.metadata?.courseCode?.toLowerCase().includes(q)
+                ev.title.toLowerCase()
+                    .includes(q)
+                || ev.description?.toLowerCase()
+                    .includes(q)
+                || ev.location?.toLowerCase()
+                    .includes(q)
+                || ev.metadata?.courseCode?.toLowerCase()
+                    .includes(q)
         );
     }, [events, searchQuery]);
 
@@ -85,7 +92,9 @@ export function CalendarAgendaView({
                 </div>
 
                 <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 shrink-0 self-end sm:self-auto">
-                    {filteredEvents.length} {filteredEvents.length === 1 ? 'result' : 'results'}
+                    {filteredEvents.length} {filteredEvents.length === 1
+                        ? 'result'
+                        : 'results'}
                 </div>
             </div>
 
@@ -93,7 +102,10 @@ export function CalendarAgendaView({
             <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 divide-y divide-neutral-200/60 dark:divide-neutral-800/60 space-y-4">
                 {groupedEvents.length === 0 ? (
                     <div className="p-12 text-center text-neutral-400 dark:text-neutral-500 flex flex-col items-center justify-center">
-                        <CalendarBlankIcon className="mb-2 opacity-50" size={40} />
+                        <CalendarBlankIcon
+                            className="mb-2 opacity-50"
+                            size={40}
+                        />
                         <p className="font-semibold text-sm">No scheduled items found</p>
                         <p className="text-xs mt-1">Try adjusting your filters or search terms.</p>
                     </div>
@@ -107,7 +119,10 @@ export function CalendarAgendaView({
                         });
 
                         return (
-                            <div key={group.dateKey} className="pt-4 first:pt-0">
+                            <div
+                                className="pt-4 first:pt-0"
+                                key={group.dateKey}
+                            >
                                 {/* Date Section Header */}
                                 <div className="flex items-center gap-2 mb-3">
                                     <div className="font-bold text-sm text-neutral-900 dark:text-white">
@@ -129,8 +144,8 @@ export function CalendarAgendaView({
 
                                         return (
                                             <div
-                                                key={ev.id}
                                                 className={`p-3.5 rounded-xl border cursor-pointer transition-all hover:scale-[1.01] hover:shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 ${cat.bgClass}`}
+                                                key={ev.id}
                                                 onClick={() => onSelectEvent(ev)}
                                             >
                                                 <div className="min-w-0">

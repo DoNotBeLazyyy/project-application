@@ -6,16 +6,32 @@ import {
 } from '@phosphor-icons/react';
 import { DayOfWeek, SectionFormValues, SectionScheduleBlock } from '@type/section.type';
 import { useEffect, useState } from 'react';
-import { Control, useController, useFormContext, useFormState, useWatch } from 'react-hook-form';
+import {
+    Control, useController, useFormContext, useFormState, useWatch
+} from 'react-hook-form';
 
 const DAYS_OF_WEEK: { label: string; short: string; value: DayOfWeek }[] = [
-    { label: 'Monday', short: 'Mon', value: 'Monday' },
-    { label: 'Tuesday', short: 'Tue', value: 'Tuesday' },
-    { label: 'Wednesday', short: 'Wed', value: 'Wednesday' },
-    { label: 'Thursday', short: 'Thu', value: 'Thursday' },
-    { label: 'Friday', short: 'Fri', value: 'Friday' },
-    { label: 'Saturday', short: 'Sat', value: 'Saturday' },
-    { label: 'Sunday', short: 'Sun', value: 'Sunday' }
+    {
+        label: 'Monday', short: 'Mon', value: 'Monday'
+    },
+    {
+        label: 'Tuesday', short: 'Tue', value: 'Tuesday'
+    },
+    {
+        label: 'Wednesday', short: 'Wed', value: 'Wednesday'
+    },
+    {
+        label: 'Thursday', short: 'Thu', value: 'Thursday'
+    },
+    {
+        label: 'Friday', short: 'Fri', value: 'Friday'
+    },
+    {
+        label: 'Saturday', short: 'Sat', value: 'Saturday'
+    },
+    {
+        label: 'Sunday', short: 'Sun', value: 'Sunday'
+    }
 ];
 
 interface SectionScheduleConfigProps {
@@ -67,7 +83,9 @@ export default function SectionScheduleConfig({
                     changed = true;
                 }
             });
-            return changed ? next : prev;
+            return changed
+                ? next
+                : prev;
         });
     }, [scheduleErrors, blocks]);
 
@@ -118,7 +136,10 @@ export default function SectionScheduleConfig({
             {/* Header */}
             <div className="border-b border-slate-100 dark:border-zinc-700/60 flex items-center justify-between pb-3">
                 <div className="flex gap-2 items-center">
-                    <CalendarDotsIcon className="size-5 shrink-0 text-brand-600 dark:text-brand-400" weight="bold" />
+                    <CalendarDotsIcon
+                        className="size-5 shrink-0 text-brand-600 dark:text-brand-400"
+                        weight="bold"
+                    />
                     <div>
                         <h4 className="font-semibold text-slate-900 text-sm dark:text-slate-100">
                             Class Schedule Assignment
@@ -151,7 +172,8 @@ export default function SectionScheduleConfig({
                         {blocks.map((block, index) => {
                             const scheduleError = scheduleErrors?.[index];
                             const formattedDays = (block.days || []).length > 0
-                                ? (block.days || []).map((d) => DAYS_OF_WEEK.find((dw) => dw.value === d)?.short || d).join(', ')
+                                ? (block.days || []).map((d) => DAYS_OF_WEEK.find((dw) => dw.value === d)?.short || d)
+                                    .join(', ')
                                 : 'No days';
                             const timeRange = `${block.time_start || '08:00'} - ${block.time_end || '10:00'}`;
 
@@ -165,7 +187,10 @@ export default function SectionScheduleConfig({
                                     <div className="border-b border-slate-200/60 dark:border-zinc-700/60 flex gap-2 items-center justify-between pb-2">
                                         <div className="flex items-center gap-2 min-w-0 flex-1">
                                             <span className="flex font-bold gap-1.5 items-center text-brand-700 text-xs dark:text-brand-300 shrink-0">
-                                                <ClockIcon className="size-3.5 text-brand-600" weight="bold" />
+                                                <ClockIcon
+                                                    className="size-3.5 text-brand-600"
+                                                    weight="bold"
+                                                />
                                                 Slot #{index + 1}
                                             </span>
                                             <span className="text-xs text-slate-600 dark:text-slate-300 font-medium truncate">
@@ -192,22 +217,34 @@ export default function SectionScheduleConfig({
                                                 </CommonButton>
                                             )}
                                             <button
+                                                aria-label={collapsedSlots[index]
+                                                    ? 'Expand schedule slot'
+                                                    : 'Collapse schedule slot'}
                                                 className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1 rounded-lg hover:bg-slate-200/60 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer"
-                                                title={collapsedSlots[index] ? 'Expand schedule slot' : 'Collapse schedule slot'}
+                                                title={collapsedSlots[index]
+                                                    ? 'Expand schedule slot'
+                                                    : 'Collapse schedule slot'}
                                                 type="button"
-                                                aria-label={collapsedSlots[index] ? 'Expand schedule slot' : 'Collapse schedule slot'}
                                                 onClick={() => toggleSlotCollapse(index)}
                                             >
                                                 <CaretDownIcon
-                                                    className={`w-4 h-4 transition-transform duration-200 ${collapsedSlots[index] ? '-rotate-90' : 'rotate-0'}`}
+                                                    className={`w-4 h-4 transition-transform duration-200 ${collapsedSlots[index]
+                                                        ? '-rotate-90'
+                                                        : 'rotate-0'}`}
                                                     weight="bold"
                                                 />
-                                                <span className="text-xs hidden sm:inline">{collapsedSlots[index] ? 'Expand' : 'Collapse'}</span>
+                                                <span className="text-xs hidden sm:inline">{collapsedSlots[index]
+                                                    ? 'Expand'
+                                                    : 'Collapse'}</span>
                                             </button>
                                         </div>
                                     </div>
 
-                                    <div className={collapsedSlots[index] ? 'hidden' : 'flex flex-col gap-3'}>
+                                    <div
+                                        className={collapsedSlots[index]
+                                            ? 'hidden'
+                                            : 'flex flex-col gap-3'}
+                                    >
                                         {/* Time Range Inputs */}
                                         <div className="gap-3 grid grid-cols-1 sm:grid-cols-3">
                                             {/* Errors are set by the wizard's step validation and shown by the field */}
@@ -286,7 +323,10 @@ export default function SectionScheduleConfig({
                                                             onClick={() => handleToggleDay(index, d.value)}
                                                         >
                                                             {isSelected && (
-                                                                <CheckIcon className="size-3.5 text-white shrink-0" weight="bold" />
+                                                                <CheckIcon
+                                                                    className="size-3.5 text-white shrink-0"
+                                                                    weight="bold"
+                                                                />
                                                             )}
                                                             <span>{d.short}</span>
                                                         </button>

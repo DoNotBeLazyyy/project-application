@@ -26,17 +26,17 @@ export default function StudentGradeTab({ enrollmentId, grades }: StudentGradeTa
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-4">
                         {grades.map((grade) => {
-                            const transmuted =
-                                grade.special_grade ??
-                                (grade.transmuted_grade !== null && grade.transmuted_grade !== undefined
+                            const transmuted
+                                = grade.special_grade
+                                ?? (grade.transmuted_grade !== null && grade.transmuted_grade !== undefined
                                     ? String(grade.transmuted_grade)
                                     : '—');
 
                             return (
                                 <div
+                                    className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-4 shadow-2xs hover:shadow-xs hover:border-blue-400 dark:hover:border-blue-600 transition-all cursor-pointer flex flex-col justify-between gap-3"
                                     key={grade.grading_period_id}
                                     onClick={() => setSelectedPeriodId(grade.grading_period_id)}
-                                    className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-4 shadow-2xs hover:shadow-xs hover:border-blue-400 dark:hover:border-blue-600 transition-all cursor-pointer flex flex-col justify-between gap-3"
                                 >
                                     <div className="flex items-center justify-between gap-2">
                                         <div className="flex items-center gap-2 min-w-0">
@@ -48,14 +48,16 @@ export default function StudentGradeTab({ enrollmentId, grades }: StudentGradeTa
                                             </span>
                                         </div>
 
-                                        {grade.status ? (
-                                            <CommonBadgeStatus
-                                                label={grade.status}
-                                                variant={gradeStatusVariant(grade.status)}
-                                            />
-                                        ) : (
-                                            <span className="text-xs text-slate-400">—</span>
-                                        )}
+                                        {grade.status
+                                            ? (
+                                                <CommonBadgeStatus
+                                                    label={grade.status}
+                                                    variant={gradeStatusVariant(grade.status)}
+                                                />
+                                            )
+                                            : (
+                                                <span className="text-xs text-slate-400">—</span>
+                                            )}
                                     </div>
 
                                     {/* Metrics */}

@@ -3,19 +3,22 @@ import ValidCommonInput from '@components/input/ValidCommonInput';
 import CommonModal from '@components/modal/CommonModal';
 import CommonPromptModal from '@components/modal/CommonPromptModal';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
-import { CheckCircleIcon, GearIcon, PlusIcon, ProhibitIcon, TrashIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
+import {
+    CheckCircleIcon, GearIcon, PlusIcon, ProhibitIcon, TrashIcon, WarningIcon, XIcon
+} from '@phosphor-icons/react';
 import { useToastStore } from '@stores/toast.store';
 import { ExceptionTypeOptionItem } from '@type/school-year.type';
 import { DEFAULT_FORM_OPTIONS } from '@utils/form.util';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+
 import { CALENDAR_EXCEPTION_TYPE_LABELS, CALENDAR_EXCEPTION_TYPES, toCalendarExceptionType } from './wizard.constants';
 
 interface ManageExceptionTypesModalProps {
     open: boolean;
     exceptionTypes: ExceptionTypeOptionItem[];
     usedTypes?: string[];
-    onClose: () => void;
+    onClose: VoidFunction;
     onSave: (updatedTypes: ExceptionTypeOptionItem[]) => void;
 }
 
@@ -42,7 +45,8 @@ export default function ManageExceptionTypesModal({
     const [deleteTypeTarget, setDeleteTypeTarget] = useState<string | null>(null);
 
     const usedTypeSet = useMemo(() => {
-        return new Set(usedTypes.map((t) => t.trim().toLowerCase()));
+        return new Set(usedTypes.map((t) => t.trim()
+            .toLowerCase()));
     }, [usedTypes]);
 
     const isDirty = useMemo(() => {
@@ -58,7 +62,8 @@ export default function ManageExceptionTypesModal({
     function handleRequestClose() {
         if (isDirty) {
             setIsConfirmCloseOpen(true);
-        } else {
+        }
+        else {
             onClose();
         }
     }
@@ -79,7 +84,8 @@ export default function ManageExceptionTypesModal({
     function validateNewType(value: string): true | string {
         const type = toCalendarExceptionType(value);
         if (!type) {
-            return `Unsupported type. Supported types: ${CALENDAR_EXCEPTION_TYPES.map((t) => CALENDAR_EXCEPTION_TYPE_LABELS[t]).join(', ')}`;
+            return `Unsupported type. Supported types: ${CALENDAR_EXCEPTION_TYPES.map((t) => CALENDAR_EXCEPTION_TYPE_LABELS[t])
+                .join(', ')}`;
         }
         if (typeItems.some((t) => toCalendarExceptionType(t.label) === type)) {
             return `Exception type "${CALENDAR_EXCEPTION_TYPE_LABELS[type]}" already exists.`;
@@ -99,7 +105,8 @@ export default function ManageExceptionTypesModal({
 
         setTypeItems([...typeItems, newItem]);
         reset({ new_type: '' });
-        useToastStore.getState().showToast(`Added exception type "${CALENDAR_EXCEPTION_TYPE_LABELS[type]}".`, 'success');
+        useToastStore.getState()
+            .showToast(`Added exception type "${CALENDAR_EXCEPTION_TYPE_LABELS[type]}".`, 'success');
     }
 
     function handleToggleActive(targetLabel: string) {
@@ -118,21 +125,22 @@ export default function ManageExceptionTypesModal({
                     return { ...item, is_active: nextActive };
                 }
                 return item;
-            })
-        );
+            }));
     }
 
     function handleRequestHardRemove(targetLabel: string) {
         if (usedTypeSet.has(targetLabel.toLowerCase())) {
-            useToastStore.getState().showToast(
-                `Cannot permanently delete "${targetLabel}" because it is currently assigned to active records. Soft-deprecate it (toggle Inactive) instead.`,
-                'error'
-            );
+            useToastStore.getState()
+                .showToast(
+                    `Cannot permanently delete "${targetLabel}" because it is currently assigned to active records. Soft-deprecate it (toggle Inactive) instead.`,
+                    'error'
+                );
             return;
         }
 
         if (typeItems.length <= 1) {
-            useToastStore.getState().showToast('Cannot delete all exception types.', 'error');
+            useToastStore.getState()
+                .showToast('Cannot delete all exception types.', 'error');
             return;
         }
 
@@ -141,18 +149,21 @@ export default function ManageExceptionTypesModal({
 
     function handleSave() {
         if (typeItems.length === 0) {
-            useToastStore.getState().showToast('Please keep at least one exception type.', 'error');
+            useToastStore.getState()
+                .showToast('Please keep at least one exception type.', 'error');
             return;
         }
         const activeCount = typeItems.filter((t) => t.is_active).length;
         if (activeCount === 0) {
-            useToastStore.getState().showToast('Please ensure at least one exception type remains Active.', 'error');
+            useToastStore.getState()
+                .showToast('Please ensure at least one exception type remains Active.', 'error');
             return;
         }
 
         onSave(typeItems);
         onClose();
-        useToastStore.getState().showToast('Exception types updated successfully.', 'success');
+        useToastStore.getState()
+            .showToast('Exception types updated successfully.', 'success');
     }
 
     return (
@@ -229,7 +240,6 @@ export default function ManageExceptionTypesModal({
 
                         return (
                             <div
-                                key={item.label}
                                 className={`flex items-center justify-between p-3 rounded-xl border text-xs transition-all ${
                                     !item.is_active
                                         ? 'bg-slate-100/80 dark:bg-zinc-800/40 border-slate-200 dark:border-zinc-700/50 opacity-75'
@@ -237,22 +247,29 @@ export default function ManageExceptionTypesModal({
                                             ? 'bg-amber-50/60 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/40'
                                             : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700/80'
                                 }`}
+                                key={item.label}
                             >
                                 <div className="flex items-center gap-2 flex-wrap min-w-0">
-                                    <span className={`font-semibold text-xs ${!item.is_active ? 'line-through text-slate-500' : 'text-slate-900 dark:text-slate-100'}`}>
+                                    <span
+                                        className={`font-semibold text-xs ${!item.is_active
+                                            ? 'line-through text-slate-500'
+                                            : 'text-slate-900 dark:text-slate-100'}`}
+                                    >
                                         {CALENDAR_EXCEPTION_TYPE_LABELS[toCalendarExceptionType(item.label) || 'Holiday'] || item.label}
                                     </span>
 
                                     {/* Active / Inactive Badge */}
-                                    {item.is_active ? (
-                                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-1">
-                                            <CheckCircleIcon className="w-3 h-3" /> Active
-                                        </span>
-                                    ) : (
-                                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-200 dark:bg-zinc-700 text-slate-600 dark:text-slate-400 font-semibold flex items-center gap-1">
-                                            <ProhibitIcon className="w-3 h-3" /> Inactive (Deprecated)
-                                        </span>
-                                    )}
+                                    {item.is_active
+                                        ? (
+                                            <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-1">
+                                                <CheckCircleIcon className="w-3 h-3" /> Active
+                                            </span>
+                                        )
+                                        : (
+                                            <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-200 dark:bg-zinc-700 text-slate-600 dark:text-slate-400 font-semibold flex items-center gap-1">
+                                                <ProhibitIcon className="w-3 h-3" /> Inactive (Deprecated)
+                                            </span>
+                                        )}
 
                                     {/* In Use Badge */}
                                     {isUsed && (
@@ -270,11 +287,15 @@ export default function ManageExceptionTypesModal({
                                                 ? 'bg-slate-100 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200'
                                                 : 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
                                         }`}
-                                        title={item.is_active ? 'Deprecate (Hide for new entries)' : 'Re-activate type'}
+                                        title={item.is_active
+                                            ? 'Deprecate (Hide for new entries)'
+                                            : 'Re-activate type'}
                                         type="button"
                                         onClick={() => handleToggleActive(item.label)}
                                     >
-                                        {item.is_active ? 'Deprecate' : 'Activate'}
+                                        {item.is_active
+                                            ? 'Deprecate'
+                                            : 'Activate'}
                                     </button>
 
                                     <button
@@ -324,15 +345,6 @@ export default function ManageExceptionTypesModal({
 
             {/* Delete Type Confirmation Prompt */}
             <DeletePromptModal
-                isOpen={Boolean(deleteTypeTarget)}
-                mainContent={{
-                    title: 'Delete Exception Type?'
-                }}
-                subContent={{
-                    title: `Are you sure you want to permanently delete exception type "${deleteTypeTarget}"?`
-                }}
-                open={Boolean(deleteTypeTarget)}
-                onClose={() => setDeleteTypeTarget(null)}
                 formButtonsProps={{
                     cancelProps: {
                         onClick: () => setDeleteTypeTarget(null)
@@ -341,19 +353,26 @@ export default function ManageExceptionTypesModal({
                         onClick: () => {
                             if (deleteTypeTarget) {
                                 setTypeItems((prev) => prev.filter((item) => item.label.toLowerCase() !== deleteTypeTarget.toLowerCase()));
-                                useToastStore.getState().showToast(`Removed exception type "${deleteTypeTarget}".`, 'success');
+                                useToastStore.getState()
+                                    .showToast(`Removed exception type "${deleteTypeTarget}".`, 'success');
                                 setDeleteTypeTarget(null);
                             }
                         }
                     }
                 }}
+                isOpen={Boolean(deleteTypeTarget)}
+                mainContent={{
+                    title: 'Delete Exception Type?'
+                }}
+                open={Boolean(deleteTypeTarget)}
+                subContent={{
+                    title: `Are you sure you want to permanently delete exception type "${deleteTypeTarget}"?`
+                }}
+                onClose={() => setDeleteTypeTarget(null)}
             />
 
             {/* Unsaved Changes Prompt Modal */}
             <CommonPromptModal
-                open={isConfirmCloseOpen}
-                mainContent={{ title: 'Discard unsaved changes?' }}
-                subContent={{ title: 'You have unsaved changes to the exception types list. Are you sure you want to discard your changes and close?' }}
                 actionIconProps={{
                     icon: WarningIcon,
                     iconContainerClassName: 'bg-amber-100 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400'
@@ -372,6 +391,9 @@ export default function ManageExceptionTypesModal({
                         }
                     }
                 }}
+                mainContent={{ title: 'Discard unsaved changes?' }}
+                open={isConfirmCloseOpen}
+                subContent={{ title: 'You have unsaved changes to the exception types list. Are you sure you want to discard your changes and close?' }}
                 onClose={() => setIsConfirmCloseOpen(false)}
             />
         </CommonModal>

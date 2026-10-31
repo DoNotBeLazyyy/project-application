@@ -101,14 +101,14 @@ export default function RoleShell({
                             )
                             : undefined
                     }
-                    rightContent={
+                    rightContent={(
                         <div className="flex gap-1 items-center md:gap-3">
                             <ThemeToggleButton />
                             <AiAssistantButton />
                             <NotificationBell />
                             <UserAccountMenu />
                         </div>
-                    }
+                    )}
                 />
 
                 <CommonBreadcrumbs />

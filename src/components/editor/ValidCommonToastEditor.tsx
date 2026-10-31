@@ -49,14 +49,16 @@ export default function ValidCommonToastEditor<T extends FieldValues = FieldValu
         field: { onBlur, onChange, value },
         fieldState,
         formState
-    } = useController({ control, name, rules });
+    } = useController({
+        control, name, rules
+    });
 
     const firstErrorKey = checkForMessage(formState.errors).firstError?.key;
     const isFirstError = isFirstErrorProp ?? Boolean(
         fieldState.error && (
-            firstErrorKey === name ||
-            (name === 'description' && firstErrorKey === 'content') ||
-            (name === 'content' && firstErrorKey === 'description')
+            firstErrorKey === name
+            || (name === 'description' && firstErrorKey === 'content')
+            || (name === 'content' && firstErrorKey === 'description')
         )
     );
 
@@ -93,10 +95,10 @@ export default function ValidCommonToastEditor<T extends FieldValues = FieldValu
         function handleFormError(event: Event) {
             if (props.disabled) return;
             const detail = (event as CustomEvent<FormErrorEventDetail>).detail;
-            const isMatch = detail?.firstErrorField === name ||
-                (name === 'description' && detail?.firstErrorField === 'content') ||
-                (name === 'content' && detail?.firstErrorField === 'description') ||
-                (fieldState.error && isFirstError);
+            const isMatch = detail?.firstErrorField === name
+                || (name === 'description' && detail?.firstErrorField === 'content')
+                || (name === 'content' && detail?.firstErrorField === 'description')
+                || (fieldState.error && isFirstError);
 
             if (isMatch) {
                 const container = document.querySelector<HTMLElement>(`[data-field-name~="${name}"], [name="${name}"], #${name}`);
@@ -122,7 +124,8 @@ export default function ValidCommonToastEditor<T extends FieldValues = FieldValu
             clearFieldError(control, name);
             if (name === 'description') {
                 clearFieldError(control, 'content');
-            } else if (name === 'content') {
+            }
+            else if (name === 'content') {
                 clearFieldError(control, 'description');
             }
         }
@@ -140,7 +143,11 @@ export default function ValidCommonToastEditor<T extends FieldValues = FieldValu
         ? undefined
         : (resolvedErrorMessage ?? helperText);
 
-    const aliasName = name === 'description' ? 'content' : (name === 'content' ? 'description' : '');
+    const aliasName = name === 'description'
+        ? 'content'
+        : (name === 'content'
+            ? 'description'
+            : '');
     const fieldNameAttr = `${name} ${aliasName}`.trim();
 
     return (

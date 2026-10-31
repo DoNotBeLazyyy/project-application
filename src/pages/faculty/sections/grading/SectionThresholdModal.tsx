@@ -24,8 +24,8 @@ export interface SectionThresholdModalProps {
     open: boolean;
     sectionId: string;
     rules: SectionOverridableRule[];
-    onClose: () => void;
-    onSaved: () => void;
+    onClose: VoidFunction;
+    onSaved: VoidFunction;
 }
 
 /** Keys one editable number by the rule and signal it belongs to. */
@@ -106,7 +106,8 @@ export default function SectionThresholdModal({
             if (result.error) {
                 useToastStore.getState()
                     .showToast(result.error.message || 'Failed to save section threshold.', 'error');
-            } else {
+            }
+            else {
                 useToastStore.getState()
                     .showToast(
                         'Saved for this section. Recalculate grades to re-check your students.',
@@ -114,10 +115,12 @@ export default function SectionThresholdModal({
                     );
                 onSaved();
             }
-        } catch {
+        }
+        catch {
             useToastStore.getState()
                 .showToast('An unexpected error occurred while saving threshold.', 'error');
-        } finally {
+        }
+        finally {
             setBusyKey(null);
         }
     }
@@ -136,7 +139,8 @@ export default function SectionThresholdModal({
             if (result.error) {
                 useToastStore.getState()
                     .showToast(result.error.message || 'Failed to reset threshold.', 'error');
-            } else {
+            }
+            else {
                 setDrafts(function(previous) {
                     return {
                         ...previous,
@@ -149,10 +153,12 @@ export default function SectionThresholdModal({
                     .showToast('Back to the institution default for this section.', 'success');
                 onSaved();
             }
-        } catch {
+        }
+        catch {
             useToastStore.getState()
                 .showToast('An unexpected error occurred while resetting threshold.', 'error');
-        } finally {
+        }
+        finally {
             setBusyKey(null);
         }
     }
@@ -297,9 +303,16 @@ export default function SectionThresholdModal({
 
                                             <div className="flex gap-1 ml-auto">
                                                 <CommonButton
-                                                    disabled={isBusy || drafts[key] === undefined || drafts[key] === (override ? override.value : institutionValue)}
+                                                    disabled={isBusy || drafts[key] === undefined || drafts[key] === (override
+                                                        ? override.value
+                                                        : institutionValue)}
                                                     size="small"
-                                                    startIcon={<CheckIcon size={14} weight="bold" />}
+                                                    startIcon={(
+                                                        <CheckIcon
+                                                            size={14}
+                                                            weight="bold"
+                                                        />
+                                                    )}
                                                     variant="outlined"
                                                     onClick={() => void handleSave(rule, leaf)}
                                                 >
@@ -308,7 +321,12 @@ export default function SectionThresholdModal({
                                                 <CommonButton
                                                     disabled={isBusy || !override}
                                                     size="small"
-                                                    startIcon={<ArrowCounterClockwiseIcon size={14} weight="bold" />}
+                                                    startIcon={(
+                                                        <ArrowCounterClockwiseIcon
+                                                            size={14}
+                                                            weight="bold"
+                                                        />
+                                                    )}
                                                     variant="text"
                                                     onClick={() => void handleReset(rule, leaf)}
                                                 >

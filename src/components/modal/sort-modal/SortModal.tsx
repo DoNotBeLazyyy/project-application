@@ -1,6 +1,6 @@
 import CommonFormModal, { CommonFormModalProps } from '@components/modal/CommonFormModal';
-import SortFieldsEditor from '@components/modal/sort-modal/SortFieldsEditor';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
+import SortFieldsEditor from '@components/modal/sort-modal/SortFieldsEditor';
 import { SortStringDto } from '@type/http.type';
 import { normalizeSx } from '@utils/theme.util';
 import React, { useEffect, useState } from 'react';
@@ -61,7 +61,7 @@ export default function SortModal({
                     ...rest.formButtonsProps?.confirmProps
                 }
             }}
-            formContent={
+            formContent={(
                 <div className="w-full">
                     <SortFieldsEditor
                         columns={columns}
@@ -69,9 +69,8 @@ export default function SortModal({
                         onChange={setLocalSort}
                     />
                 </div>
-            }
+            )}
             open={open}
-            onClose={onClose}
             sx={[
                 {
                     '& .MuiDialog-paper:not(.MuiDialog-paperFullScreen)': {
@@ -81,6 +80,7 @@ export default function SortModal({
                 },
                 ...normalizeSx(rest.sx)
             ]}
+            onClose={onClose}
         />
     );
 }

@@ -61,17 +61,21 @@ export default function SideBarSectionGroup({
             )}
             {section.items.map((item) => (
                 isSideBarGroup(item)
-                    ? <SideBarAccordionGroup
-                        group={item}
-                        key={item.label}
-                        styles={styles}
-                        variant={variant}
-                    />
-                    : <SideBarSimpleItem
-                        item={item}
-                        key={item.label}
-                        styles={styles}
-                    />
+                    ? (
+                        <SideBarAccordionGroup
+                            group={item}
+                            key={item.label}
+                            styles={styles}
+                            variant={variant}
+                        />
+                    )
+                    : (
+                        <SideBarSimpleItem
+                            item={item}
+                            key={item.label}
+                            styles={styles}
+                        />
+                    )
             ))}
         </div>
     );

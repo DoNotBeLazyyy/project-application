@@ -22,7 +22,7 @@ export interface ImagePreviewModalProps {
     open: boolean;
     images: ImagePreviewItem[];
     initialIndex?: number;
-    onClose: () => void;
+    onClose: VoidFunction;
     onDownload?: (image: ImagePreviewItem) => void;
 }
 
@@ -124,7 +124,9 @@ export default function ImagePreviewModal({
     // Navigation Left and Right
     const handlePrev = useCallback(() => {
         if (images.length <= 1) return;
-        setCurrentIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
+        setCurrentIndex((prev) => (prev > 0
+            ? prev - 1
+            : images.length - 1));
         resetTransform();
         setIsLoading(true);
         setLoadError(false);
@@ -132,7 +134,9 @@ export default function ImagePreviewModal({
 
     const handleNext = useCallback(() => {
         if (images.length <= 1) return;
-        setCurrentIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
+        setCurrentIndex((prev) => (prev < images.length - 1
+            ? prev + 1
+            : 0));
         resetTransform();
         setIsLoading(true);
         setLoadError(false);
@@ -143,7 +147,8 @@ export default function ImagePreviewModal({
         if (!currentImage?.url) return;
         if (onDownload) {
             onDownload(currentImage);
-        } else {
+        }
+        else {
             triggerFileDownload(currentImage.url, currentImage.fileName);
         }
     }, [currentImage, onDownload]);
@@ -156,19 +161,24 @@ export default function ImagePreviewModal({
             if (event.key === 'Escape') {
                 event.preventDefault();
                 onClose();
-            } else if (event.key === 'ArrowLeft' || event.key === 'a' || event.key === 'A') {
+            }
+            else if (event.key === 'ArrowLeft' || event.key === 'a' || event.key === 'A') {
                 event.preventDefault();
                 handlePrev();
-            } else if (event.key === 'ArrowRight' || event.key === 'd' || event.key === 'D') {
+            }
+            else if (event.key === 'ArrowRight' || event.key === 'd' || event.key === 'D') {
                 event.preventDefault();
                 handleNext();
-            } else if (event.key === '+' || event.key === '=') {
+            }
+            else if (event.key === '+' || event.key === '=') {
                 event.preventDefault();
                 handleZoomIn();
-            } else if (event.key === '-' || event.key === '_') {
+            }
+            else if (event.key === '-' || event.key === '_') {
                 event.preventDefault();
                 handleZoomOut();
-            } else if (event.key === '0') {
+            }
+            else if (event.key === '0') {
                 event.preventDefault();
                 handleResetZoom();
             }
@@ -183,7 +193,9 @@ export default function ImagePreviewModal({
         event.preventDefault();
         event.stopPropagation();
 
-        const delta = event.deltaY < 0 ? SCALE_STEP : -SCALE_STEP;
+        const delta = event.deltaY < 0
+            ? SCALE_STEP
+            : -SCALE_STEP;
         setScale((prev) => {
             const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, +(prev + delta).toFixed(2)));
             if (next <= 1) {
@@ -197,7 +209,8 @@ export default function ImagePreviewModal({
     const handleDoubleClick = () => {
         if (scale > 1) {
             resetTransform();
-        } else {
+        }
+        else {
             setScale(2);
         }
     };
@@ -210,8 +223,12 @@ export default function ImagePreviewModal({
         setIsDragging(true);
 
         dragStartRef.current = {
-            x: event.clientX - (scale > 1 ? position.x : 0),
-            y: event.clientY - (scale > 1 ? position.y : 0)
+            x: event.clientX - (scale > 1
+                ? position.x
+                : 0),
+            y: event.clientY - (scale > 1
+                ? position.y
+                : 0)
         };
     };
 
@@ -239,7 +256,8 @@ export default function ImagePreviewModal({
             // Horizontal swipe gesture at 1x scale
             if (dragDistanceRef.current.x < -SWIPE_THRESHOLD) {
                 handleNext();
-            } else if (dragDistanceRef.current.x > SWIPE_THRESHOLD) {
+            }
+            else if (dragDistanceRef.current.x > SWIPE_THRESHOLD) {
                 handlePrev();
             }
         }
@@ -253,10 +271,15 @@ export default function ImagePreviewModal({
             hasMovedRef.current = false;
             dragDistanceRef.current = { x: 0, y: 0 };
             dragStartRef.current = {
-                x: event.touches[0].clientX - (scale > 1 ? position.x : 0),
-                y: event.touches[0].clientY - (scale > 1 ? position.y : 0)
+                x: event.touches[0].clientX - (scale > 1
+                    ? position.x
+                    : 0),
+                y: event.touches[0].clientY - (scale > 1
+                    ? position.y
+                    : 0)
             };
-        } else if (event.touches.length === 2) {
+        }
+        else if (event.touches.length === 2) {
             setIsDragging(false);
             const dist = Math.hypot(
                 event.touches[0].clientX - event.touches[1].clientX,
@@ -285,7 +308,8 @@ export default function ImagePreviewModal({
                     y: currentY - dragStartRef.current.y
                 });
             }
-        } else if (event.touches.length === 2 && initialTouchDistanceRef.current !== null) {
+        }
+        else if (event.touches.length === 2 && initialTouchDistanceRef.current !== null) {
             const dist = Math.hypot(
                 event.touches[0].clientX - event.touches[1].clientX,
                 event.touches[0].clientY - event.touches[1].clientY
@@ -302,7 +326,8 @@ export default function ImagePreviewModal({
         if (isDragging && scale <= 1 && images.length > 1 && hasMovedRef.current) {
             if (dragDistanceRef.current.x < -SWIPE_THRESHOLD) {
                 handleNext();
-            } else if (dragDistanceRef.current.x > SWIPE_THRESHOLD) {
+            }
+            else if (dragDistanceRef.current.x > SWIPE_THRESHOLD) {
                 handlePrev();
             }
         }
@@ -332,9 +357,16 @@ export default function ImagePreviewModal({
             <header className="flex items-center justify-between px-4 py-3 bg-black/60 border-b border-white/10 shrink-0 text-white z-20">
                 {/* Left: File Info & Navigation Counter */}
                 <div className="flex items-center gap-2.5 min-w-0 max-w-[45%]">
-                    <FileImageIcon className="text-blue-400 shrink-0" size={20} weight="bold" />
+                    <FileImageIcon
+                        className="text-blue-400 shrink-0"
+                        size={20}
+                        weight="bold"
+                    />
                     <div className="flex flex-col min-w-0">
-                        <span className="text-sm font-semibold truncate text-white" title={currentImage.fileName}>
+                        <span
+                            className="text-sm font-semibold truncate text-white"
+                            title={currentImage.fileName}
+                        >
                             {currentImage.fileName}
                         </span>
                         <div className="flex items-center gap-2 text-[11px] text-white/70">
@@ -362,7 +394,10 @@ export default function ImagePreviewModal({
                                     handlePrev();
                                 }}
                             >
-                                <CaretLeftIcon size={16} weight="bold" />
+                                <CaretLeftIcon
+                                    size={16}
+                                    weight="bold"
+                                />
                             </button>
                             <span className="text-xs px-1 text-white/90 font-medium">
                                 {currentIndex + 1} / {images.length}
@@ -377,7 +412,10 @@ export default function ImagePreviewModal({
                                     handleNext();
                                 }}
                             >
-                                <CaretRightIcon size={16} weight="bold" />
+                                <CaretRightIcon
+                                    size={16}
+                                    weight="bold"
+                                />
                             </button>
                         </div>
                     )}
@@ -393,7 +431,10 @@ export default function ImagePreviewModal({
                         type="button"
                         onClick={handleZoomOut}
                     >
-                        <MagnifyingGlassMinusIcon size={18} weight="bold" />
+                        <MagnifyingGlassMinusIcon
+                            size={18}
+                            weight="bold"
+                        />
                     </button>
 
                     <button
@@ -414,7 +455,10 @@ export default function ImagePreviewModal({
                         type="button"
                         onClick={handleZoomIn}
                     >
-                        <MagnifyingGlassPlusIcon size={18} weight="bold" />
+                        <MagnifyingGlassPlusIcon
+                            size={18}
+                            weight="bold"
+                        />
                     </button>
 
                     <div className="w-[1px] h-4 bg-white/20 mx-0.5" />
@@ -426,7 +470,10 @@ export default function ImagePreviewModal({
                         type="button"
                         onClick={handleResetZoom}
                     >
-                        <ArrowCounterClockwiseIcon size={16} weight="bold" />
+                        <ArrowCounterClockwiseIcon
+                            size={16}
+                            weight="bold"
+                        />
                     </button>
                 </div>
 
@@ -439,7 +486,10 @@ export default function ImagePreviewModal({
                         type="button"
                         onClick={handleDownload}
                     >
-                        <DownloadSimpleIcon size={16} weight="bold" />
+                        <DownloadSimpleIcon
+                            size={16}
+                            weight="bold"
+                        />
                         <span className="hidden sm:inline">Download</span>
                     </button>
 
@@ -450,7 +500,10 @@ export default function ImagePreviewModal({
                         type="button"
                         onClick={onClose}
                     >
-                        <XIcon size={20} weight="bold" />
+                        <XIcon
+                            size={20}
+                            weight="bold"
+                        />
                     </button>
                 </div>
             </header>
@@ -480,14 +533,20 @@ export default function ImagePreviewModal({
                         onMouseDown={(e) => e.stopPropagation()}
                         onTouchStart={(e) => e.stopPropagation()}
                     >
-                        <CaretLeftIcon size={28} weight="bold" />
+                        <CaretLeftIcon
+                            size={28}
+                            weight="bold"
+                        />
                     </button>
                 )}
 
                 {/* Loading state indicator */}
                 {isLoading && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/70 pointer-events-none z-10">
-                        <SpinnerIcon className="animate-spin text-white" size={32} />
+                        <SpinnerIcon
+                            className="animate-spin text-white"
+                            size={32}
+                        />
                         <span className="text-xs">Loading image preview...</span>
                     </div>
                 )}
@@ -495,7 +554,11 @@ export default function ImagePreviewModal({
                 {/* Error state */}
                 {loadError && (
                     <div className="flex flex-col items-center justify-center gap-3 text-white/80 p-6 text-center z-10">
-                        <FileImageIcon className="text-red-400" size={48} weight="duotone" />
+                        <FileImageIcon
+                            className="text-red-400"
+                            size={48}
+                            weight="duotone"
+                        />
                         <p className="text-sm">Unable to load image preview.</p>
                         <button
                             className="px-4 py-1.5 bg-white/20 hover:bg-white/30 rounded text-xs font-medium cursor-pointer"
@@ -524,14 +587,18 @@ export default function ImagePreviewModal({
                     <img
                         alt={currentImage.fileName}
                         className={`max-w-[92vw] max-h-[80vh] object-contain transition-opacity duration-200 pointer-events-auto ${
-                            isLoading ? 'opacity-0' : 'opacity-100'
+                            isLoading
+                                ? 'opacity-0'
+                                : 'opacity-100'
                         }`}
                         draggable={false}
                         key={currentImage.url || currentIndex}
                         src={currentImage.url}
                         style={{
                             transform: `translate3d(${position.x}px, ${position.y}px, 0px) scale(${scale})`,
-                            transition: isDragging ? 'none' : 'transform 120ms ease-out'
+                            transition: isDragging
+                                ? 'none'
+                                : 'transform 120ms ease-out'
                         }}
                         onError={() => {
                             setIsLoading(false);
@@ -558,7 +625,10 @@ export default function ImagePreviewModal({
                         onMouseDown={(e) => e.stopPropagation()}
                         onTouchStart={(e) => e.stopPropagation()}
                     >
-                        <CaretRightIcon size={28} weight="bold" />
+                        <CaretRightIcon
+                            size={28}
+                            weight="bold"
+                        />
                     </button>
                 )}
             </div>

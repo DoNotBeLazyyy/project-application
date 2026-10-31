@@ -5,13 +5,18 @@ import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal
 import { useObjectDraft } from '@hooks/useFormDraft';
 import { SpecialGradeFlag } from '@type/grading-config.type';
 import { describeEvidence } from '@utils/special-grade.util';
-import { useEffect, useMemo, useState } from 'react';
+import {
+    useEffect,
+    useMemo,
+    useRef,
+    useState
+} from 'react';
 
 export interface SpecialGradeFlagModalProps {
     open: boolean;
     flag: SpecialGradeFlag | null;
     isBusy?: boolean;
-    onClose: () => void;
+    onClose: VoidFunction;
     onConfirm: (reason: string) => void;
 }
 
@@ -36,6 +41,8 @@ export default function SpecialGradeFlagModal({
 }: SpecialGradeFlagModalProps) {
     const [reason, setReason] = useState('');
     const [isDiscardOpen, setIsDiscardOpen] = useState(false);
+    const [hasTriedConfirm, setHasTriedConfirm] = useState(false);
+    const reasonInputRef = useRef<HTMLInputElement | null>(null);
 
     const currentDraftValues = useMemo(() => ({ reason }), [reason]);
 
@@ -54,7 +61,9 @@ export default function SpecialGradeFlagModal({
     useEffect(function() {
         if (open) {
             setReason('');
-        } else {
+            setHasTriedConfirm(false);
+        }
+        else {
             setIsDiscardOpen(false);
         }
     }, [open, flag?.id]);
@@ -75,6 +84,21 @@ export default function SpecialGradeFlagModal({
     }
 
     const trimmed = reason.trim();
+    const isReasonMissing = hasTriedConfirm && trimmed.length === 0;
+
+    /**
+     * Dismisses the flag, or points at the reason when it is empty.
+     */
+    function handleConfirmClick() {
+        if (trimmed.length === 0) {
+            setHasTriedConfirm(true);
+            reasonInputRef.current?.focus();
+            return;
+        }
+
+        draftGuard.clearDraft();
+        onConfirm(trimmed);
+    }
 
     return (
         <>
@@ -96,12 +120,9 @@ export default function SpecialGradeFlagModal({
                     },
                     confirmProps: {
                         children: 'Dismiss flag',
-                        disabled: isBusy || trimmed.length === 0,
+                        disabled: isBusy,
                         loading: isBusy,
-                        onClick: () => {
-                            draftGuard.clearDraft();
-                            onConfirm(trimmed);
-                        }
+                        onClick: handleConfirmClick
                     }
                 }}
                 open={open}
@@ -120,8 +141,15 @@ export default function SpecialGradeFlagModal({
                     </div>
 
                     <CommonInput
+                        autoFocus
+                        description="Recorded in the grade audit log."
+                        error={isReasonMissing}
                         fullWidth
-                        helperText="Recorded against the grade audit log. Required."
+                        helperText={isReasonMissing
+                            ? 'Reason is required.'
+                            : undefined}
+                        inputRef={reasonInputRef}
+                        isRequired
                         label="Reason for dismissing"
                         minRows={3}
                         multiline

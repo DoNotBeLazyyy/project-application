@@ -47,8 +47,8 @@ const ATTENDANCE_EDIT_FIELDS: FormFieldConfig<AttendanceEditFormValues>[] = [
 
 interface AttendanceEditModalProps {
     record: StudentAttendanceRow | null;
-    onClose: () => void;
-    onSaved: () => void;
+    onClose: VoidFunction;
+    onSaved: VoidFunction;
 }
 
 export default function AttendanceEditModal({ record, onClose, onSaved }: AttendanceEditModalProps) {
@@ -77,7 +77,8 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
     useEffect(function() {
         if (record) {
             methods.reset({ remarks: record.remarks ?? '', status: record.status });
-        } else {
+        }
+        else {
             setIsDiscardOpen(false);
         }
     }, [record]);
@@ -119,16 +120,22 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
             ]);
 
             if (result.error) {
-                useToastStore.getState().showToast(result.error.message || 'Failed to update attendance record.', 'error');
-            } else {
+                useToastStore.getState()
+                    .showToast(result.error.message || 'Failed to update attendance record.', 'error');
+            }
+            else {
                 draftGuard.clearDraft();
-                useToastStore.getState().showToast('Attendance record updated successfully.', 'success');
+                useToastStore.getState()
+                    .showToast('Attendance record updated successfully.', 'success');
                 onSaved();
                 onClose();
             }
-        } catch {
-            useToastStore.getState().showToast('An unexpected error occurred while updating attendance.', 'error');
-        } finally {
+        }
+        catch {
+            useToastStore.getState()
+                .showToast('An unexpected error occurred while updating attendance.', 'error');
+        }
+        finally {
             setIsSaving(false);
         }
     }
@@ -156,7 +163,10 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
                         title="Close"
                         onClick={handleRequestClose}
                     >
-                        <XIcon size={18} weight="bold" />
+                        <XIcon
+                            size={18}
+                            weight="bold"
+                        />
                     </button>
                 </div>
 

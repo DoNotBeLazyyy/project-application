@@ -1,11 +1,11 @@
 import CommonCard from '@components/card/CommonCard';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
-import SubjectAssessmentList from '@pages/student/subject/SubjectAssessmentList';
-import SubjectAttendanceList from '@pages/student/subject/SubjectAttendanceList';
-import SubjectGradeList from '@pages/student/subject/SubjectGradeList';
 import SectionAnnouncementPanel from '@pages/shared/announcement/SectionAnnouncementPanel';
 import SectionContentPanel from '@pages/shared/content/SectionContentPanel';
 import SectionDiscussionPanel from '@pages/shared/discussion/SectionDiscussionPanel';
+import SubjectAssessmentList from '@pages/student/subject/SubjectAssessmentList';
+import SubjectAttendanceList from '@pages/student/subject/SubjectAttendanceList';
+import SubjectGradeList from '@pages/student/subject/SubjectGradeList';
 import {
     ArrowLeftIcon,
     BookOpenIcon,
@@ -51,7 +51,9 @@ export default function SubjectDetailPage() {
     const [isSubjectMissing, setIsSubjectMissing] = useState(false);
 
     const tabParam = searchParams.get('tab');
-    const normalizedTab = tabParam === 'grading' ? 'grades' : tabParam;
+    const normalizedTab = tabParam === 'grading'
+        ? 'grades'
+        : tabParam;
     const activeTab: SubjectTab = normalizedTab && SUBJECT_TABS.includes(normalizedTab as SubjectTab)
         ? (normalizedTab as SubjectTab)
         : 'content';
@@ -108,7 +110,8 @@ export default function SubjectDetailPage() {
             const result = await getSubjectAssessments(effectiveEnrollmentId);
             if (result.data) {
                 setAssessments(result.data);
-            } else {
+            }
+            else {
                 setAssessments([]);
             }
         }
@@ -117,7 +120,8 @@ export default function SubjectDetailPage() {
             const result = await getSubjectAttendance(effectiveEnrollmentId);
             if (result.data) {
                 setAttendance(result.data);
-            } else {
+            }
+            else {
                 setAttendance([]);
             }
         }
@@ -126,7 +130,8 @@ export default function SubjectDetailPage() {
             const result = await getSubjectGrades(effectiveEnrollmentId);
             if (result.data) {
                 setGrades(result.data);
-            } else {
+            }
+            else {
                 setGrades([]);
             }
         }
@@ -149,12 +154,15 @@ export default function SubjectDetailPage() {
                 <div className="flex flex-col gap-2 pb-2 border-b border-slate-200/80 dark:border-zinc-800">
                     <div className="flex flex-nowrap items-center gap-2 min-w-0 sm:flex-wrap">
                         <button
-                            type="button"
-                            onClick={() => navigate('/student/subjects')}
                             aria-label="Back to My Subjects"
                             className="p-1 -ml-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+                            type="button"
+                            onClick={() => navigate('/student/subjects')}
                         >
-                            <ArrowLeftIcon size={18} weight="bold" />
+                            <ArrowLeftIcon
+                                size={18}
+                                weight="bold"
+                            />
                         </button>
                         <span className="font-mono font-bold text-sm sm:text-base px-2.5 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
                             {subject?.section_code ?? '—'}
@@ -163,7 +171,9 @@ export default function SubjectDetailPage() {
                             /
                         </span>
                         <h1 className="font-bold leading-snug min-w-0 text-base text-slate-900 tracking-tight truncate dark:text-slate-100 sm:text-lg sm:whitespace-normal">
-                            {subject?.course_code ? `${subject.course_code} — ` : ''}{subject?.course_title ?? (isSubjectMissing
+                            {subject?.course_code
+                                ? `${subject.course_code} — `
+                                : ''}{subject?.course_title ?? (isSubjectMissing
                                 ? 'Subject not found'
                                 : 'Loading Subject...')}
                         </h1>
@@ -177,7 +187,10 @@ export default function SubjectDetailPage() {
                         )}
                         {subject?.faculty_name && (
                             <span className="flex items-center gap-1 font-medium bg-slate-100 dark:bg-zinc-800 px-2.5 py-0.5 rounded-md">
-                                <ChalkboardTeacherIcon size={14} className="text-slate-400" />
+                                <ChalkboardTeacherIcon
+                                    className="text-slate-400"
+                                    size={14}
+                                />
                                 {subject.faculty_name}
                             </span>
                         )}
@@ -235,7 +248,10 @@ export default function SubjectDetailPage() {
                 {/* Tab Content Panes */}
                 <div className="flex-1 min-h-0">
                     {activeTab === 'content' && subject?.section_id && (
-                        <SectionContentPanel canManage={false} sectionId={subject.section_id} />
+                        <SectionContentPanel
+                            canManage={false}
+                            sectionId={subject.section_id}
+                        />
                     )}
                     {activeTab === 'assessments' && (
                         <SubjectAssessmentList
@@ -256,7 +272,10 @@ export default function SubjectDetailPage() {
                         <SectionDiscussionPanel sectionId={subject.section_id} />
                     )}
                     {activeTab === 'announcements' && subject?.section_id && (
-                        <SectionAnnouncementPanel canManage={false} sectionId={subject.section_id} />
+                        <SectionAnnouncementPanel
+                            canManage={false}
+                            sectionId={subject.section_id}
+                        />
                     )}
                 </div>
             </div>

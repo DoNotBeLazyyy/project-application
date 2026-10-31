@@ -1,19 +1,21 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import ValidCommonInput from '@components/input/ValidCommonInput';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import UnsavedChangesPrompt from '@components/modal/UnsavedChangesPrompt';
+import { useFormDraft } from '@hooks/useFormDraft';
 import { useUnsavedChangesGuard } from '@hooks/useUnsavedChangesGuard';
 import { ArrowLeftIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { createRubric, getRubric, updateRubric } from '@services/rubric.service';
-import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
-import { useFormDraft } from '@hooks/useFormDraft';
 import { RubricCriterionInput, RubricFormValues } from '@type/rubric.type';
 import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useState } from 'react';
 import { FieldErrors, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 
-const EMPTY_CRITERION = { id: null, title: '', description: '', max_points: '' };
+const EMPTY_CRITERION = {
+    id: null, title: '', description: '', max_points: ''
+};
 
 const DEFAULT_VALUES: RubricFormValues = {
     title: '',
@@ -136,14 +138,22 @@ export default function RubricBuilderPage() {
 
     return (
         <CommonCard className="h-full w-full">
-            <form className="flex flex-col gap-4 h-full" onSubmit={submitHandler}>
+            <form
+                className="flex flex-col gap-4 h-full"
+                onSubmit={submitHandler}
+            >
                 <div className="flex gap-3 items-center justify-between">
                     <div className="flex gap-3 items-center">
                         <CommonButton
                             color="inherit"
                             disabled={isSaving}
                             size="small"
-                            startIcon={<ArrowLeftIcon size={16} weight="bold" />}
+                            startIcon={(
+                                <ArrowLeftIcon
+                                    size={16}
+                                    weight="bold"
+                                />
+                            )}
                             type="button"
                             variant="outlined"
                             onClick={backGuard.requestExit}
@@ -184,7 +194,8 @@ export default function RubricBuilderPage() {
                             name="title"
                             rules={{
                                 required: 'Title is required.',
-                                validate: (val: any) => Boolean(val && String(val).trim()) || 'Title cannot be empty or whitespace only.'
+                                validate: (val: any) => Boolean(val && String(val)
+                                    .trim()) || 'Title cannot be empty or whitespace only.'
                             }}
                         />
                         <ValidCommonInput
@@ -204,7 +215,12 @@ export default function RubricBuilderPage() {
                             <CommonButton
                                 color="inherit"
                                 size="small"
-                                startIcon={<PlusIcon size={14} weight="bold" />}
+                                startIcon={(
+                                    <PlusIcon
+                                        size={14}
+                                        weight="bold"
+                                    />
+                                )}
                                 type="button"
                                 variant="outlined"
                                 onClick={function() {
@@ -230,7 +246,8 @@ export default function RubricBuilderPage() {
                                                 name={`criteria.${index}.title`}
                                                 rules={{
                                                     required: 'Required.',
-                                                    validate: (val: any) => Boolean(val && String(val).trim()) || 'Criterion title cannot be empty or whitespace only.'
+                                                    validate: (val: any) => Boolean(val && String(val)
+                                                        .trim()) || 'Criterion title cannot be empty or whitespace only.'
                                                 }}
                                             />
                                             <ValidCommonInput
@@ -259,7 +276,12 @@ export default function RubricBuilderPage() {
                                                 color="error"
                                                 disabled={fields.length === 1}
                                                 size="small"
-                                                startIcon={<TrashIcon size={14} weight="bold" />}
+                                                startIcon={(
+                                                    <TrashIcon
+                                                        size={14}
+                                                        weight="bold"
+                                                    />
+                                                )}
                                                 type="button"
                                                 variant="outlined"
                                                 onClick={function() {

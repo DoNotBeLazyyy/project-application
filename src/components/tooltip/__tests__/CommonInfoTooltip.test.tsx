@@ -1,7 +1,8 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
-import CommonInfoTooltip from '../CommonInfoTooltip';
 import { announceFormError } from '@utils/form.util';
+import { describe, expect, it } from 'vitest';
+
+import CommonInfoTooltip from '../CommonInfoTooltip';
 
 describe('CommonInfoTooltip - Form Error & Focus Auto-Display', () => {
     it('automatically opens error tooltip when input in the same container receives focus', () => {
@@ -12,20 +13,25 @@ describe('CommonInfoTooltip - Form Error & Focus Auto-Display', () => {
                     label="This field has a problem"
                     variant="error"
                 />
-                <input name="first_name" placeholder="First Name" />
+                <input
+                    name="first_name"
+                    placeholder="First Name"
+                />
             </div>
         );
 
         const button = screen.getByRole('button', { name: 'This field has a problem' });
-        expect(button).toHaveAttribute('aria-expanded', 'false');
+        expect(button)
+            .toHaveAttribute('aria-expanded', 'false');
 
         const input = screen.getByPlaceholderText('First Name');
         fireEvent.focusIn(input);
 
-        expect(button).toHaveAttribute('aria-expanded', 'true');
+        expect(button)
+            .toHaveAttribute('aria-expanded', 'true');
     });
 
-    it('automatically opens when FORM_ERROR_EVENT is dispatched for its field', async () => {
+    it('automatically opens when FORM_ERROR_EVENT is dispatched for its field', async() => {
         render(
             <div className="flex flex-col">
                 <CommonInfoTooltip
@@ -33,14 +39,18 @@ describe('CommonInfoTooltip - Form Error & Focus Auto-Display', () => {
                     label="This field has a problem"
                     variant="error"
                 />
-                <input name="email" placeholder="Email" />
+                <input
+                    name="email"
+                    placeholder="Email"
+                />
             </div>
         );
 
         const button = screen.getByRole('button', { name: 'This field has a problem' });
-        expect(button).toHaveAttribute('aria-expanded', 'false');
+        expect(button)
+            .toHaveAttribute('aria-expanded', 'false');
 
-        await act(async () => {
+        await act(async() => {
             announceFormError({
                 count: 1,
                 firstErrorField: 'email',
@@ -48,7 +58,8 @@ describe('CommonInfoTooltip - Form Error & Focus Auto-Display', () => {
             });
         });
 
-        expect(button).toHaveAttribute('aria-expanded', 'true');
+        expect(button)
+            .toHaveAttribute('aria-expanded', 'true');
     });
 
     it('opens by default when defaultOpen is true', () => {
@@ -65,7 +76,8 @@ describe('CommonInfoTooltip - Form Error & Focus Auto-Display', () => {
         );
 
         const button = screen.getByRole('button', { name: 'This field has a problem' });
-        expect(button).toHaveAttribute('aria-expanded', 'true');
+        expect(button)
+            .toHaveAttribute('aria-expanded', 'true');
     });
 
     it('shows error icons simultaneously for multiple invalid fields in a form', () => {
@@ -93,8 +105,11 @@ describe('CommonInfoTooltip - Form Error & Focus Auto-Display', () => {
         );
 
         const errorButtons = screen.getAllByRole('button');
-        expect(errorButtons).toHaveLength(2);
-        expect(screen.getByRole('button', { name: 'First Name problem' })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Last Name problem' })).toBeInTheDocument();
+        expect(errorButtons)
+            .toHaveLength(2);
+        expect(screen.getByRole('button', { name: 'First Name problem' }))
+            .toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Last Name problem' }))
+            .toBeInTheDocument();
     });
 });

@@ -87,7 +87,6 @@ export default function EvaluationRatingMatrix({
                             control={control}
                             key={answer.question_id}
                             name={name}
-                            rules={buildRatingRules(answer)}
                             render={function({ field, fieldState }) {
                                 return (
                                     <div className="border border-(--mui-palette-divider) flex flex-col gap-3 p-3 rounded-lg">
@@ -130,6 +129,7 @@ export default function EvaluationRatingMatrix({
                                     </div>
                                 );
                             }}
+                            rules={buildRatingRules(answer)}
                         />
                     );
                 })}
@@ -166,7 +166,6 @@ export default function EvaluationRatingMatrix({
                                 control={control}
                                 key={answer.question_id}
                                 name={name}
-                                rules={buildRatingRules(answer)}
                                 render={function({ field, fieldState }) {
                                     return (
                                         <tr className="border-(--mui-palette-divider) border-b last:border-b-0">
@@ -211,6 +210,7 @@ export default function EvaluationRatingMatrix({
                                         </tr>
                                     );
                                 }}
+                                rules={buildRatingRules(answer)}
                             />
                         );
                     })}

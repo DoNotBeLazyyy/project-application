@@ -2,9 +2,9 @@ import AlertPromptModal from '@components/modal/AlertPromptModal';
 
 interface UnsavedChangesPromptProps {
     open: boolean;
-    onClose: () => void;
-    onDiscard: () => void;
-    onSave: () => void;
+    onClose: VoidFunction;
+    onDiscard: VoidFunction;
+    onSave: VoidFunction;
     saveLabel?: string;
     subtitle?: string;
     title?: string;

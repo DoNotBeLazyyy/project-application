@@ -7,17 +7,23 @@ export default function ThemeToggleButton() {
 
     function handleToggle() {
         if (mode === 'system') {
-            setMode(resolvedTheme === 'dark' ? 'light' : 'dark');
-        } else if (mode === 'dark') {
+            setMode(resolvedTheme === 'dark'
+                ? 'light'
+                : 'dark');
+        }
+        else if (mode === 'dark') {
             setMode('light');
-        } else {
+        }
+        else {
             setMode('system');
         }
     }
 
     const title = mode === 'system'
         ? `Theme: System (${resolvedTheme}) - Click to toggle`
-        : `Theme: ${mode === 'dark' ? 'Dark' : 'Light'} - Click to toggle`;
+        : `Theme: ${mode === 'dark'
+            ? 'Dark'
+            : 'Light'} - Click to toggle`;
 
     return (
         <Tooltip title={title}>
@@ -33,10 +39,25 @@ export default function ThemeToggleButton() {
                 onClick={handleToggle}
             >
                 {mode === 'system'
-                    ? <DesktopIcon size={20} weight="bold" />
+                    ? (
+                        <DesktopIcon
+                            size={20}
+                            weight="bold"
+                        />
+                    )
                     : resolvedTheme === 'dark'
-                        ? <MoonIcon size={20} weight="fill" />
-                        : <SunIcon size={20} weight="bold" />}
+                        ? (
+                            <MoonIcon
+                                size={20}
+                                weight="fill"
+                            />
+                        )
+                        : (
+                            <SunIcon
+                                size={20}
+                                weight="bold"
+                            />
+                        )}
             </IconButton>
         </Tooltip>
     );

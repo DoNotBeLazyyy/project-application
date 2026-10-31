@@ -118,7 +118,10 @@ export default function Step1FacultyLoadOverview({
             <div className="bg-white dark:bg-zinc-800/90 rounded-2xl border border-slate-200 dark:border-zinc-700/80 p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <div className="w-13 h-13 rounded-2xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 flex items-center justify-center font-bold text-xl border border-brand-200/50 dark:border-brand-800/40 shrink-0 shadow-inner">
-                        <UserIcon className="w-6 h-6" weight="bold" />
+                        <UserIcon
+                            className="w-6 h-6"
+                            weight="bold"
+                        />
                     </div>
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -141,7 +144,10 @@ export default function Step1FacultyLoadOverview({
                 {conflicts.length > 0
                     ? (
                         <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/50 text-rose-700 dark:text-rose-300 text-xs font-semibold">
-                            <WarningCircleIcon className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" weight="fill" />
+                            <WarningCircleIcon
+                                className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0"
+                                weight="fill"
+                            />
                             <span>{conflicts.length} Schedule Conflict{conflicts.length > 1
                                 ? 's'
                                 : ''} Detected</span>
@@ -149,7 +155,10 @@ export default function Step1FacultyLoadOverview({
                     )
                     : (
                         <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
-                            <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" weight="fill" />
+                            <CheckCircleIcon
+                                className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0"
+                                weight="fill"
+                            />
                             <span>Schedule Clear</span>
                         </div>
                     )}
@@ -216,7 +225,10 @@ export default function Step1FacultyLoadOverview({
             <div className="bg-white dark:bg-zinc-800/80 rounded-2xl border border-slate-200 dark:border-zinc-700/70 p-5 shadow-xs flex flex-col gap-4">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-700/50 pb-3">
                     <div className="flex items-center gap-2">
-                        <ClockIcon className="w-5 h-5 text-brand-600 dark:text-brand-400" weight="bold" />
+                        <ClockIcon
+                            className="w-5 h-5 text-brand-600 dark:text-brand-400"
+                            weight="bold"
+                        />
                         <div>
                             <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
                                 Weekly Teaching Timetable
@@ -248,7 +260,8 @@ export default function Step1FacultyLoadOverview({
                                             hasClasses
                                                 ? 'text-blue-900 dark:text-blue-200'
                                                 : 'text-slate-400'
-                                        }`}>
+                                        }`}
+                                    >
                                         {day}
                                     </span>
                                     <span
@@ -256,7 +269,8 @@ export default function Step1FacultyLoadOverview({
                                             hasClasses
                                                 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300'
                                                 : 'bg-slate-100 text-slate-400 dark:bg-zinc-800 dark:text-zinc-500'
-                                        }`}>
+                                        }`}
+                                    >
                                         {slots.length} {slots.length === 1
                                             ? 'class'
                                             : 'classes'}

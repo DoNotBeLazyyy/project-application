@@ -13,7 +13,9 @@ import {
     blurActiveElementWithin, checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel
 } from '@utils/form.util';
 import { DateTime } from 'luxon';
-import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    ReactNode, useEffect, useMemo, useRef, useState
+} from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export interface CommonDateTimePickerProps extends Omit<DateTimePickerProps, 'value' | 'onChange'> {
@@ -151,7 +153,9 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
         field: { ref, value, onChange },
         fieldState,
         formState
-    } = useController({ control, name, rules });
+    } = useController({
+        control, name, rules
+    });
 
     const containerRef = useRef<HTMLDivElement | null>(null);
     const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -291,7 +295,6 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
 
     return (
         <div
-            ref={containerRef}
             className={
                 classMerge(
                     'flex flex-col gap-(--mui-tokens-spacing-2) relative',
@@ -299,6 +302,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                     containerClassName
                 )
             }
+            ref={containerRef}
         >
             {label && (
                 <FormLabel
@@ -312,7 +316,9 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
             )}
             <LocalizationProvider dateAdapter={AdapterLuxon}>
                 <DateTimePicker
-                    timeSteps={{ hours: 1, minutes: 1, seconds: 1 }}
+                    timeSteps={{
+                        hours: 1, minutes: 1, seconds: 1
+                    }}
                     {...props}
                     className={className}
                     disabled={disabled}
@@ -325,7 +331,9 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                         ...props.slotProps,
                         openPickerButton: {
                             disabled: isNonInteractive,
-                            size: resolvedSize === 'large' ? 'medium' : 'small',
+                            size: resolvedSize === 'large'
+                                ? 'medium'
+                                : 'small',
                             edge: false as any,
                             sx: {
                                 margin: 0,

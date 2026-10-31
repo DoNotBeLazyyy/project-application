@@ -55,7 +55,8 @@ export async function getPrograms(): Promise<ServiceResult<ProgramOption[]>> {
 function resolveTermTypeCode(codeOrLabel?: string): string {
     if (!codeOrLabel) return '';
     const clean = codeOrLabel.trim();
-    const upper = clean.toUpperCase().replace(/\s+/g, '_');
+    const upper = clean.toUpperCase()
+        .replace(/\s+/g, '_');
     const lower = clean.toLowerCase();
     if (lower === '1st semester' || lower === '1st_semester' || lower === 'first semester' || upper === '1ST_SEM' || upper === '1ST-SEM') return '1ST_SEM';
     if (lower === '2nd semester' || lower === '2nd_semester' || lower === 'second semester' || upper === '2ND_SEM' || upper === '2ND-SEM') return '2ND_SEM';
@@ -204,11 +205,12 @@ export async function updateProgram(
                                 lecture_units: String(entry.lecture_units ?? 0),
                                 laboratory_units: String(entry.laboratory_units ?? 0),
                                 units: String(entry.units ?? entry.total_units ?? 0),
-                                type_units: typeof entry.type_units === 'string' ? JSON.parse(entry.type_units) : entry.type_units
+                                type_units: typeof entry.type_units === 'string'
+                                    ? JSON.parse(entry.type_units)
+                                    : entry.type_units
                             },
                             entry.school_year_id || params.school_year_id
-                        )
-                    )
+                        ))
                 );
                 const firstErr = updateResults.find((r) => r.error);
                 if (firstErr) {
@@ -273,7 +275,8 @@ export async function bulkCreatePrograms(
     });
 
     normalizedPrograms.forEach(function(row, index) {
-        const codeKey = row.code?.trim().toUpperCase();
+        const codeKey = row.code?.trim()
+            .toUpperCase();
         if (codeKey && !uniqueProgramsMap.has(codeKey)) {
             uniqueProgramsMap.set(codeKey, row);
             programRowNumbers.set(codeKey, index + 1);
@@ -315,17 +318,22 @@ export async function bulkCreatePrograms(
         const rowNumber = programRowNumbers.get(codeKey) ?? 0;
         const department = findByCodeOrLabel(departmentsResult.data ?? [], row.department_code);
         const programLevel = findByCodeOrLabel(programLevelsResult.data ?? [], row.program_level_code);
-        const yearsDuration = Number(String(row.years_duration ?? '').trim() || NaN);
-        const totalUnits = String(row.total_units ?? '').trim();
-        const isActive = String(row.is_active ?? '').trim()
+        const yearsDuration = Number(String(row.years_duration ?? '')
+            .trim() || NaN);
+        const totalUnits = String(row.total_units ?? '')
+            .trim();
+        const isActive = String(row.is_active ?? '')
+            .trim()
             .toLowerCase();
 
         let message = '';
         if (!Number.isInteger(yearsDuration) || yearsDuration < 1 || yearsDuration > 8) {
             message = 'Years duration must be a whole number from 1 to 8';
-        } else if (totalUnits !== '' && (isNaN(Number(totalUnits)) || Number(totalUnits) < 0)) {
+        }
+        else if (totalUnits !== '' && (isNaN(Number(totalUnits)) || Number(totalUnits) < 0)) {
             message = 'Total units must be a number of 0 or more';
-        } else if (isActive !== '' && !['true', 'false', 'yes', 'no', '1', '0'].includes(isActive)) {
+        }
+        else if (isActive !== '' && !['true', 'false', 'yes', 'no', '1', '0'].includes(isActive)) {
             message = 'Is active must be true or false';
         }
 
@@ -359,8 +367,7 @@ export async function bulkCreatePrograms(
         }
 
         errors.push(...(result.data?.errors ?? []).map((error) =>
-            `Row ${sentRowNumbers[error.row - 1] ?? error.row} (${error.code || 'unknown'}): ${error.message}`
-        ));
+            `Row ${sentRowNumbers[error.row - 1] ?? error.row} (${error.code || 'unknown'}): ${error.message}`));
         provisionedCount = result.data?.provisioned_count ?? 0;
     }
 

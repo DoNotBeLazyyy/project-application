@@ -2,6 +2,7 @@ import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import { SpecialGradeCondition, SpecialGradeConditionGroup } from '@type/grading-config.type';
 import { AcademicYearWizardFormValues } from '@type/school-year.type';
 import { Control, useController, useWatch } from 'react-hook-form';
+
 import ConditionBuilder from './ConditionBuilder';
 
 const EMPTY_GROUP: SpecialGradeConditionGroup = { all: [] };
@@ -81,7 +82,10 @@ export default function SpecialGradeRuleFields({
                         }}
                     />
                     {fieldState.error?.message && (
-                        <span className="text-(--mui-palette-error-main) text-xs" role="alert">
+                        <span
+                            className="text-(--mui-palette-error-main) text-xs"
+                            role="alert"
+                        >
                             {fieldState.error.message}
                         </span>
                     )}

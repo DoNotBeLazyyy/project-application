@@ -52,7 +52,9 @@ export default function SetPasswordPage() {
             );
             const tokenHash = searchParams.get('token_hash') || hashParams.get('token_hash');
             const rawType = searchParams.get('type') || hashParams.get('type') || 'invite';
-            const tokenType = (rawType === 'recovery' ? 'recovery' : 'invite') as 'invite' | 'recovery';
+            const tokenType = (rawType === 'recovery'
+                ? 'recovery'
+                : 'invite') as 'invite' | 'recovery';
 
             if (tokenHash) {
                 supabase.auth.verifyOtp({ token_hash: tokenHash, type: tokenType })
@@ -61,12 +63,15 @@ export default function SetPasswordPage() {
                             if (error) {
                                 setIsTimedOut(true);
                                 setSubmitError(
-                                    error.message?.toLowerCase().includes('expired') ||
-                                    error.message?.toLowerCase().includes('invalid')
+                                    error.message?.toLowerCase()
+                                        .includes('expired')
+                                    || error.message?.toLowerCase()
+                                        .includes('invalid')
                                         ? 'Your invite or password reset link has expired or has already been used. Please request a new link or contact your administrator.'
                                         : error.message
                                 );
-                            } else if (data?.session) {
+                            }
+                            else if (data?.session) {
                                 setSessionReady(true);
                             }
                         }
@@ -144,8 +149,8 @@ export default function SetPasswordPage() {
                             Link Expired or Invalid
                         </h6>
                         <p className="leading-relaxed text-(--mui-palette-text-secondary) text-sm">
-                            {submitError ??
-                                'Your invite link may have expired or already been used. Please request a new setup link or contact your administrator.'}
+                            {submitError
+                                ?? 'Your invite link may have expired or already been used. Please request a new setup link or contact your administrator.'}
                         </p>
                         <div className="flex flex-col gap-2 sm:flex-row w-full">
                             <CommonButton
@@ -237,8 +242,8 @@ export default function SetPasswordPage() {
 
                     <CommonButton
                         disabled={methods.formState.isSubmitting}
-                        loading={methods.formState.isSubmitting}
                         fullWidth
+                        loading={methods.formState.isSubmitting}
                         type="submit"
                         variant="contained"
                     >

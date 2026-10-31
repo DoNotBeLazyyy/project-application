@@ -68,4 +68,3 @@ export const BREADCRUMB_SEGMENT_LABELS: Record<string, string> = {
     profile: 'My Profile',
     new: 'New'
 };
-

@@ -1,5 +1,7 @@
 import RoleShell from '@components/layout/RoleShell';
-import { CalendarBlankIcon, ChalkboardTeacherIcon, HouseIcon, MegaphoneIcon, StarIcon } from '@phosphor-icons/react';
+import {
+    CalendarBlankIcon, ChalkboardTeacherIcon, HouseIcon, MegaphoneIcon, StarIcon
+} from '@phosphor-icons/react';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';

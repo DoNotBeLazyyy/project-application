@@ -6,7 +6,7 @@ import { ProgramLevelListRow } from '@type/program/program-level.type';
 export interface ProgramLevelGridCardProps {
     row: ProgramLevelListRow;
     isSelected: boolean;
-    onToggleSelect: () => void;
+    onToggleSelect: VoidFunction;
     onView: (id: string) => void;
     onEdit: (id: string) => void;
     onRequestDelete: (id: string) => void;
@@ -35,19 +35,28 @@ export default function ProgramLevelGridCard({
                         {
                             key: 'view',
                             label: 'View',
-                            icon: <EyeIcon size={18} weight="bold" />,
+                            icon: <EyeIcon
+                                size={18}
+                                weight="bold"
+                            />,
                             onClick: () => onView(row.id)
                         },
                         {
                             key: 'edit',
                             label: 'Edit',
-                            icon: <PencilSimpleIcon size={18} weight="bold" />,
+                            icon: <PencilSimpleIcon
+                                size={18}
+                                weight="bold"
+                            />,
                             onClick: () => onEdit(row.id)
                         },
                         {
                             key: 'delete',
                             label: 'Delete',
-                            icon: <TrashIcon size={18} weight="bold" />,
+                            icon: <TrashIcon
+                                size={18}
+                                weight="bold"
+                            />,
                             destructive: true,
                             onClick: () => onRequestDelete(row.id)
                         }

@@ -1,12 +1,12 @@
+import { CommonChip } from '@components/badge/CommonChip';
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
-import { CommonChip } from '@components/badge/CommonChip';
 import { ClockCountdownIcon } from '@phosphor-icons/react';
 import { PendingProfileRequest } from '@type/profile.type';
 
 interface PendingChangesModalProps {
     open: boolean;
-    onClose: () => void;
+    onClose: VoidFunction;
     pendingRequest?: PendingProfileRequest | null;
 }
 
@@ -49,20 +49,24 @@ export default function PendingChangesModal({
 
     return (
         <CommonModal
+            cardProps={{
+                cardHeaderProps: {
+                    title: 'Submitted Profile Changes',
+                    subheader: `Submitted on ${new Date(pendingRequest.created_at)
+                        .toLocaleString()} — Pending ${approverName} Verification`
+                }
+            }}
             fullWidth
             maxWidth="md"
             open={open}
             onClose={onClose}
-            cardProps={{
-                cardHeaderProps: {
-                    title: 'Submitted Profile Changes',
-                    subheader: `Submitted on ${new Date(pendingRequest.created_at).toLocaleString()} — Pending ${approverName} Verification`
-                }
-            }}
         >
             <div className="flex flex-col gap-4 p-4 pt-0 max-h-[75vh] overflow-y-auto">
                 <div className="border border-(--mui-palette-warning-main) bg-(--mui-palette-warning-light) p-3 rounded-lg flex items-start gap-3 text-xs text-(--mui-palette-text-primary)">
-                    <ClockCountdownIcon size={22} className="text-(--mui-palette-warning-main) shrink-0 mt-0.5" />
+                    <ClockCountdownIcon
+                        className="text-(--mui-palette-warning-main) shrink-0 mt-0.5"
+                        size={22}
+                    />
                     <div>
                         <p className="font-semibold m-0 text-sm">Under Review by {approverName}</p>
                         <p className="m-0 mt-0.5 text-(--mui-palette-text-secondary)">
@@ -78,35 +82,48 @@ export default function PendingChangesModal({
                         <div className="col-span-4">Requested Value</div>
                     </div>
                     <div className="divide-y divide-(--mui-palette-divider) text-xs">
-                        {changedFields.length === 0 ? (
-                            <div className="p-4 text-center text-(--mui-palette-text-secondary)">
+                        {changedFields.length === 0
+                            ? (
+                                <div className="p-4 text-center text-(--mui-palette-text-secondary)">
                                 No differences detected.
-                            </div>
-                        ) : (
-                            changedFields.map((key) => {
-                                const currVal = current[key as keyof typeof current] || '—';
-                                const reqVal = requested[key as keyof typeof requested] || '—';
-                                return (
-                                    <div key={key} className="grid grid-cols-12 px-3 py-2.5 items-center bg-(--mui-palette-warning-light)/20">
-                                        <div className="col-span-4 font-medium text-(--mui-palette-text-primary) flex items-center gap-1.5">
-                                            <span>{FIELD_LABELS[key] || key}</span>
-                                            <CommonChip label="Changed" size="small" variant="light" />
+                                </div>
+                            )
+                            : (
+                                changedFields.map((key) => {
+                                    const currVal = current[key as keyof typeof current] || '—';
+                                    const reqVal = requested[key as keyof typeof requested] || '—';
+                                    return (
+                                        <div
+                                            className="grid grid-cols-12 px-3 py-2.5 items-center bg-(--mui-palette-warning-light)/20"
+                                            key={key}
+                                        >
+                                            <div className="col-span-4 font-medium text-(--mui-palette-text-primary) flex items-center gap-1.5">
+                                                <span>{FIELD_LABELS[key] || key}</span>
+                                                <CommonChip
+                                                    label="Changed"
+                                                    size="small"
+                                                    variant="light"
+                                                />
+                                            </div>
+                                            <div className="col-span-4 text-(--mui-palette-text-secondary) break-words pr-2">
+                                                {currVal}
+                                            </div>
+                                            <div className="col-span-4 font-medium text-(--mui-palette-primary-main) break-words">
+                                                {reqVal}
+                                            </div>
                                         </div>
-                                        <div className="col-span-4 text-(--mui-palette-text-secondary) break-words pr-2">
-                                            {currVal}
-                                        </div>
-                                        <div className="col-span-4 font-medium text-(--mui-palette-primary-main) break-words">
-                                            {reqVal}
-                                        </div>
-                                    </div>
-                                );
-                            })
-                        )}
+                                    );
+                                })
+                            )}
                     </div>
                 </div>
 
                 <div className="flex justify-end mt-2">
-                    <CommonButton size="small" variant="contained" onClick={onClose}>
+                    <CommonButton
+                        size="small"
+                        variant="contained"
+                        onClick={onClose}
+                    >
                         Close
                     </CommonButton>
                 </div>

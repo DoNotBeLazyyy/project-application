@@ -6,7 +6,7 @@ export interface InfiniteScroll {
     hasMore: boolean;
     sentinelRef: RefObject<HTMLDivElement | null>;
     visibleCount: number;
-    reset: () => void;
+    reset: VoidFunction;
     revealThrough: (index: number) => void;
 }
 

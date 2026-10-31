@@ -15,8 +15,12 @@ import { FieldErrors, useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 interface LoginLocationState {
+    // Shown after an invited user sets a password
     activationSuccess?: boolean;
+    // Sign-in error passed from the auth guard
     authError?: string;
+    // Page the user opened before being sent to sign in
+    from?: string;
 }
 
 const ROLE_PATHS: Record<UserRole, RoleDashboardPath> = {
@@ -26,6 +30,22 @@ const ROLE_PATHS: Record<UserRole, RoleDashboardPath> = {
     Registrar: '/registrar',
     Student: '/student'
 };
+
+/**
+ * Picks where to go after sign in. The page the user first opened wins when it belongs to their role.
+ *
+ * @param role - Active role of the signed-in user.
+ * @param from - Page the user opened before signing in.
+ * @returns
+ */
+function resolveLoginDestination(role: UserRole, from?: string): string {
+    const basePath = ROLE_PATHS[role];
+    const isRolePage = Boolean(from && (from === basePath || from.startsWith(`${basePath}/`) || from.startsWith(`${basePath}?`)));
+
+    return isRolePage && from
+        ? from
+        : basePath;
+}
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -42,7 +62,8 @@ export default function LoginPage() {
         const urlErr = parseAuthUrlError();
         const initialErr = locationState?.authError || urlErr?.userMessage;
         if (initialErr) {
-            useToastStore.getState().showToast(initialErr, 'error');
+            useToastStore.getState()
+                .showToast(initialErr, 'error');
             clearAuthUrlError();
         }
     }, [locationState?.authError]);
@@ -59,14 +80,15 @@ export default function LoginPage() {
             return;
         }
         if (activeRole) {
-            navigate(ROLE_PATHS[activeRole], { replace: true });
+            navigate(resolveLoginDestination(activeRole, locationState?.from), { replace: true });
         }
-    }, [activeRole, navigate]);
+    }, [activeRole, locationState?.from, navigate]);
 
     async function onSubmit(values: LoginFormValues) {
         const result = await login(values.email, values.password);
         if (result.error) {
-            useToastStore.getState().showToast(result.error.message, 'error');
+            useToastStore.getState()
+                .showToast(result.error.message, 'error');
 
             return;
         }
@@ -81,7 +103,7 @@ export default function LoginPage() {
         const currentRole = state.activeRole;
 
         navigate(currentRole
-            ? ROLE_PATHS[currentRole]
+            ? resolveLoginDestination(currentRole, locationState?.from)
             : '/unauthorized');
     }
 
@@ -150,8 +172,8 @@ export default function LoginPage() {
 
                     <CommonButton
                         disabled={isSubmitting}
-                        loading={isSubmitting}
                         fullWidth
+                        loading={isSubmitting}
                         size="large"
                         type="submit"
                         variant="contained"

@@ -29,7 +29,7 @@ interface DepartmentWizardModalProps {
     isCodeDisabled?: boolean;
     isSaving?: boolean;
     methods: UseFormReturn<DepartmentFormValues>;
-    onClose: () => void;
+    onClose: VoidFunction;
     onSubmit: (values: DepartmentFormValues) => void;
     onSwitchToEdit?: (step?: number) => void;
 }
@@ -273,55 +273,61 @@ export default function DepartmentWizardModal({
                         </CommonButton>
                     )}
 
-                    {currentStep < 3 ? (
-                        <CommonButton
-                            color="primary"
-                            disabled={isSaving}
-                            endIcon={<ArrowRightIcon className="w-4 h-4" />}
-                            size="medium"
-                            variant="contained"
-                            onClick={handleNext}
-                        >
+                    {currentStep < 3
+                        ? (
+                            <CommonButton
+                                color="primary"
+                                disabled={isSaving}
+                                endIcon={<ArrowRightIcon className="w-4 h-4" />}
+                                size="medium"
+                                variant="contained"
+                                onClick={handleNext}
+                            >
                             Next Step
-                        </CommonButton>
-                    ) : readOnly ? (
-                        onSwitchToEdit ? (
-                            <CommonButton
-                                color="primary"
-                                size="medium"
-                                startIcon={<PencilSimpleIcon className="w-4 h-4" />}
-                                variant="contained"
-                                onClick={() => onSwitchToEdit(currentStep)}
-                            >
-                                Edit Department
-                            </CommonButton>
-                        ) : (
-                            <CommonButton
-                                color="primary"
-                                size="medium"
-                                variant="contained"
-                                onClick={handleCloseModal}
-                            >
-                                Close
                             </CommonButton>
                         )
-                    ) : (
-                        <CommonButton
-                            color="primary"
-                            disabled={isSaving || (Boolean(departmentId) && !draftGuard.hasRealChanges)}
-                            loading={isSaving}
-                            size="medium"
-                            startIcon={<FloppyDiskIcon className="w-4 h-4" />}
-                            variant="contained"
-                            onClick={handleSubmit(handleFormSubmit, handleDepartmentFormErrors)}
-                        >
-                            {isSaving
-                                ? 'Saving Department...'
-                                : departmentId
-                                    ? 'Save Changes'
-                                    : 'Save Department'}
-                        </CommonButton>
-                    )}
+                        : readOnly
+                            ? (
+                                onSwitchToEdit
+                                    ? (
+                                        <CommonButton
+                                            color="primary"
+                                            size="medium"
+                                            startIcon={<PencilSimpleIcon className="w-4 h-4" />}
+                                            variant="contained"
+                                            onClick={() => onSwitchToEdit(currentStep)}
+                                        >
+                                Edit Department
+                                        </CommonButton>
+                                    )
+                                    : (
+                                        <CommonButton
+                                            color="primary"
+                                            size="medium"
+                                            variant="contained"
+                                            onClick={handleCloseModal}
+                                        >
+                                Close
+                                        </CommonButton>
+                                    )
+                            )
+                            : (
+                                <CommonButton
+                                    color="primary"
+                                    disabled={isSaving || (Boolean(departmentId) && !draftGuard.hasRealChanges)}
+                                    loading={isSaving}
+                                    size="medium"
+                                    startIcon={<FloppyDiskIcon className="w-4 h-4" />}
+                                    variant="contained"
+                                    onClick={handleSubmit(handleFormSubmit, handleDepartmentFormErrors)}
+                                >
+                                    {isSaving
+                                        ? 'Saving Department...'
+                                        : departmentId
+                                            ? 'Save Changes'
+                                            : 'Save Department'}
+                                </CommonButton>
+                            )}
                 </div>
             </div>
 

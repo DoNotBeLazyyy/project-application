@@ -157,9 +157,10 @@ export default function SectionGradingOverride({
         const target = periods[periodIndex];
         if (!target) return;
 
-        Object.keys(patch).forEach(function(key) {
-            clearFieldError(control, `grading_periods.${periodIndex}.components.${compIndex}.${key}`);
-        });
+        Object.keys(patch)
+            .forEach(function(key) {
+                clearFieldError(control, `grading_periods.${periodIndex}.components.${compIndex}.${key}`);
+            });
         clearFieldError(control, `grading_periods.${periodIndex}.weight`);
 
         const updated = [...periods];
@@ -204,7 +205,10 @@ export default function SectionGradingOverride({
             {/* Header & Status (Indicates if overridden or inheriting program defaults) */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-zinc-800 pb-3">
                 <div className="flex items-center gap-2.5">
-                    <SlidersIcon className="w-5 h-5 text-brand-600 dark:text-brand-400 shrink-0" weight="bold" />
+                    <SlidersIcon
+                        className="w-5 h-5 text-brand-600 dark:text-brand-400 shrink-0"
+                        weight="bold"
+                    />
                     <div>
                         <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex flex-wrap items-center gap-2">
                             Grading Schema Settings
@@ -392,7 +396,10 @@ export default function SectionGradingOverride({
                                             </div>
 
                                             {periodErrors?.[pIdx]?.weight?.message && (
-                                                <p className="text-xs font-medium text-(--mui-palette-error-main)" role="alert">
+                                                <p
+                                                    className="text-xs font-medium text-(--mui-palette-error-main)"
+                                                    role="alert"
+                                                >
                                                     {periodErrors[pIdx].weight.message}
                                                 </p>
                                             )}

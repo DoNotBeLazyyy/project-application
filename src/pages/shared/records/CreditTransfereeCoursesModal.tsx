@@ -39,7 +39,8 @@ interface CreditFormValues {
 }
 
 function isBlank(value: unknown): boolean {
-    return !String(value ?? '').trim();
+    return !String(value ?? '')
+        .trim();
 }
 
 function isEmptyNumber(value: unknown): boolean {
@@ -116,8 +117,8 @@ const CREDIT_FORM_FIELDS: FormFieldConfig<CreditFormValues>[] = [
 
 export interface CreditTransfereeCoursesModalProps {
     open: boolean;
-    onClose: () => void;
-    onSuccess?: () => void;
+    onClose: VoidFunction;
+    onSuccess?: VoidFunction;
     studentId?: string | null;
     studentName?: string | null;
     studentNumber?: string | null;
@@ -226,15 +227,18 @@ export default function CreditTransfereeCoursesModal({
         setIsLoading(false);
         if (res.data) {
             setData(res.data);
-        } else if (res.error) {
-            useToastStore.getState().showToast(res.error.message || 'Failed to load curriculum', 'error');
+        }
+        else if (res.error) {
+            useToastStore.getState()
+                .showToast(res.error.message || 'Failed to load curriculum', 'error');
         }
     }
 
     useEffect(() => {
         if (open && studentId) {
             loadCurriculum();
-        } else {
+        }
+        else {
             setData(null);
             setSearchQuery('');
             setSelectedYearFilter('all');
@@ -274,8 +278,12 @@ export default function CreditTransfereeCoursesModal({
         if (!studentId || !activeCourse) return;
 
         setIsSaving(true);
-        const parsedNumeric = isEmptyNumber(values.gradeNumeric) ? null : Number(values.gradeNumeric);
-        const parsedUnits = isEmptyNumber(values.unitsCredited) ? activeCourse.units : Number(values.unitsCredited);
+        const parsedNumeric = isEmptyNumber(values.gradeNumeric)
+            ? null
+            : Number(values.gradeNumeric);
+        const parsedUnits = isEmptyNumber(values.unitsCredited)
+            ? activeCourse.units
+            : Number(values.unitsCredited);
 
         const res = await creditStudentCourse({
             student_id: studentId,
@@ -284,21 +292,28 @@ export default function CreditTransfereeCoursesModal({
             previous_course_code: values.previousCourseCode.trim() || undefined,
             previous_course_title: values.previousCourseTitle.trim() || undefined,
             grade_display: values.gradeDisplay.trim() || 'Passed',
-            grade_numeric: parsedNumeric !== null && !isNaN(parsedNumeric) ? parsedNumeric : null,
-            units_credited: parsedUnits && !isNaN(parsedUnits) ? parsedUnits : activeCourse.units,
+            grade_numeric: parsedNumeric !== null && !isNaN(parsedNumeric)
+                ? parsedNumeric
+                : null,
+            units_credited: parsedUnits && !isNaN(parsedUnits)
+                ? parsedUnits
+                : activeCourse.units,
             remarks: values.remarks.trim() || undefined
         });
 
         setIsSaving(false);
 
         if (res.data?.success) {
-            useToastStore.getState().showToast(res.data.message || 'Course credited successfully!', 'success');
+            useToastStore.getState()
+                .showToast(res.data.message || 'Course credited successfully!', 'success');
             setRememberedSchool(values.previousSchool.trim());
             handleCloseCreditForm();
             loadCurriculum();
             onSuccess?.();
-        } else {
-            useToastStore.getState().showToast(res.error?.message || res.data?.message || 'Failed to credit course.', 'error');
+        }
+        else {
+            useToastStore.getState()
+                .showToast(res.error?.message || res.data?.message || 'Failed to credit course.', 'error');
         }
     }
 
@@ -310,12 +325,15 @@ export default function CreditTransfereeCoursesModal({
         setIsRevoking(false);
 
         if (res.data?.success) {
-            useToastStore.getState().showToast(res.data.message || 'Course credit revoked.', 'success');
+            useToastStore.getState()
+                .showToast(res.data.message || 'Course credit revoked.', 'success');
             setCourseToRevoke(null);
             loadCurriculum();
             onSuccess?.();
-        } else {
-            useToastStore.getState().showToast(res.error?.message || 'Failed to revoke course credit.', 'error');
+        }
+        else {
+            useToastStore.getState()
+                .showToast(res.error?.message || 'Failed to revoke course credit.', 'error');
         }
     }
 
@@ -336,10 +354,14 @@ export default function CreditTransfereeCoursesModal({
 
             if (searchQuery.trim()) {
                 const query = searchQuery.toLowerCase();
-                const codeMatch = c.course_code.toLowerCase().includes(query);
-                const titleMatch = c.course_title.toLowerCase().includes(query);
-                const schoolMatch = c.previous_school?.toLowerCase().includes(query) ?? false;
-                const prevCodeMatch = c.previous_course_code?.toLowerCase().includes(query) ?? false;
+                const codeMatch = c.course_code.toLowerCase()
+                    .includes(query);
+                const titleMatch = c.course_title.toLowerCase()
+                    .includes(query);
+                const schoolMatch = c.previous_school?.toLowerCase()
+                    .includes(query) ?? false;
+                const prevCodeMatch = c.previous_course_code?.toLowerCase()
+                    .includes(query) ?? false;
                 if (!codeMatch && !titleMatch && !schoolMatch && !prevCodeMatch) {
                     return false;
                 }
@@ -379,7 +401,11 @@ export default function CreditTransfereeCoursesModal({
                     <div className="bg-(--mui-palette-action-hover)/40 border border-(--mui-palette-divider) flex flex-wrap gap-4 items-center justify-between p-3.5 rounded-xl">
                         <div className="flex flex-wrap gap-4 sm:gap-6 items-center">
                             <div className="flex items-center gap-2.5">
-                                <IdentificationCardIcon size={24} className="text-(--mui-palette-primary-main) shrink-0" weight="bold" />
+                                <IdentificationCardIcon
+                                    className="text-(--mui-palette-primary-main) shrink-0"
+                                    size={24}
+                                    weight="bold"
+                                />
                                 <div className="flex flex-col">
                                     <span className="text-[11px] text-(--mui-palette-text-secondary) font-medium">Student Scholar</span>
                                     <span className="font-bold text-(--mui-palette-text-primary) text-sm">
@@ -392,7 +418,11 @@ export default function CreditTransfereeCoursesModal({
                             </div>
 
                             <div className="flex items-center gap-2.5 sm:pl-4 sm:border-l sm:border-(--mui-palette-divider)">
-                                <GraduationCapIcon size={24} className="text-(--mui-palette-info-main) shrink-0" weight="bold" />
+                                <GraduationCapIcon
+                                    className="text-(--mui-palette-info-main) shrink-0"
+                                    size={24}
+                                    weight="bold"
+                                />
                                 <div className="flex flex-col">
                                     <span className="text-[11px] text-(--mui-palette-text-secondary) font-medium">Program &amp; Standing</span>
                                     <span className="font-semibold text-(--mui-palette-text-primary) text-xs">
@@ -432,11 +462,16 @@ export default function CreditTransfereeCoursesModal({
 
                             <Tooltip title="Refresh curriculum">
                                 <button
-                                    type="button"
                                     className="p-2 rounded-lg border border-(--mui-palette-divider) text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary) hover:bg-(--mui-palette-action-hover) cursor-pointer"
+                                    type="button"
                                     onClick={loadCurriculum}
                                 >
-                                    <ArrowsClockwiseIcon size={18} className={isLoading ? 'animate-spin' : ''} />
+                                    <ArrowsClockwiseIcon
+                                        className={isLoading
+                                            ? 'animate-spin'
+                                            : ''}
+                                        size={18}
+                                    />
                                 </button>
                             </Tooltip>
                         </div>
@@ -453,7 +488,10 @@ export default function CreditTransfereeCoursesModal({
                                     input: {
                                         startAdornment: (
                                             <InputAdornment position="start">
-                                                <MagnifyingGlassIcon size={18} className="text-(--mui-palette-text-secondary)" />
+                                                <MagnifyingGlassIcon
+                                                    className="text-(--mui-palette-text-secondary)"
+                                                    size={18}
+                                                />
                                             </InputAdornment>
                                         )
                                     }
@@ -488,157 +526,190 @@ export default function CreditTransfereeCoursesModal({
 
                     {/* Curriculum Courses List */}
                     <div className="border border-(--mui-palette-divider) rounded-xl overflow-hidden max-h-[500px] overflow-y-auto">
-                        {isLoading ? (
-                            <div className="flex flex-col items-center justify-center p-12 gap-2 text-(--mui-palette-text-secondary)">
-                                <ArrowsClockwiseIcon size={28} className="animate-spin text-(--mui-palette-primary-main)" />
-                                <span className="text-sm">Loading student curriculum checklist...</span>
-                            </div>
-                        ) : filteredCourses.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center p-12 gap-2 text-(--mui-palette-text-secondary)">
-                                <CertificateIcon size={36} className="text-(--mui-palette-text-disabled)" />
-                                <span className="text-sm font-medium">No matching courses found</span>
-                                <span className="text-xs">Try adjusting your search terms or year level filter.</span>
-                            </div>
-                        ) : (
-                            <table className="min-w-full text-left text-xs divide-y divide-(--mui-palette-divider)">
-                                <thead className="bg-(--mui-palette-action-hover) text-(--mui-palette-text-secondary) sticky top-0 z-10 font-semibold uppercase text-[11px]">
-                                    <tr>
-                                        <th className="px-3.5 py-2.5">Year &amp; Term</th>
-                                        <th className="px-3.5 py-2.5">Curriculum Course</th>
-                                        <th className="px-3.5 py-2.5 text-center">Units</th>
-                                        <th className="px-3.5 py-2.5">Crediting Status &amp; Prior Institution Details</th>
-                                        <th className="px-3.5 py-2.5 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-(--mui-palette-divider) bg-(--mui-palette-background-paper)">
-                                    {filteredCourses.map((c) => (
-                                        <tr
-                                            key={c.curriculum_map_id}
-                                            className={`hover:bg-(--mui-palette-action-hover)/50 transition-colors ${
-                                                c.is_credited ? 'bg-(--mui-palette-success-main)/5' : ''
-                                            }`}
-                                        >
-                                            <td className="px-3.5 py-3 whitespace-nowrap text-(--mui-palette-text-secondary)">
-                                                <div className="font-semibold text-(--mui-palette-text-primary)">
+                        {isLoading
+                            ? (
+                                <div className="flex flex-col items-center justify-center p-12 gap-2 text-(--mui-palette-text-secondary)">
+                                    <ArrowsClockwiseIcon
+                                        className="animate-spin text-(--mui-palette-primary-main)"
+                                        size={28}
+                                    />
+                                    <span className="text-sm">Loading student curriculum checklist...</span>
+                                </div>
+                            )
+                            : filteredCourses.length === 0
+                                ? (
+                                    <div className="flex flex-col items-center justify-center p-12 gap-2 text-(--mui-palette-text-secondary)">
+                                        <CertificateIcon
+                                            className="text-(--mui-palette-text-disabled)"
+                                            size={36}
+                                        />
+                                        <span className="text-sm font-medium">No matching courses found</span>
+                                        <span className="text-xs">Try adjusting your search terms or year level filter.</span>
+                                    </div>
+                                )
+                                : (
+                                    <table className="min-w-full text-left text-xs divide-y divide-(--mui-palette-divider)">
+                                        <thead className="bg-(--mui-palette-action-hover) text-(--mui-palette-text-secondary) sticky top-0 z-10 font-semibold uppercase text-[11px]">
+                                            <tr>
+                                                <th className="px-3.5 py-2.5">Year &amp; Term</th>
+                                                <th className="px-3.5 py-2.5">Curriculum Course</th>
+                                                <th className="px-3.5 py-2.5 text-center">Units</th>
+                                                <th className="px-3.5 py-2.5">Crediting Status &amp; Prior Institution Details</th>
+                                                <th className="px-3.5 py-2.5 text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-(--mui-palette-divider) bg-(--mui-palette-background-paper)">
+                                            {filteredCourses.map((c) => (
+                                                <tr
+                                                    className={`hover:bg-(--mui-palette-action-hover)/50 transition-colors ${
+                                                        c.is_credited
+                                                            ? 'bg-(--mui-palette-success-main)/5'
+                                                            : ''
+                                                    }`}
+                                                    key={c.curriculum_map_id}
+                                                >
+                                                    <td className="px-3.5 py-3 whitespace-nowrap text-(--mui-palette-text-secondary)">
+                                                        <div className="font-semibold text-(--mui-palette-text-primary)">
                                                     Year {c.year_level}
-                                                </div>
-                                                <div className="text-[11px] text-(--mui-palette-text-secondary)">
-                                                    {c.term_label}
-                                                </div>
-                                            </td>
+                                                        </div>
+                                                        <div className="text-[11px] text-(--mui-palette-text-secondary)">
+                                                            {c.term_label}
+                                                        </div>
+                                                    </td>
 
-                                            <td className="px-3.5 py-3 max-w-[260px]">
-                                                <div className="flex items-center gap-1.5 font-bold text-sm text-(--mui-palette-text-primary)">
-                                                    <span>{c.course_code}</span>
-                                                    {c.is_elective && (
-                                                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-(--mui-palette-action-hover) text-(--mui-palette-text-secondary) font-normal">
+                                                    <td className="px-3.5 py-3 max-w-[260px]">
+                                                        <div className="flex items-center gap-1.5 font-bold text-sm text-(--mui-palette-text-primary)">
+                                                            <span>{c.course_code}</span>
+                                                            {c.is_elective && (
+                                                                <span className="text-[10px] px-1.5 py-0.2 rounded bg-(--mui-palette-action-hover) text-(--mui-palette-text-secondary) font-normal">
                                                             Elective
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div
+                                                            className="text-xs text-(--mui-palette-text-secondary) truncate"
+                                                            title={c.course_title}
+                                                        >
+                                                            {c.course_title}
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="px-3.5 py-3 text-center whitespace-nowrap">
+                                                        <span className="font-mono font-semibold text-(--mui-palette-text-primary)">
+                                                            {c.units.toFixed(1)}
                                                         </span>
-                                                    )}
-                                                </div>
-                                                <div className="text-xs text-(--mui-palette-text-secondary) truncate" title={c.course_title}>
-                                                    {c.course_title}
-                                                </div>
-                                            </td>
+                                                    </td>
 
-                                            <td className="px-3.5 py-3 text-center whitespace-nowrap">
-                                                <span className="font-mono font-semibold text-(--mui-palette-text-primary)">
-                                                    {c.units.toFixed(1)}
-                                                </span>
-                                            </td>
-
-                                            <td className="px-3.5 py-3">
-                                                {c.is_credited ? (
-                                                    <div className="flex flex-col gap-1">
-                                                        <div className="flex items-center gap-2">
-                                                            <CommonBadgeStatus
-                                                                label="Credited"
-                                                                variant="success"
-                                                            />
-                                                            <span className="font-semibold text-(--mui-palette-text-primary) text-xs">
+                                                    <td className="px-3.5 py-3">
+                                                        {c.is_credited
+                                                            ? (
+                                                                <div className="flex flex-col gap-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <CommonBadgeStatus
+                                                                            label="Credited"
+                                                                            variant="success"
+                                                                        />
+                                                                        <span className="font-semibold text-(--mui-palette-text-primary) text-xs">
                                                                 Grade: {c.grade_display || 'Passed'}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-1 text-[11px] text-(--mui-palette-text-secondary)">
-                                                            <BuildingsIcon size={14} className="shrink-0 text-(--mui-palette-primary-main)" />
-                                                            <span className="font-medium text-(--mui-palette-text-primary)">
-                                                                {c.previous_school}
-                                                            </span>
-                                                        </div>
-                                                        {(c.previous_course_code || c.previous_course_title) && (
-                                                            <div className="text-[11px] text-(--mui-palette-text-secondary)">
-                                                                Equated: {c.previous_course_code ? `${c.previous_course_code} · ` : ''}
-                                                                {c.previous_course_title}
-                                                            </div>
-                                                        )}
-                                                        {c.remarks && (
-                                                            <div className="text-[10px] italic text-(--mui-palette-text-disabled)">
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1 text-[11px] text-(--mui-palette-text-secondary)">
+                                                                        <BuildingsIcon
+                                                                            className="shrink-0 text-(--mui-palette-primary-main)"
+                                                                            size={14}
+                                                                        />
+                                                                        <span className="font-medium text-(--mui-palette-text-primary)">
+                                                                            {c.previous_school}
+                                                                        </span>
+                                                                    </div>
+                                                                    {(c.previous_course_code || c.previous_course_title) && (
+                                                                        <div className="text-[11px] text-(--mui-palette-text-secondary)">
+                                                                Equated: {c.previous_course_code
+                                                                                ? `${c.previous_course_code} · `
+                                                                                : ''}
+                                                                            {c.previous_course_title}
+                                                                        </div>
+                                                                    )}
+                                                                    {c.remarks && (
+                                                                        <div className="text-[10px] italic text-(--mui-palette-text-disabled)">
                                                                 &ldquo;{c.remarks}&rdquo;
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ) : c.is_passed_locally ? (
-                                                    <div className="flex items-center gap-1.5">
-                                                        <CommonBadgeStatus
-                                                            label="Passed (Regular)"
-                                                            variant="info"
-                                                        />
-                                                        <span className="text-[11px] text-(--mui-palette-text-secondary)">
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )
+                                                            : c.is_passed_locally
+                                                                ? (
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <CommonBadgeStatus
+                                                                            label="Passed (Regular)"
+                                                                            variant="info"
+                                                                        />
+                                                                        <span className="text-[11px] text-(--mui-palette-text-secondary)">
                                                             Completed at AU-JAS
-                                                        </span>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-1.5">
-                                                        <CommonBadgeStatus
-                                                            label="Not Taken"
-                                                            variant="info"
-                                                        />
-                                                        <span className="text-[11px] text-(--mui-palette-text-secondary)">
+                                                                        </span>
+                                                                    </div>
+                                                                )
+                                                                : (
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <CommonBadgeStatus
+                                                                            label="Not Taken"
+                                                                            variant="info"
+                                                                        />
+                                                                        <span className="text-[11px] text-(--mui-palette-text-secondary)">
                                                             Pending enrollment / transfer credit
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </td>
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                    </td>
 
-                                            <td className="px-3.5 py-3 text-right whitespace-nowrap">
-                                                {c.is_credited ? (
-                                                    <div className="flex items-center justify-end gap-1.5">
-                                                        <Tooltip title="Edit credit details">
-                                                            <button
-                                                                type="button"
-                                                                className="p-1.5 rounded-lg border border-(--mui-palette-divider) text-(--mui-palette-text-secondary) hover:text-(--mui-palette-primary-main) hover:bg-(--mui-palette-action-hover) cursor-pointer"
-                                                                onClick={() => handleOpenCreditForm(c)}
-                                                            >
-                                                                <PencilSimpleIcon size={16} />
-                                                            </button>
-                                                        </Tooltip>
-                                                        <Tooltip title="Revoke credited subject">
-                                                            <button
-                                                                type="button"
-                                                                className="p-1.5 rounded-lg border border-(--mui-palette-divider) text-red-500 hover:text-red-700 hover:bg-red-500/10 cursor-pointer"
-                                                                onClick={() => setCourseToRevoke(c)}
-                                                            >
-                                                                <TrashIcon size={16} />
-                                                            </button>
-                                                        </Tooltip>
-                                                    </div>
-                                                ) : !c.is_passed_locally ? (
-                                                    <CommonButton
-                                                        color="primary"
-                                                        size="small"
-                                                        startIcon={<PlusIcon size={14} weight="bold" />}
-                                                        variant="outlined"
-                                                        onClick={() => handleOpenCreditForm(c)}
-                                                    >
+                                                    <td className="px-3.5 py-3 text-right whitespace-nowrap">
+                                                        {c.is_credited
+                                                            ? (
+                                                                <div className="flex items-center justify-end gap-1.5">
+                                                                    <Tooltip title="Edit credit details">
+                                                                        <button
+                                                                            className="p-1.5 rounded-lg border border-(--mui-palette-divider) text-(--mui-palette-text-secondary) hover:text-(--mui-palette-primary-main) hover:bg-(--mui-palette-action-hover) cursor-pointer"
+                                                                            type="button"
+                                                                            onClick={() => handleOpenCreditForm(c)}
+                                                                        >
+                                                                            <PencilSimpleIcon size={16} />
+                                                                        </button>
+                                                                    </Tooltip>
+                                                                    <Tooltip title="Revoke credited subject">
+                                                                        <button
+                                                                            className="p-1.5 rounded-lg border border-(--mui-palette-divider) text-red-500 hover:text-red-700 hover:bg-red-500/10 cursor-pointer"
+                                                                            type="button"
+                                                                            onClick={() => setCourseToRevoke(c)}
+                                                                        >
+                                                                            <TrashIcon size={16} />
+                                                                        </button>
+                                                                    </Tooltip>
+                                                                </div>
+                                                            )
+                                                            : !c.is_passed_locally
+                                                                ? (
+                                                                    <CommonButton
+                                                                        color="primary"
+                                                                        size="small"
+                                                                        startIcon={(
+                                                                            <PlusIcon
+                                                                                size={14}
+                                                                                weight="bold"
+                                                                            />
+                                                                        )}
+                                                                        variant="outlined"
+                                                                        onClick={() => handleOpenCreditForm(c)}
+                                                                    >
                                                         Credit Course
-                                                    </CommonButton>
-                                                ) : null}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
+                                                                    </CommonButton>
+                                                                )
+                                                                : null}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
                     </div>
                 </div>
             </CommonActionModal>
@@ -661,7 +732,11 @@ export default function CreditTransfereeCoursesModal({
                             onClick: handleRequestCloseCreditForm
                         },
                         confirmProps: {
-                            children: isSaving ? 'Saving Credit...' : (activeCourse.is_credited ? 'Update Credit' : 'Confirm & Credit Course'),
+                            children: isSaving
+                                ? 'Saving Credit...'
+                                : (activeCourse.is_credited
+                                    ? 'Update Credit'
+                                    : 'Confirm & Credit Course'),
                             disabled: isSaving || (Boolean(activeCourse?.is_credited) && !creditDraftGuard.hasRealChanges),
                             loading: isSaving,
                             onClick: handleSaveCredit
@@ -702,7 +777,9 @@ export default function CreditTransfereeCoursesModal({
                             onClick: () => setCourseToRevoke(null)
                         },
                         confirmProps: {
-                            children: isRevoking ? 'Revoking...' : 'Yes, Revoke Credit',
+                            children: isRevoking
+                                ? 'Revoking...'
+                                : 'Yes, Revoke Credit',
                             color: 'error',
                             disabled: isRevoking,
                             loading: isRevoking,

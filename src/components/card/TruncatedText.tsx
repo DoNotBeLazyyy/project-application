@@ -82,7 +82,11 @@ export default function TruncatedText({
     }
 
     return (
-        <Tooltip arrow enterDelay={300} title={text}>
+        <Tooltip
+            arrow
+            enterDelay={300}
+            title={text}
+        >
             {node}
         </Tooltip>
     );

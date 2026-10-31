@@ -35,18 +35,42 @@ const SORT_COLUMNS: SortColumn[] = [
 // fn_bulk_create_evaluation_templates reads the section-level columns from that section's first row.
 // The sample row is chosen to import cleanly against the live DB (ALL mode, so no program codes).
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'section_title', label: 'Section Title', hint: 'e.g. Teaching Effectiveness (rows with the same title form one section; must not match an existing section)', sample: 'Teaching Effectiveness', aliases: ['section', 'section_name', 'title'] },
-    { key: 'section_sequence', label: 'Section Sequence', hint: 'Whole number 1-32767 (optional, blank = after the last section)', sample: '1', required: false, aliases: ['sequence', 'order'] },
-    { key: 'section_description', label: 'Section Description', hint: 'optional', sample: 'Evaluates pedagogical delivery and class management', required: false, aliases: ['description'] },
-    { key: 'target_mode', label: 'Target Mode', hint: 'ALL, INCLUDE, or EXCLUDE (optional, defaults ALL; INCLUDE/EXCLUDE need Program Codes)', sample: 'ALL', required: false, aliases: ['mode'] },
-    { key: 'program_codes', label: 'Program Codes', hint: 'Existing program codes separated by | (optional, blank = all programs)', sample: '', required: false, aliases: ['programs', 'program_code'] },
-    { key: 'is_active', label: 'Active', hint: 'TRUE or FALSE (optional, defaults TRUE)', sample: 'TRUE', required: false, aliases: ['active', 'status'] },
-    { key: 'suggestion_placeholder', label: 'Suggestion Box Placeholder', hint: 'Optional suggestion prompt for students', sample: 'Provide constructive feedback for your instructor', required: false },
-    { key: 'question_text', label: 'Question Text', hint: 'e.g. Explains concepts clearly', sample: 'Explains concepts clearly and provides practical examples', aliases: ['question', 'prompt'] },
-    { key: 'question_type', label: 'Question Type', hint: 'Rating, Multiple Choice, or Open Ended', sample: 'Rating', aliases: ['type'] },
-    { key: 'is_required', label: 'Required', hint: 'TRUE or FALSE (optional, defaults TRUE)', sample: 'TRUE', required: false, aliases: ['required'] },
-    { key: 'min_rating', label: 'Min Rating', hint: 'Whole number 1-9, below Max Rating (Rating only, optional, defaults 1)', sample: '1', required: false },
-    { key: 'max_rating', label: 'Max Rating', hint: 'Whole number 2-10, above Min Rating (Rating only, optional, defaults 5)', sample: '5', required: false }
+    {
+        key: 'section_title', label: 'Section Title', hint: 'e.g. Teaching Effectiveness (rows with the same title form one section; must not match an existing section)', sample: 'Teaching Effectiveness', aliases: ['section', 'section_name', 'title']
+    },
+    {
+        key: 'section_sequence', label: 'Section Sequence', hint: 'Whole number 1-32767 (optional, blank = after the last section)', sample: '1', required: false, aliases: ['sequence', 'order']
+    },
+    {
+        key: 'section_description', label: 'Section Description', hint: 'optional', sample: 'Evaluates pedagogical delivery and class management', required: false, aliases: ['description']
+    },
+    {
+        key: 'target_mode', label: 'Target Mode', hint: 'ALL, INCLUDE, or EXCLUDE (optional, defaults ALL; INCLUDE/EXCLUDE need Program Codes)', sample: 'ALL', required: false, aliases: ['mode']
+    },
+    {
+        key: 'program_codes', label: 'Program Codes', hint: 'Existing program codes separated by | (optional, blank = all programs)', sample: '', required: false, aliases: ['programs', 'program_code']
+    },
+    {
+        key: 'is_active', label: 'Active', hint: 'TRUE or FALSE (optional, defaults TRUE)', sample: 'TRUE', required: false, aliases: ['active', 'status']
+    },
+    {
+        key: 'suggestion_placeholder', label: 'Suggestion Box Placeholder', hint: 'Optional suggestion prompt for students', sample: 'Provide constructive feedback for your instructor', required: false
+    },
+    {
+        key: 'question_text', label: 'Question Text', hint: 'e.g. Explains concepts clearly', sample: 'Explains concepts clearly and provides practical examples', aliases: ['question', 'prompt']
+    },
+    {
+        key: 'question_type', label: 'Question Type', hint: 'Rating, Multiple Choice, or Open Ended', sample: 'Rating', aliases: ['type']
+    },
+    {
+        key: 'is_required', label: 'Required', hint: 'TRUE or FALSE (optional, defaults TRUE)', sample: 'TRUE', required: false, aliases: ['required']
+    },
+    {
+        key: 'min_rating', label: 'Min Rating', hint: 'Whole number 1-9, below Max Rating (Rating only, optional, defaults 1)', sample: '1', required: false
+    },
+    {
+        key: 'max_rating', label: 'Max Rating', hint: 'Whole number 2-10, above Min Rating (Rating only, optional, defaults 5)', sample: '5', required: false
+    }
 ];
 
 const QUESTION_TYPE_VALUES: EvaluationQuestionType[] = ['Rating', 'Multiple Choice', 'Open Ended'];
@@ -206,7 +230,7 @@ export default function EvaluationManagement() {
         setIsUpdateOpen(true);
     }
 
-    async function handleSwitchToEdit(id: string, step: number = 1) {
+    async function handleSwitchToEdit(id: string, step = 1) {
         setIsViewOpen(false);
         setEditStep(step);
         await loadIntoForm(id);
@@ -225,10 +249,16 @@ export default function EvaluationManagement() {
             const sanitizedValues: EvaluationTemplateForm = {
                 ...values,
                 title: values.title.trim(),
-                description: values.description ? values.description.trim() : '',
-                suggestion_placeholder: values.suggestion_placeholder ? values.suggestion_placeholder.trim() : '',
+                description: values.description
+                    ? values.description.trim()
+                    : '',
+                suggestion_placeholder: values.suggestion_placeholder
+                    ? values.suggestion_placeholder.trim()
+                    : '',
                 target_mode: values.target_mode || 'ALL',
-                program_ids: values.target_mode === 'ALL' ? [] : (values.program_ids ?? []),
+                program_ids: values.target_mode === 'ALL'
+                    ? []
+                    : (values.program_ids ?? []),
                 questions: (values.questions ?? []).map((q) => ({
                     ...q,
                     question_text: q.question_text.trim()
@@ -236,11 +266,13 @@ export default function EvaluationManagement() {
             };
             const res = await createEvaluationTemplate(sanitizedValues);
             if (!res.error) {
-                useToastStore.getState().showToast('Evaluation section created successfully.', 'success');
+                useToastStore.getState()
+                    .showToast('Evaluation section created successfully.', 'success');
                 handleCloseCreate();
                 triggerRefresh();
             }
-        } finally {
+        }
+        finally {
             setIsSaving(false);
         }
     }
@@ -252,10 +284,16 @@ export default function EvaluationManagement() {
             const sanitizedValues: EvaluationTemplateForm = {
                 ...values,
                 title: values.title.trim(),
-                description: values.description ? values.description.trim() : '',
-                suggestion_placeholder: values.suggestion_placeholder ? values.suggestion_placeholder.trim() : '',
+                description: values.description
+                    ? values.description.trim()
+                    : '',
+                suggestion_placeholder: values.suggestion_placeholder
+                    ? values.suggestion_placeholder.trim()
+                    : '',
                 target_mode: values.target_mode || 'ALL',
-                program_ids: values.target_mode === 'ALL' ? [] : (values.program_ids ?? []),
+                program_ids: values.target_mode === 'ALL'
+                    ? []
+                    : (values.program_ids ?? []),
                 questions: (values.questions ?? []).map((q) => ({
                     ...q,
                     question_text: q.question_text.trim()
@@ -263,11 +301,13 @@ export default function EvaluationManagement() {
             };
             const res = await updateEvaluationTemplate(selectedId, sanitizedValues);
             if (!res.error) {
-                useToastStore.getState().showToast('Evaluation section updated successfully.', 'success');
+                useToastStore.getState()
+                    .showToast('Evaluation section updated successfully.', 'success');
                 handleCloseUpdate();
                 triggerRefresh();
             }
-        } finally {
+        }
+        finally {
             setIsSaving(false);
         }
     }
@@ -454,9 +494,9 @@ export default function EvaluationManagement() {
 
             {/* View Evaluation Section Wizard Modal */}
             <EvaluationWizardModal
-                readOnly
                 methods={updateMethods}
                 open={isViewOpen}
+                readOnly
                 templateId={selectedId}
                 onClose={handleCloseView}
                 onSubmit={function() {}}

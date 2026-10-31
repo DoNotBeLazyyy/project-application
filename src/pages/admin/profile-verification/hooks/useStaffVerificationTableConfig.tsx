@@ -25,7 +25,9 @@ export function useStaffVerificationTableConfig() {
                             <CommonChip
                                 label={role}
                                 size="small"
-                                variant={role === 'Dean' ? 'dark' : 'light'}
+                                variant={role === 'Dean'
+                                    ? 'dark'
+                                    : 'light'}
                             />
                             {params.data.department_code && (
                                 <span className="text-xs text-(--mui-palette-text-secondary)">
@@ -54,15 +56,20 @@ export function useStaffVerificationTableConfig() {
                 cellRenderer: function(params: ICellRendererParams<StaffProfileRequestRow>) {
                     if (!params.value) return null;
                     const status = params.value as string;
-                    const variant =
-                        status === 'Pending'
+                    const variant
+                        = status === 'Pending'
                             ? 'warning'
                             : status === 'Approved' || status === 'Approved with Edits'
                                 ? 'success'
                                 : status === 'Cancelled'
                                     ? 'info'
                                     : 'error';
-                    return <CommonBadgeStatus label={status} variant={variant} />;
+                    return (
+                        <CommonBadgeStatus
+                            label={status}
+                            variant={variant}
+                        />
+                    );
                 },
                 field: 'status',
                 flex: 1.5,
@@ -79,13 +86,14 @@ export function useStaffVerificationTableConfig() {
                 sortable: true,
                 valueFormatter: (params: any) =>
                     params.value
-                        ? new Date(params.value as string).toLocaleString('en-PH', {
-                            day: 'numeric',
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            month: 'short',
-                            year: 'numeric'
-                        })
+                        ? new Date(params.value as string)
+                            .toLocaleString('en-PH', {
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                            })
                         : '—'
             },
             {

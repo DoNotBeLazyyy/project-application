@@ -1,114 +1,35 @@
 import CommonButton from '@components/button/CommonButton';
-import CommonForm from '@components/form/CommonForm';
-import { FormFieldConfig } from '@components/form/FormField';
-import DeletePromptModal from '@components/modal/DeletePromptModal';
-import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
-import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import { AnnouncementDetailModal } from '@components/modal/AnnouncementDetailModal';
-import CommonModal from '@components/modal/CommonModal';
-import { useObjectDraft } from '@hooks/useFormDraft';
+import DeletePromptModal from '@components/modal/DeletePromptModal';
+import { useAnnouncementBasePath } from '@pages/shared/announcement-management/useAnnouncementBasePath';
 import {
     CalendarBlankIcon,
     MegaphoneIcon,
-    PaperPlaneTiltIcon,
     PlusIcon,
     PushPinIcon,
     TrashIcon,
-    UserIcon,
-    XIcon
+    UserIcon
 } from '@phosphor-icons/react';
-import { createAnnouncement, deleteAnnouncement, listSectionAnnouncements } from '@services/announcement.service';
+import { deleteAnnouncement, listSectionAnnouncements } from '@services/announcement.service';
 import { supabase } from '@services/supabase.client';
 import { AnnouncementFeedRow } from '@type/announcement.type';
 import { formatShortDate } from '@utils/date.util';
-import { getRoleFromPath } from '@utils/role-path.util';
-import { useEffect, useMemo, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface SectionAnnouncementPanelProps {
     canManage?: boolean;
     sectionId: string;
 }
 
-interface SectionAnnouncementFormValues {
-    title: string;
-    content: string;
-    isPinned: boolean;
-}
-
-const DEFAULT_ANNOUNCEMENT_DRAFT: SectionAnnouncementFormValues = {
-    title: '',
-    content: '',
-    isPinned: false
-};
-
-function isBlank(value: unknown): boolean {
-    return !String(value ?? '').trim();
-}
-
-const COMPOSER_FIELDS: FormFieldConfig<SectionAnnouncementFormValues>[] = [
-    {
-        placeholder: 'e.g. Schedule Change for Upcoming Midterm Examination',
-        label: 'Announcement Title',
-        name: 'title',
-        rules: {
-            required: 'Title is required',
-            validate: (value: unknown) => !isBlank(value) || 'Title cannot be empty or whitespace only'
-        },
-        type: 'text'
-    },
-    {
-        fieldProps: { maxLength: 2000 },
-        placeholder: 'Write the announcement message for enrolled students...',
-        label: 'Details & Content',
-        name: 'content',
-        rules: {
-            required: 'Content is required',
-            validate: (value: unknown) => !isBlank(value) || 'Content cannot be empty or whitespace only'
-        },
-        type: 'text-area'
-    },
-    {
-        fieldProps: { label: 'Pin announcement to top of section' },
-        label: 'Pinned',
-        name: 'isPinned',
-        type: 'checkbox'
-    }
-];
-
 export default function SectionAnnouncementPanel({ canManage = true, sectionId }: SectionAnnouncementPanelProps) {
     const [announcements, setAnnouncements] = useState<AnnouncementFeedRow[]>([]);
-    const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [isDiscardOpen, setIsDiscardOpen] = useState(false);
     const [selectedAnnouncement, setSelectedAnnouncement] = useState<AnnouncementFeedRow | null>(null);
-    const { control, handleSubmit, reset, setValue } = useForm<SectionAnnouncementFormValues>({
-        defaultValues: DEFAULT_ANNOUNCEMENT_DRAFT
-    });
-    const composerValues = useWatch({ control });
-    const title = composerValues.title ?? '';
-    const content = composerValues.content ?? '';
-    const isPinned = Boolean(composerValues.isPinned);
-    const [isPosting, setIsPosting] = useState(false);
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
-
-    const currentDraftValues = useMemo(() => ({
-        title,
-        content,
-        isPinned
-    }), [title, content, isPinned]);
-
-    const draftGuard = useObjectDraft({
-        formId: `section-announcement-create-${sectionId}`,
-        values: currentDraftValues,
-        defaultValues: DEFAULT_ANNOUNCEMENT_DRAFT,
-        onRestore: (restored) => {
-            setValue('title', restored.title ?? '');
-            setValue('content', restored.content ?? '');
-            setValue('isPinned', Boolean(restored.isPinned));
-        },
-        enabled: isCreateOpen
-    });
+    const announcementBasePath = useAnnouncementBasePath();
+    const location = useLocation();
+    const navigate = useNavigate();
 
     async function loadAnnouncements() {
         const result = await listSectionAnnouncements(sectionId);
@@ -142,48 +63,16 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
         }
     }, [sectionId]);
 
-    function resetComposer() {
-        draftGuard.clearDraft();
-        setIsDiscardOpen(false);
-        setIsCreateOpen(false);
-        reset(DEFAULT_ANNOUNCEMENT_DRAFT);
-        setIsPosting(false);
-    }
-
-    function handleRequestCloseComposer() {
-        if (draftGuard.hasRealChanges) {
-            setIsDiscardOpen(true);
-            return;
-        }
-        resetComposer();
-    }
-
-    async function postAnnouncement(values: SectionAnnouncementFormValues) {
-        if (isPosting) return;
-
-        setIsPosting(true);
-        const result = await createAnnouncement(
-            {
-                attachments: [],
-                content: values.content.trim(),
-                expires_at: '',
-                is_pinned: Boolean(values.isPinned),
-                section_ids: [sectionId],
-                target_audience: 'Section',
-                title: values.title.trim()
-            },
-            getRoleFromPath(window.location.pathname)
-        );
-        setIsPosting(false);
-
-        if (!result.error) {
-            resetComposer();
-            await loadAnnouncements();
-        }
-    }
-
-    function handlePostAnnouncement() {
-        handleSubmit(postAnnouncement)();
+    /**
+     * Opens the shared announcement form with this section chosen, and comes back here after saving.
+     */
+    function handlePostClick() {
+        navigate(`${announcementBasePath}/new`, {
+            state: {
+                from: `${location.pathname}${location.search}`,
+                sectionId
+            }
+        });
     }
 
     async function handleConfirmDelete() {
@@ -197,7 +86,8 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
             if (!result.error) {
                 await loadAnnouncements();
             }
-        } finally {
+        }
+        finally {
             setIsDeleting(false);
         }
     }
@@ -218,9 +108,14 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
                 {canManage && (
                     <CommonButton
                         size="small"
-                        startIcon={<PlusIcon size={16} weight="bold" />}
+                        startIcon={(
+                            <PlusIcon
+                                size={16}
+                                weight="bold"
+                            />
+                        )}
                         variant="contained"
-                        onClick={() => setIsCreateOpen(true)}
+                        onClick={handlePostClick}
                     >
                         Post Announcement
                     </CommonButton>
@@ -232,7 +127,10 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
                 {announcements.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900/50">
                         <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center mb-3">
-                            <MegaphoneIcon size={26} weight="duotone" />
+                            <MegaphoneIcon
+                                size={26}
+                                weight="duotone"
+                            />
                         </div>
                         <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                             No announcements posted yet
@@ -245,9 +143,9 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
                         {announcements.map((item) => (
                             <div
+                                className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-4.5 shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between cursor-pointer group hover:border-blue-400 dark:hover:border-blue-700"
                                 key={item.id}
                                 onClick={() => setSelectedAnnouncement(item)}
-                                className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-4.5 shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between cursor-pointer group hover:border-blue-400 dark:hover:border-blue-700"
                             >
                                 <div>
                                     {/* Card Header */}
@@ -255,7 +153,10 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
                                         <div className="flex items-center gap-1.5">
                                             {item.is_pinned && (
                                                 <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                                                    <PushPinIcon size={12} weight="fill" />
+                                                    <PushPinIcon
+                                                        size={12}
+                                                        weight="fill"
+                                                    />
                                                     Pinned
                                                 </span>
                                             )}
@@ -263,15 +164,18 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
 
                                         {canManage && (
                                             <button
-                                                type="button"
+                                                className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
                                                 title="Delete Announcement"
+                                                type="button"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setPendingDeleteId(item.id);
                                                 }}
-                                                className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
                                             >
-                                                <TrashIcon size={16} weight="bold" />
+                                                <TrashIcon
+                                                    size={16}
+                                                    weight="bold"
+                                                />
                                             </button>
                                         )}
                                     </div>
@@ -308,75 +212,6 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
             <AnnouncementDetailModal
                 announcement={selectedAnnouncement}
                 onClose={() => setSelectedAnnouncement(null)}
-            />
-
-            {/* Write Modal: Create Section Announcement */}
-            <CommonModal
-                fullWidth
-                maxWidth="sm"
-                open={isCreateOpen}
-                onClose={handleRequestCloseComposer}
-            >
-                <div className="flex flex-col bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden p-5 sm:p-6 gap-4">
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 flex items-center justify-center">
-                                <MegaphoneIcon size={18} weight="duotone" />
-                            </div>
-                            <h3 className="font-bold text-base text-slate-900 dark:text-slate-100">
-                                New Section Announcement
-                            </h3>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={handleRequestCloseComposer}
-                            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                        >
-                            <XIcon size={18} weight="bold" />
-                        </button>
-                    </div>
-
-                    <CommonForm
-                        component="div"
-                        containerClassName="flex flex-col gap-3"
-                        control={control}
-                        enableDraftRecovery={false}
-                        fields={COMPOSER_FIELDS}
-                    />
-
-                    <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-zinc-800">
-                        <CommonButton
-                            size="small"
-                            variant="outlined"
-                            onClick={handleRequestCloseComposer}
-                            disabled={isPosting}
-                        >
-                            Cancel
-                        </CommonButton>
-                        <CommonButton
-                            size="small"
-                            startIcon={<PaperPlaneTiltIcon size={16} weight="bold" />}
-                            variant="contained"
-                            disabled={isPosting}
-                            loading={isPosting}
-                            onClick={handlePostAnnouncement}
-                        >
-                            {isPosting ? 'Posting...' : 'Post Announcement'}
-                        </CommonButton>
-                    </div>
-                </div>
-            </CommonModal>
-
-            <DiscardChangesPromptModal
-                open={isDiscardOpen}
-                onContinueEditing={() => setIsDiscardOpen(false)}
-                onDiscard={resetComposer}
-            />
-
-            <DraftRecoveryPromptModal
-                open={draftGuard.isPromptOpen}
-                onContinue={draftGuard.handleContinue}
-                onDiscard={draftGuard.handleDiscard}
             />
 
             {/* Delete Confirmation Modal */}

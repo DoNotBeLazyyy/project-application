@@ -12,7 +12,7 @@ export interface CommunicationGridCardProps {
     row: CommunicationListRow;
     onEdit?: (id: string) => void;
     onRequestDelete?: (id: string) => void;
-    onToggleSelect?: () => void;
+    onToggleSelect?: VoidFunction;
     onView: (id: string) => void;
     isViewingOnly?: boolean;
 }
@@ -30,10 +30,16 @@ export default function CommunicationGridCard({
 }: CommunicationGridCardProps) {
     let status = 'Announcement';
     if (row.item_type === 'Event') {
-        const isUpcoming = new Date(row.start_at || row.date).getTime() >= Date.now();
-        status = isUpcoming ? 'Upcoming Event' : 'Past Event';
-    } else {
-        status = row.is_pinned ? 'Pinned' : 'Announcement';
+        const isUpcoming = new Date(row.start_at || row.date)
+            .getTime() >= Date.now();
+        status = isUpcoming
+            ? 'Upcoming Event'
+            : 'Past Event';
+    }
+    else {
+        status = row.is_pinned
+            ? 'Pinned'
+            : 'Announcement';
     }
 
     const audienceLabel = row.target_audience === 'Section'
@@ -48,24 +54,37 @@ export default function CommunicationGridCard({
                 <BentoCardActionMenu
                     actions={[
                         {
-                            icon: <EyeIcon size={18} weight="bold" />,
+                            icon: <EyeIcon
+                                size={18}
+                                weight="bold"
+                            />,
                             key: 'view',
                             label: 'View',
                             onClick: () => onView(row.id)
                         },
-                        ...(canManage && onEdit ? [{
-                            icon: <PencilSimpleIcon size={18} weight="bold" />,
-                            key: 'edit',
-                            label: 'Edit',
-                            onClick: () => onEdit(row.id)
-                        }] : []),
-                        ...(canManage && onRequestDelete ? [{
-                            destructive: true,
-                            icon: <TrashIcon size={18} weight="bold" />,
-                            key: 'delete',
-                            label: 'Delete',
-                            onClick: () => onRequestDelete(row.id)
-                        }] : [])
+                        ...(canManage && onEdit
+                            ? [{
+                                icon: <PencilSimpleIcon
+                                    size={18}
+                                    weight="bold"
+                                      />,
+                                key: 'edit',
+                                label: 'Edit',
+                                onClick: () => onEdit(row.id)
+                            }]
+                            : []),
+                        ...(canManage && onRequestDelete
+                            ? [{
+                                destructive: true,
+                                icon: <TrashIcon
+                                    size={18}
+                                    weight="bold"
+                                      />,
+                                key: 'delete',
+                                label: 'Delete',
+                                onClick: () => onRequestDelete(row.id)
+                            }]
+                            : [])
                     ]}
                     ariaLabel="Communication item actions"
                 />
@@ -75,18 +94,24 @@ export default function CommunicationGridCard({
                 { label: 'Type', value: row.item_type },
                 { label: 'Audience', value: audienceLabel },
                 {
-                    label: row.item_type === 'Event' ? 'Starts' : 'Posted',
+                    label: row.item_type === 'Event'
+                        ? 'Starts'
+                        : 'Posted',
                     value: formatShortDate(row.date || row.created_at)
                 },
                 ...(row.attachment_count && row.attachment_count > 0
                     ? [{ label: 'Attachments', value: `${row.attachment_count}` }]
                     : [])
             ]}
-            selectVariant={isViewingOnly || !canManage ? undefined : 'button'}
+            selectVariant={isViewingOnly || !canManage
+                ? undefined
+                : 'button'}
             status={status}
             title={row.title}
             onClick={() => onView(row.id)}
-            onToggleSelect={isViewingOnly || !canManage ? undefined : onToggleSelect}
+            onToggleSelect={isViewingOnly || !canManage
+                ? undefined
+                : onToggleSelect}
         />
     );
 }

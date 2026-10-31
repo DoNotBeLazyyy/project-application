@@ -14,10 +14,12 @@ export function CommonChip({
         outline: 'outline'
     }; // Maps chip UI variants to MUI chip color values
 
-    return <Chip
-        color={variantColorMap[variant]}
-        icon={icon}
-        label={label}
-        size={size}
-    />;
+    return (
+        <Chip
+            color={variantColorMap[variant]}
+            icon={icon}
+            label={label}
+            size={size}
+        />
+    );
 }

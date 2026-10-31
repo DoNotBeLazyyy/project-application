@@ -33,7 +33,8 @@ export function getCourseTypeFormFields(
                 ? undefined
                 : {
                     required: 'Label is required',
-                    validate: (val: any) => Boolean(val && String(val).trim()) || 'Label cannot be empty or whitespace only'
+                    validate: (val: any) => Boolean(val && String(val)
+                        .trim()) || 'Label cannot be empty or whitespace only'
                 },
             type: 'text'
         },
@@ -78,18 +79,22 @@ export default function CourseTypeForm({
             const generated = generateCourseTypeCode(watchedLabel || '');
             if (generated) {
                 setValue('code', generated, { shouldValidate: true, shouldDirty: true });
-            } else if (!watchedLabel?.trim()) {
+            }
+            else if (!watchedLabel?.trim()) {
                 setValue('code', '', { shouldValidate: false, shouldDirty: false });
             }
-        } else {
+        }
+        else {
             if (watchedLabel !== initialLabelRef.current) {
                 const generated = generateCourseTypeCode(watchedLabel || '');
                 if (generated) {
                     setValue('code', generated, { shouldValidate: true, shouldDirty: true });
-                } else if (!watchedLabel?.trim()) {
+                }
+                else if (!watchedLabel?.trim()) {
                     setValue('code', '', { shouldValidate: false, shouldDirty: true });
                 }
-            } else if (initialCodeRef.current !== null && watchedCode !== initialCodeRef.current) {
+            }
+            else if (initialCodeRef.current !== null && watchedCode !== initialCodeRef.current) {
                 setValue('code', initialCodeRef.current, { shouldValidate: true, shouldDirty: false });
             }
         }

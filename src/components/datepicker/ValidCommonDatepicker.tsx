@@ -14,7 +14,9 @@ import {
     blurActiveElementWithin, checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel
 } from '@utils/form.util';
 import { DateTime } from 'luxon';
-import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    ReactNode, useEffect, useMemo, useRef, useState
+} from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export interface CommonDatePickerProps extends Omit<DatePickerProps, 'value' | 'onChange'> {
@@ -179,7 +181,9 @@ export function CommonDatePicker({
         if (value instanceof Date) return DateTime.fromJSDate(value);
         if (typeof value === 'string') {
             const parsed = DateTime.fromISO(value);
-            return parsed.isValid ? parsed : DateTime.fromJSDate(new Date(value));
+            return parsed.isValid
+                ? parsed
+                : DateTime.fromJSDate(new Date(value));
         }
         return null;
     }, [value]);
@@ -226,7 +230,7 @@ export function CommonDatePicker({
         setIsOpen(false);
         blurPickerInput();
         if (typeof props.onClose === 'function') {
-            (props.onClose as () => void)();
+            (props.onClose as VoidFunction)();
         }
         setTimeout(() => {
             isClosing.current = false;
@@ -239,11 +243,9 @@ export function CommonDatePicker({
         }
         setIsOpen(true);
         if (typeof props.onOpen === 'function') {
-            (props.onOpen as () => void)();
+            (props.onOpen as VoidFunction)();
         }
     }
-
-
 
     const labelErrorMessage = label && errorProp
         ? helperTextProp
@@ -270,7 +272,6 @@ export function CommonDatePicker({
 
     return (
         <div
-            ref={containerRef}
             className={
                 classMerge(
                     'flex flex-col gap-(--mui-tokens-spacing-2) relative',
@@ -278,6 +279,7 @@ export function CommonDatePicker({
                     containerClassName
                 )
             }
+            ref={containerRef}
         >
             {label && (
                 <FormLabel
@@ -300,10 +302,14 @@ export function CommonDatePicker({
                     readOnly={readOnly}
                     slotProps={{
                         ...props.slotProps,
-                        ...(resolvedActionBar ? { actionBar: resolvedActionBar } : {}),
+                        ...(resolvedActionBar
+                            ? { actionBar: resolvedActionBar }
+                            : {}),
                         openPickerButton: {
                             disabled: isNonInteractive,
-                            size: resolvedSize === 'large' ? 'medium' : 'small',
+                            size: resolvedSize === 'large'
+                                ? 'medium'
+                                : 'small',
                             edge: false as any,
                             sx: {
                                 margin: 0,
@@ -402,7 +408,9 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
         field: { ref, value, onChange },
         fieldState,
         formState
-    } = useController({ control, name, rules });
+    } = useController({
+        control, name, rules
+    });
     const containerRef = useRef<HTMLDivElement | null>(null);
     const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lastPointerDownTimeRef = useRef<number>(0);
@@ -414,7 +422,9 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
         if ((value as unknown) instanceof Date) return DateTime.fromJSDate(value as Date);
         if (typeof value === 'string') {
             const parsed = DateTime.fromISO(value);
-            return parsed.isValid ? parsed : DateTime.fromJSDate(new Date(value));
+            return parsed.isValid
+                ? parsed
+                : DateTime.fromJSDate(new Date(value));
         }
         return null;
     }, [value]);
@@ -479,7 +489,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
         setIsOpen(false);
         blurPickerInput();
         if (typeof props.onClose === 'function') {
-            (props.onClose as () => void)();
+            (props.onClose as VoidFunction)();
         }
         setTimeout(() => {
             isClosing.current = false;
@@ -492,7 +502,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
         }
         setIsOpen(true);
         if (typeof props.onOpen === 'function') {
-            (props.onOpen as () => void)();
+            (props.onOpen as VoidFunction)();
         }
     }
 
@@ -546,7 +556,6 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
 
     return (
         <div
-            ref={containerRef}
             className={
                 classMerge(
                     'flex flex-col gap-(--mui-tokens-spacing-2) relative',
@@ -554,6 +563,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                     containerClassName
                 )
             }
+            ref={containerRef}
         >
             {label && (
                 <FormLabel
@@ -578,10 +588,14 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                     readOnly={readOnly}
                     slotProps={{
                         ...props.slotProps,
-                        ...(resolvedActionBar ? { actionBar: resolvedActionBar } : {}),
+                        ...(resolvedActionBar
+                            ? { actionBar: resolvedActionBar }
+                            : {}),
                         openPickerButton: {
                             disabled: isNonInteractive,
-                            size: resolvedSize === 'large' ? 'medium' : 'small',
+                            size: resolvedSize === 'large'
+                                ? 'medium'
+                                : 'small',
                             edge: false as any,
                             sx: {
                                 margin: 0,

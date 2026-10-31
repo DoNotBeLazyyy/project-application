@@ -1,11 +1,11 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
+import CommonInput from '@components/input/CommonInput';
+import CommonNumberInput from '@components/input/CommonNumberInput';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
-import CommonInput from '@components/input/CommonInput';
-import CommonNumberInput from '@components/input/CommonNumberInput';
 import { useFormDraft } from '@hooks/useFormDraft';
 import {
     ArrowsClockwiseIcon,
@@ -37,7 +37,8 @@ function buildComponentFields(remainingWeight: number): FormFieldConfig<GradingC
             placeholder: 'e.g. Quizzes',
             rules: {
                 required: 'Required',
-                validate: (value) => String(value ?? '').trim() !== '' || 'Component name cannot be blank.'
+                validate: (value) => String(value ?? '')
+                    .trim() !== '' || 'Component name cannot be blank.'
             },
             type: 'text'
         },
@@ -167,15 +168,19 @@ export default function GradingComponentPanel({
 
     function handleRowNameChange(id: string, name: string) {
         setDraftRows((prev) =>
-            prev.map((row) => (row.id === id ? { ...row, name } : row))
-        );
+            prev.map((row) => (row.id === id
+                ? { ...row, name }
+                : row)));
     }
 
     function handleRowWeightChange(id: string, weightVal: number | undefined) {
-        const cleanWeight = Math.max(0, Math.min(100, weightVal === undefined || isNaN(weightVal) ? 0 : weightVal));
+        const cleanWeight = Math.max(0, Math.min(100, weightVal === undefined || isNaN(weightVal)
+            ? 0
+            : weightVal));
         setDraftRows((prev) =>
-            prev.map((row) => (row.id === id ? { ...row, weight: cleanWeight } : row))
-        );
+            prev.map((row) => (row.id === id
+                ? { ...row, weight: cleanWeight }
+                : row)));
     }
 
     function handleAddDraftRow() {
@@ -213,17 +218,21 @@ export default function GradingComponentPanel({
             for (const row of draftRows) {
                 if (row.isNew) {
                     creates.push({ name: row.name.trim(), weight: row.weight });
-                } else {
+                }
+                else {
                     const original = components.find((c) => c.id === row.id);
                     if (!original || original.name !== row.name.trim() || original.weight !== row.weight) {
-                        updates.push({ id: row.id, name: row.name.trim(), weight: row.weight });
+                        updates.push({
+                            id: row.id, name: row.name.trim(), weight: row.weight
+                        });
                     }
                 }
             }
 
             if (onBatchSave) {
                 await onBatchSave(updates, creates, deletedIds);
-            } else {
+            }
+            else {
                 // Fallback: execute simultaneous promises
                 // 1. Deletions
                 await Promise.all(deletedIds.map((id) => onDelete(id)));
@@ -247,7 +256,8 @@ export default function GradingComponentPanel({
 
             setIsEditMode(false);
             setDeletedIds([]);
-        } finally {
+        }
+        finally {
             setIsSaving(false);
         }
     }
@@ -290,66 +300,94 @@ export default function GradingComponentPanel({
                         )}
                     </div>
                     <span className="text-[11px] text-slate-500 truncate">
-                        {periodName ? `${periodName} Period` : 'Active Period'}{' '}
-                        {periodWeight !== undefined ? `(${periodWeight}% of Final Grade)` : ''}
+                        {periodName
+                            ? `${periodName} Period`
+                            : 'Active Period'}{' '}
+                        {periodWeight !== undefined
+                            ? `(${periodWeight}% of Final Grade)`
+                            : ''}
                     </span>
                 </div>
 
                 {!locked && (
                     <div className="flex items-center gap-1.5 shrink-0">
-                        {isEditMode ? (
-                            <>
-                                <button
-                                    type="button"
-                                    onClick={handleCancelEditMode}
-                                    disabled={isSaving}
-                                    className="p-1.5 text-xs rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                                    title="Cancel Edit Mode"
-                                >
-                                    <XIcon size={16} weight="bold" />
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={handleSimultaneousSave}
-                                    disabled={isSaveDisabled}
-                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                                        isSaveDisabled
-                                            ? 'bg-slate-200 text-slate-400 dark:bg-zinc-800 dark:text-zinc-600 cursor-not-allowed'
-                                            : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
-                                    }`}
-                                >
-                                    <CheckIcon size={14} weight="bold" />
-                                    <span>{isSaving ? 'Saving...' : 'Save'}</span>
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <CommonButton
-                                    size="small"
-                                    startIcon={<PencilSimpleIcon size={13} weight="bold" />}
-                                    variant="outlined"
-                                    onClick={handleEnterEditMode}
-                                >
+                        {isEditMode
+                            ? (
+                                <>
+                                    <button
+                                        className="p-1.5 text-xs rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                                        disabled={isSaving}
+                                        title="Cancel Edit Mode"
+                                        type="button"
+                                        onClick={handleCancelEditMode}
+                                    >
+                                        <XIcon
+                                            size={16}
+                                            weight="bold"
+                                        />
+                                    </button>
+                                    <button
+                                        className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                            isSaveDisabled
+                                                ? 'bg-slate-200 text-slate-400 dark:bg-zinc-800 dark:text-zinc-600 cursor-not-allowed'
+                                                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
+                                        }`}
+                                        disabled={isSaveDisabled}
+                                        type="button"
+                                        onClick={handleSimultaneousSave}
+                                    >
+                                        <CheckIcon
+                                            size={14}
+                                            weight="bold"
+                                        />
+                                        <span>{isSaving
+                                            ? 'Saving...'
+                                            : 'Save'}</span>
+                                    </button>
+                                </>
+                            )
+                            : (
+                                <>
+                                    <CommonButton
+                                        size="small"
+                                        startIcon={(
+                                            <PencilSimpleIcon
+                                                size={13}
+                                                weight="bold"
+                                            />
+                                        )}
+                                        variant="outlined"
+                                        onClick={handleEnterEditMode}
+                                    >
                                     Edit
-                                </CommonButton>
-                                <CommonButton
-                                    disabled={currentTotal >= 100}
-                                    size="small"
-                                    startIcon={<PlusIcon size={14} weight="bold" />}
-                                    variant="contained"
-                                    onClick={() => setIsCreateOpen(true)}
-                                >
+                                    </CommonButton>
+                                    <CommonButton
+                                        disabled={currentTotal >= 100}
+                                        size="small"
+                                        startIcon={(
+                                            <PlusIcon
+                                                size={14}
+                                                weight="bold"
+                                            />
+                                        )}
+                                        variant="contained"
+                                        onClick={() => setIsCreateOpen(true)}
+                                    >
                                     Add
-                                </CommonButton>
-                            </>
-                        )}
+                                    </CommonButton>
+                                </>
+                            )}
                     </div>
                 )}
             </div>
 
             {locked && (
                 <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex gap-2 items-start p-2.5 rounded-xl text-amber-800 dark:text-amber-300">
-                    <LockIcon className="mt-0.5 shrink-0" size={14} weight="bold" />
+                    <LockIcon
+                        className="mt-0.5 shrink-0"
+                        size={14}
+                        weight="bold"
+                    />
                     <span className="text-[11px] leading-tight">
                         Locked: grades have been recorded for this period, so components can no longer be edited.
                     </span>
@@ -359,7 +397,12 @@ export default function GradingComponentPanel({
             {!locked && !isEditMode && components.length === 0 && (
                 <CommonButton
                     size="small"
-                    startIcon={<ArrowsClockwiseIcon size={14} weight="bold" />}
+                    startIcon={(
+                        <ArrowsClockwiseIcon
+                            size={14}
+                            weight="bold"
+                        />
+                    )}
                     variant="outlined"
                     onClick={onReseed}
                 >
@@ -374,8 +417,8 @@ export default function GradingComponentPanel({
                     <div className="flex flex-col gap-2.5">
                         {draftRows.map((row) => (
                             <div
-                                key={row.id}
                                 className="bg-white dark:bg-zinc-900 border border-blue-300 dark:border-blue-700/80 rounded-2xl p-3 shadow-2xs flex flex-col gap-2 transition-all ring-1 ring-blue-500/20"
+                                key={row.id}
                             >
                                 <div className="flex items-start gap-2">
                                     <div className="flex-1 min-w-0">
@@ -407,12 +450,15 @@ export default function GradingComponentPanel({
                                         />
                                     </div>
                                     <button
-                                        type="button"
-                                        title="Delete row"
-                                        onClick={() => handleRemoveDraftRow(row.id, row.isNew)}
                                         className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                                        title="Delete row"
+                                        type="button"
+                                        onClick={() => handleRemoveDraftRow(row.id, row.isNew)}
                                     >
-                                        <TrashIcon size={16} weight="bold" />
+                                        <TrashIcon
+                                            size={16}
+                                            weight="bold"
+                                        />
                                     </button>
                                 </div>
 
@@ -433,71 +479,82 @@ export default function GradingComponentPanel({
 
                         {/* Add Row Button inside Edit Mode */}
                         <button
+                            className="p-2.5 rounded-xl border border-dashed border-slate-300 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 text-slate-600 dark:text-slate-400 hover:text-blue-600 flex items-center justify-center gap-1.5 text-xs font-semibold cursor-pointer transition-colors"
                             type="button"
                             onClick={handleAddDraftRow}
-                            className="p-2.5 rounded-xl border border-dashed border-slate-300 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 text-slate-600 dark:text-slate-400 hover:text-blue-600 flex items-center justify-center gap-1.5 text-xs font-semibold cursor-pointer transition-colors"
                         >
-                            <PlusIcon size={14} weight="bold" />
+                            <PlusIcon
+                                size={14}
+                                weight="bold"
+                            />
                             Add Component Row
                         </button>
                     </div>
                 ) : (
                     /* Read Mode: Bento Cards */
-                    components.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900/40">
-                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    components.length === 0
+                        ? (
+                            <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900/40">
+                                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                                 No Components Configured
-                            </span>
-                            <p className="text-[11px] text-slate-400 mt-1 max-w-[200px]">
+                                </span>
+                                <p className="text-[11px] text-slate-400 mt-1 max-w-[200px]">
                                 Add assessment components to calculate student grades for this period.
-                            </p>
-                        </div>
-                    ) : (
-                        components.map((component) => (
-                            <div
-                                key={component.id}
-                                className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs flex flex-col justify-between gap-2.5 group hover:border-slate-300 dark:hover:border-zinc-700 transition-all"
-                            >
-                                <div className="flex items-center justify-between gap-2">
-                                    <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate">
-                                        {component.name}
-                                    </span>
-                                    <span className="font-mono font-bold text-xs px-2.5 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
-                                        {component.weight}%
-                                    </span>
-                                </div>
-
-                                <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-zinc-800 text-[11px] text-slate-500">
-                                    <span>
-                                        {periodWeight !== undefined
-                                            ? `${((component.weight * periodWeight) / 100).toFixed(1)}% of course`
-                                            : 'Period Component'}
-                                    </span>
-
-                                    {!locked && (
-                                        <div className="flex items-center gap-1">
-                                            <button
-                                                type="button"
-                                                title="Edit all in Edit Mode"
-                                                onClick={handleEnterEditMode}
-                                                className="p-1 text-slate-400 hover:text-blue-600 rounded-md hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                                            >
-                                                <PencilSimpleIcon size={14} weight="bold" />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                title="Delete Component"
-                                                onClick={() => onDelete(component.id)}
-                                                className="p-1 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
-                                            >
-                                                <TrashIcon size={14} weight="bold" />
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
+                                </p>
                             </div>
-                        ))
-                    )
+                        )
+                        : (
+                            components.map((component) => (
+                                <div
+                                    className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs flex flex-col justify-between gap-2.5 group hover:border-slate-300 dark:hover:border-zinc-700 transition-all"
+                                    key={component.id}
+                                >
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate">
+                                            {component.name}
+                                        </span>
+                                        <span className="font-mono font-bold text-xs px-2.5 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
+                                            {component.weight}%
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-zinc-800 text-[11px] text-slate-500">
+                                        <span>
+                                            {periodWeight !== undefined
+                                                ? `${((component.weight * periodWeight) / 100).toFixed(1)}% of course`
+                                                : 'Period Component'}
+                                        </span>
+
+                                        {!locked && (
+                                            <div className="flex items-center gap-1">
+                                                <button
+                                                    className="p-1 text-slate-400 hover:text-blue-600 rounded-md hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                                                    title="Edit all in Edit Mode"
+                                                    type="button"
+                                                    onClick={handleEnterEditMode}
+                                                >
+                                                    <PencilSimpleIcon
+                                                        size={14}
+                                                        weight="bold"
+                                                    />
+                                                </button>
+                                                <button
+                                                    className="p-1 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                                                    title="Delete Component"
+                                                    type="button"
+                                                    onClick={() => onDelete(component.id)}
+                                                >
+                                                    <TrashIcon
+                                                        size={14}
+                                                        weight="bold"
+                                                    />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        )
                 )}
             </div>
 
@@ -534,8 +591,8 @@ export default function GradingComponentPanel({
                         </CommonButton>
                         <CommonButton
                             disabled={createMethods.formState.isSubmitting}
-                            loading={createMethods.formState.isSubmitting}
                             form={CREATE_FORM_ID}
+                            loading={createMethods.formState.isSubmitting}
                             size="small"
                             type="submit"
                             variant="contained"

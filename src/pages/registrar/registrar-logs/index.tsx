@@ -72,7 +72,8 @@ export default function RegistrarLogsPage() {
                 setSelectedLog(found);
                 setIsViewOpen(true);
             }
-        } else {
+        }
+        else {
             setSelectedLog(rowOrId);
             setIsViewOpen(true);
         }
@@ -96,13 +97,14 @@ export default function RegistrarLogsPage() {
             {
                 // A reviewed request keeps its original log card, so show when it was last acted on
                 label: 'Date',
-                value: new Date(String(item.metadata?.reviewed_at ?? item.created_at)).toLocaleString('en-PH', {
-                    day: 'numeric',
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    month: 'short',
-                    year: 'numeric'
-                })
+                value: new Date(String(item.metadata?.reviewed_at ?? item.created_at))
+                    .toLocaleString('en-PH', {
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                    })
             }
         ];
 
@@ -112,7 +114,11 @@ export default function RegistrarLogsPage() {
                 code={item.student_number}
                 hasCheckbox={false}
                 metrics={metrics}
-                status={item.action.includes('APPROVED') ? 'Approved' : item.action.includes('REJECTED') ? 'Rejected' : undefined}
+                status={item.action.includes('APPROVED')
+                    ? 'Approved'
+                    : item.action.includes('REJECTED')
+                        ? 'Rejected'
+                        : undefined}
                 subtitle={item.details}
                 title={formatActionLabel(item.action)}
                 onClick={() => handleOpenView(item)}
@@ -172,7 +178,9 @@ export default function RegistrarLogsPage() {
                             onClick: handleCloseView
                         }
                     },
-                    formContent: selectedLog ? <RegistrarLogDetailContent row={selectedLog} /> : null,
+                    formContent: selectedLog
+                        ? <RegistrarLogDetailContent row={selectedLog} />
+                        : null,
                     open: isViewOpen,
                     onClose: handleCloseView
                 }}

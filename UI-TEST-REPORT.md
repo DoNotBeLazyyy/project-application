@@ -321,3 +321,30 @@ Legend: **BUG** = broken behavior (fixed before moving on; the fix is noted) ·
   submitted and the dashboard shows "Profile Verification Pending Approval".
 - NOTE: year level reads "2nd Year" for this 2024 student in a 3rd-year section. By design: standing is based on the
   completed curriculum, and this student has a failed subject.
+
+## Follow-up fixes (consistency round)
+- BUG (fixed): opening a page while signed out (for example a link from a notification email) always landed on the
+  dashboard after signing in. Sign-in now returns to that page when it belongs to the user's role.
+- BUG (fixed): when a different account signed in on the same browser, the app briefly used the previous account's
+  saved roles. Pages redirected to the wrong role ("Access Denied") and the tab could freeze in a redirect loop. The app
+  now waits for the session check whenever the saved profile belongs to someone else.
+- BUG (fixed): the Sections CSV import double-booked faculty and rooms (the wizard refuses this). Each row is now checked
+  against the term, including rows earlier in the same file; a clash is skipped as SCHEDULE_CONFLICT with the clashing
+  section, day and time (migration `20261031240000`).
+- INCONSISTENCY (fixed): the first-login "Complete Your Profile" prompt used its own field handling (errors under the
+  field, no focus, no mobile or postal check). It now uses the shared form: tooltip errors, focus on the first error,
+  same mobile and postal rules as the profile page.
+- INCONSISTENCY (fixed): "Dismiss special grade flag" kept Confirm disabled with no reason given. The reason is now
+  marked required and Confirm points at it.
+- INCONSISTENCY (fixed): the student Faculty Evaluation page had its own two-button step bar; it now uses the shared
+  stepper header like every wizard.
+- INCONSISTENCY (fixed): a section's Announcements tab had its own small composer (title, content, pin). "Post
+  Announcement" now opens the shared announcement form with the section chosen (attachments, expiry, pin) and returns to
+  the section after saving.
+- INCONSISTENCY (fixed): Section Enrollments had a second term picker bar labelled "Active Academic Term" even for past
+  terms; the term is now chosen in Filter like other pages and shown in the header.
+- INCONSISTENCY (fixed): Grade Release used a desktop table while other list pages use cards; it now shows cards in a grid.
+- INCONSISTENCY (fixed): Faculty Evaluations had an always-open filter panel; it now has search plus a Filters button
+  that opens the shared filter modal.
+- Code standard: ESLint now uses the reference configuration (one JSX prop per line, object and import line breaks,
+  sorted imports), auto-fixed across `src`; function types without arguments use `VoidFunction`.

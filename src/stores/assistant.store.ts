@@ -3,7 +3,7 @@ import { create } from 'zustand';
 interface AssistantState {
     isOpen: boolean;
     setIsOpen: (isOpen: boolean) => void;
-    toggleOpen: () => void;
+    toggleOpen: VoidFunction;
 }
 
 export const useAssistantStore = create<AssistantState>((set) => ({

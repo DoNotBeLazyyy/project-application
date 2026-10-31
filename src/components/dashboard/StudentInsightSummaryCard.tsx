@@ -92,20 +92,24 @@ export default function StudentInsightSummaryCard({
             )
         },
         {
-            icon: riskLevel === 'High' ? <WarningCircleIcon size={22} /> : <ShieldCheckIcon size={22} />,
+            icon: riskLevel === 'High'
+                ? <WarningCircleIcon size={22} />
+                : <ShieldCheckIcon size={22} />,
             iconBg: riskBg,
             iconColor: riskColor,
             label: 'Risk Level',
-            value: insight ? (
-                <CommonBadgeStatus
-                    label={insight.risk.risk_level}
-                    variant={RISK_VARIANT[insight.risk.risk_level]}
-                />
-            ) : (
-                <span className="font-bold text-lg sm:text-xl text-(--mui-palette-text-primary) truncate">
+            value: insight
+                ? (
+                    <CommonBadgeStatus
+                        label={insight.risk.risk_level}
+                        variant={RISK_VARIANT[insight.risk.risk_level]}
+                    />
+                )
+                : (
+                    <span className="font-bold text-lg sm:text-xl text-(--mui-palette-text-primary) truncate">
                     —
-                </span>
-            )
+                    </span>
+                )
         }
     ];
 

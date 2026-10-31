@@ -93,7 +93,10 @@ export default function CommonBreadcrumbs() {
                                     type="button"
                                     onClick={handleOpenMenu}
                                 >
-                                    <DotsThreeIcon size={16} weight="bold" />
+                                    <DotsThreeIcon
+                                        size={16}
+                                        weight="bold"
+                                    />
                                     <span className="font-semibold text-(--mui-tokens-color-brand-700) text-[10px]">
                                     ({intermediateItems.length})
                                     </span>
@@ -101,7 +104,10 @@ export default function CommonBreadcrumbs() {
                                 {separator}
                             </li>
 
-                            <li aria-current="page" className="min-w-0 truncate">
+                            <li
+                                aria-current="page"
+                                className="min-w-0 truncate"
+                            >
                                 <span className="block font-bold max-w-[130px] sm:max-w-[200px] text-(--mui-tokens-color-neutral-900) truncate">
                                     {currentItem.label}
                                 </span>

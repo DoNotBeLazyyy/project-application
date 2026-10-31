@@ -36,7 +36,6 @@ export default function CommonActionModal({
         <CommonModal
             fullScreen={isFullScreen}
             {...props}
-            onClose={handleClose}
             cardProps={{
                 ...cardProps,
                 defaultActionProps: cardProps?.defaultActionProps
@@ -54,7 +53,9 @@ export default function CommonActionModal({
                         flexDirection: 'column',
                         // Halve the header / body / footer rhythm (medium card gap is 0.75rem).
                         gap: '0.375rem',
-                        height: isFullScreen ? '100dvh' : 'auto',
+                        height: isFullScreen
+                            ? '100dvh'
+                            : 'auto',
                         maxHeight: isFullScreen
                             ? '100dvh'
                             : {
@@ -81,6 +82,7 @@ export default function CommonActionModal({
                     ...normalizeSx(cardProps?.sx)
                 ]
             }}
+            onClose={handleClose}
         >
             <div
                 className={

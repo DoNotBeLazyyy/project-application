@@ -3,6 +3,7 @@ import CommonButton from '@components/button/CommonButton';
 import CommonProgressBar from '@components/progress-bar/CommonProgressBar';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import Tooltip from '@mui/material/Tooltip';
+import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
 import {
     CheckCircleIcon,
     ClockIcon,
@@ -13,7 +14,6 @@ import {
     PrinterIcon,
     UserIcon
 } from '@phosphor-icons/react';
-import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
 import { getPrograms } from '@services/program/program.service';
 import { assignMyProgram, getCurriculumAudit } from '@services/records.service';
 import { registrarAssignStudentProgramAndYear } from '@services/registrar-verification.service';
@@ -225,7 +225,8 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
         const result = await getCurriculumAudit(studentId);
         if (result.data) {
             setAudit(result.data);
-        } else {
+        }
+        else {
             setAudit(null);
         }
         setIsLoaded(true);
@@ -269,14 +270,16 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
         if (studentId) {
             const result = await registrarAssignStudentProgramAndYear(studentId, selectedProgramId, selectedYearLevel);
             error = result.error;
-        } else {
+        }
+        else {
             const result = await assignMyProgram(selectedProgramId, selectedYearLevel);
             error = result.error;
         }
         setIsAssigning(false);
 
         if (!error) {
-            useToastStore.getState().showToast('Program assigned successfully.', 'success');
+            useToastStore.getState()
+                .showToast('Program assigned successfully.', 'success');
             await fetchAudit();
         }
     }
@@ -342,7 +345,9 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
                             variant="contained"
                             onClick={handleAssignProgram}
                         >
-                            {isAssigning ? 'Assigning Program...' : 'Assign Program'}
+                            {isAssigning
+                                ? 'Assigning Program...'
+                                : 'Assign Program'}
                         </CommonButton>
                     </div>
                 </div>
@@ -406,7 +411,10 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
                 <div className="bg-slate-50/80 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl gap-3 shadow-2xs">
                     <div className="flex items-center gap-3">
                         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 shrink-0">
-                            <UserIcon size={22} weight="bold" />
+                            <UserIcon
+                                size={22}
+                                weight="bold"
+                            />
                         </div>
                         <div className="flex flex-col min-w-0">
                             <span className="font-bold text-slate-900 dark:text-slate-100 text-base">

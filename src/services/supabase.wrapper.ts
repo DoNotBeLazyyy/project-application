@@ -113,7 +113,9 @@ export async function callRpc<T>(
             }
             return {
                 data: null,
-                error: { code: null, message: data.message, status: null }
+                error: {
+                    code: null, message: data.message, status: null
+                }
             };
         }
 
@@ -199,7 +201,9 @@ async function parseFunctionError(error: unknown): Promise<ServiceErrorProps> {
         };
     }
     catch {
-        return { message: 'The service is unavailable right now.', code: null, status };
+        return {
+            message: 'The service is unavailable right now.', code: null, status
+        };
     }
 }
 
@@ -235,7 +239,9 @@ export async function callFunction<T>(
             }
             return {
                 data: null,
-                error: { code: null, message: data.message, status: null }
+                error: {
+                    code: null, message: data.message, status: null
+                }
             };
         }
 

@@ -9,11 +9,11 @@ import { useProgramTableConfig } from '@pages/dean/program-management/useProgram
 import {
     bulkCreatePrograms, bulkDeletePrograms, createProgram, deleteProgram, getProgramById, listPrograms, updateProgram
 } from '@services/program/program.service';
+import { useToastStore } from '@stores/toast.store';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { SortStringDto } from '@type/http.type';
 import { ProgramBulkRow, ProgramFilterValues, ProgramFormValues, ProgramListRow } from '@type/program/program.type';
 import { generateProgramCode } from '@utils/entity-code.util';
-import { useToastStore } from '@stores/toast.store';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -42,20 +42,48 @@ const defaultFormValues: ProgramFormValues = {
 // department / program level by code or name) plus fn_bulk_create_curriculum_map for the optional curriculum
 // columns - repeat the program columns on extra rows to map more courses to one program.
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'code', label: 'Program Code', hint: 'Optional - new unique code, auto-generated from the name if blank, e.g. BSIT', sample: 'BSIT', required: false },
-    { key: 'name', label: 'Program Name', hint: 'e.g. Bachelor of Science in Information Technology', sample: 'Bachelor of Science in Information Technology' },
-    { key: 'department_code', label: 'Department Code', hint: 'Department code or name, e.g. COCS', sample: 'COCS' },
-    { key: 'program_level_code', label: 'Program Level Code', hint: 'Program level code or name, e.g. UG or GRAD', sample: 'UG' },
-    { key: 'years_duration', label: 'Years Duration', hint: 'Whole number from 1 to 8, e.g. 4', sample: '4' },
-    { key: 'total_units', label: 'Total Units', hint: 'Optional number, e.g. 160', sample: '160', required: false },
-    { key: 'description', label: 'Description', hint: 'Optional', sample: 'Four-year information technology degree program', required: false },
-    { key: 'is_active', label: 'Is Active', hint: 'Optional - true or false, defaults to true', sample: 'true', required: false },
-    { key: 'course_code', label: 'Course Code', hint: 'Optional curriculum entry - existing course of the same department, e.g. COCS101', sample: 'COCS101', required: false },
-    { key: 'year_level', label: 'Year Level', hint: 'Curriculum year from 1 to 6, defaults to 1', sample: '1', required: false },
-    { key: 'term_type_code', label: 'Term Type Code', hint: '1ST_SEM, 2ND_SEM or SUMMER (or the term type name), defaults to 1ST_SEM', sample: '1ST_SEM', required: false },
-    { key: 'school_year_code', label: 'Curriculum Revision Year Code', hint: 'Optional existing school year code, e.g. AY-2026-2027', sample: '', required: false },
-    { key: 'sequence', label: 'Sequence', hint: 'Optional whole number of 1 or more, defaults to 1', sample: '1', required: false },
-    { key: 'is_elective', label: 'Is Elective', hint: 'Optional - true or false, defaults to false', sample: 'false', required: false }
+    {
+        key: 'code', label: 'Program Code', hint: 'Optional - new unique code, auto-generated from the name if blank, e.g. BSIT', sample: 'BSIT', required: false
+    },
+    {
+        key: 'name', label: 'Program Name', hint: 'e.g. Bachelor of Science in Information Technology', sample: 'Bachelor of Science in Information Technology'
+    },
+    {
+        key: 'department_code', label: 'Department Code', hint: 'Department code or name, e.g. COCS', sample: 'COCS'
+    },
+    {
+        key: 'program_level_code', label: 'Program Level Code', hint: 'Program level code or name, e.g. UG or GRAD', sample: 'UG'
+    },
+    {
+        key: 'years_duration', label: 'Years Duration', hint: 'Whole number from 1 to 8, e.g. 4', sample: '4'
+    },
+    {
+        key: 'total_units', label: 'Total Units', hint: 'Optional number, e.g. 160', sample: '160', required: false
+    },
+    {
+        key: 'description', label: 'Description', hint: 'Optional', sample: 'Four-year information technology degree program', required: false
+    },
+    {
+        key: 'is_active', label: 'Is Active', hint: 'Optional - true or false, defaults to true', sample: 'true', required: false
+    },
+    {
+        key: 'course_code', label: 'Course Code', hint: 'Optional curriculum entry - existing course of the same department, e.g. COCS101', sample: 'COCS101', required: false
+    },
+    {
+        key: 'year_level', label: 'Year Level', hint: 'Curriculum year from 1 to 6, defaults to 1', sample: '1', required: false
+    },
+    {
+        key: 'term_type_code', label: 'Term Type Code', hint: '1ST_SEM, 2ND_SEM or SUMMER (or the term type name), defaults to 1ST_SEM', sample: '1ST_SEM', required: false
+    },
+    {
+        key: 'school_year_code', label: 'Curriculum Revision Year Code', hint: 'Optional existing school year code, e.g. AY-2026-2027', sample: '', required: false
+    },
+    {
+        key: 'sequence', label: 'Sequence', hint: 'Optional whole number of 1 or more, defaults to 1', sample: '1', required: false
+    },
+    {
+        key: 'is_elective', label: 'Is Elective', hint: 'Optional - true or false, defaults to false', sample: 'false', required: false
+    }
 ];
 
 export default function ProgramManagement() {
@@ -122,7 +150,7 @@ export default function ProgramManagement() {
         setIsUpdateOpen(true);
     }
 
-    async function handleSwitchToEdit(id: string, step: number = 1) {
+    async function handleSwitchToEdit(id: string, step = 1) {
         setIsViewOpen(false);
         setEditStep(step);
         await loadIntoForm(id);
@@ -160,7 +188,8 @@ export default function ProgramManagement() {
             createMethods.reset(defaultFormValues);
             setIsCreateOpen(false);
             setActiveFilters((prev) => ({ ...prev } as ProgramFilterValues));
-        } else {
+        }
+        else {
             showToast(result.error.message || 'Failed to save program', 'error');
         }
     }
@@ -183,14 +212,17 @@ export default function ProgramManagement() {
             ...values,
             code: values.code.trim(),
             name: values.name.trim(),
-            description: values.description ? values.description.trim() : ''
+            description: values.description
+                ? values.description.trim()
+                : ''
         });
 
         if (!result.error) {
             showToast('Program and curriculum map updated successfully!', 'success');
             handleCloseUpdate();
             setActiveFilters((prev) => ({ ...prev } as ProgramFilterValues));
-        } else {
+        }
+        else {
             showToast(result.error.message || 'Failed to update program', 'error');
         }
     }
@@ -300,8 +332,8 @@ export default function ProgramManagement() {
             {/* Create Program Wizard Modal */}
             {isCreateOpen && (
                 <ProgramWizardModal
-                    open={isCreateOpen}
                     methods={createMethods}
+                    open={isCreateOpen}
                     onClose={() => {
                         createMethods.reset(defaultFormValues);
                         setIsCreateOpen(false);
@@ -313,11 +345,11 @@ export default function ProgramManagement() {
             {/* Edit Program Wizard Modal */}
             {isUpdateOpen && (
                 <ProgramWizardModal
-                    open={isUpdateOpen}
                     initialStep={editStep}
                     isEditing
-                    programId={selectedId ?? undefined}
                     methods={updateMethods}
+                    open={isUpdateOpen}
+                    programId={selectedId ?? undefined}
                     onClose={handleCloseUpdate}
                     onSubmit={handleUpdateSubmit}
                 />
@@ -326,10 +358,10 @@ export default function ProgramManagement() {
             {/* View Program Wizard Modal */}
             {isViewOpen && (
                 <ProgramWizardModal
-                    open={isViewOpen}
-                    readOnly
-                    programId={selectedId ?? undefined}
                     methods={updateMethods}
+                    open={isViewOpen}
+                    programId={selectedId ?? undefined}
+                    readOnly
                     onClose={handleCloseView}
                     onSubmit={function() {}}
                     onSwitchToEdit={function(step) {

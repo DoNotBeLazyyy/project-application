@@ -7,7 +7,9 @@ import {
 } from '@hooks/useFormDraft';
 import { classMerge } from '@utils/css.util';
 import { normalizeSx } from '@utils/theme.util';
-import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    ReactNode, useCallback, useEffect, useMemo, useRef, useState
+} from 'react';
 
 export interface CommonFormModalProps extends CommonActionModalProps {
     confirmText?: string;
@@ -16,7 +18,7 @@ export interface CommonFormModalProps extends CommonActionModalProps {
     isDirty?: boolean;
     isLoading?: boolean;
     onConfirmClose?: () => boolean;
-    onReset?: () => void;
+    onReset?: VoidFunction;
     requireRealChanges?: boolean;
 }
 
@@ -43,7 +45,7 @@ export default function CommonFormModal({
     const [isDiscardPromptOpen, setIsDiscardPromptOpen] = useState(false);
     const [, setDraftVersion] = useState(0);
     const registeredDraftsRef = useRef<Map<string, FormDraftModalRegistration>>(new Map());
-    const clearCallbacksRef = useRef<Map<string, () => void>>(new Map());
+    const clearCallbacksRef = useRef<Map<string, VoidFunction>>(new Map());
 
     const draftContextValue = useMemo(() => ({
         registerDraft(id: string, entry: FormDraftModalRegistration) {
@@ -66,7 +68,8 @@ export default function CommonFormModal({
         registeredDraftsRef.current.forEach((entry) => entry.clearDraft());
         clearCallbacksRef.current.forEach((clearFn) => clearFn());
         if (formId) {
-            getFormDraftByFormId(formId)?.clearDraft();
+            getFormDraftByFormId(formId)
+                ?.clearDraft();
         }
     }, [formId]);
 
@@ -80,7 +83,9 @@ export default function CommonFormModal({
         prevOpenRef.current = Boolean(props.open);
     }, [props.open, clearAllDrafts]);
 
-    const formIdDraft = formId ? getFormDraftByFormId(formId) : undefined;
+    const formIdDraft = formId
+        ? getFormDraftByFormId(formId)
+        : undefined;
     const registeredList = Array.from(registeredDraftsRef.current.values());
     const hasDraftRegistrations = registeredList.length > 0 || Boolean(formIdDraft);
     const hasRegisteredRealChanges = registeredList.some((d) => d.hasRealChanges) || Boolean(formIdDraft?.hasRealChanges);
@@ -91,7 +96,9 @@ export default function CommonFormModal({
     const hasRealChanges = !hideCancel && !isFilterOrSortModal && (
         hasDraftRegistrations
             ? hasRegisteredRealChanges
-            : (_onConfirmClose ? !_onConfirmClose() : Boolean(isDirty))
+            : (_onConfirmClose
+                ? !_onConfirmClose()
+                : Boolean(isDirty))
     );
 
     const isConfirmDisabledByDirty = hasDraftRegistrations
@@ -169,7 +176,9 @@ export default function CommonFormModal({
                             disabled: isModalLoading,
                             ...resetProps
                         }
-                        : (resetProps ? { ...resetProps, disabled: isModalLoading || Boolean(resetProps.disabled) } : undefined)
+                        : (resetProps
+                            ? { ...resetProps, disabled: isModalLoading || Boolean(resetProps.disabled) }
+                            : undefined)
                 }}
                 fullScreen={fullScreen}
                 hideCancel={hideCancel}

@@ -13,7 +13,7 @@ export interface InputClearAdornmentProps {
     iconSize?: number;
 
     // Callback invoked when the clear button is pressed
-    onClear: () => void;
+    onClear: VoidFunction;
 }
 
 /**

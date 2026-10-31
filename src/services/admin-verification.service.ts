@@ -14,11 +14,17 @@ export async function listStaffProfileRequests(
 ): Promise<ServiceResult<CommonListResDto<StaffProfileRequestRow>>> {
     return callRpc<CommonListResDto<StaffProfileRequestRow>>('fn_list_staff_profile_requests', {
         p_page: page,
-        p_role_code: roleCode && roleCode !== 'All' ? roleCode : null,
+        p_role_code: roleCode && roleCode !== 'All'
+            ? roleCode
+            : null,
         p_search: search || null,
         p_size: size,
-        p_sort: sort.length > 0 ? sort : null,
-        p_status: status && status !== 'All' ? status : null
+        p_sort: sort.length > 0
+            ? sort
+            : null,
+        p_status: status && status !== 'All'
+            ? status
+            : null
     });
 }
 

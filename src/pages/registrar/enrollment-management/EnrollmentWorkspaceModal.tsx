@@ -10,6 +10,7 @@ import { InputAdornment } from '@mui/material';
 import AvailableSectionBentoCard from '@pages/registrar/enrollment-management/AvailableSectionBentoCard';
 import EligibleSectionFilterBar from '@pages/registrar/enrollment-management/EligibleSectionFilterBar';
 import StudentLoadBentoCard, { StudentLoadCardItem } from '@pages/registrar/enrollment-management/StudentLoadBentoCard';
+import CreditTransfereeCoursesModal from '@pages/shared/records/CreditTransfereeCoursesModal';
 import {
     ArrowsClockwiseIcon,
     CalendarBlankIcon,
@@ -22,7 +23,6 @@ import {
     WarningCircleIcon,
     XIcon
 } from '@phosphor-icons/react';
-import CreditTransfereeCoursesModal from '@pages/shared/records/CreditTransfereeCoursesModal';
 import { bulkEnrollStudent, dropEnrollment, getEnrollmentStudentDetail, listEligibleSections } from '@services/enrollment.service';
 import {
     EligibleSectionFilterValues,
@@ -44,8 +44,8 @@ interface EnrollmentWorkspaceModalProps {
     open: boolean;
     studentId: string | null;
     termOptions: CommonSelectOption[];
-    onClose: () => void;
-    onEnrolled: () => void;
+    onClose: VoidFunction;
+    onEnrolled: VoidFunction;
 }
 
 const defaultOverrideValues: EnrollmentOverrideValues = {
@@ -112,7 +112,9 @@ export default function EnrollmentWorkspaceModal({
     const sectionFilters = useMemo<EligibleSectionFilterValues>(function() {
         return {
             scope: scope ?? defaultSectionFilters.scope,
-            year_levels: scope === 'all' ? yearLevels ?? [] : [],
+            year_levels: scope === 'all'
+                ? yearLevels ?? []
+                : [],
             include_full: Boolean(includeFull),
             include_prerequisite_gaps: Boolean(includePrerequisiteGaps),
             include_conflicts: Boolean(includeConflicts)
@@ -138,7 +140,8 @@ export default function EnrollmentWorkspaceModal({
             if (sectionsResult.data) {
                 setAvailableSections(sectionsResult.data.rows ?? []);
             }
-        } finally {
+        }
+        finally {
             setIsAvailableLoading(false);
         }
     }, [studentId, effectiveTermId, activeSearch, sectionFilters]);
@@ -274,9 +277,9 @@ export default function EnrollmentWorkspaceModal({
         try {
             // 1. Process drops first
             if (markedDropIds.size > 0) {
-                const dropPromises = Array.from(markedDropIds).map((enrollmentId) =>
-                    dropEnrollment(enrollmentId, 'Dropped via registrar workspace')
-                );
+                const dropPromises = Array.from(markedDropIds)
+                    .map((enrollmentId) =>
+                        dropEnrollment(enrollmentId, 'Dropped via registrar workspace'));
                 const dropResults = await Promise.all(dropPromises);
                 const dropError = dropResults.find((res) => res.error);
                 if (dropError) {
@@ -310,9 +313,13 @@ export default function EnrollmentWorkspaceModal({
             setShowSaveConfirm(false);
             await loadWorkspace();
             onEnrolled();
-        } catch (err: unknown) {
-            setSaveErrorMessage(err instanceof Error ? err.message : 'An unexpected error occurred while saving.');
-        } finally {
+        }
+        catch (err: unknown) {
+            setSaveErrorMessage(err instanceof Error
+                ? err.message
+                : 'An unexpected error occurred while saving.');
+        }
+        finally {
             setIsSaving(false);
         }
     }
@@ -339,16 +346,21 @@ export default function EnrollmentWorkspaceModal({
                         onClick: handleRequestClose
                     },
                     confirmProps: {
-                        children: isSaving ? 'Saving Changes...' : (
-                            <div className="flex items-center gap-1.5">
-                                <CheckCircleIcon size={16} weight="bold" />
-                                <span>
-                                    {totalChanges > 0
-                                        ? `Save Changes (${totalChanges})`
-                                        : 'No Changes to Save'}
-                                </span>
-                            </div>
-                        ),
+                        children: isSaving
+                            ? 'Saving Changes...'
+                            : (
+                                <div className="flex items-center gap-1.5">
+                                    <CheckCircleIcon
+                                        size={16}
+                                        weight="bold"
+                                    />
+                                    <span>
+                                        {totalChanges > 0
+                                            ? `Save Changes (${totalChanges})`
+                                            : 'No Changes to Save'}
+                                    </span>
+                                </div>
+                            ),
                         disabled: totalChanges === 0 || isSaving,
                         loading: isSaving,
                         onClick: () => setShowSaveConfirm(true)
@@ -362,7 +374,11 @@ export default function EnrollmentWorkspaceModal({
                     <div className="bg-(--mui-palette-action-hover)/40 border border-(--mui-palette-divider) flex flex-wrap gap-4 items-center justify-between p-3.5 rounded-xl">
                         <div className="flex flex-wrap gap-4 sm:gap-6 items-center">
                             <div className="flex items-center gap-2.5">
-                                <IdentificationCardIcon size={24} className="text-(--mui-palette-primary-main) shrink-0" weight="bold" />
+                                <IdentificationCardIcon
+                                    className="text-(--mui-palette-primary-main) shrink-0"
+                                    size={24}
+                                    weight="bold"
+                                />
                                 <div className="flex flex-col">
                                     <span className="text-[11px] text-(--mui-palette-text-secondary) font-medium">Student</span>
                                     <span className="font-bold text-(--mui-palette-text-primary) text-sm">
@@ -375,14 +391,20 @@ export default function EnrollmentWorkspaceModal({
                             </div>
 
                             <div className="flex items-center gap-2.5 sm:pl-4 sm:border-l sm:border-(--mui-palette-divider)">
-                                <GraduationCapIcon size={24} className="text-(--mui-palette-info-main) shrink-0" weight="bold" />
+                                <GraduationCapIcon
+                                    className="text-(--mui-palette-info-main) shrink-0"
+                                    size={24}
+                                    weight="bold"
+                                />
                                 <div className="flex flex-col">
                                     <span className="text-[11px] text-(--mui-palette-text-secondary) font-medium">Program &amp; Year</span>
                                     <span className="font-semibold text-(--mui-palette-text-primary) text-xs">
                                         {detail?.program_name ?? detail?.program_code ?? '—'}
                                     </span>
                                     <span className="text-xs text-(--mui-palette-text-secondary)">
-                                        {detail ? `Year Level ${detail.year_level}` : '—'}
+                                        {detail
+                                            ? `Year Level ${detail.year_level}`
+                                            : '—'}
                                     </span>
                                 </div>
                             </div>
@@ -393,7 +415,12 @@ export default function EnrollmentWorkspaceModal({
                             <CommonButton
                                 color="secondary"
                                 size="small"
-                                startIcon={<CertificateIcon size={16} weight="bold" />}
+                                startIcon={(
+                                    <CertificateIcon
+                                        size={16}
+                                        weight="bold"
+                                    />
+                                )}
                                 variant="outlined"
                                 onClick={() => setIsCreditModalOpen(true)}
                             >
@@ -421,15 +448,22 @@ export default function EnrollmentWorkspaceModal({
                     {saveErrorMessage && (
                         <div className="bg-red-500/10 border border-red-500/40 text-red-700 dark:text-red-300 p-3 rounded-lg text-xs flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <WarningCircleIcon size={18} weight="fill" className="text-red-600 shrink-0" />
+                                <WarningCircleIcon
+                                    className="text-red-600 shrink-0"
+                                    size={18}
+                                    weight="fill"
+                                />
                                 <span>{saveErrorMessage}</span>
                             </div>
                             <button
-                                type="button"
                                 className="text-red-600 hover:text-red-800 cursor-pointer"
+                                type="button"
                                 onClick={() => setSaveErrorMessage(null)}
                             >
-                                <XIcon size={14} weight="bold" />
+                                <XIcon
+                                    size={14}
+                                    weight="bold"
+                                />
                             </button>
                         </div>
                     )}
@@ -437,12 +471,12 @@ export default function EnrollmentWorkspaceModal({
                     {/* Mobile Viewport Segmented Switcher (Visible only on < lg) */}
                     <div className="flex lg:hidden rounded-lg bg-(--mui-palette-action-hover) p-1 gap-1 shrink-0">
                         <button
-                            type="button"
                             className={`flex-1 py-1.5 px-3 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                                 mobileTab === 'load'
                                     ? 'bg-(--mui-palette-background-paper) text-(--mui-palette-text-primary) shadow-sm'
                                     : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
                             }`}
+                            type="button"
                             onClick={() => setMobileTab('load')}
                         >
                             <span>Student Load</span>
@@ -461,12 +495,12 @@ export default function EnrollmentWorkspaceModal({
                             )}
                         </button>
                         <button
-                            type="button"
                             className={`flex-1 py-1.5 px-3 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                                 mobileTab === 'available'
                                     ? 'bg-(--mui-palette-background-paper) text-(--mui-palette-text-primary) shadow-sm'
                                     : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
                             }`}
+                            type="button"
                             onClick={() => setMobileTab('available')}
                         >
                             <span>Available Sections</span>
@@ -481,7 +515,11 @@ export default function EnrollmentWorkspaceModal({
                         {/* ================================================================= */}
                         {/* LEFT: Student's Load Bento Workspace                              */}
                         {/* ================================================================= */}
-                        <div className={`flex-1 min-w-0 flex-col gap-3 overflow-hidden ${mobileTab === 'load' ? 'flex' : 'hidden lg:flex'}`}>
+                        <div
+                            className={`flex-1 min-w-0 flex-col gap-3 overflow-hidden ${mobileTab === 'load'
+                                ? 'flex'
+                                : 'hidden lg:flex'}`}
+                        >
                             {/* Schedule & Load Header with Real-Time Counters */}
                             <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-(--mui-palette-divider)">
                                 <div className="flex flex-col">
@@ -528,7 +566,10 @@ export default function EnrollmentWorkspaceModal({
                             <div className="flex-1 overflow-y-auto pr-1">
                                 {currentActiveLoad.length === 0 && stagedNewSections.length === 0 ? (
                                     <div className="border border-dashed border-(--mui-palette-divider) rounded-xl p-12 text-center flex flex-col items-center justify-center gap-2 text-(--mui-palette-text-secondary)">
-                                        <CalendarBlankIcon size={36} className="text-(--mui-palette-text-disabled)" />
+                                        <CalendarBlankIcon
+                                            className="text-(--mui-palette-text-disabled)"
+                                            size={36}
+                                        />
                                         <span className="font-semibold text-sm">No Enrolled or Staged Sections</span>
                                         <span className="text-xs max-w-sm">
                                             This student is not enrolled in any sections for this term. Select available sections from the sidebar on the right to build their load.
@@ -555,7 +596,9 @@ export default function EnrollmentWorkspaceModal({
                                                 <StudentLoadBentoCard
                                                     item={item}
                                                     key={row.enrollment_id}
-                                                    state={isMarkedDrop ? 'dropped' : 'enrolled'}
+                                                    state={isMarkedDrop
+                                                        ? 'dropped'
+                                                        : 'enrolled'}
                                                     onDrop={() => handleMarkDrop(row.enrollment_id)}
                                                     onUndoDrop={() => handleUndoDrop(row.enrollment_id)}
                                                 />
@@ -595,7 +638,11 @@ export default function EnrollmentWorkspaceModal({
                             {(hasSelectedConflict || hasSelectedPrerequisiteGap) && (
                                 <div className="bg-(--mui-palette-warning-50)/30 border border-(--mui-palette-warning-main)/40 rounded-xl p-3 flex flex-col gap-2 shrink-0">
                                     <span className="font-semibold text-xs text-(--mui-palette-warning-dark) flex items-center gap-1.5">
-                                        <WarningCircleIcon size={16} weight="fill" className="text-(--mui-palette-warning-main)" />
+                                        <WarningCircleIcon
+                                            className="text-(--mui-palette-warning-main)"
+                                            size={16}
+                                            weight="fill"
+                                        />
                                         <span>Registrar Authorization Required for Staged Sections</span>
                                     </span>
 
@@ -628,7 +675,8 @@ export default function EnrollmentWorkspaceModal({
                                                     placeholder="State the reason for authorizing this schedule overlap..."
                                                     rules={{
                                                         required: 'Conflict authorization reason is required',
-                                                        validate: (value) => String(value ?? '').trim() !== '' || 'Conflict authorization reason cannot be blank'
+                                                        validate: (value) => String(value ?? '')
+                                                            .trim() !== '' || 'Conflict authorization reason cannot be blank'
                                                     }}
                                                 />
                                             )}
@@ -641,7 +689,11 @@ export default function EnrollmentWorkspaceModal({
                         {/* ================================================================= */}
                         {/* RIGHT: Available Section Choices Sidebar                          */}
                         {/* ================================================================= */}
-                        <div className={`w-full lg:w-96 xl:w-[26rem] shrink-0 flex-col gap-3 lg:border-t-0 lg:border-l border-(--mui-palette-divider) lg:pt-0 lg:pl-5 overflow-hidden ${mobileTab === 'available' ? 'flex' : 'hidden lg:flex'}`}>
+                        <div
+                            className={`w-full lg:w-96 xl:w-[26rem] shrink-0 flex-col gap-3 lg:border-t-0 lg:border-l border-(--mui-palette-divider) lg:pt-0 lg:pl-5 overflow-hidden ${mobileTab === 'available'
+                                ? 'flex'
+                                : 'hidden lg:flex'}`}
+                        >
                             {/* Sidebar Header */}
                             <div className="flex flex-col gap-1.5">
                                 <div className="flex items-center justify-between">
@@ -678,7 +730,9 @@ export default function EnrollmentWorkspaceModal({
                                         }}
                                     />
                                     <CommonButton
-                                        color={showFilters ? 'primary' : 'inherit'}
+                                        color={showFilters
+                                            ? 'primary'
+                                            : 'inherit'}
                                         size="small"
                                         title="Toggle advanced curriculum filters"
                                         variant="outlined"
@@ -709,8 +763,8 @@ export default function EnrollmentWorkspaceModal({
                                     </span>
                                     {sectionFilters.scope === 'recommended' && (
                                         <button
-                                            type="button"
                                             className="text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer"
+                                            type="button"
                                             onClick={() => filterMethods.setValue('scope', 'all')}
                                         >
                                             View all courses
@@ -721,36 +775,40 @@ export default function EnrollmentWorkspaceModal({
 
                             {/* Scrollable Bento Cards List for Sidebar */}
                             <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-2.5">
-                                {isAvailableLoading ? (
-                                    <div className="py-12 text-center text-xs text-(--mui-palette-text-secondary)">
+                                {isAvailableLoading
+                                    ? (
+                                        <div className="py-12 text-center text-xs text-(--mui-palette-text-secondary)">
                                         Loading available sections...
-                                    </div>
-                                ) : availableSections.length === 0 ? (
-                                    <div className="border border-dashed border-(--mui-palette-divider) rounded-xl p-8 text-center flex flex-col items-center justify-center gap-1 text-(--mui-palette-text-secondary)">
-                                        <span className="font-semibold text-xs">No sections available</span>
-                                        <span className="text-[11px]">
-                                            {sectionFilters.scope === 'recommended'
-                                                ? 'No prescribed sections found for Year ' + (detail?.year_level ?? '') + '. Switch scope to "All curriculum courses" to view alternatives.'
-                                                : 'No sections match the current filters.'}
-                                        </span>
-                                    </div>
-                                ) : (
-                                    availableSections.map(function(sec) {
-                                        const isEnrolled = enrolledSectionIds.has(sec.section_id);
-                                        const isStaged = stagedSectionIds.has(sec.section_id);
+                                        </div>
+                                    )
+                                    : availableSections.length === 0
+                                        ? (
+                                            <div className="border border-dashed border-(--mui-palette-divider) rounded-xl p-8 text-center flex flex-col items-center justify-center gap-1 text-(--mui-palette-text-secondary)">
+                                                <span className="font-semibold text-xs">No sections available</span>
+                                                <span className="text-[11px]">
+                                                    {sectionFilters.scope === 'recommended'
+                                                        ? 'No prescribed sections found for Year ' + (detail?.year_level ?? '') + '. Switch scope to "All curriculum courses" to view alternatives.'
+                                                        : 'No sections match the current filters.'}
+                                                </span>
+                                            </div>
+                                        )
+                                        : (
+                                            availableSections.map(function(sec) {
+                                                const isEnrolled = enrolledSectionIds.has(sec.section_id);
+                                                const isStaged = stagedSectionIds.has(sec.section_id);
 
-                                        return (
-                                            <AvailableSectionBentoCard
-                                                isEnrolled={isEnrolled}
-                                                isStaged={isStaged}
-                                                key={sec.section_id}
-                                                section={sec}
-                                                onSelect={handleStageSection}
-                                                onUnstage={handleUnstageSection}
-                                            />
-                                        );
-                                    })
-                                )}
+                                                return (
+                                                    <AvailableSectionBentoCard
+                                                        isEnrolled={isEnrolled}
+                                                        isStaged={isStaged}
+                                                        key={sec.section_id}
+                                                        section={sec}
+                                                        onSelect={handleStageSection}
+                                                        onUnstage={handleUnstageSection}
+                                                    />
+                                                );
+                                            })
+                                        )}
                             </div>
                         </div>
                     </div>
@@ -765,7 +823,9 @@ export default function EnrollmentWorkspaceModal({
                         onClick: () => setShowSaveConfirm(false)
                     },
                     confirmProps: {
-                        children: isSaving ? 'Applying...' : 'Yes, Apply Changes',
+                        children: isSaving
+                            ? 'Applying...'
+                            : 'Yes, Apply Changes',
                         disabled: isSaving,
                         loading: isSaving,
                         onClick: overrideMethods.handleSubmit(handleExecuteSave, handleSaveValidationFailed)

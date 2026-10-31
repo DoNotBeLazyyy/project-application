@@ -19,7 +19,7 @@ export interface CommonToastEditorProps {
     previewStyle?: 'tab' | 'vertical';
     storageBucket?: 'materials' | 'announcements' | 'events';
     value?: string;
-    onBlur?: () => void;
+    onBlur?: VoidFunction;
     onChange?: (value: string) => void;
 }
 
@@ -93,7 +93,8 @@ const CommonToastEditor = forwardRef<CommonToastEditorRef, CommonToastEditorProp
         if (instanceRef.current) {
             try {
                 instanceRef.current.destroy();
-            } catch {
+            }
+            catch {
                 // Ignore destroy errors during unmount or transition
             }
             instanceRef.current = null;
@@ -230,7 +231,8 @@ const CommonToastEditor = forwardRef<CommonToastEditorRef, CommonToastEditorProp
 
             if (instanceRef.current && typeof instanceRef.current.setMarkdown === 'function') {
                 instanceRef.current.setMarkdown(value);
-            } else {
+            }
+            else {
                 destroyCurrentInstance();
                 if (containerRef.current) {
                     const viewer = Editor.factory({
@@ -242,7 +244,8 @@ const CommonToastEditor = forwardRef<CommonToastEditorRef, CommonToastEditorProp
                     instanceRef.current = viewer;
                 }
             }
-        } else {
+        }
+        else {
             if (instanceRef.current && typeof instanceRef.current.setMarkdown === 'function') {
                 instanceRef.current.setMarkdown(value);
             }

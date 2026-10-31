@@ -23,10 +23,10 @@ export function useAttachmentUrls(
         async function resolveMissingUrls() {
             const missing = attachments.filter(
                 (att) =>
-                    att.file_path &&
-                    !urls[att.file_path] &&
-                    !att.url &&
-                    isImageFile(att.mime_type ?? null, att.file_name)
+                    att.file_path
+                    && !urls[att.file_path]
+                    && !att.url
+                    && isImageFile(att.mime_type ?? null, att.file_name)
             );
 
             if (missing.length === 0) return;
@@ -34,7 +34,7 @@ export function useAttachmentUrls(
             const resolved: Record<string, string> = {};
 
             await Promise.all(
-                missing.map(async (att) => {
+                missing.map(async(att) => {
                     const res = await getFileUrl(bucket, att.file_path);
                     if (res.data?.url) {
                         resolved[att.file_path] = res.data.url;
@@ -66,4 +66,3 @@ export function useAttachmentUrls(
 
     return { getUrl, urls };
 }
-

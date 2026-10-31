@@ -15,7 +15,7 @@ interface UseIdleTimeoutOptions {
 
 interface UseIdleTimeoutResult {
     isIdle: boolean;
-    resetTimer: () => void;
+    resetTimer: VoidFunction;
 }
 
 export default function useIdleTimeout({

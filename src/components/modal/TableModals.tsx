@@ -29,10 +29,12 @@ export default function TableModals({
                     {...updateModalProps}
                 />
             )}
-            {viewModalProps && <CommonFormModal
-                {...viewModalProps}
-                hideCancel
-            />}
+            {viewModalProps && (
+                <CommonFormModal
+                    {...viewModalProps}
+                    hideCancel
+                />
+            )}
             {filterModalProps && (
                 <CommonFormModal
                     containerClassName="w-full"

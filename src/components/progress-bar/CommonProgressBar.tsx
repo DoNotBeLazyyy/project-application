@@ -83,16 +83,20 @@ export default function CommonProgressBar({
     }; // Shared props for label and percent variants
 
     return type === 'bar'
-        ? <ProgressTrack
-            isVertical={isVertical}
-            {...commonProps}
-        />
-        : type === 'label'
-            ? <ProgressBarLabel
-                hasSubtext={hasSubtext}
-                label={label}
-                subText={subText}
-                {...textProps}
+        ? (
+            <ProgressTrack
+                isVertical={isVertical}
+                {...commonProps}
             />
+        )
+        : type === 'label'
+            ? (
+                <ProgressBarLabel
+                    hasSubtext={hasSubtext}
+                    label={label}
+                    subText={subText}
+                    {...textProps}
+                />
+            )
             : <ProgressBarPercent {...textProps} />;
 }

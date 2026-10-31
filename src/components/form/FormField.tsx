@@ -5,8 +5,8 @@
  * error icon); put DB constraints in `rules` (required / maxLength / min / max / pattern) and validate wizard steps with `validateStepFields`.
  */
 import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
-import ValidCommonDateTimePicker, { CommonDateTimePickerProps } from '@components/datepicker/ValidCommonDateTimepicker';
 import ValidCommonDatePicker, { CommonDatePickerProps } from '@components/datepicker/ValidCommonDatepicker';
+import ValidCommonDateTimePicker, { CommonDateTimePickerProps } from '@components/datepicker/ValidCommonDateTimepicker';
 import { CommonInputProps } from '@components/input/CommonInput';
 import { CommonNumberInputProps } from '@components/input/CommonNumberInput';
 import ValidCommonInput from '@components/input/ValidCommonInput';

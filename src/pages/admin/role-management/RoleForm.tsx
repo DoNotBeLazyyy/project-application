@@ -84,18 +84,22 @@ export default function RoleForm({
             const generated = generateRoleCode(watchedLabel || '');
             if (generated) {
                 setValue('code', generated, { shouldValidate: true, shouldDirty: true });
-            } else if (!watchedLabel?.trim()) {
+            }
+            else if (!watchedLabel?.trim()) {
                 setValue('code', '', { shouldValidate: false, shouldDirty: false });
             }
-        } else {
+        }
+        else {
             if (watchedLabel !== initialLabelRef.current) {
                 const generated = generateRoleCode(watchedLabel || '');
                 if (generated) {
                     setValue('code', generated, { shouldValidate: true, shouldDirty: true });
-                } else if (!watchedLabel?.trim()) {
+                }
+                else if (!watchedLabel?.trim()) {
                     setValue('code', '', { shouldValidate: false, shouldDirty: true });
                 }
-            } else if (initialCodeRef.current !== null && watchedCode !== initialCodeRef.current) {
+            }
+            else if (initialCodeRef.current !== null && watchedCode !== initialCodeRef.current) {
                 setValue('code', initialCodeRef.current, { shouldValidate: true, shouldDirty: false });
             }
         }

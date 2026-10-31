@@ -24,7 +24,8 @@ export function groupScheduleSlotsToBlocks(slots: SectionScheduleSlot[]): Sectio
             if (!existing.days.includes(slot.day_of_week)) {
                 existing.days.push(slot.day_of_week);
             }
-        } else {
+        }
+        else {
             map.set(key, {
                 days: [slot.day_of_week],
                 room,
@@ -293,8 +294,12 @@ export function parseGradingPeriodsSchema(input?: string): SectionGradingPeriodO
 
     const delimiter = (trimmed.includes(';') || trimmed.includes('|'))
         ? /;|\|/
-        : (trimmed.includes('(') ? /;/ : /,/);
-    const entryStrings = trimmed.split(delimiter).map((s) => s.trim()).filter(Boolean);
+        : (trimmed.includes('(')
+            ? /;/
+            : /,/);
+    const entryStrings = trimmed.split(delimiter)
+        .map((s) => s.trim())
+        .filter(Boolean);
 
     const periods: SectionGradingPeriodOverride[] = [];
 
@@ -303,19 +308,25 @@ export function parseGradingPeriodsSchema(input?: string): SectionGradingPeriodO
 
         if (periodMatch) {
             const periodName = periodMatch[1].trim();
-            const periodWeight = periodMatch[2] ? parseFloat(periodMatch[2]) : 0;
+            const periodWeight = periodMatch[2]
+                ? parseFloat(periodMatch[2])
+                : 0;
             const componentsStr = periodMatch[3];
 
             const components: SectionGradingComponentOverride[] = [];
 
             if (componentsStr && componentsStr.trim()) {
-                const compTokens = componentsStr.split(/[,;]/).map((c) => c.trim()).filter(Boolean);
+                const compTokens = componentsStr.split(/[,;]/)
+                    .map((c) => c.trim())
+                    .filter(Boolean);
                 compTokens.forEach((compToken) => {
                     const compMatch = compToken.match(/^([^:]+)(?::(\d+(?:\.\d+)?))?$/);
                     if (compMatch) {
                         components.push({
                             name: compMatch[1].trim(),
-                            weight: compMatch[2] ? parseFloat(compMatch[2]) : 0
+                            weight: compMatch[2]
+                                ? parseFloat(compMatch[2])
+                                : 0
                         });
                     }
                 });
@@ -343,7 +354,10 @@ export function parseGradingPeriodsSchema(input?: string): SectionGradingPeriodO
 
 function parseDaysOfWeek(str?: string): DayOfWeek[] {
     if (!str || !str.trim()) return [];
-    const tokens = str.split(/[,;\s]+/).map((t) => t.trim().toLowerCase()).filter(Boolean);
+    const tokens = str.split(/[,;\s]+/)
+        .map((t) => t.trim()
+            .toLowerCase())
+        .filter(Boolean);
     const validDays: DayOfWeek[] = [];
 
     const map: Record<string, DayOfWeek> = {
@@ -458,15 +472,15 @@ export async function bulkCreateSections(
                 await saveSectionSchedules(createdSec.id, slots);
 
                 if (row.faculty_email) {
-                    const email = row.faculty_email.trim().toLowerCase();
+                    const email = row.faculty_email.trim()
+                        .toLowerCase();
                     const start = row.schedule_time_start.slice(0, 5);
                     const end = row.schedule_time_end.slice(0, 5);
 
                     const conflict = facultyScheduleTracker.find((prev) =>
                         prev.faculty_email === email
                         && prev.days.some((d) => days.includes(d))
-                        && ((start >= prev.start && start < prev.end) || (end > prev.start && end <= prev.end) || (start <= prev.start && end >= prev.end))
-                    );
+                        && ((start >= prev.start && start < prev.end) || (end > prev.start && end <= prev.end) || (start <= prev.start && end >= prev.end)));
 
                     if (conflict) {
                         structuredConflicts.push({

@@ -134,10 +134,12 @@ export default function CommonHeaderSideBar({
                     colorClassName={titleColor}
                     text={title}
                 />
-                {subtitle && <CommonHeaderSubtitle
-                    colorClassName={subtitleColor}
-                    text={subtitle}
-                />}
+                {subtitle && (
+                    <CommonHeaderSubtitle
+                        colorClassName={subtitleColor}
+                        text={subtitle}
+                    />
+                )}
             </div>
             {isExpanded && onToggleLock && (
                 <Tooltip
@@ -159,18 +161,22 @@ export default function CommonHeaderSideBar({
                         onClick={onToggleLock}
                     >
                         {isLocked
-                            ? <PushPinIcon
-                                size={18}
-                                weight="fill"
-                            />
+                            ? (
+                                <PushPinIcon
+                                    size={18}
+                                    weight="fill"
+                                />
+                            )
                             : <PushPinSlashIcon size={18} />}
                     </IconButton>
                 </Tooltip>
             )}
-            {hasArrow && <ArrowIconDown
-                buttonProps={buttonProps}
-                isExpanded={isExpanded}
-            />}
+            {hasArrow && (
+                <ArrowIconDown
+                    buttonProps={buttonProps}
+                    isExpanded={isExpanded}
+                />
+            )}
         </div>
     );
 }

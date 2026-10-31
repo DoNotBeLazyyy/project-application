@@ -3,6 +3,7 @@ import CommonCard from '@components/card/CommonCard';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import CommonModal from '@components/modal/CommonModal';
 import useBreakpoint from '@hooks/useBreakpoint';
+import { useHasRealChanges } from '@hooks/useHasRealChanges';
 import Tooltip from '@mui/material/Tooltip';
 import {
     CalendarBlank, Check, Clock, MapPin, ShieldCheck, User
@@ -14,7 +15,6 @@ import {
 } from '@utils/schedule-color.util';
 import { ReactNode, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useHasRealChanges } from '@hooks/useHasRealChanges';
 
 const DAYS: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const WEEKDAYS: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -238,20 +238,32 @@ function renderBlockTooltip(block: PositionedBlock): ReactNode {
             </span>
             <span className="opacity-90 text-xs">{block.section.course_title}</span>
             <span className="flex gap-1 items-center text-xs">
-                <Clock size={12} weight="bold" />
+                <Clock
+                    size={12}
+                    weight="bold"
+                />
                 {formatRange(block.start, block.end)}
             </span>
             <span className="flex gap-1 items-center text-xs">
-                <MapPin size={12} weight="bold" />
+                <MapPin
+                    size={12}
+                    weight="bold"
+                />
                 {block.schedule.room ?? 'No room assigned'}
             </span>
             <span className="flex gap-1 items-center text-xs">
-                <User size={12} weight="bold" />
+                <User
+                    size={12}
+                    weight="bold"
+                />
                 {block.section.faculty_name}
             </span>
             {block.section.is_conflict_authorized && (
                 <span className="flex gap-1 items-center text-xs">
-                    <ShieldCheck size={12} weight="fill" />
+                    <ShieldCheck
+                        size={12}
+                        weight="fill"
+                    />
                     Authorized overlap
                     {block.section.conflict_reason
                         ? `: ${block.section.conflict_reason}`
@@ -364,15 +376,27 @@ function ScheduleAgenda({
                                     {entry.section.course_title}
                                 </span>
                                 <span className="flex gap-1 items-center text-xs">
-                                    <Clock className="shrink-0" size={12} weight="bold" />
+                                    <Clock
+                                        className="shrink-0"
+                                        size={12}
+                                        weight="bold"
+                                    />
                                     {formatRange(entry.start, entry.end)}
                                 </span>
                                 <span className="flex gap-1 items-center text-xs">
-                                    <MapPin className="shrink-0" size={12} weight="bold" />
+                                    <MapPin
+                                        className="shrink-0"
+                                        size={12}
+                                        weight="bold"
+                                    />
                                     {entry.schedule.room ?? 'No room assigned'}
                                 </span>
                                 <span className="flex gap-1 items-center text-xs">
-                                    <User className="shrink-0" size={12} weight="bold" />
+                                    <User
+                                        className="shrink-0"
+                                        size={12}
+                                        weight="bold"
+                                    />
                                     {entry.section.faculty_name}
                                 </span>
                             </button>
@@ -542,13 +566,20 @@ export default function StudentSchedule() {
                                     <CommonButton
                                         size="small"
                                         startIcon={section.is_conflict_authorized
-                                            ? <ShieldCheck size={14} weight="fill" />
+                                            ? (
+                                                <ShieldCheck
+                                                    size={14}
+                                                    weight="fill"
+                                                />
+                                            )
                                             : (
                                                 <span
                                                     className="rounded-full size-2.5"
-                                                    style={{ backgroundColor: isHidden
-                                                        ? section.color
-                                                        : textColor }}
+                                                    style={{
+                                                        backgroundColor: isHidden
+                                                            ? section.color
+                                                            : textColor
+                                                    }}
                                                 />
                                             )}
                                         sx={{
@@ -601,7 +632,10 @@ export default function StudentSchedule() {
                 </div>
                 {authorizedCount > 0 && (
                     <div className="flex gap-2 items-center text-(--mui-palette-warning-main) text-xs">
-                        <ShieldCheck size={16} weight="fill" />
+                        <ShieldCheck
+                            size={16}
+                            weight="fill"
+                        />
                         <span>
                             {authorizedCount === 1
                                 ? '1 subject has an authorized schedule overlap.'

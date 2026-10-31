@@ -57,5 +57,7 @@ export function useEvaluationTargets(refreshKey = 0) {
         }).length;
     }, [targets]);
 
-    return { pendingCount, targetOptions, targets };
+    return {
+        pendingCount, targetOptions, targets
+    };
 }

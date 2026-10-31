@@ -98,8 +98,8 @@ export default function AnnouncementsFeedCard({ announcements, error }: Announce
                 )}
                 {announcements.map((announcement) => {
                     const hasAttachments = Boolean(
-                        (announcement.attachment_count && announcement.attachment_count > 0) ||
-                        (announcement.attachments && announcement.attachments.length > 0)
+                        (announcement.attachment_count && announcement.attachment_count > 0)
+                        || (announcement.attachments && announcement.attachments.length > 0)
                     );
                     const attachmentCount = announcement.attachment_count || announcement.attachments?.length || 0;
 
@@ -138,9 +138,14 @@ export default function AnnouncementsFeedCard({ announcements, error }: Announce
                                 </span>
                                 {hasAttachments && (
                                     <span className="inline-flex items-center gap-1 text-(--mui-palette-primary-main) text-xs font-medium shrink-0">
-                                        <PaperclipIcon size={13} weight="bold" />
+                                        <PaperclipIcon
+                                            size={13}
+                                            weight="bold"
+                                        />
                                         <span>
-                                            {attachmentCount} {attachmentCount === 1 ? 'file' : 'files'}
+                                            {attachmentCount} {attachmentCount === 1
+                                                ? 'file'
+                                                : 'files'}
                                         </span>
                                     </span>
                                 )}

@@ -43,7 +43,12 @@ export default function GradingPanel({
                 <CommonButton
                     disabled={isSaving || !canSave}
                     size="small"
-                    startIcon={<CheckCircleIcon size={14} weight="bold" />}
+                    startIcon={(
+                        <CheckCircleIcon
+                            size={14}
+                            weight="bold"
+                        />
+                    )}
                     variant="contained"
                     onClick={onSave}
                 >

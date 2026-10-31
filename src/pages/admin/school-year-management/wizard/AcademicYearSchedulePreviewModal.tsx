@@ -2,6 +2,7 @@ import CommonModal from '@components/modal/CommonModal';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import { CalendarDotsIcon, XIcon } from '@phosphor-icons/react';
 import { WizardCalendarExceptionItem, WizardTermItem } from '@type/school-year.type';
+
 import AcademicYearTimelinePreview from './AcademicYearTimelinePreview';
 
 interface AcademicYearSchedulePreviewModalProps {
@@ -10,7 +11,7 @@ interface AcademicYearSchedulePreviewModalProps {
     endDate?: string;
     terms?: WizardTermItem[];
     holidays?: WizardCalendarExceptionItem[];
-    onClose: () => void;
+    onClose: VoidFunction;
 }
 
 export default function AcademicYearSchedulePreviewModal({

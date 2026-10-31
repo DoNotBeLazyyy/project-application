@@ -1,6 +1,6 @@
 import CommonActionModal, { CommonActionModalProps } from '@components/modal/CommonActionModal';
-import { HTMLAttributesSpanElement } from '@type/common.type';
 import { ActionIconProps } from '@type/common/modal.type';
+import { HTMLAttributesSpanElement } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
 import { normalizeSx } from '@utils/theme.util';
 
@@ -42,7 +42,6 @@ export default function CommonPromptModal({
     return (
         <CommonActionModal
             {...props}
-            fullScreen={props.fullScreen ?? false}
             containerClassName={
                 classMerge(
                     'items-center max-w-full w-full sm:w-[30.1875rem] min-h-[14.5625rem] pt-(--mui-tokens-spacing-5) justify-center',
@@ -63,6 +62,7 @@ export default function CommonPromptModal({
                     ...cancelProps
                 }
             }}
+            fullScreen={props.fullScreen ?? false}
             sx={[
                 {
                     '& .MuiDialog-paper:not(.MuiDialog-paperFullScreen)': {

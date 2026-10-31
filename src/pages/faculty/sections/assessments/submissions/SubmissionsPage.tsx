@@ -16,7 +16,9 @@ function buildGradeDraftKey(
     answers: GradeAnswerUpdate[],
     evaluations: RubricEvaluationInput[]
 ): string {
-    return JSON.stringify({ answers, evaluations, feedback });
+    return JSON.stringify({
+        answers, evaluations, feedback
+    });
 }
 
 export default function SubmissionsPage() {
@@ -141,7 +143,12 @@ export default function SubmissionsPage() {
                     <CommonButton
                         color="inherit"
                         size="small"
-                        startIcon={<ArrowLeftIcon size={16} weight="bold" />}
+                        startIcon={(
+                            <ArrowLeftIcon
+                                size={16}
+                                weight="bold"
+                            />
+                        )}
                         variant="outlined"
                         onClick={function() {
                             navigate(`/faculty/sections/${sectionId}?tab=assessments`);
@@ -161,19 +168,32 @@ export default function SubmissionsPage() {
                     </div>
                 </div>
                 <div className="flex flex-col md:flex-row flex-1 gap-4 min-h-0">
-                    <div className={`h-full min-h-0 ${selectedSubmission ? 'hidden md:flex md:w-2/5' : 'flex flex-1 md:w-2/5'}`}>
+                    <div
+                        className={`h-full min-h-0 ${selectedSubmission
+                            ? 'hidden md:flex md:w-2/5'
+                            : 'flex flex-1 md:w-2/5'}`}
+                    >
                         <SubmissionList
                             submissions={submissions}
                             onSelect={handleSelectSubmission}
                         />
                     </div>
-                    <div className={`flex-1 h-full min-h-0 ${!selectedSubmission ? 'hidden md:flex' : 'flex flex-col'}`}>
+                    <div
+                        className={`flex-1 h-full min-h-0 ${!selectedSubmission
+                            ? 'hidden md:flex'
+                            : 'flex flex-col'}`}
+                    >
                         {selectedSubmission && (
                             <div className="md:hidden pb-2 shrink-0">
                                 <CommonButton
                                     color="inherit"
                                     size="small"
-                                    startIcon={<ArrowLeftIcon size={14} weight="bold" />}
+                                    startIcon={(
+                                        <ArrowLeftIcon
+                                            size={14}
+                                            weight="bold"
+                                        />
+                                    )}
                                     variant="outlined"
                                     onClick={() => setSelectedSubmission(null)}
                                 >

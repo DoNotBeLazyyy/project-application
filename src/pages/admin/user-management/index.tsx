@@ -2,6 +2,7 @@ import CommonButton from '@components/button/CommonButton';
 import BulkImportModal from '@components/modal/BulkImportModal';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
+import { useHasRealChanges } from '@hooks/useHasRealChanges';
 import { CREATE_FORM_ID, FILTER_FORM_ID, SORT_COLUMNS } from '@pages/admin/user-management/constants/admin-user.constant';
 import CreateUserForm from '@pages/admin/user-management/forms/CreateUserForm';
 import FilterUserForm from '@pages/admin/user-management/forms/FilterUserForm';
@@ -20,7 +21,6 @@ import {
 } from '@type/user.type';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useHasRealChanges } from '@hooks/useHasRealChanges';
 import { useSearchParams } from 'react-router-dom';
 
 const UPDATE_FORM_ID = 'update-user-form';
@@ -192,7 +192,7 @@ export default function UserManagement() {
         }
     }
 
-    async function handleBulkReactivate(ids: string[], clearSelection: () => void) {
+    async function handleBulkReactivate(ids: string[], clearSelection: VoidFunction) {
         const result = await reactivateUsers(ids);
         if (!result.error) {
             clearSelection();
@@ -333,23 +333,6 @@ export default function UserManagement() {
                     confirmText: 'Yes, Deactivate',
                     actionIcon: ProhibitIcon
                 }}
-                selectionBarProps={{
-                    entityName: 'User',
-                    deleteActionLabel: 'Deactivate Selected',
-                    deleteActionIcon: <ProhibitIcon size={16} weight="bold" />,
-                    extraActions: (selectedIds, clearSelection) => (
-                        <CommonButton
-                            color="success"
-                            size="small"
-                            variant="outlined"
-                            startIcon={<ArrowCounterClockwiseIcon size={16} weight="bold" />}
-                            onClick={() => handleBulkReactivate(selectedIds, clearSelection)}
-                            title={`Reactivate Selected (${selectedIds.length})`}
-                        >
-                            <span className="hidden sm:inline">Reactivate Selected </span>({selectedIds.length})
-                        </CommonButton>
-                    )
-                }}
                 dependencies={[activeFilters]}
                 filterModalProps={{
                     cardProps: {
@@ -379,14 +362,39 @@ export default function UserManagement() {
                             isSelected={isSelected}
                             row={item}
                             onEdit={handleOpenUpdate}
-                            onRequestDelete={onRequestDeleteRow}
                             onReactivate={handleReactivateSingle}
+                            onRequestDelete={onRequestDeleteRow}
                             onResendInvite={handleResendInvite}
                             onResetPassword={handleResetPassword}
                             onToggleSelect={onToggleSelect}
                             onView={handleOpenView}
                         />
                     );
+                }}
+                selectionBarProps={{
+                    entityName: 'User',
+                    deleteActionLabel: 'Deactivate Selected',
+                    deleteActionIcon: <ProhibitIcon
+                        size={16}
+                        weight="bold"
+                    />,
+                    extraActions: (selectedIds, clearSelection) => (
+                        <CommonButton
+                            color="success"
+                            size="small"
+                            startIcon={(
+                                <ArrowCounterClockwiseIcon
+                                    size={16}
+                                    weight="bold"
+                                />
+                            )}
+                            title={`Reactivate Selected (${selectedIds.length})`}
+                            variant="outlined"
+                            onClick={() => handleBulkReactivate(selectedIds, clearSelection)}
+                        >
+                            <span className="hidden sm:inline">Reactivate Selected </span>({selectedIds.length})
+                        </CommonButton>
+                    )
                 }}
                 sortColumns={SORT_COLUMNS}
                 tableActionConfig={tableActionConfig}
@@ -481,7 +489,9 @@ export default function UserManagement() {
                 }}
                 onMapRow={function(row) {
                     const rawRole = (row.role_code || '').trim();
-                    const normalizedRole = rawRole.charAt(0).toUpperCase() + rawRole.slice(1).toLowerCase();
+                    const normalizedRole = rawRole.charAt(0)
+                        .toUpperCase() + rawRole.slice(1)
+                        .toLowerCase();
                     const validRole = (['Admin', 'Faculty', 'Student', 'Registrar', 'Dean'].includes(normalizedRole)
                         ? normalizedRole
                         : rawRole) as UserRole;

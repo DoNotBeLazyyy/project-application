@@ -24,7 +24,9 @@ export default function ValidCommonNumberInput<T extends FieldValues = FieldValu
         field: { ref, value, onChange },
         fieldState,
         formState
-    } = useController({ control, name, rules });
+    } = useController({
+        control, name, rules
+    });
 
     function handleChange(val: any) {
         if (fieldState.error) {

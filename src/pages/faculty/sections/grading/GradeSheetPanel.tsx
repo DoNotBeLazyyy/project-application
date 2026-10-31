@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
+import SpecialGradeFlagBanner from '@pages/faculty/sections/grading/SpecialGradeFlagBanner';
 import StudentGradeBreakdownModal from '@pages/faculty/sections/grading/StudentGradeBreakdownModal';
 import {
     CalculatorIcon,
@@ -13,7 +14,6 @@ import {
     WarningCircleIcon,
     XIcon
 } from '@phosphor-icons/react';
-import SpecialGradeFlagBanner from '@pages/faculty/sections/grading/SpecialGradeFlagBanner';
 import { GradeCalculationFailure, GradeSheetRow, GradingComponent } from '@type/faculty.type';
 import { SpecialGradeFlag } from '@type/grading-config.type';
 import { exportCsvFile } from '@utils/file.util';
@@ -35,7 +35,7 @@ interface GradeSheetPanelProps {
     specialGradeFlags?: SpecialGradeFlag[];
     onApplyFlag?: (flag: SpecialGradeFlag) => void;
     onCalculate: () => Promise<void>;
-    onDismissFailures?: () => void;
+    onDismissFailures?: VoidFunction;
     onDismissFlag?: (flag: SpecialGradeFlag) => void;
     onSubmitGrades?: () => Promise<void>;
     onUpdateSpecialGrade?: (enrollmentId: string, specialGrade: string | null) => Promise<void>;
@@ -65,9 +65,9 @@ export default function GradeSheetPanel({
     const [auditEnrollmentId, setAuditEnrollmentId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    const isSubmitted =
-        gradeSheet.length > 0 &&
-        gradeSheet.some(
+    const isSubmitted
+        = gradeSheet.length > 0
+        && gradeSheet.some(
             (r) => r.status === 'Submitted' || r.status === 'Approved' || r.status === 'Released'
         );
 
@@ -105,22 +105,29 @@ export default function GradeSheetPanel({
                     <span className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base">
                         Official Grade Sheet ({gradeSheet.length} students)
                     </span>
-                    {components.length === 0 ? (
-                        <span className="text-amber-600 dark:text-amber-400 text-xs mt-0.5">
+                    {components.length === 0
+                        ? (
+                            <span className="text-amber-600 dark:text-amber-400 text-xs mt-0.5">
                             Add at least one grading component before grades can be computed.
-                        </span>
-                    ) : (
-                        <span className="text-xs text-slate-500 mt-0.5">
+                            </span>
+                        )
+                        : (
+                            <span className="text-xs text-slate-500 mt-0.5">
                             Grading period: <strong>{periodName ?? 'Active Period'}</strong>
-                        </span>
-                    )}
+                            </span>
+                        )}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 shrink-0">
                     <CommonButton
                         disabled={gradeSheet.length === 0}
                         size="small"
-                        startIcon={<DownloadSimpleIcon size={14} weight="bold" />}
+                        startIcon={(
+                            <DownloadSimpleIcon
+                                size={14}
+                                weight="bold"
+                            />
+                        )}
                         variant="outlined"
                         onClick={handleExportCsv}
                     >
@@ -130,7 +137,12 @@ export default function GradeSheetPanel({
                     <CommonButton
                         disabled={components.length === 0 || isSubmitted || !isEncodingOpen}
                         size="small"
-                        startIcon={<CalculatorIcon size={14} weight="bold" />}
+                        startIcon={(
+                            <CalculatorIcon
+                                size={14}
+                                weight="bold"
+                            />
+                        )}
                         variant="outlined"
                         onClick={onCalculate}
                     >
@@ -141,11 +153,18 @@ export default function GradeSheetPanel({
                         <CommonButton
                             disabled={gradeSheet.length === 0 || isSubmitted || isSubmittingGrades || !isEncodingOpen}
                             size="small"
-                            startIcon={<PaperPlaneTiltIcon size={14} weight="bold" />}
+                            startIcon={(
+                                <PaperPlaneTiltIcon
+                                    size={14}
+                                    weight="bold"
+                                />
+                            )}
                             variant="contained"
                             onClick={() => setIsConfirmOpen(true)}
                         >
-                            {isSubmitted ? 'Submitted' : 'Submit to Registrar'}
+                            {isSubmitted
+                                ? 'Submitted'
+                                : 'Submit to Registrar'}
                         </CommonButton>
                     )}
                 </div>
@@ -154,7 +173,11 @@ export default function GradeSheetPanel({
             {/* Lockout Banner */}
             {!isEncodingOpen && (
                 <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex gap-2.5 items-center p-3 rounded-2xl text-amber-900 dark:text-amber-200">
-                    <LockKeyIcon size={20} weight="fill" className="shrink-0 text-amber-600 dark:text-amber-400" />
+                    <LockKeyIcon
+                        className="shrink-0 text-amber-600 dark:text-amber-400"
+                        size={20}
+                        weight="fill"
+                    />
                     <span className="font-medium text-xs sm:text-sm">
                         Grade encoding for <strong>{periodName ?? 'this period'}</strong> is currently locked per the Academic Year Calendar schedule.
                     </span>
@@ -164,7 +187,11 @@ export default function GradeSheetPanel({
             {/* Submission Status Banner */}
             {isSubmitted && (
                 <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex gap-2.5 items-center p-3 rounded-2xl text-emerald-800 dark:text-emerald-300">
-                    <LockKeyIcon size={20} weight="fill" className="shrink-0 text-emerald-600" />
+                    <LockKeyIcon
+                        className="shrink-0 text-emerald-600"
+                        size={20}
+                        weight="fill"
+                    />
                     <span className="font-medium text-xs sm:text-sm">
                         Grades for {periodName ?? 'this period'} have been officially submitted to the Registrar and are locked for review.
                     </span>
@@ -175,7 +202,10 @@ export default function GradeSheetPanel({
             {calculationFailures && calculationFailures.length > 0 && (
                 <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 flex flex-col gap-2 max-h-40 overflow-y-auto p-3.5 rounded-2xl">
                     <div className="flex gap-2 items-center text-rose-700 dark:text-rose-300">
-                        <WarningCircleIcon size={18} weight="fill" />
+                        <WarningCircleIcon
+                            size={18}
+                            weight="fill"
+                        />
                         <p className="font-bold text-xs sm:text-sm">
                             {calculationFailures.length} student grade(s) could not be calculated
                         </p>
@@ -186,13 +216,19 @@ export default function GradeSheetPanel({
                                 type="button"
                                 onClick={onDismissFailures}
                             >
-                                <XIcon size={14} weight="bold" />
+                                <XIcon
+                                    size={14}
+                                    weight="bold"
+                                />
                             </button>
                         )}
                     </div>
                     <ul className="flex flex-col gap-1">
                         {calculationFailures.map((failure) => (
-                            <li className="text-xs text-rose-600 dark:text-rose-400" key={failure.enrollment_id}>
+                            <li
+                                className="text-xs text-rose-600 dark:text-rose-400"
+                                key={failure.enrollment_id}
+                            >
                                 <strong>{failure.full_name ?? failure.student_number ?? failure.enrollment_id}</strong>: {failure.reason ?? 'Calculation issue.'}
                             </li>
                         ))}
@@ -217,11 +253,11 @@ export default function GradeSheetPanel({
                     size={16}
                 />
                 <input
-                    type="text"
+                    className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                     placeholder="Search student by name or student number in grade sheet..."
+                    type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                 />
             </div>
 
@@ -237,8 +273,8 @@ export default function GradeSheetPanel({
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pb-6">
                         {filteredRows.map((row) => (
                             <div
-                                key={row.enrollment_id}
                                 className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between gap-3"
+                                key={row.enrollment_id}
                             >
                                 <div>
                                     {/* Student Header */}
@@ -279,7 +315,9 @@ export default function GradeSheetPanel({
                                                 Raw
                                             </span>
                                             <span className="font-bold text-xs text-slate-800 dark:text-slate-200 block mt-0.5">
-                                                {row.raw_grade != null ? `${row.raw_grade}%` : '—'}
+                                                {row.raw_grade != null
+                                                    ? `${row.raw_grade}%`
+                                                    : '—'}
                                             </span>
                                         </div>
 
@@ -288,13 +326,19 @@ export default function GradeSheetPanel({
                                                 Transmuted
                                             </span>
                                             <span className="font-extrabold text-sm text-blue-700 dark:text-blue-300 block mt-0.5">
-                                                {row.transmuted_grade != null ? String(row.transmuted_grade) : '—'}
+                                                {row.transmuted_grade != null
+                                                    ? String(row.transmuted_grade)
+                                                    : '—'}
                                             </span>
                                         </div>
 
                                         <div className="bg-slate-50/90 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800/80 p-2 rounded-xl text-center flex flex-col justify-between">
                                             <span className="block font-medium text-[10px] text-slate-400 uppercase tracking-tight flex items-center justify-center gap-1">
-                                                <FlagIcon size={10} className="text-amber-500" weight="fill" />
+                                                <FlagIcon
+                                                    className="text-amber-500"
+                                                    size={10}
+                                                    weight="fill"
+                                                />
                                                 Flag Selector
                                             </span>
                                             <select
@@ -305,11 +349,26 @@ export default function GradeSheetPanel({
                                                 value={row.special_grade || ''}
                                                 onChange={(e) => onUpdateSpecialGrade?.(row.enrollment_id, e.target.value || null)}
                                             >
-                                                <option className="text-slate-700 dark:text-slate-200 bg-white dark:bg-zinc-900" value="">— None —</option>
-                                                <option className="text-amber-700 dark:text-amber-300 bg-white dark:bg-zinc-900" value="INC">INC (Incomplete)</option>
-                                                <option className="text-rose-700 dark:text-rose-300 bg-white dark:bg-zinc-900" value="DRP">DRP (Dropped)</option>
-                                                <option className="text-purple-700 dark:text-purple-300 bg-white dark:bg-zinc-900" value="FA">FA (Absences)</option>
-                                                <option className="text-red-700 dark:text-red-300 bg-white dark:bg-zinc-900" value="UW">UW (Unauthorized)</option>
+                                                <option
+                                                    className="text-slate-700 dark:text-slate-200 bg-white dark:bg-zinc-900"
+                                                    value=""
+                                                >— None —</option>
+                                                <option
+                                                    className="text-amber-700 dark:text-amber-300 bg-white dark:bg-zinc-900"
+                                                    value="INC"
+                                                >INC (Incomplete)</option>
+                                                <option
+                                                    className="text-rose-700 dark:text-rose-300 bg-white dark:bg-zinc-900"
+                                                    value="DRP"
+                                                >DRP (Dropped)</option>
+                                                <option
+                                                    className="text-purple-700 dark:text-purple-300 bg-white dark:bg-zinc-900"
+                                                    value="FA"
+                                                >FA (Absences)</option>
+                                                <option
+                                                    className="text-red-700 dark:text-red-300 bg-white dark:bg-zinc-900"
+                                                    value="UW"
+                                                >UW (Unauthorized)</option>
                                             </select>
                                         </div>
                                     </div>
@@ -317,20 +376,28 @@ export default function GradeSheetPanel({
 
                                 {/* Audit Math Button & Special Grade Indicator */}
                                 <div className="border-t border-slate-100 dark:border-zinc-800 pt-2 flex items-center justify-between">
-                                    {row.special_grade ? (
-                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
-                                            <FlagIcon size={11} weight="fill" />
+                                    {row.special_grade
+                                        ? (
+                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                                                <FlagIcon
+                                                    size={11}
+                                                    weight="fill"
+                                                />
                                             Flag: {row.special_grade}
-                                        </span>
-                                    ) : (
-                                        <span className="text-[10px] text-slate-400 font-medium">Regular Grading</span>
-                                    )}
+                                            </span>
+                                        )
+                                        : (
+                                            <span className="text-[10px] text-slate-400 font-medium">Regular Grading</span>
+                                        )}
                                     <button
+                                        className="cursor-pointer flex font-semibold gap-1.5 items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 text-xs px-2.5 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors"
                                         type="button"
                                         onClick={() => setAuditEnrollmentId(row.enrollment_id)}
-                                        className="cursor-pointer flex font-semibold gap-1.5 items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 text-xs px-2.5 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors"
                                     >
-                                        <ChartLineUpIcon size={14} weight="bold" />
+                                        <ChartLineUpIcon
+                                            size={14}
+                                            weight="bold"
+                                        />
                                         Audit Breakdown
                                     </button>
                                 </div>
@@ -349,7 +416,9 @@ export default function GradeSheetPanel({
                         onClick: () => setIsConfirmOpen(false)
                     },
                     confirmProps: {
-                        children: isSubmittingGrades ? 'Submitting...' : 'Officially Submit Grades',
+                        children: isSubmittingGrades
+                            ? 'Submitting...'
+                            : 'Officially Submit Grades',
                         disabled: isSubmittingGrades,
                         loading: isSubmittingGrades,
                         onClick: async function() {

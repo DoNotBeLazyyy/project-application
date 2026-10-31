@@ -16,7 +16,7 @@ function returnFalse(): boolean {
 }
 
 function useMediaQueryMatch(query: string): boolean {
-    const subscribe = useCallback(function(onStoreChange: () => void) {
+    const subscribe = useCallback(function(onStoreChange: VoidFunction) {
         const mediaQueryList = window.matchMedia(query);
 
         mediaQueryList.addEventListener('change', onStoreChange);

@@ -1,7 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonSelect from '@components/select/CommonSelect';
-import SubmissionDetailModal from '@pages/faculty/sections/student-detail/SubmissionDetailModal';
 import { formatDate, formatScore, submissionStatusVariant } from '@pages/faculty/sections/student-detail/studentDetailFormat';
+import SubmissionDetailModal from '@pages/faculty/sections/student-detail/SubmissionDetailModal';
 import { StudentEvaluationAssessment } from '@type/faculty.type';
 import { useMemo, useState } from 'react';
 
@@ -98,54 +98,56 @@ export default function StudentAssessmentTab({ assessments }: StudentAssessmentT
 
             {/* Bento Cards Grid */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-                {filtered.length === 0 ? (
-                    <div className="py-12 text-center text-slate-500 text-xs">
+                {filtered.length === 0
+                    ? (
+                        <div className="py-12 text-center text-slate-500 text-xs">
                         No assessment records match the selected filters.
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-4">
-                        {filtered.map((item: any) => (
-                            <div
-                                key={item.assessment_id || item.id}
-                                onClick={() => setDetailItem(item)}
-                                className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:border-blue-400 dark:hover:border-blue-600 transition-all cursor-pointer flex flex-col justify-between gap-2.5"
-                            >
-                                <div>
-                                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                                                {item.assessment_type}
-                                            </span>
-                                            {item.grading_period_name && (
-                                                <span className="text-[10px] font-semibold text-slate-500">
-                                                    {item.grading_period_name}
+                        </div>
+                    )
+                    : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-4">
+                            {filtered.map((item: any) => (
+                                <div
+                                    className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:border-blue-400 dark:hover:border-blue-600 transition-all cursor-pointer flex flex-col justify-between gap-2.5"
+                                    key={item.assessment_id || item.id}
+                                    onClick={() => setDetailItem(item)}
+                                >
+                                    <div>
+                                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                                    {item.assessment_type}
                                                 </span>
-                                            )}
+                                                {item.grading_period_name && (
+                                                    <span className="text-[10px] font-semibold text-slate-500">
+                                                        {item.grading_period_name}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <CommonBadgeStatus
+                                                label={item.submission_status ?? 'Not submitted'}
+                                                variant={submissionStatusVariant(item.submission_status ?? null)}
+                                            />
                                         </div>
 
-                                        <CommonBadgeStatus
-                                            label={item.submission_status ?? 'Not submitted'}
-                                            variant={submissionStatusVariant(item.submission_status ?? null)}
-                                        />
+                                        <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 line-clamp-2">
+                                            {item.title}
+                                        </h4>
                                     </div>
 
-                                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 line-clamp-2">
-                                        {item.title}
-                                    </h4>
-                                </div>
-
-                                <div className="border-t border-slate-100 dark:border-zinc-800/80 pt-2 flex items-center justify-between text-xs">
-                                    <span className="text-slate-400">
+                                    <div className="border-t border-slate-100 dark:border-zinc-800/80 pt-2 flex items-center justify-between text-xs">
+                                        <span className="text-slate-400">
                                         Submitted: {formatDate(item.submitted_at)}
-                                    </span>
-                                    <span className="font-bold text-slate-900 dark:text-slate-100">
+                                        </span>
+                                        <span className="font-bold text-slate-900 dark:text-slate-100">
                                         Score: {formatScore(item.final_score)} / {item.total_points}
-                                    </span>
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            ))}
+                        </div>
+                    )}
             </div>
 
             <SubmissionDetailModal

@@ -1,5 +1,7 @@
 import PageLoadingFallback from '@components/loading/PageLoadingFallback';
-import React, { Component, ComponentType, lazy, ReactElement, ReactNode, Suspense } from 'react';
+import React, {
+    Component, ComponentType, lazy, ReactElement, ReactNode, Suspense
+} from 'react';
 
 export function isChunkLoadError(error: unknown): boolean {
     if (!error) return false;
@@ -7,13 +9,13 @@ export function isChunkLoadError(error: unknown): boolean {
     const name = err.name || '';
     const message = err.message || '';
     return (
-        name === 'ChunkLoadError' ||
-        message.includes('dynamically imported module') ||
-        message.includes('Failed to fetch dynamically imported module') ||
-        message.includes('Importing a module script failed') ||
-        message.includes('error loading dynamically imported module') ||
-        message.includes('MIME type') ||
-        message.includes('Loading chunk')
+        name === 'ChunkLoadError'
+        || message.includes('dynamically imported module')
+        || message.includes('Failed to fetch dynamically imported module')
+        || message.includes('Importing a module script failed')
+        || message.includes('error loading dynamically imported module')
+        || message.includes('MIME type')
+        || message.includes('Loading chunk')
     );
 }
 
@@ -21,13 +23,14 @@ export function isChunkLoadError(error: unknown): boolean {
 function lazyWithRetry<P extends object>(
     factory: () => Promise<{ default: ComponentType<P> }>
 ) {
-    return lazy(async () => {
+    return lazy(async() => {
         const pageAlreadyReloadedKey = 'chunk_reload_retry_' + window.location.pathname;
         try {
             const component = await factory();
             sessionStorage.removeItem(pageAlreadyReloadedKey);
             return component;
-        } catch (error: any) {
+        }
+        catch (error: any) {
             if (isChunkLoadError(error)) {
                 const hasReloaded = sessionStorage.getItem(pageAlreadyReloadedKey);
                 if (!hasReloaded) {
@@ -85,12 +88,12 @@ class LazyErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
                                 A new deployment was published. Please reload the page to load the latest components.
                             </p>
                             <button
+                                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs shadow transition-colors cursor-pointer"
                                 type="button"
                                 onClick={() => {
                                     sessionStorage.clear();
                                     window.location.reload();
                                 }}
-                                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs shadow transition-colors cursor-pointer"
                             >
                                 Reload Page
                             </button>
@@ -109,11 +112,11 @@ class LazyErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
                             {this.state.error?.message || 'An unexpected error occurred while loading this page.'}
                         </p>
                         <button
+                            className="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs shadow transition-colors cursor-pointer"
                             type="button"
                             onClick={() => {
                                 this.setState({ hasError: false, error: null });
                             }}
-                            className="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs shadow transition-colors cursor-pointer"
                         >
                             Try Again
                         </button>

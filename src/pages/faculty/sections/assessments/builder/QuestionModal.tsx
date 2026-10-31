@@ -30,7 +30,7 @@ interface QuestionModalProps {
     methods: UseFormReturn<QuestionFormValues>;
     watchedChoices: QuestionFormValues['choices'];
     watchedQuestionType: QuestionType;
-    onClose: () => void;
+    onClose: VoidFunction;
     onSubmit: (values: QuestionFormValues) => Promise<void>;
 }
 
@@ -241,8 +241,8 @@ export default function QuestionModal({
                     </CommonButton>
                     <CommonButton
                         disabled={(editingQuestion !== null && !draftGuard.hasRealChanges) || methods.formState.isSubmitting}
-                        loading={methods.formState.isSubmitting}
                         form={QUESTION_FORM_ID}
+                        loading={methods.formState.isSubmitting}
                         size="small"
                         type="submit"
                         variant="contained"

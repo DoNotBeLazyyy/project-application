@@ -1,11 +1,13 @@
-import { describe, expect, it } from 'vitest';
 import { resolveNotificationPath } from '@utils/notification.util';
+import { describe, expect, it } from 'vitest';
 
 describe('notification.util', () => {
     describe('resolveNotificationPath', () => {
         it('returns null when actionUrl or activeRole is null', () => {
-            expect(resolveNotificationPath(null, 'Student')).toBeNull();
-            expect(resolveNotificationPath('/student/subjects', null)).toBeNull();
+            expect(resolveNotificationPath(null, 'Student'))
+                .toBeNull();
+            expect(resolveNotificationPath('/student/subjects', null))
+                .toBeNull();
         });
 
         it('resolves announcements query parameters', () => {

@@ -21,21 +21,21 @@ interface SectionGradeSheetModalProps {
     gradingPeriodName: string;
     open: boolean;
     section: SectionGradeSubmissionRow | null;
-    onClose: () => void;
-    onReleased?: () => void;
+    onClose: VoidFunction;
+    onReleased?: VoidFunction;
 }
 
 function resolveGradeStatusVariant(status: string): 'success' | 'warning' | 'info' | 'error' {
     switch (status) {
-        case 'Released':
-            return 'success';
-        case 'Approved':
-            return 'info';
-        case 'Submitted':
-            return 'warning';
-        case 'Draft':
-        default:
-            return 'info';
+    case 'Released':
+        return 'success';
+    case 'Approved':
+        return 'info';
+    case 'Submitted':
+        return 'warning';
+    case 'Draft':
+    default:
+        return 'info';
     }
 }
 
@@ -64,7 +64,8 @@ export default function SectionGradeSheetModal({
             if (result.data) {
                 setStudents(result.data);
             }
-        } finally {
+        }
+        finally {
             setIsLoading(false);
         }
     }, [section, gradingPeriodId]);
@@ -73,22 +74,27 @@ export default function SectionGradeSheetModal({
         if (open && section) {
             setSearch('');
             loadGradeSheet();
-        } else {
+        }
+        else {
             setStudents([]);
         }
     }, [open, section, loadGradeSheet]);
 
     const filteredStudents = useMemo(function() {
-        const query = search.trim().toLowerCase();
+        const query = search.trim()
+            .toLowerCase();
         if (!query) {
             return students;
         }
 
         return students.filter(function(st) {
             return (
-                st.student_number.toLowerCase().includes(query) ||
-                st.full_name.toLowerCase().includes(query) ||
-                (st.special_grade && st.special_grade.toLowerCase().includes(query))
+                st.student_number.toLowerCase()
+                    .includes(query)
+                || st.full_name.toLowerCase()
+                    .includes(query)
+                || (st.special_grade && st.special_grade.toLowerCase()
+                    .includes(query))
             );
         });
     }, [students, search]);
@@ -104,7 +110,9 @@ export default function SectionGradeSheetModal({
         const evalCompleted = students.filter((s) => s.is_evaluation_completed).length;
         const evalBlocked = total - evalCompleted;
 
-        return { avg, evalBlocked, evalCompleted, passing, specials, total };
+        return {
+            avg, evalBlocked, evalCompleted, passing, specials, total
+        };
     }, [students]);
 
     async function handleConfirmApproveAndRelease() {
@@ -120,7 +128,8 @@ export default function SectionGradeSheetModal({
                 await loadGradeSheet();
                 onReleased?.();
             }
-        } finally {
+        }
+        finally {
             setIsReleasing(false);
         }
     }
@@ -141,10 +150,10 @@ export default function SectionGradeSheetModal({
     const hasUnreleasedGrades = useMemo(function() {
         if (!students.length) {
             return Boolean(
-                section &&
-                section.submission_status !== 'Released' &&
-                section.submission_status !== 'No Enrollees' &&
-                section.graded_count > 0
+                section
+                && section.submission_status !== 'Released'
+                && section.submission_status !== 'No Enrollees'
+                && section.graded_count > 0
             );
         }
         const hasSubmitted = students.some((s) => s.status === 'Submitted');
@@ -154,10 +163,10 @@ export default function SectionGradeSheetModal({
     }, [students, section]);
 
     const canReleaseSection = Boolean(
-        section &&
-        effectiveStatus !== 'Released' &&
-        effectiveStatus !== 'No Enrollees' &&
-        hasUnreleasedGrades
+        section
+        && effectiveStatus !== 'Released'
+        && effectiveStatus !== 'No Enrollees'
+        && hasUnreleasedGrades
     );
 
     const confirmButtonLabel = useMemo(function() {
@@ -195,7 +204,10 @@ export default function SectionGradeSheetModal({
                     confirmProps: {
                         children: (
                             <div className="flex gap-1.5 items-center">
-                                <SealCheckIcon size={16} weight="bold" />
+                                <SealCheckIcon
+                                    size={16}
+                                    weight="bold"
+                                />
                                 <span>{confirmButtonLabel}</span>
                             </div>
                         ),
@@ -210,7 +222,11 @@ export default function SectionGradeSheetModal({
                     {/* Faculty & Meta Bar */}
                     <div className="bg-(--mui-palette-action-hover)/30 border border-(--mui-palette-divider) flex flex-wrap gap-4 items-center justify-between p-3 rounded-lg text-sm">
                         <div className="flex gap-2 items-center text-(--mui-palette-text-primary)">
-                            <UserIcon className="text-(--mui-palette-primary-main)" size={18} weight="bold" />
+                            <UserIcon
+                                className="text-(--mui-palette-primary-main)"
+                                size={18}
+                                weight="bold"
+                            />
                             <span className="font-semibold">Instructor:</span>
                             <span>{section.faculty_name}</span>
                             {section.faculty_email && (
@@ -224,7 +240,10 @@ export default function SectionGradeSheetModal({
                                 </span>
                             )}
                             <span className="text-(--mui-palette-text-secondary)">
-                                Status: <CommonBadgeStatus label={effectiveStatus} variant={resolveGradeStatusVariant(effectiveStatus)} />
+                                Status: <CommonBadgeStatus
+                                    label={effectiveStatus}
+                                    variant={resolveGradeStatusVariant(effectiveStatus)}
+                                        />
                             </span>
                         </div>
                     </div>
@@ -256,7 +275,11 @@ export default function SectionGradeSheetModal({
                     {/* Evaluation Blocking Callout if any */}
                     {stats.evalBlocked > 0 && section.submission_status !== 'Released' && (
                         <div className="bg-(--mui-palette-warning-50)/40 border border-(--mui-palette-warning-main)/30 flex gap-2.5 items-start p-3 rounded-lg text-(--mui-palette-warning-dark) text-xs">
-                            <WarningCircleIcon className="shrink-0 text-(--mui-palette-warning-main)" size={18} weight="fill" />
+                            <WarningCircleIcon
+                                className="shrink-0 text-(--mui-palette-warning-main)"
+                                size={18}
+                                weight="fill"
+                            />
                             <div>
                                 <span className="font-semibold">{stats.evalBlocked} student(s) have not submitted their faculty evaluation.</span>
                                 <p className="m-0 mt-0.5 text-(--mui-palette-text-secondary)">
@@ -299,7 +322,9 @@ export default function SectionGradeSheetModal({
                             </div>
                         ) : filteredStudents.length === 0 ? (
                             <div className="p-8 text-center text-(--mui-palette-text-secondary) text-sm">
-                                {students.length === 0 ? 'No students enrolled or no grades generated yet.' : 'No matching students found.'}
+                                {students.length === 0
+                                    ? 'No students enrolled or no grades generated yet.'
+                                    : 'No matching students found.'}
                             </div>
                         ) : (
                             <>
@@ -307,7 +332,10 @@ export default function SectionGradeSheetModal({
                                 <div className="md:hidden flex flex-col divide-y divide-(--mui-palette-divider)">
                                     {filteredStudents.map(function(st) {
                                         return (
-                                            <div key={st.enrollment_id} className="p-3.5 flex flex-col gap-2.5 bg-(--mui-palette-background-paper) hover:bg-(--mui-palette-action-hover)/20 transition-colors">
+                                            <div
+                                                className="p-3.5 flex flex-col gap-2.5 bg-(--mui-palette-background-paper) hover:bg-(--mui-palette-action-hover)/20 transition-colors"
+                                                key={st.enrollment_id}
+                                            >
                                                 <div className="flex items-start justify-between gap-2">
                                                     <div className="flex flex-col min-w-0">
                                                         <span className="font-semibold text-sm text-(--mui-palette-text-primary) truncate">
@@ -317,50 +345,76 @@ export default function SectionGradeSheetModal({
                                                             {st.student_number}
                                                         </span>
                                                     </div>
-                                                    <CommonBadgeStatus label={st.status} variant={resolveGradeStatusVariant(st.status)} />
+                                                    <CommonBadgeStatus
+                                                        label={st.status}
+                                                        variant={resolveGradeStatusVariant(st.status)}
+                                                    />
                                                 </div>
 
                                                 <div className="grid grid-cols-3 gap-2 bg-(--mui-palette-action-hover)/30 p-2 rounded-lg text-xs text-center">
                                                     <div>
                                                         <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Raw</span>
                                                         <span className="font-medium text-(--mui-palette-text-primary)">
-                                                            {st.raw_grade !== null ? Number(st.raw_grade).toFixed(1) : '—'}
+                                                            {st.raw_grade !== null
+                                                                ? Number(st.raw_grade)
+                                                                    .toFixed(1)
+                                                                : '—'}
                                                         </span>
                                                     </div>
                                                     <div>
                                                         <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Final</span>
-                                                        <span className={`font-bold ${st.final_grade !== null && Number(st.final_grade) < 75 ? 'text-(--mui-palette-error-main)' : 'text-(--mui-palette-text-primary)'}`}>
-                                                            {st.final_grade !== null ? Number(st.final_grade).toFixed(1) : '—'}
+                                                        <span
+                                                            className={`font-bold ${st.final_grade !== null && Number(st.final_grade) < 75
+                                                                ? 'text-(--mui-palette-error-main)'
+                                                                : 'text-(--mui-palette-text-primary)'}`}
+                                                        >
+                                                            {st.final_grade !== null
+                                                                ? Number(st.final_grade)
+                                                                    .toFixed(1)
+                                                                : '—'}
                                                         </span>
                                                     </div>
                                                     <div>
                                                         <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Transmuted</span>
                                                         <span className="font-bold text-(--mui-palette-primary-main)">
-                                                            {st.transmuted_grade !== null ? Number(st.transmuted_grade).toFixed(2) : '—'}
+                                                            {st.transmuted_grade !== null
+                                                                ? Number(st.transmuted_grade)
+                                                                    .toFixed(2)
+                                                                : '—'}
                                                         </span>
                                                     </div>
                                                 </div>
 
                                                 <div className="flex items-center justify-between text-xs pt-0.5">
-                                                    {st.special_grade ? (
-                                                        <span className="bg-(--mui-palette-warning-50) text-(--mui-palette-warning-dark) text-[11px] font-semibold px-2 py-0.5 rounded">
+                                                    {st.special_grade
+                                                        ? (
+                                                            <span className="bg-(--mui-palette-warning-50) text-(--mui-palette-warning-dark) text-[11px] font-semibold px-2 py-0.5 rounded">
                                                             Special: {st.special_grade}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-[11px] text-(--mui-palette-text-secondary)">Regular Grade</span>
-                                                    )}
+                                                            </span>
+                                                        )
+                                                        : (
+                                                            <span className="text-[11px] text-(--mui-palette-text-secondary)">Regular Grade</span>
+                                                        )}
 
-                                                    {st.is_evaluation_completed ? (
-                                                        <span className="flex items-center gap-1 text-(--mui-palette-success-main) text-xs">
-                                                            <CheckCircleIcon size={14} weight="fill" />
-                                                            <span>Evaluation Done</span>
-                                                        </span>
-                                                    ) : (
-                                                        <span className="flex items-center gap-1 text-(--mui-palette-warning-main) text-xs">
-                                                            <ClockIcon size={14} weight="bold" />
-                                                            <span>Eval Pending</span>
-                                                        </span>
-                                                    )}
+                                                    {st.is_evaluation_completed
+                                                        ? (
+                                                            <span className="flex items-center gap-1 text-(--mui-palette-success-main) text-xs">
+                                                                <CheckCircleIcon
+                                                                    size={14}
+                                                                    weight="fill"
+                                                                />
+                                                                <span>Evaluation Done</span>
+                                                            </span>
+                                                        )
+                                                        : (
+                                                            <span className="flex items-center gap-1 text-(--mui-palette-warning-main) text-xs">
+                                                                <ClockIcon
+                                                                    size={14}
+                                                                    weight="bold"
+                                                                />
+                                                                <span>Eval Pending</span>
+                                                            </span>
+                                                        )}
                                                 </div>
                                             </div>
                                         );
@@ -384,7 +438,10 @@ export default function SectionGradeSheetModal({
                                     <tbody className="divide-y divide-(--mui-palette-divider)">
                                         {filteredStudents.map(function(st) {
                                             return (
-                                                <tr className="hover:bg-(--mui-palette-action-hover)/30 transition-colors" key={st.enrollment_id}>
+                                                <tr
+                                                    className="hover:bg-(--mui-palette-action-hover)/30 transition-colors"
+                                                    key={st.enrollment_id}
+                                                >
                                                     <td className="font-mono p-3 text-(--mui-palette-text-secondary) text-xs whitespace-nowrap">
                                                         {st.student_number}
                                                     </td>
@@ -392,42 +449,68 @@ export default function SectionGradeSheetModal({
                                                         {st.full_name}
                                                     </td>
                                                     <td className="p-3 text-(--mui-palette-text-secondary) text-right">
-                                                        {st.raw_grade !== null ? Number(st.raw_grade).toFixed(2) : '—'}
+                                                        {st.raw_grade !== null
+                                                            ? Number(st.raw_grade)
+                                                                .toFixed(2)
+                                                            : '—'}
                                                     </td>
                                                     <td className="font-semibold p-3 text-(--mui-palette-text-primary) text-right">
-                                                        {st.final_grade !== null ? (
-                                                            <span className={Number(st.final_grade) < 75 ? 'text-(--mui-palette-error-main)' : ''}>
-                                                                {Number(st.final_grade).toFixed(2)}
-                                                            </span>
-                                                        ) : '—'}
+                                                        {st.final_grade !== null
+                                                            ? (
+                                                                <span
+                                                                    className={Number(st.final_grade) < 75
+                                                                        ? 'text-(--mui-palette-error-main)'
+                                                                        : ''}
+                                                                >
+                                                                    {Number(st.final_grade)
+                                                                        .toFixed(2)}
+                                                                </span>
+                                                            )
+                                                            : '—'}
                                                     </td>
                                                     <td className="font-mono p-3 text-(--mui-palette-primary-main) text-right">
-                                                        {st.transmuted_grade !== null ? Number(st.transmuted_grade).toFixed(2) : '—'}
+                                                        {st.transmuted_grade !== null
+                                                            ? Number(st.transmuted_grade)
+                                                                .toFixed(2)
+                                                            : '—'}
                                                     </td>
                                                     <td className="p-3 text-center">
-                                                        {st.special_grade ? (
-                                                            <span className="bg-(--mui-palette-warning-50) font-semibold px-2 py-0.5 rounded text-(--mui-palette-warning-dark) text-xs">
-                                                                {st.special_grade}
-                                                            </span>
-                                                        ) : (
-                                                            <span className="text-(--mui-palette-text-disabled)">—</span>
-                                                        )}
+                                                        {st.special_grade
+                                                            ? (
+                                                                <span className="bg-(--mui-palette-warning-50) font-semibold px-2 py-0.5 rounded text-(--mui-palette-warning-dark) text-xs">
+                                                                    {st.special_grade}
+                                                                </span>
+                                                            )
+                                                            : (
+                                                                <span className="text-(--mui-palette-text-disabled)">—</span>
+                                                            )}
                                                     </td>
                                                     <td className="p-3 text-center">
-                                                        <CommonBadgeStatus label={st.status} variant={resolveGradeStatusVariant(st.status)} />
+                                                        <CommonBadgeStatus
+                                                            label={st.status}
+                                                            variant={resolveGradeStatusVariant(st.status)}
+                                                        />
                                                     </td>
                                                     <td className="p-3 text-center">
-                                                        {st.is_evaluation_completed ? (
-                                                            <span className="flex gap-1 inline-flex items-center text-(--mui-palette-success-main) text-xs">
-                                                                <CheckCircleIcon size={14} weight="fill" />
-                                                                <span>Completed</span>
-                                                            </span>
-                                                        ) : (
-                                                            <span className="flex gap-1 inline-flex items-center text-(--mui-palette-warning-main) text-xs">
-                                                                <ClockIcon size={14} weight="bold" />
-                                                                <span>Pending</span>
-                                                            </span>
-                                                        )}
+                                                        {st.is_evaluation_completed
+                                                            ? (
+                                                                <span className="flex gap-1 inline-flex items-center text-(--mui-palette-success-main) text-xs">
+                                                                    <CheckCircleIcon
+                                                                        size={14}
+                                                                        weight="fill"
+                                                                    />
+                                                                    <span>Completed</span>
+                                                                </span>
+                                                            )
+                                                            : (
+                                                                <span className="flex gap-1 inline-flex items-center text-(--mui-palette-warning-main) text-xs">
+                                                                    <ClockIcon
+                                                                        size={14}
+                                                                        weight="bold"
+                                                                    />
+                                                                    <span>Pending</span>
+                                                                </span>
+                                                            )}
                                                     </td>
                                                 </tr>
                                             );
@@ -447,7 +530,9 @@ export default function SectionGradeSheetModal({
                         onClick: () => setShowConfirmRelease(false)
                     },
                     confirmProps: {
-                        children: isReleasing ? 'Releasing...' : 'Confirm Release',
+                        children: isReleasing
+                            ? 'Releasing...'
+                            : 'Confirm Release',
                         disabled: isReleasing,
                         loading: isReleasing,
                         onClick: handleConfirmApproveAndRelease

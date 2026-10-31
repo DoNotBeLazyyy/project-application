@@ -5,8 +5,8 @@ import { PaperclipIcon, PushPinIcon } from '@phosphor-icons/react';
 import { AnnouncementAudience, CommunicationListRow } from '@type/announcement.type';
 import { BadgeStatusVariant } from '@type/common/badge.type';
 import { MobileCardColDef } from '@type/table.type';
-import { formatShortDate } from '@utils/date.util';
 import { canManageCommunication } from '@utils/communication.util';
+import { formatShortDate } from '@utils/date.util';
 import { useMemo } from 'react';
 
 interface UseAnnouncementTableConfigProps {
@@ -40,7 +40,9 @@ export function useAnnouncementTableConfig({
                         <div className="flex h-full items-center">
                             <CommonBadgeStatus
                                 label={params.data.item_type}
-                                variant={isEvent ? 'success' : 'info'}
+                                variant={isEvent
+                                    ? 'success'
+                                    : 'info'}
                             />
                         </div>
                     );
@@ -69,7 +71,10 @@ export function useAnnouncementTableConfig({
                                 className="inline-flex items-center gap-0.5 text-(--mui-palette-text-secondary) text-xs shrink-0"
                                 title={`${params.data.attachment_count} attachment(s)`}
                             >
-                                <PaperclipIcon size={13} weight="bold" />
+                                <PaperclipIcon
+                                    size={13}
+                                    weight="bold"
+                                />
                                 <span>{params.data.attachment_count}</span>
                             </span>
                         )}
@@ -93,7 +98,10 @@ export function useAnnouncementTableConfig({
 
                     return (
                         <div className="flex h-full items-center">
-                            <CommonBadgeStatus label={label} variant={meta.variant} />
+                            <CommonBadgeStatus
+                                label={label}
+                                variant={meta.variant}
+                            />
                         </div>
                     );
                 },
@@ -116,7 +124,9 @@ export function useAnnouncementTableConfig({
             {
                 cellRenderer: (params: { data: CommunicationListRow }) => {
                     const display = params.data.author_name
-                        || (params.data.item_type === 'Event' && params.data.location ? params.data.location : 'Staff');
+                        || (params.data.item_type === 'Event' && params.data.location
+                            ? params.data.location
+                            : 'Staff');
 
                     return (
                         <div className="flex h-full items-center">
@@ -157,20 +167,28 @@ export function useAnnouncementTableConfig({
                             onClick: () => onView(row.id),
                             preset: 'view'
                         },
-                        ...(canManage && onEdit ? [{
-                            onClick: () => onEdit(row.id),
-                            preset: 'edit' as const
-                        }] : []),
-                        ...(canManage ? [{
-                            onClick: () => onDelete(row.id),
-                            preset: 'delete' as const
-                        }] : [])
+                        ...(canManage && onEdit
+                            ? [{
+                                onClick: () => onEdit(row.id),
+                                preset: 'edit' as const
+                            }]
+                            : []),
+                        ...(canManage
+                            ? [{
+                                onClick: () => onDelete(row.id),
+                                preset: 'delete' as const
+                            }]
+                            : [])
                     ];
                 },
-                onEditClick: onEdit ? (row: CommunicationListRow) => {
-                    const canManage = canManageCommunication(row, currentUserId, currentUserRole);
-                    return canManage ? () => onEdit(row.id) : undefined;
-                } : undefined
+                onEditClick: onEdit
+                    ? (row: CommunicationListRow) => {
+                        const canManage = canManageCommunication(row, currentUserId, currentUserRole);
+                        return canManage
+                            ? () => onEdit(row.id)
+                            : undefined;
+                    }
+                    : undefined
             };
         };
     }, [currentUserId, currentUserRole, isViewingOnly, onEdit, onView]);

@@ -76,7 +76,9 @@ export default function SubmissionList({ submissions, onSelect }: SubmissionList
                 sortable: true,
                 valueFormatter: (params) => params.value
                     ? new Date(params.value as string)
-                        .toLocaleString('en-US', { day: 'numeric', hour: 'numeric', minute: '2-digit', month: 'short' })
+                        .toLocaleString('en-US', {
+                            day: 'numeric', hour: 'numeric', minute: '2-digit', month: 'short'
+                        })
                     : '—'
             }
         ];

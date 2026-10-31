@@ -1,10 +1,10 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
-import { CheckCircleIcon, SlidersHorizontalIcon, WarningCircleIcon } from '@phosphor-icons/react';
-import SectionThresholdModal from '@pages/faculty/sections/grading/SectionThresholdModal';
 import GradeSheetPanel from '@pages/faculty/sections/grading/GradeSheetPanel';
 import GradingComponentPanel from '@pages/faculty/sections/grading/GradingComponentPanel';
+import SectionThresholdModal from '@pages/faculty/sections/grading/SectionThresholdModal';
 import SpecialGradeFlagModal from '@pages/faculty/sections/grading/SpecialGradeFlagModal';
+import { CheckCircleIcon, SlidersHorizontalIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import {
     applySpecialGradeFlag,
     calculateAllGradesForPeriod,
@@ -103,7 +103,8 @@ export default function GradingTab({
 
             if (refetched.data && refetched.data.length > 0) {
                 loadedComponents = refetched.data;
-            } else {
+            }
+            else {
                 const sectionRes = await getSectionById(sectionId);
                 const currentPeriod = periods.find((p) => p.id === activePeriodId);
                 const periodSeq = currentPeriod?.sequence ?? 1;
@@ -131,7 +132,8 @@ export default function GradingTab({
                 const finalComps = await listGradingComponents(sectionId, activePeriodId);
                 if (finalComps.data && finalComps.data.length > 0) {
                     loadedComponents = finalComps.data;
-                } else {
+                }
+                else {
                     loadedComponents = defaultsToSeed.map((comp, idx) => ({
                         id: `default-${idx}`,
                         name: comp.name,
@@ -198,7 +200,8 @@ export default function GradingTab({
             });
         }
 
-        useToastStore.getState().showToast('Grading components saved successfully.', 'success');
+        useToastStore.getState()
+            .showToast('Grading components saved successfully.', 'success');
         await fetchPeriodData();
     }
 
@@ -221,11 +224,13 @@ export default function GradingTab({
 
         const message = result.error?.message ?? result.data?.message;
         if (result.error || !result.data?.success) {
-            useToastStore.getState().showToast(message ?? 'The special grade could not be applied.', 'warning');
+            useToastStore.getState()
+                .showToast(message ?? 'The special grade could not be applied.', 'warning');
             return;
         }
 
-        useToastStore.getState().showToast(message ?? `Applied ${flag.code}.`, 'success');
+        useToastStore.getState()
+            .showToast(message ?? `Applied ${flag.code}.`, 'success');
         await fetchPeriodData();
     }
 
@@ -242,12 +247,14 @@ export default function GradingTab({
 
         const message = result.error?.message ?? result.data?.message;
         if (result.error || !result.data?.success) {
-            useToastStore.getState().showToast(message ?? 'The flag could not be dismissed.', 'warning');
+            useToastStore.getState()
+                .showToast(message ?? 'The flag could not be dismissed.', 'warning');
             return;
         }
 
         setFlagPendingDismissal(null);
-        useToastStore.getState().showToast(message ?? 'Flag dismissed.', 'success');
+        useToastStore.getState()
+            .showToast(message ?? 'Flag dismissed.', 'success');
         await fetchPeriodData();
     }
 
@@ -257,11 +264,13 @@ export default function GradingTab({
         setIsFlagBusy(false);
 
         if (result.error) {
-            useToastStore.getState().showToast(result.error.message || 'Failed to update special grade.', 'warning');
+            useToastStore.getState()
+                .showToast(result.error.message || 'Failed to update special grade.', 'warning');
             return;
         }
 
-        useToastStore.getState().showToast('Special grade updated.', 'success');
+        useToastStore.getState()
+            .showToast('Special grade updated.', 'success');
         await fetchPeriodData();
     }
 
@@ -277,11 +286,13 @@ export default function GradingTab({
 
         const message = result.error?.message ?? result.data?.message;
         if (result.error || !result.data?.success) {
-            useToastStore.getState().showToast(message ?? 'Grades could not be submitted to the Registrar.', 'warning');
+            useToastStore.getState()
+                .showToast(message ?? 'Grades could not be submitted to the Registrar.', 'warning');
             return;
         }
 
-        useToastStore.getState().showToast(message ?? 'Grades officially submitted to the Registrar.', 'success');
+        useToastStore.getState()
+            .showToast(message ?? 'Grades officially submitted to the Registrar.', 'success');
         await fetchPeriodData();
     }
 
@@ -315,7 +326,9 @@ export default function GradingTab({
                         menuStyle="outline"
                         size="small"
                         tabs={periods.map((p) => ({
-                            label: p.weight ? `${p.name} (${p.weight}%)` : p.name,
+                            label: p.weight
+                                ? `${p.name} (${p.weight}%)`
+                                : p.name,
                             value: p.id
                         }))}
                         value={activePeriodId}
@@ -327,24 +340,24 @@ export default function GradingTab({
                     {/* Mobile View Switcher (Components vs Grade Sheet) */}
                     <div className="flex md:hidden items-center bg-slate-100 dark:bg-zinc-800 p-0.5 rounded-lg border border-slate-200 dark:border-zinc-700">
                         <button
-                            type="button"
-                            onClick={() => setMobileGradingView('sheet')}
                             className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
                                 mobileGradingView === 'sheet'
                                     ? 'bg-white dark:bg-zinc-900 text-blue-600 shadow-xs'
                                     : 'text-slate-600 dark:text-slate-400'
                             }`}
+                            type="button"
+                            onClick={() => setMobileGradingView('sheet')}
                         >
                             Grade Sheet ({gradeSheet.length})
                         </button>
                         <button
-                            type="button"
-                            onClick={() => setMobileGradingView('components')}
                             className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
                                 mobileGradingView === 'components'
                                     ? 'bg-white dark:bg-zinc-900 text-blue-600 shadow-xs'
                                     : 'text-slate-600 dark:text-slate-400'
                             }`}
+                            type="button"
+                            onClick={() => setMobileGradingView('components')}
                         >
                             Components ({components.length})
                         </button>
@@ -353,7 +366,12 @@ export default function GradingTab({
                     {overridableRules.length > 0 && (
                         <CommonButton
                             size="small"
-                            startIcon={<SlidersHorizontalIcon size={14} weight="bold" />}
+                            startIcon={(
+                                <SlidersHorizontalIcon
+                                    size={14}
+                                    weight="bold"
+                                />
+                            )}
                             variant="outlined"
                             onClick={() => setIsThresholdOpen(true)}
                         >
@@ -370,28 +388,34 @@ export default function GradingTab({
                         {currentPeriod.major_exam_start_date && (
                             <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
                                 <span className="font-semibold text-slate-900 dark:text-slate-100">Major Examination Window:</span>
-                                <span>{currentPeriod.major_exam_start_date} {currentPeriod.major_exam_end_date ? `to ${currentPeriod.major_exam_end_date}` : ''}</span>
+                                <span>{currentPeriod.major_exam_start_date} {currentPeriod.major_exam_end_date
+                                    ? `to ${currentPeriod.major_exam_end_date}`
+                                    : ''}</span>
                             </div>
                         )}
                         {currentPeriod.grade_encoding_start_date && (
                             <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
                                 <span className="font-semibold text-slate-900 dark:text-slate-100">Grade Encoding Range:</span>
-                                <span>{currentPeriod.grade_encoding_start_date} {currentPeriod.grade_encoding_end_date ? `to ${currentPeriod.grade_encoding_end_date}` : ''}</span>
+                                <span>{currentPeriod.grade_encoding_start_date} {currentPeriod.grade_encoding_end_date
+                                    ? `to ${currentPeriod.grade_encoding_end_date}`
+                                    : ''}</span>
                             </div>
                         )}
                     </div>
 
                     {currentPeriod.grade_encoding_start_date && (
                         <div className="flex items-center gap-1.5">
-                            {isEncodingOpen ? (
-                                <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold text-[11px] flex items-center gap-1">
-                                    <CheckCircleIcon className="w-3.5 h-3.5" /> Encoding Open
-                                </span>
-                            ) : (
-                                <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 font-semibold text-[11px] flex items-center gap-1">
-                                    <WarningCircleIcon className="w-3.5 h-3.5" /> Outside Encoding Window
-                                </span>
-                            )}
+                            {isEncodingOpen
+                                ? (
+                                    <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold text-[11px] flex items-center gap-1">
+                                        <CheckCircleIcon className="w-3.5 h-3.5" /> Encoding Open
+                                    </span>
+                                )
+                                : (
+                                    <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 font-semibold text-[11px] flex items-center gap-1">
+                                        <WarningCircleIcon className="w-3.5 h-3.5" /> Outside Encoding Window
+                                    </span>
+                                )}
                         </div>
                     )}
                 </div>
@@ -400,7 +424,11 @@ export default function GradingTab({
             {/* Split layout: Components & Grade Sheet */}
             <div className="flex flex-col md:flex-row gap-4 flex-1 min-h-0">
                 {/* Grading Components Panel */}
-                <div className={`h-full min-h-0 ${mobileGradingView === 'sheet' ? 'hidden md:flex' : 'flex'}`}>
+                <div
+                    className={`h-full min-h-0 ${mobileGradingView === 'sheet'
+                        ? 'hidden md:flex'
+                        : 'flex'}`}
+                >
                     <GradingComponentPanel
                         components={components}
                         locked={isLocked || !isEncodingOpen}
@@ -415,7 +443,11 @@ export default function GradingTab({
                 </div>
 
                 {/* Grade Sheet Panel */}
-                <div className={`flex-1 h-full min-h-0 ${mobileGradingView === 'components' ? 'hidden md:flex' : 'flex'}`}>
+                <div
+                    className={`flex-1 h-full min-h-0 ${mobileGradingView === 'components'
+                        ? 'hidden md:flex'
+                        : 'flex'}`}
+                >
                     <GradeSheetPanel
                         calculationFailures={calculationFailures}
                         components={components}
@@ -454,7 +486,6 @@ export default function GradingTab({
                 onClose={() => setFlagPendingDismissal(null)}
                 onConfirm={handleConfirmDismissFlag}
             />
-
 
         </div>
     );

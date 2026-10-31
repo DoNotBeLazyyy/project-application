@@ -57,8 +57,8 @@ interface FacultyLoadWizardModalProps {
     facultyId: string | null;
     termId?: string | null;
     initialReadOnly?: boolean;
-    onClose: () => void;
-    onSuccess: () => void;
+    onClose: VoidFunction;
+    onSuccess: VoidFunction;
 }
 
 export default function FacultyLoadWizardModal({
@@ -435,16 +435,16 @@ export default function FacultyLoadWizardModal({
                         <div className="flex items-center gap-2 shrink-0">
                             {/* Switch to Edit Mode in header (only while viewing, like the other wizards) */}
                             {isReadOnly && (
-                            <CommonButton
-                                className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
-                                color="primary"
-                                size="small"
-                                startIcon={<PencilSimpleIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
-                                variant="outlined"
-                                onClick={handleRedirectToSectionManagement}
-                            >
+                                <CommonButton
+                                    className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
+                                    color="primary"
+                                    size="small"
+                                    startIcon={<PencilSimpleIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+                                    variant="outlined"
+                                    onClick={handleRedirectToSectionManagement}
+                                >
                                 Edit Load
-                            </CommonButton>
+                                </CommonButton>
                             )}
 
                             <button
@@ -606,7 +606,10 @@ export default function FacultyLoadWizardModal({
                 >
                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
                         <div className="flex items-center gap-2">
-                            <PlusIcon className="w-5 h-5 text-brand-600" weight="bold" />
+                            <PlusIcon
+                                className="w-5 h-5 text-brand-600"
+                                weight="bold"
+                            />
                             <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
                                 Assign Section Offering
                             </h3>

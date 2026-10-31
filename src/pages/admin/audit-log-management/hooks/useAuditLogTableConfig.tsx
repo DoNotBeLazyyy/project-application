@@ -26,14 +26,15 @@ export function useAuditLogTableConfig(options?: UseAuditLogTableConfigOptions) 
                 sortable: true,
                 valueFormatter: (params) =>
                     params.value
-                        ? new Date(params.value as string).toLocaleString('en-PH', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true
-                        })
+                        ? new Date(params.value as string)
+                            .toLocaleString('en-PH', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                hour12: true
+                            })
                         : ''
             },
             {
@@ -96,7 +97,10 @@ export function useAuditLogTableConfig(options?: UseAuditLogTableConfigOptions) 
                 tooltipField: 'description',
                 cellRenderer: (params: { data: AuditLogRow }) => (
                     <div className="flex h-full items-center truncate">
-                        <span className="text-xs text-slate-700 dark:text-slate-300 truncate" title={params.data?.description}>
+                        <span
+                            className="text-xs text-slate-700 dark:text-slate-300 truncate"
+                            title={params.data?.description}
+                        >
                             {params.data?.description || 'System mutation record'}
                         </span>
                     </div>
@@ -127,12 +131,12 @@ export function useAuditLogTableConfig(options?: UseAuditLogTableConfigOptions) 
                 cellRenderer: (params: { data: AuditLogRow }) => (
                     <div className="flex h-full items-center">
                         <button
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/50 dark:text-indigo-300 dark:border-indigo-800 transition-colors cursor-pointer shadow-2xs"
                             type="button"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onViewPayload?.(params.data);
                             }}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/50 dark:text-indigo-300 dark:border-indigo-800 transition-colors cursor-pointer shadow-2xs"
                         >
                             <EyeIcon size={14} />
                             View Payload

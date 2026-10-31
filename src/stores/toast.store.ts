@@ -21,7 +21,9 @@ interface ToastStore {
 const SAME_ACTION_WINDOW_MS = 1500;
 
 function normalizeMessage(message: string): string {
-    return message.trim().toLowerCase().replace(/[.!\s]+$/, '');
+    return message.trim()
+        .toLowerCase()
+        .replace(/[.!\s]+$/, '');
 }
 
 export const useToastStore = create<ToastStore>(function(set) {
@@ -44,7 +46,9 @@ export const useToastStore = create<ToastStore>(function(set) {
                     }
                     const next = [
                         ...state.toasts.slice(-2),
-                        { createdAt: now, id, message, variant }
+                        {
+                            createdAt: now, id, message, variant
+                        }
                     ];
                     return { toasts: next };
                 });

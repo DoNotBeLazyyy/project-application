@@ -2,8 +2,8 @@ import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import CommonInput from '@components/input/CommonInput';
-import CommonSelect from '@components/select/CommonSelect';
 import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
+import CommonSelect from '@components/select/CommonSelect';
 import { InputAdornment } from '@mui/material';
 import ReleaseScheduleForm from '@pages/registrar/grade-release-management/ReleaseScheduleForm';
 import SectionGradeSheetModal from '@pages/registrar/grade-release-management/SectionGradeSheetModal';
@@ -32,15 +32,19 @@ import {
     SectionGradeSubmissionStatus
 } from '@type/grade-release.type';
 import { DateTime } from 'luxon';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    useCallback, useEffect, useMemo, useRef, useState
+} from 'react';
 
 function formatReleaseAt(releaseAt: string): string {
-    return DateTime.fromISO(releaseAt).toFormat('MMM d, yyyy · h:mm a');
+    return DateTime.fromISO(releaseAt)
+        .toFormat('MMM d, yyyy · h:mm a');
 }
 
 function formatDate(iso: string | null): string {
     if (!iso) return '—';
-    return DateTime.fromISO(iso).toFormat('MMM d, yyyy · h:mm a');
+    return DateTime.fromISO(iso)
+        .toFormat('MMM d, yyyy · h:mm a');
 }
 
 function isDue(period: GradeReleaseSchedule): boolean {
@@ -69,17 +73,17 @@ function resolveStatusLabel(period: GradeReleaseSchedule): string {
 
 function resolveSubmissionBadgeVariant(status: SectionGradeSubmissionStatus): 'success' | 'warning' | 'info' | 'error' {
     switch (status) {
-        case 'Released':
-            return 'success';
-        case 'Approved':
-            return 'info';
-        case 'Submitted':
-            return 'warning';
-        case 'Draft':
-        case 'Not Calculated':
-        case 'No Enrollees':
-        default:
-            return 'info';
+    case 'Released':
+        return 'success';
+    case 'Approved':
+        return 'info';
+    case 'Submitted':
+        return 'warning';
+    case 'Draft':
+    case 'Not Calculated':
+    case 'No Enrollees':
+    default:
+        return 'info';
     }
 }
 
@@ -133,17 +137,20 @@ export default function GradeRelease() {
                 const sectionsResult = await listSectionGradeSubmissions(termId, initialPeriodId);
                 if (activeTermRequestIdRef.current !== termId) return;
                 setSectionRows(sectionsResult.data ?? []);
-            } else {
+            }
+            else {
                 setSectionRows([]);
             }
-        } catch (err) {
+        }
+        catch (err) {
             if (activeTermRequestIdRef.current === termId) {
                 console.error('Failed to load term grade release data:', err);
                 setPeriods([]);
                 setSelectedPeriodId('');
                 setSectionRows([]);
             }
-        } finally {
+        }
+        finally {
             if (activeTermRequestIdRef.current === termId) {
                 setIsSectionsLoading(false);
             }
@@ -167,12 +174,14 @@ export default function GradeRelease() {
             if (activePeriodRequestIdRef.current === periodId) {
                 setSectionRows(sectionsResult.data ?? []);
             }
-        } catch (err) {
+        }
+        catch (err) {
             if (activePeriodRequestIdRef.current === periodId) {
                 console.error('Failed to load section submissions for period:', err);
                 setSectionRows([]);
             }
-        } finally {
+        }
+        finally {
             if (activePeriodRequestIdRef.current === periodId) {
                 setIsSectionsLoading(false);
             }
@@ -197,7 +206,8 @@ export default function GradeRelease() {
                     });
                 }
             }
-        } catch (err) {
+        }
+        catch (err) {
             console.error('Failed to refresh grade release data:', err);
         }
     }, [selectedTermId, selectedPeriodId]);
@@ -261,7 +271,8 @@ export default function GradeRelease() {
                 handleCloseSchedule();
                 await refreshCurrentData();
             }
-        } finally {
+        }
+        finally {
             setIsSaving(false);
         }
     }
@@ -285,7 +296,8 @@ export default function GradeRelease() {
             if (!result.error) {
                 await refreshCurrentData();
             }
-        } finally {
+        }
+        finally {
             setIsReleasingPeriod(false);
         }
     }
@@ -300,7 +312,8 @@ export default function GradeRelease() {
                 setSectionToRelease(null);
                 await refreshCurrentData();
             }
-        } finally {
+        }
+        finally {
             setIsReleasingSection(false);
         }
     }
@@ -327,14 +340,19 @@ export default function GradeRelease() {
             }
 
             // Text search
-            const query = sectionSearch.trim().toLowerCase();
+            const query = sectionSearch.trim()
+                .toLowerCase();
             if (!query) return true;
 
             return (
-                row.course_code.toLowerCase().includes(query) ||
-                row.course_title.toLowerCase().includes(query) ||
-                row.section_code.toLowerCase().includes(query) ||
-                row.faculty_name.toLowerCase().includes(query)
+                row.course_code.toLowerCase()
+                    .includes(query)
+                || row.course_title.toLowerCase()
+                    .includes(query)
+                || row.section_code.toLowerCase()
+                    .includes(query)
+                || row.faculty_name.toLowerCase()
+                    .includes(query)
             );
         });
     }, [sectionRows, statusFilter, sectionSearch]);
@@ -347,7 +365,9 @@ export default function GradeRelease() {
         const released = sectionRows.filter((r) => r.submission_status === 'Released').length;
         const draftOrNone = sectionRows.filter((r) => r.submission_status === 'Draft' || r.submission_status === 'Not Calculated').length;
 
-        return { approved, draftOrNone, released, submitted, total };
+        return {
+            approved, draftOrNone, released, submitted, total
+        };
     }, [sectionRows]);
 
     return (
@@ -396,13 +416,13 @@ export default function GradeRelease() {
 
                                 return (
                                     <button
-                                        key={period.grading_period_id}
-                                        type="button"
                                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 transition-all border cursor-pointer ${
                                             isSelected
                                                 ? 'bg-(--mui-palette-primary-main) text-white border-(--mui-palette-primary-main) shadow-xs'
                                                 : 'bg-(--mui-palette-background-paper) text-(--mui-palette-text-primary) border-(--mui-palette-divider) hover:border-(--mui-palette-text-secondary)/60'
                                         }`}
+                                        key={period.grading_period_id}
+                                        type="button"
                                         onClick={() => handleSelectPeriod(period.grading_period_id)}
                                     >
                                         <span>{period.grading_period_name}</span>
@@ -415,19 +435,27 @@ export default function GradeRelease() {
                                         >
                                             {period.released_count}/{period.total_grades}
                                         </span>
-                                        {isFullyReleased ? (
-                                            <CheckCircleIcon
-                                                size={15}
-                                                weight="fill"
-                                                className={isSelected ? 'text-white' : 'text-(--mui-palette-success-main)'}
-                                            />
-                                        ) : period.release_at ? (
-                                            <ClockIcon
-                                                size={15}
-                                                weight="bold"
-                                                className={isSelected ? 'text-white' : 'text-(--mui-palette-info-main)'}
-                                            />
-                                        ) : null}
+                                        {isFullyReleased
+                                            ? (
+                                                <CheckCircleIcon
+                                                    className={isSelected
+                                                        ? 'text-white'
+                                                        : 'text-(--mui-palette-success-main)'}
+                                                    size={15}
+                                                    weight="fill"
+                                                />
+                                            )
+                                            : period.release_at
+                                                ? (
+                                                    <ClockIcon
+                                                        className={isSelected
+                                                            ? 'text-white'
+                                                            : 'text-(--mui-palette-info-main)'}
+                                                        size={15}
+                                                        weight="bold"
+                                                    />
+                                                )
+                                                : null}
                                     </button>
                                 );
                             })}
@@ -441,7 +469,9 @@ export default function GradeRelease() {
                                         <span>{currentPeriod.grading_period_name}:</span>
                                         <span className="font-mono text-(--mui-palette-primary-main)">
                                             {currentPeriod.released_count} of {currentPeriod.total_grades} grades released
-                                            ({currentPeriod.total_grades > 0 ? Math.round((currentPeriod.released_count / currentPeriod.total_grades) * 100) : 0}%)
+                                            ({currentPeriod.total_grades > 0
+                                                ? Math.round((currentPeriod.released_count / currentPeriod.total_grades) * 100)
+                                                : 0}%)
                                         </span>
                                     </div>
 
@@ -453,7 +483,10 @@ export default function GradeRelease() {
 
                                     {currentPeriod.blocked_count > 0 && (
                                         <span className="flex items-center gap-1 text-(--mui-palette-warning-main) font-medium bg-amber-500/10 px-2 py-0.5 rounded-full text-[11px]">
-                                            <WarningCircleIcon size={13} weight="fill" />
+                                            <WarningCircleIcon
+                                                size={13}
+                                                weight="fill"
+                                            />
                                             <span>{currentPeriod.blocked_count} student(s) pending eval</span>
                                         </span>
                                     )}
@@ -466,15 +499,22 @@ export default function GradeRelease() {
                                         variant="outlined"
                                         onClick={() => handleOpenSchedule(currentPeriod)}
                                     >
-                                        {currentPeriod.release_at ? 'Edit Schedule' : 'Schedule'}
+                                        {currentPeriod.release_at
+                                            ? 'Edit Schedule'
+                                            : 'Schedule'}
                                     </CommonButton>
                                     <CommonButton
                                         disabled={
-                                            (currentPeriod.total_grades > 0 && currentPeriod.released_count === currentPeriod.total_grades) ||
-                                            currentPeriod.total_grades === 0
+                                            (currentPeriod.total_grades > 0 && currentPeriod.released_count === currentPeriod.total_grades)
+                                            || currentPeriod.total_grades === 0
                                         }
                                         size="small"
-                                        startIcon={<SealCheckIcon size={14} weight="bold" />}
+                                        startIcon={(
+                                            <SealCheckIcon
+                                                size={14}
+                                                weight="bold"
+                                            />
+                                        )}
                                         variant="contained"
                                         onClick={() => setReleaseTarget(currentPeriod)}
                                     >
@@ -493,7 +533,9 @@ export default function GradeRelease() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                     <div>
                         <h2 className="font-semibold text-(--mui-palette-text-primary) text-base sm:text-lg">
-                            {currentPeriod ? `${currentPeriod.grading_period_name} · Section Grade Submissions` : 'Section Submissions'}
+                            {currentPeriod
+                                ? `${currentPeriod.grading_period_name} · Section Grade Submissions`
+                                : 'Section Submissions'}
                         </h2>
                         <p className="m-0 text-(--mui-palette-text-secondary) text-xs">
                             Verify grades submitted by instructors. Click &ldquo;Inspect&rdquo; to view individual student grades and evaluation status.
@@ -574,8 +616,8 @@ export default function GradeRelease() {
                     </span>
                 </div>
 
-                {/* Section Table / Mobile Cards */}
-                <div className="border border-(--mui-palette-divider) flex-1 min-h-0 overflow-x-auto overflow-y-auto rounded-lg">
+                {/* Section cards */}
+                <div className="flex-1 min-h-0 overflow-y-auto">
                     {isSectionsLoading ? (
                         <div className="p-8 text-center text-(--mui-palette-text-secondary) text-sm">
                             Loading section submissions...
@@ -588,16 +630,19 @@ export default function GradeRelease() {
                         </div>
                     ) : (
                         <>
-                            {/* Mobile View: Section Breakdown Cards */}
-                            <div className="md:hidden flex flex-col divide-y divide-(--mui-palette-divider)">
+                            {/* Section cards, laid out like the other list pages */}
+                            <div className="gap-3 grid grid-cols-1 lg:grid-cols-3 p-1 sm:grid-cols-2">
                                 {filteredSections.map(function(row) {
-                                    const canRelease =
-                                        row.submission_status !== 'Released' &&
-                                        row.submission_status !== 'No Enrollees' &&
-                                        row.graded_count > 0;
+                                    const canRelease
+                                        = row.submission_status !== 'Released'
+                                        && row.submission_status !== 'No Enrollees'
+                                        && row.graded_count > 0;
 
                                     return (
-                                        <div key={row.section_id} className="p-4 flex flex-col gap-3 bg-(--mui-palette-background-paper) hover:bg-(--mui-palette-action-hover)/20 transition-colors">
+                                        <div
+                                            className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) flex flex-col gap-3 hover:border-(--mui-palette-primary-main) p-4 rounded-xl shadow-xs transition-colors"
+                                            key={row.section_id}
+                                        >
                                             <div className="flex items-start justify-between gap-2">
                                                 <div className="flex flex-col min-w-0">
                                                     <div className="flex items-center gap-2 flex-wrap">
@@ -628,7 +673,9 @@ export default function GradeRelease() {
                                                 <div>
                                                     <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Graded</span>
                                                     <span className="font-mono font-semibold text-(--mui-palette-text-primary)">
-                                                        {row.graded_count} / {row.enrolled_count} ({row.enrolled_count > 0 ? Math.round((row.graded_count / row.enrolled_count) * 100) : 0}%)
+                                                        {row.graded_count} / {row.enrolled_count} ({row.enrolled_count > 0
+                                                            ? Math.round((row.graded_count / row.enrolled_count) * 100)
+                                                            : 0}%)
                                                     </span>
                                                 </div>
                                                 {row.room && (
@@ -668,103 +715,6 @@ export default function GradeRelease() {
                                 })}
                             </div>
 
-                            {/* Desktop View: Full Table */}
-                            <table className="hidden md:table border-collapse text-left text-sm w-full">
-                                <thead className="bg-(--mui-palette-action-hover)/50 border-b border-(--mui-palette-divider) sticky text-(--mui-palette-text-secondary) text-xs top-0 uppercase">
-                                    <tr>
-                                        <th className="font-semibold p-3">Course</th>
-                                        <th className="font-semibold p-3">Section</th>
-                                        <th className="font-semibold p-3">Instructor</th>
-                                        <th className="font-semibold p-3 text-center">Enrolled</th>
-                                        <th className="font-semibold p-3 text-center">Grades Computed</th>
-                                        <th className="font-semibold p-3 text-center">Status</th>
-                                        <th className="font-semibold p-3">Last Submitted</th>
-                                        <th className="font-semibold p-3 text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-(--mui-palette-divider)">
-                                    {filteredSections.map(function(row) {
-                                        const canRelease =
-                                            row.submission_status !== 'Released' &&
-                                            row.submission_status !== 'No Enrollees' &&
-                                            row.graded_count > 0;
-
-                                        return (
-                                            <tr className="hover:bg-(--mui-palette-action-hover)/30 transition-colors" key={row.section_id}>
-                                                <td className="p-3">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-semibold text-(--mui-palette-text-primary)">
-                                                            {row.course_code}
-                                                        </span>
-                                                        <span className="text-(--mui-palette-text-secondary) text-xs truncate max-w-xs">
-                                                            {row.course_title}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="font-medium p-3 text-(--mui-palette-text-primary) whitespace-nowrap">
-                                                    {row.section_code}
-                                                    {row.room && (
-                                                        <span className="block text-(--mui-palette-text-secondary) text-xs">
-                                                            {row.room}
-                                                        </span>
-                                                    )}
-                                                </td>
-                                                <td className="p-3 whitespace-nowrap">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-medium text-(--mui-palette-text-primary)">
-                                                            {row.faculty_name}
-                                                        </span>
-                                                        {row.faculty_email && (
-                                                            <span className="text-(--mui-palette-text-secondary) text-xs">
-                                                                {row.faculty_email}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td className="font-medium p-3 text-center text-(--mui-palette-text-primary)">
-                                                    {row.enrolled_count}
-                                                </td>
-                                                <td className="p-3 text-center">
-                                                    <span className="font-mono text-xs">
-                                                        {row.graded_count} / {row.enrolled_count}
-                                                    </span>
-                                                </td>
-                                                <td className="p-3 text-center">
-                                                    <CommonBadgeStatus
-                                                        label={row.submission_status}
-                                                        variant={resolveSubmissionBadgeVariant(row.submission_status)}
-                                                    />
-                                                </td>
-                                                <td className="p-3 text-(--mui-palette-text-secondary) text-xs whitespace-nowrap">
-                                                    {formatDate(row.last_submitted_at)}
-                                                </td>
-                                                <td className="p-3 text-center">
-                                                    <div className="flex gap-2 items-center justify-center">
-                                                        <CommonButton
-                                                            size="small"
-                                                            startIcon={<EyeIcon size={14} />}
-                                                            variant="outlined"
-                                                            onClick={() => setInspectedSection(row)}
-                                                        >
-                                                            Inspect
-                                                        </CommonButton>
-                                                        {canRelease && (
-                                                            <CommonButton
-                                                                size="small"
-                                                                startIcon={<SealCheckIcon size={14} />}
-                                                                variant="contained"
-                                                                onClick={() => setSectionToRelease(row)}
-                                                            >
-                                                                Release
-                                                            </CommonButton>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
                         </>
                     )}
                 </div>
@@ -789,7 +739,9 @@ export default function GradeRelease() {
                         onClick: () => setReleaseTarget(null)
                     },
                     confirmProps: {
-                        children: isReleasingPeriod ? 'Releasing...' : 'Release Now',
+                        children: isReleasingPeriod
+                            ? 'Releasing...'
+                            : 'Release Now',
                         disabled: isReleasingPeriod,
                         loading: isReleasingPeriod,
                         onClick: handleConfirmReleaseNow
@@ -814,7 +766,9 @@ export default function GradeRelease() {
                         onClick: () => setSectionToRelease(null)
                     },
                     confirmProps: {
-                        children: isReleasingSection ? 'Releasing...' : 'Confirm Release',
+                        children: isReleasingSection
+                            ? 'Releasing...'
+                            : 'Confirm Release',
                         disabled: isReleasingSection,
                         loading: isReleasingSection,
                         onClick: handleConfirmReleaseSingleSection
@@ -828,7 +782,7 @@ export default function GradeRelease() {
                 open={!!sectionToRelease}
                 subContent={{
                     title: sectionToRelease
-                        ? `Grades will be published to enrolled students who have submitted their faculty evaluation. Students with pending evaluations remain blocked until completed.`
+                        ? 'Grades will be published to enrolled students who have submitted their faculty evaluation. Students with pending evaluations remain blocked until completed.'
                         : ''
                 }}
                 onClose={() => setSectionToRelease(null)}
@@ -842,7 +796,7 @@ export default function GradeRelease() {
                     open={!!inspectedSection}
                     section={inspectedSection}
                     onClose={() => setInspectedSection(null)}
-                    onReleased={async () => {
+                    onReleased={async() => {
                         await refreshCurrentData();
                     }}
                 />

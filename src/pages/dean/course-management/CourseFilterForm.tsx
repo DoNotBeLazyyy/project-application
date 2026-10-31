@@ -1,7 +1,7 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import { useCourseTypeOptions } from '@pages/dean/course-management/type/useCourseTypeOptions';
 import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
+import { useCourseTypeOptions } from '@pages/dean/course-management/type/useCourseTypeOptions';
 import { useAppStore } from '@stores/app.store';
 import { ComponentPropsForm } from '@type/common.type';
 import { CourseFilterValues } from '@type/course/course.type';

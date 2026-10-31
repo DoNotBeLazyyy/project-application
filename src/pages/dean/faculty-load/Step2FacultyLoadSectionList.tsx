@@ -25,8 +25,8 @@ interface Step2FacultyLoadSectionListProps {
     facultyOptions: FacultyOption[];
     onFacultyChange: (sectionId: string, newFacultyId: string | null) => void;
     onRequestDeleteSection: (section: FacultyLoadSection) => void;
-    onOpenAssignModal?: () => void;
-    onNavigateToSectionManagement?: () => void;
+    onOpenAssignModal?: VoidFunction;
+    onNavigateToSectionManagement?: VoidFunction;
 }
 
 const STATUS_VARIANT_MAP: Record<SectionStatus, 'success' | 'error' | 'warning' | 'info'> = {
@@ -62,7 +62,10 @@ export default function Step2FacultyLoadSectionList({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-zinc-800/80 p-4 rounded-xl border border-slate-200 dark:border-zinc-700/70 shadow-xs">
                 <div>
                     <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                        <ChalkboardTeacherIcon className="w-5 h-5 text-brand-600 dark:text-brand-400" weight="bold" />
+                        <ChalkboardTeacherIcon
+                            className="w-5 h-5 text-brand-600 dark:text-brand-400"
+                            weight="bold"
+                        />
                         <span>Assigned Section Offerings</span>
                         <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 font-semibold">
                             {sections.length}
@@ -74,7 +77,12 @@ export default function Step2FacultyLoadSectionList({
                     <CommonButton
                         color="primary"
                         size="small"
-                        startIcon={<PlusIcon className="w-4 h-4" weight="bold" />}
+                        startIcon={(
+                            <PlusIcon
+                                className="w-4 h-4"
+                                weight="bold"
+                            />
+                        )}
                         variant="contained"
                         onClick={onOpenAssignModal}
                     >
@@ -101,7 +109,12 @@ export default function Step2FacultyLoadSectionList({
                         <CommonButton
                             color="primary"
                             size="small"
-                            startIcon={<PlusIcon className="w-4 h-4" weight="bold" />}
+                            startIcon={(
+                                <PlusIcon
+                                    className="w-4 h-4"
+                                    weight="bold"
+                                />
+                            )}
                             variant="outlined"
                             onClick={onOpenAssignModal}
                         >
@@ -233,7 +246,8 @@ export default function Step2FacultyLoadSectionList({
                                             section.is_active_academic_year !== false
                                                 ? 'text-emerald-600 dark:text-emerald-400'
                                                 : 'text-amber-600 dark:text-amber-400'
-                                        }`}>
+                                        }`}
+                                    >
                                         {section.is_active_academic_year !== false
                                             ? 'Active Academic Year'
                                             : 'Archived Year'}
@@ -303,7 +317,10 @@ export default function Step2FacultyLoadSectionList({
                                                 >
                                                     <option value="">— Unassign Instructor —</option>
                                                     {facultyOptions.map((opt) => (
-                                                        <option key={opt.value} value={opt.value}>
+                                                        <option
+                                                            key={opt.value}
+                                                            value={opt.value}
+                                                        >
                                                             {opt.label}
                                                         </option>
                                                     ))}

@@ -14,6 +14,7 @@ import {
 } from '@phosphor-icons/react';
 import { MouseEventButtonElement } from '@type/common.type';
 import { useState } from 'react';
+
 import {
     CALENDAR_CATEGORIES,
     CalendarEventCategory,
@@ -25,9 +26,9 @@ export interface CalendarActionMenuProps {
     canCreateEvents?: boolean;
     isLoading?: boolean;
     viewMode: CalendarViewMode;
-    onCreateEvent?: () => void;
-    onReload: () => void;
-    onSelectAllCategories: () => void;
+    onCreateEvent?: VoidFunction;
+    onReload: VoidFunction;
+    onSelectAllCategories: VoidFunction;
     onSelectViewMode: (mode: CalendarViewMode) => void;
     onToggleCategory: (category: CalendarEventCategory) => void;
 }
@@ -103,7 +104,10 @@ export default function CalendarActionMenu({
                 variant="outlined"
                 onClick={handleOpenMenu}
             >
-                <DotsThreeVerticalIcon size={20} weight="bold" />
+                <DotsThreeVerticalIcon
+                    size={20}
+                    weight="bold"
+                />
                 {isFilterActive && (
                     <span
                         className="absolute top-1 right-1 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white dark:ring-neutral-900"
@@ -143,15 +147,21 @@ export default function CalendarActionMenu({
                         <CommonButton
                             aria-label="Month View"
                             className="min-w-0 px-2 py-1 text-xs"
-                            color={viewMode === 'month' ? 'primary' : 'inherit'}
+                            color={viewMode === 'month'
+                                ? 'primary'
+                                : 'inherit'}
                             size="small"
-                            startIcon={
+                            startIcon={(
                                 <GridFourIcon
                                     size={14}
-                                    weight={viewMode === 'month' ? 'bold' : 'regular'}
+                                    weight={viewMode === 'month'
+                                        ? 'bold'
+                                        : 'regular'}
                                 />
-                            }
-                            variant={viewMode === 'month' ? 'contained' : 'text'}
+                            )}
+                            variant={viewMode === 'month'
+                                ? 'contained'
+                                : 'text'}
                             onClick={() => handleViewSelect('month')}
                         >
                             Month
@@ -160,15 +170,21 @@ export default function CalendarActionMenu({
                         <CommonButton
                             aria-label="Week View"
                             className="min-w-0 px-2 py-1 text-xs"
-                            color={viewMode === 'week' ? 'primary' : 'inherit'}
+                            color={viewMode === 'week'
+                                ? 'primary'
+                                : 'inherit'}
                             size="small"
-                            startIcon={
+                            startIcon={(
                                 <CalendarDotsIcon
                                     size={14}
-                                    weight={viewMode === 'week' ? 'bold' : 'regular'}
+                                    weight={viewMode === 'week'
+                                        ? 'bold'
+                                        : 'regular'}
                                 />
-                            }
-                            variant={viewMode === 'week' ? 'contained' : 'text'}
+                            )}
+                            variant={viewMode === 'week'
+                                ? 'contained'
+                                : 'text'}
                             onClick={() => handleViewSelect('week')}
                         >
                             Week
@@ -177,15 +193,21 @@ export default function CalendarActionMenu({
                         <CommonButton
                             aria-label="Day View"
                             className="min-w-0 px-2 py-1 text-xs"
-                            color={viewMode === 'day' ? 'primary' : 'inherit'}
+                            color={viewMode === 'day'
+                                ? 'primary'
+                                : 'inherit'}
                             size="small"
-                            startIcon={
+                            startIcon={(
                                 <ClockIcon
                                     size={14}
-                                    weight={viewMode === 'day' ? 'bold' : 'regular'}
+                                    weight={viewMode === 'day'
+                                        ? 'bold'
+                                        : 'regular'}
                                 />
-                            }
-                            variant={viewMode === 'day' ? 'contained' : 'text'}
+                            )}
+                            variant={viewMode === 'day'
+                                ? 'contained'
+                                : 'text'}
                             onClick={() => handleViewSelect('day')}
                         >
                             Day
@@ -194,15 +216,21 @@ export default function CalendarActionMenu({
                         <CommonButton
                             aria-label="Agenda View"
                             className="min-w-0 px-2 py-1 text-xs"
-                            color={viewMode === 'agenda' ? 'primary' : 'inherit'}
+                            color={viewMode === 'agenda'
+                                ? 'primary'
+                                : 'inherit'}
                             size="small"
-                            startIcon={
+                            startIcon={(
                                 <ListBulletsIcon
                                     size={14}
-                                    weight={viewMode === 'agenda' ? 'bold' : 'regular'}
+                                    weight={viewMode === 'agenda'
+                                        ? 'bold'
+                                        : 'regular'}
                                 />
-                            }
-                            variant={viewMode === 'agenda' ? 'contained' : 'text'}
+                            )}
+                            variant={viewMode === 'agenda'
+                                ? 'contained'
+                                : 'text'}
                             onClick={() => handleViewSelect('agenda')}
                         >
                             Agenda
@@ -222,7 +250,9 @@ export default function CalendarActionMenu({
                             type="button"
                             onClick={onSelectAllCategories}
                         >
-                            {activeCategories.size === CALENDAR_CATEGORIES.length ? 'Reset' : 'Select All'}
+                            {activeCategories.size === CALENDAR_CATEGORIES.length
+                                ? 'Reset'
+                                : 'Select All'}
                         </button>
                     </div>
                 </div>
@@ -277,7 +307,10 @@ export default function CalendarActionMenu({
                         }}
                     >
                         <div className="flex gap-2 items-center text-blue-600 font-medium">
-                            <PlusIcon size={16} weight="bold" />
+                            <PlusIcon
+                                size={16}
+                                weight="bold"
+                            />
                             <span>Create Event</span>
                         </div>
                     </MenuItem>
@@ -293,7 +326,9 @@ export default function CalendarActionMenu({
                 >
                     <div className="flex gap-2 items-center">
                         <ArrowsClockwiseIcon
-                            className={isLoading ? 'animate-spin' : ''}
+                            className={isLoading
+                                ? 'animate-spin'
+                                : ''}
                             size={16}
                         />
                         <span>Reload Calendar</span>

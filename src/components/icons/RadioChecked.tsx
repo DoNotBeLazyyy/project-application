@@ -19,9 +19,35 @@ export default function RadioCheckedIcon({
     ...props
 }: IconSvgProps) {
     return (
-        <svg fill="none" height={height} overflow="visible" viewBox="0 0 24 24" width={width} xmlns="http://www.w3.org/2000/svg" {...props}>
-            <rect fill="currentColor" height="22" rx="11" stroke="currentColor" strokeWidth={strokeWidth} width="22" x="1" y="1" />
-            <rect fill="white" height="8" rx="4" stroke="white" strokeWidth="2" width="8" x="8" y="8" />
+        <svg
+            fill="none"
+            height={height}
+            overflow="visible"
+            viewBox="0 0 24 24"
+            width={width}
+            xmlns="http://www.w3.org/2000/svg"
+            {...props}
+        >
+            <rect
+                fill="currentColor"
+                height="22"
+                rx="11"
+                stroke="currentColor"
+                strokeWidth={strokeWidth}
+                width="22"
+                x="1"
+                y="1"
+            />
+            <rect
+                fill="white"
+                height="8"
+                rx="4"
+                stroke="white"
+                strokeWidth="2"
+                width="8"
+                x="8"
+                y="8"
+            />
         </svg>
     );
 }

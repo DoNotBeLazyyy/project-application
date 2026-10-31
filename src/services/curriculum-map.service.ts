@@ -26,9 +26,15 @@ export async function createCurriculumMapEntry(
         p_school_year_id: schoolYearId || null,
         p_sequence: Number(params.sequence),
         p_is_elective: params.is_elective,
-        p_lecture_units: params.lecture_units !== undefined && params.lecture_units !== '' ? Number(params.lecture_units) : null,
-        p_laboratory_units: params.laboratory_units !== undefined && params.laboratory_units !== '' ? Number(params.laboratory_units) : null,
-        p_units: params.units !== undefined && params.units !== '' ? Number(params.units) : null,
+        p_lecture_units: params.lecture_units !== undefined && params.lecture_units !== ''
+            ? Number(params.lecture_units)
+            : null,
+        p_laboratory_units: params.laboratory_units !== undefined && params.laboratory_units !== ''
+            ? Number(params.laboratory_units)
+            : null,
+        p_units: params.units !== undefined && params.units !== ''
+            ? Number(params.units)
+            : null,
         p_type_units: params.type_units || null
     });
 }
@@ -46,9 +52,15 @@ export async function updateCurriculumMapEntry(
         p_school_year_id: schoolYearId || null,
         p_sequence: Number(params.sequence),
         p_is_elective: params.is_elective,
-        p_lecture_units: params.lecture_units !== undefined && params.lecture_units !== '' ? Number(params.lecture_units) : null,
-        p_laboratory_units: params.laboratory_units !== undefined && params.laboratory_units !== '' ? Number(params.laboratory_units) : null,
-        p_units: params.units !== undefined && params.units !== '' ? Number(params.units) : null,
+        p_lecture_units: params.lecture_units !== undefined && params.lecture_units !== ''
+            ? Number(params.lecture_units)
+            : null,
+        p_laboratory_units: params.laboratory_units !== undefined && params.laboratory_units !== ''
+            ? Number(params.laboratory_units)
+            : null,
+        p_units: params.units !== undefined && params.units !== ''
+            ? Number(params.units)
+            : null,
         p_type_units: params.type_units || null
     });
 }
@@ -72,33 +84,40 @@ const BOOLEAN_TEXTS = ['true', 'false', 'yes', 'no', 'y', 'n', '1', '0', 't', 'f
  * @returns The cleaned row, or the reason it cannot be imported.
  */
 function sanitizeCurriculumRow(entry: CurriculumMapBulkRow): { row?: CurriculumMapBulkRow; message?: string } {
-    const yearLevel = Number(String(entry.year_level ?? '').trim());
+    const yearLevel = Number(String(entry.year_level ?? '')
+        .trim());
     if (!Number.isInteger(yearLevel) || yearLevel < 1 || yearLevel > 6) {
         return { message: 'Year level must be a whole number from 1 to 6' };
     }
 
     const row: CurriculumMapBulkRow = { ...entry, year_level: String(yearLevel) };
 
-    const sequence = String(entry.sequence ?? '').trim();
+    const sequence = String(entry.sequence ?? '')
+        .trim();
     if (sequence === '') {
         delete (row as Partial<CurriculumMapBulkRow>).sequence;
-    } else if (!Number.isInteger(Number(sequence)) || Number(sequence) < 1 || Number(sequence) > 32767) {
+    }
+    else if (!Number.isInteger(Number(sequence)) || Number(sequence) < 1 || Number(sequence) > 32767) {
         return { message: 'Sequence must be a whole number of 1 or more' };
     }
 
-    const isElective = String(entry.is_elective ?? '').trim()
+    const isElective = String(entry.is_elective ?? '')
+        .trim()
         .toLowerCase();
     if (isElective === '') {
         delete (row as Partial<CurriculumMapBulkRow>).is_elective;
-    } else if (!BOOLEAN_TEXTS.includes(isElective)) {
+    }
+    else if (!BOOLEAN_TEXTS.includes(isElective)) {
         return { message: 'Is elective must be true or false' };
     }
 
     for (const key of ['lecture_units', 'laboratory_units', 'units'] as const) {
-        const value = String(entry[key] ?? '').trim();
+        const value = String(entry[key] ?? '')
+            .trim();
         if (value === '') {
             delete row[key];
-        } else if (isNaN(Number(value)) || Number(value) < 0) {
+        }
+        else if (isNaN(Number(value)) || Number(value) < 0) {
             return { message: 'Units must be numbers of 0 or more' };
         }
     }
@@ -119,7 +138,8 @@ export async function bulkCreateCurriculumMap(
         if (row) {
             sentEntries.push(row);
             sentRowNumbers.push(index + 1);
-        } else {
+        }
+        else {
             errors.push(`Row ${index + 1} (${entry.course_code || 'unknown'}): ${message}`);
         }
     });

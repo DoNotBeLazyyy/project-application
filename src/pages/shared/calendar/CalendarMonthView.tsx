@@ -1,6 +1,7 @@
 import { CalendarDay } from '@type/common/calendar.type';
 import { getCalendarDays } from '@utils/calendar.util';
 import { useMemo, useState } from 'react';
+
 import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from './calendar.types';
 import { CalendarDayEventsModal } from './CalendarDayEventsModal';
 
@@ -19,9 +20,12 @@ const WEEKDAY_NAMES_SHORT = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const WEEKDAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function isDateInRange(target: Date, start: Date, end: Date): boolean {
-    const t = new Date(target.getFullYear(), target.getMonth(), target.getDate()).getTime();
-    const s = new Date(start.getFullYear(), start.getMonth(), start.getDate()).getTime();
-    const e = new Date(end.getFullYear(), end.getMonth(), end.getDate()).getTime();
+    const t = new Date(target.getFullYear(), target.getMonth(), target.getDate())
+        .getTime();
+    const s = new Date(start.getFullYear(), start.getMonth(), start.getDate())
+        .getTime();
+    const e = new Date(end.getFullYear(), end.getMonth(), end.getDate())
+        .getTime();
     return t >= s && t <= e;
 }
 
@@ -72,8 +76,10 @@ export function CalendarMonthView({
             <div className="grid grid-cols-7 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-800/40 text-center text-[11px] sm:text-xs font-semibold text-neutral-500 dark:text-neutral-400 py-2 sm:py-3 shrink-0">
                 {WEEKDAY_NAMES.map((d, idx) => (
                     <div
+                        className={idx === 0 || idx === 6
+                            ? 'text-neutral-400 dark:text-neutral-500'
+                            : ''}
                         key={d}
-                        className={idx === 0 || idx === 6 ? 'text-neutral-400 dark:text-neutral-500' : ''}
                     >
                         <span className="sm:hidden">{WEEKDAY_NAMES_SHORT[idx]}</span>
                         <span className="hidden sm:inline">{d}</span>
@@ -85,25 +91,31 @@ export function CalendarMonthView({
             <div className="grid grid-cols-7 divide-x divide-y divide-neutral-200/70 dark:divide-neutral-800/70 bg-neutral-100/40 dark:bg-neutral-900/40 overflow-y-auto flex-1 min-h-0">
                 {calendarDays.map((dayItem: CalendarDay, index: number) => {
                     const cellDate = new Date(dayItem.date + 'T00:00:00');
-                    const isSelected =
-                        selectedDate.getFullYear() === cellDate.getFullYear() &&
-                        selectedDate.getMonth() === cellDate.getMonth() &&
-                        selectedDate.getDate() === cellDate.getDate();
+                    const isSelected
+                        = selectedDate.getFullYear() === cellDate.getFullYear()
+                        && selectedDate.getMonth() === cellDate.getMonth()
+                        && selectedDate.getDate() === cellDate.getDate();
 
                     // Filter events occurring on this date
                     const dayEvents = events.filter((ev) => isDateInRange(cellDate, ev.start, ev.end));
                     const visibleEvents = dayEvents.slice(0, 3);
                     const overflowCount = dayEvents.length - 3;
                     const firstEvent = dayEvents[0];
-                    const firstCat = firstEvent ? (categoryMap.get(firstEvent.category) || CALENDAR_CATEGORIES[0]) : null;
+                    const firstCat = firstEvent
+                        ? (categoryMap.get(firstEvent.category) || CALENDAR_CATEGORIES[0])
+                        : null;
 
                     return (
                         <div
-                            key={`${dayItem.date}-${index}`}
                             aria-label={`${dayItem.date}, ${dayEvents.length} events`}
                             className={`min-h-[52px] sm:min-h-[90px] md:min-h-[125px] p-0.5 sm:p-2 flex flex-col transition-colors cursor-pointer group bg-white dark:bg-neutral-900 ${
-                                !dayItem.isCurrentMonth ? 'opacity-40 bg-neutral-50/60 dark:bg-neutral-950/40' : ''
-                            } ${isSelected ? 'ring-2 ring-inset ring-brand-500/80 bg-brand-50/20 dark:bg-brand-950/20' : 'hover:bg-neutral-50/70 dark:hover:bg-neutral-800/40'}`}
+                                !dayItem.isCurrentMonth
+                                    ? 'opacity-40 bg-neutral-50/60 dark:bg-neutral-950/40'
+                                    : ''
+                            } ${isSelected
+                                ? 'ring-2 ring-inset ring-brand-500/80 bg-brand-50/20 dark:bg-brand-950/20'
+                                : 'hover:bg-neutral-50/70 dark:hover:bg-neutral-800/40'}`}
+                            key={`${dayItem.date}-${index}`}
                             onClick={() => handleCellClick(cellDate, dayEvents)}
                         >
                             {/* Cell Header */}
@@ -113,8 +125,8 @@ export function CalendarMonthView({
                                         dayItem.isToday
                                             ? 'bg-blue-600 text-white font-bold shadow-xs'
                                             : isSelected
-                                              ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 font-semibold'
-                                              : 'text-neutral-700 dark:text-neutral-300 group-hover:scale-110'
+                                                ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 font-semibold'
+                                                : 'text-neutral-700 dark:text-neutral-300 group-hover:scale-110'
                                     }`}
                                 >
                                     {dayItem.day}
@@ -122,7 +134,9 @@ export function CalendarMonthView({
 
                                 {dayEvents.length > 0 && (
                                     <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 hidden sm:inline">
-                                        {dayEvents.length} {dayEvents.length === 1 ? 'item' : 'items'}
+                                        {dayEvents.length} {dayEvents.length === 1
+                                            ? 'item'
+                                            : 'items'}
                                     </span>
                                 )}
                             </div>
@@ -152,9 +166,9 @@ export function CalendarMonthView({
 
                                     return (
                                         <button
-                                            key={ev.id}
                                             aria-label={`${ev.title} at ${timeLabel}`}
                                             className={`w-full text-left truncate px-1 sm:px-1.5 py-0.5 rounded text-[10px] sm:text-[11px] font-medium border flex items-center gap-1 transition-transform hover:scale-[1.02] shadow-2xs cursor-pointer ${cat.bgClass}`}
+                                            key={ev.id}
                                             type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();

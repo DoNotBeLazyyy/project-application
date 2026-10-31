@@ -30,7 +30,9 @@ const GRADE_OPTIONS: CommonSelectOption[] = [
 ];
 
 function formatGwa(val: number | null): string {
-    return val !== null && val !== undefined ? val.toFixed(2) : '—';
+    return val !== null && val !== undefined
+        ? val.toFixed(2)
+        : '—';
 }
 
 export default function WhatIfGradeSimulator({ academic, courses, trajectory }: WhatIfGradeSimulatorProps) {
@@ -87,7 +89,9 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
             termTotalUnits += courseUnits;
         });
 
-        const simTermGwa = termTotalUnits > 0 ? termTotalWeighted / termTotalUnits : 0;
+        const simTermGwa = termTotalUnits > 0
+            ? termTotalWeighted / termTotalUnits
+            : 0;
 
         // Cumulative Calculation
         const currentCum = academic.cumulative_gwa || simTermGwa;
@@ -96,8 +100,12 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
         const totalCumWeighted = (currentCum * currentEarnedUnits) + termTotalWeighted;
         const totalCumUnits = currentEarnedUnits + termTotalUnits;
 
-        const simCumGwa = totalCumUnits > 0 ? totalCumWeighted / totalCumUnits : currentCum;
-        const delta = academic.cumulative_gwa ? simCumGwa - academic.cumulative_gwa : 0;
+        const simCumGwa = totalCumUnits > 0
+            ? totalCumWeighted / totalCumUnits
+            : currentCum;
+        const delta = academic.cumulative_gwa
+            ? simCumGwa - academic.cumulative_gwa
+            : 0;
 
         return {
             simulatedTermGwa: Number(simTermGwa.toFixed(2)),
@@ -111,10 +119,13 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
         const cumGwa = simulationResults.simulatedCumGwa;
         if (!cumGwa) return [];
 
-        const hasSimulatedFailingGrade = Object.values(simulatedGrades).some((g) => parseFloat(g) >= 5.0);
+        const hasSimulatedFailingGrade = Object.values(simulatedGrades)
+            .some((g) => parseFloat(g) >= 5.0);
 
         const uniqueTrajectories = trajectory.filter(function(item, idx, arr) {
-            return arr.findIndex(function(t) { return t.code === item.code; }) === idx;
+            return arr.findIndex(function(t) {
+                return t.code === item.code;
+            }) === idx;
         });
 
         return uniqueTrajectories.map(function(item) {
@@ -133,7 +144,9 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
     const isEveryAwardBlocked = honorTrajectoryEval.length > 0
         && honorTrajectoryEval.every((item) => item.is_blocked_by_failing);
     const loosestTarget = honorTrajectoryEval.reduce<number | null>(function(max, item) {
-        return max === null || item.target_gwa > max ? item.target_gwa : max;
+        return max === null || item.target_gwa > max
+            ? item.target_gwa
+            : max;
     }, null);
 
     const highestQualifiedHonor = useMemo(function() {
@@ -149,7 +162,10 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
             <div className="flex flex-wrap gap-3 items-center justify-between">
                 <div className="flex gap-2.5 items-center">
                     <div className="bg-(--mui-tokens-color-brand-100) p-2 rounded-lg text-(--mui-tokens-color-brand-900)">
-                        <CalculatorIcon size={22} weight="bold" />
+                        <CalculatorIcon
+                            size={22}
+                            weight="bold"
+                        />
                     </div>
                     <div className="flex flex-col">
                         <h2 className="font-semibold text-(--mui-palette-text-primary) text-base md:text-lg">
@@ -165,7 +181,12 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                     <CommonButton
                         color="inherit"
                         size="small"
-                        startIcon={<ArrowCounterClockwiseIcon size={14} weight="bold" />}
+                        startIcon={(
+                            <ArrowCounterClockwiseIcon
+                                size={14}
+                                weight="bold"
+                            />
+                        )}
                         variant="outlined"
                         onClick={handleReset}
                     >
@@ -192,7 +213,9 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                                         : 'text-(--mui-palette-error-main)'
                                 }`}
                             >
-                                ({simulationResults.delta < 0 ? '' : '+'}{simulationResults.delta.toFixed(2)})
+                                ({simulationResults.delta < 0
+                                    ? ''
+                                    : '+'}{simulationResults.delta.toFixed(2)})
                             </span>
                         )}
                     </div>
@@ -209,7 +232,9 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                         {formatGwa(simulationResults.simulatedTermGwa)}
                     </span>
                     <span className="text-(--mui-tokens-color-neutral-600) text-xs">
-                        Across {courses.length} enrolled subject{courses.length === 1 ? '' : 's'}
+                        Across {courses.length} enrolled subject{courses.length === 1
+                            ? ''
+                            : 's'}
                     </span>
                 </div>
 
@@ -218,9 +243,15 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                         Projected Trajectory
                     </span>
                     <div className="flex gap-2 items-center">
-                        <TrophyIcon className="text-(--mui-palette-warning-main)" size={20} weight="fill" />
+                        <TrophyIcon
+                            className="text-(--mui-palette-warning-main)"
+                            size={20}
+                            weight="fill"
+                        />
                         <span className="font-semibold text-(--mui-palette-text-primary) text-base truncate">
-                            {highestQualifiedHonor ? highestQualifiedHonor.label : 'No award yet'}
+                            {highestQualifiedHonor
+                                ? highestQualifiedHonor.label
+                                : 'No award yet'}
                         </span>
                     </div>
                 </div>
@@ -236,7 +267,6 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                         const isQual = item.is_currently_qualified;
                         return (
                             <div
-                                key={item.code}
                                 className={`border p-3 rounded-lg flex flex-col gap-1 transition-all ${
                                     isQual
                                         ? 'border-(--mui-palette-success-main) bg-(--mui-palette-success-light)/10'
@@ -244,14 +274,23 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                                             ? 'border-(--mui-palette-error-main)/40 bg-(--mui-palette-error-light)/5'
                                             : 'border-(--mui-palette-divider) bg-white'
                                 }`}
+                                key={item.code}
                             >
                                 <div className="flex items-center justify-between gap-2">
                                     <span className="font-medium text-xs text-(--mui-palette-text-primary)">
                                         {item.label}
                                     </span>
                                     <CommonBadgeStatus
-                                        label={isQual ? 'Qualified' : item.is_blocked_by_failing ? 'Blocked' : 'Target'}
-                                        variant={isQual ? 'success' : item.is_blocked_by_failing ? 'error' : 'warning'}
+                                        label={isQual
+                                            ? 'Qualified'
+                                            : item.is_blocked_by_failing
+                                                ? 'Blocked'
+                                                : 'Target'}
+                                        variant={isQual
+                                            ? 'success'
+                                            : item.is_blocked_by_failing
+                                                ? 'error'
+                                                : 'warning'}
                                     />
                                 </div>
                                 <span className="text-xs text-(--mui-palette-text-secondary)">
@@ -290,7 +329,10 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                                     const currentVal = simulatedGrades[course.enrollment_id] || '1.25';
 
                                     return (
-                                        <tr key={course.enrollment_id} className="hover:bg-(--mui-palette-action-hover)">
+                                        <tr
+                                            className="hover:bg-(--mui-palette-action-hover)"
+                                            key={course.enrollment_id}
+                                        >
                                             <td className="px-4 py-3 font-semibold text-(--mui-palette-text-primary) text-xs">
                                                 {course.course_code}
                                             </td>
@@ -298,7 +340,9 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                                                 {course.course_title}
                                             </td>
                                             <td className="px-4 py-3 text-right font-medium text-xs">
-                                                {course.released_grade ? formatGwa(course.released_grade) : 'Pending'}
+                                                {course.released_grade
+                                                    ? formatGwa(course.released_grade)
+                                                    : 'Pending'}
                                             </td>
                                             <td className="px-4 py-2">
                                                 <CommonSelect
@@ -321,33 +365,39 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
 
             {/* Tactical Advice Box */}
             <div className="bg-(--mui-tokens-color-brand-50) border border-(--mui-tokens-color-brand-100) p-4 rounded-lg flex items-start gap-3">
-                <SparkleIcon className="text-(--mui-tokens-color-brand-900) shrink-0 mt-0.5" size={20} weight="fill" />
+                <SparkleIcon
+                    className="text-(--mui-tokens-color-brand-900) shrink-0 mt-0.5"
+                    size={20}
+                    weight="fill"
+                />
                 <div className="flex flex-col gap-1 text-xs text-(--mui-palette-text-primary)">
                     <span className="font-semibold text-sm">Simulator Tactical Insight</span>
                     <p className="m-0 leading-relaxed">
-                        {highestQualifiedHonor ? (
-                            <>
+                        {highestQualifiedHonor
+                            ? (
+                                <>
                                 Maintaining these simulated grades yields a Cumulative GWA of{' '}
-                                <strong>{formatGwa(simulationResults.simulatedCumGwa)}</strong>, putting you on track to graduate with{' '}
-                                <strong>{highestQualifiedHonor.label}</strong> honours!
-                            </>
-                        ) : (
-                            isEveryAwardBlocked
-                                ? (
-                                    <>
+                                    <strong>{formatGwa(simulationResults.simulatedCumGwa)}</strong>, putting you on track to graduate with{' '}
+                                    <strong>{highestQualifiedHonor.label}</strong> honours!
+                                </>
+                            )
+                            : (
+                                isEveryAwardBlocked
+                                    ? (
+                                        <>
                                         A failing grade blocks every honor and scholarship. Focus on passing all of your
                                         current subjects; ask your adviser about retaking the failed subject.
-                                    </>
-                                )
-                                : (
-                                    <>
+                                        </>
+                                    )
+                                    : (
+                                        <>
                                         Your simulated Cumulative GWA is <strong>{formatGwa(simulationResults.simulatedCumGwa)}</strong>.
-                                        {loosestTarget !== null && (
-                                            <> Bring it to <strong>{formatGwa(loosestTarget)}</strong> or better to reach the first award.</>
-                                        )}
-                                    </>
-                                )
-                        )}
+                                            {loosestTarget !== null && (
+                                                <> Bring it to <strong>{formatGwa(loosestTarget)}</strong> or better to reach the first award.</>
+                                            )}
+                                        </>
+                                    )
+                            )}
                     </p>
                 </div>
             </div>

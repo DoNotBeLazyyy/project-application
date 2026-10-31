@@ -128,18 +128,20 @@ export default function CommonSideBar({
             }
             {...props}
         >
-            {headerProps && <CommonHeaderSideBar
-                {...headerProps}
-                isExpanded={isExpanded}
-                isLocked={isOpen}
-                variant={variant}
-                onLogoClick={
-                    !isMobile && !hasHover && onToggleLock
-                        ? onToggleLock
-                        : undefined
-                }
-                onToggleLock={onToggleLock}
-            />}
+            {headerProps && (
+                <CommonHeaderSideBar
+                    {...headerProps}
+                    isExpanded={isExpanded}
+                    isLocked={isOpen}
+                    variant={variant}
+                    onLogoClick={
+                        !isMobile && !hasHover && onToggleLock
+                            ? onToggleLock
+                            : undefined
+                    }
+                    onToggleLock={onToggleLock}
+                />
+            )}
             <div
                 className={
                     classMerge(

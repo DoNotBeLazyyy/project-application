@@ -44,7 +44,9 @@ export async function login(email: string, password: string): Promise<ServiceRes
             }
             return {
                 data: null,
-                error: { code: null, message: msg, status: null }
+                error: {
+                    code: null, message: msg, status: null
+                }
             };
         }
     }
@@ -53,7 +55,8 @@ export async function login(email: string, password: string): Promise<ServiceRes
 }
 
 export async function verifyUserEmail(email: string): Promise<ServiceResult<VerifyEmailResult>> {
-    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedEmail = email.trim()
+        .toLowerCase();
     if (!trimmedEmail) {
         return {
             data: null,
@@ -73,7 +76,8 @@ export async function verifyUserEmail(email: string): Promise<ServiceResult<Veri
 }
 
 export async function requestPasswordReset(email: string): Promise<ServiceResult<null>> {
-    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedEmail = email.trim()
+        .toLowerCase();
 
     // 1. Verify if email exists in system before requesting password reset
     const { data: verification, error: verifyError } = await verifyUserEmail(trimmedEmail);
@@ -231,7 +235,23 @@ export async function initAuthSession(): Promise<AuthSessionStatus> {
     return 'authenticated';
 }
 
-export function setupAuthListener(): () => void {
+/**
+ * Starts the session check when the app opens. It waits for the check only when the saved
+ * profile belongs to someone other than the signed-in user, so pages never route with
+ * another account's roles.
+ */
+export async function bootstrapAuthSession(): Promise<void> {
+    const { data: { session } } = await supabase.auth.getSession();
+    const storedUserId = useAppStore.getState().userProfile?.id;
+    const isStoredUserStale = Boolean(session && storedUserId !== session.user.id);
+    const sessionCheck = initAuthSession();
+
+    if (isStoredUserStale) {
+        await sessionCheck;
+    }
+}
+
+export function setupAuthListener(): VoidFunction {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
         const store = useAppStore.getState();
 

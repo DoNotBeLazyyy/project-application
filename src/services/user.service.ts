@@ -65,10 +65,10 @@ export async function deactivateUsers(userIds: string[]): Promise<ServiceResult<
         client.from('users')
             .update({
                 status: 'Inactive',
-                updated_at: new Date().toISOString()
+                updated_at: new Date()
+                    .toISOString()
             })
-            .in('id', userIds)
-    );
+            .in('id', userIds));
 }
 
 export async function reactivateUsers(userIds: string[]): Promise<ServiceResult<null>> {
@@ -80,10 +80,10 @@ export async function reactivateUsers(userIds: string[]): Promise<ServiceResult<
         client.from('users')
             .update({
                 status: 'Active',
-                updated_at: new Date().toISOString()
+                updated_at: new Date()
+                    .toISOString()
             })
-            .in('id', userIds)
-    );
+            .in('id', userIds));
 }
 
 export async function updateUser(

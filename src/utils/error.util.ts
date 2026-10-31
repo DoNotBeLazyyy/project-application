@@ -1,9 +1,15 @@
 import { ServiceErrorProps } from '@type/service.type';
 
 export function formatHumanReadableDbError(raw: Record<string, unknown>): string | null {
-    const code = typeof raw['code'] === 'string' ? raw['code'] : '';
-    const rawMessage = typeof raw['message'] === 'string' ? raw['message'] : '';
-    const details = typeof raw['details'] === 'string' ? raw['details'] : '';
+    const code = typeof raw['code'] === 'string'
+        ? raw['code']
+        : '';
+    const rawMessage = typeof raw['message'] === 'string'
+        ? raw['message']
+        : '';
+    const details = typeof raw['details'] === 'string'
+        ? raw['details']
+        : '';
 
     const isUniqueViolation = code === '23505'
         || /unique constraint|duplicate key value violates unique constraint/i.test(rawMessage);
@@ -13,12 +19,18 @@ export function formatHumanReadableDbError(raw: Record<string, unknown>): string
         // e.g. "Key (name)=(College of Computer Studies) already exists."
         // or "Key (code)=(CCS) already exists."
         const detailsMatch = details.match(/Key\s*\((.*?)\)\s*=\s*\((.*?)\)\s*already exists/i);
-        const fieldFromDetails = detailsMatch ? detailsMatch[1].trim() : '';
-        const valueFromDetails = detailsMatch ? detailsMatch[2].trim() : '';
+        const fieldFromDetails = detailsMatch
+            ? detailsMatch[1].trim()
+            : '';
+        const valueFromDetails = detailsMatch
+            ? detailsMatch[2].trim()
+            : '';
 
         // Extract constraint name: e.g. "uidx_departments_name"
         const constraintMatch = rawMessage.match(/constraint\s*["']?([^"'\s]+)["']?/i);
-        const constraintName = constraintMatch ? constraintMatch[1].trim() : '';
+        const constraintName = constraintMatch
+            ? constraintMatch[1].trim()
+            : '';
 
         // Specific humanization for departments
         const isDepartment = /department/i.test(constraintName) || /department/i.test(rawMessage);
@@ -97,12 +109,16 @@ export function formatHumanReadableDbError(raw: Record<string, unknown>): string
 
         // Generic fallback for any other unique constraint
         if (fieldFromDetails && valueFromDetails) {
-            const fieldLabel = fieldFromDetails.charAt(0).toUpperCase() + fieldFromDetails.slice(1).replace(/_/g, ' ');
+            const fieldLabel = fieldFromDetails.charAt(0)
+                .toUpperCase() + fieldFromDetails.slice(1)
+                .replace(/_/g, ' ');
             return `${fieldLabel} "${valueFromDetails}" already exists. Please use a different value.`;
         }
 
         if (fieldFromDetails) {
-            const fieldLabel = fieldFromDetails.charAt(0).toUpperCase() + fieldFromDetails.slice(1).replace(/_/g, ' ');
+            const fieldLabel = fieldFromDetails.charAt(0)
+                .toUpperCase() + fieldFromDetails.slice(1)
+                .replace(/_/g, ' ');
             return `A record with this ${fieldLabel.toLowerCase()} already exists. Please use a unique value.`;
         }
 
@@ -118,7 +134,9 @@ export function formatHumanReadableDbError(raw: Record<string, unknown>): string
     if (code === '23502' || /violates not-null constraint/i.test(rawMessage)) {
         const colMatch = rawMessage.match(/column\s*["']?([^"'\s]+)["']?/i);
         const colName = colMatch
-            ? colMatch[1].charAt(0).toUpperCase() + colMatch[1].slice(1).replace(/_/g, ' ')
+            ? colMatch[1].charAt(0)
+                .toUpperCase() + colMatch[1].slice(1)
+                .replace(/_/g, ' ')
             : 'A required field';
         return `${colName} is required. Please fill in all required fields.`;
     }
@@ -144,7 +162,8 @@ export function parseServiceError(error: unknown): ServiceErrorProps {
         let fallbackMessage = 'An unexpected error occurred';
         if (typeof raw['message'] === 'string' && raw['message'].trim() !== '') {
             fallbackMessage = raw['message'];
-        } else if (error instanceof Error && error.message) {
+        }
+        else if (error instanceof Error && error.message) {
             fallbackMessage = error.message;
         }
 

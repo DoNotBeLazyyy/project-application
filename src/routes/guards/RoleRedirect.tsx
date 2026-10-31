@@ -10,11 +10,23 @@ export default function RoleRedirect({ targetPath }: RoleRedirectProps = {}) {
     const activeRole = useAppStore((s) => s.activeRole);
 
     if (!activeRole) {
-        return <Navigate replace to="/login" />;
+        return (
+            <Navigate
+                replace
+                to="/login"
+            />
+        );
     }
 
     const base = ROLE_HOME[activeRole];
-    const destination = targetPath ? `${base}/${targetPath}` : base;
+    const destination = targetPath
+        ? `${base}/${targetPath}`
+        : base;
 
-    return <Navigate replace to={destination} />;
+    return (
+        <Navigate
+            replace
+            to={destination}
+        />
+    );
 }

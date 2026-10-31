@@ -1,5 +1,5 @@
-import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import CommonButton from '@components/button/CommonButton';
+import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import ValidCommonNumberInput from '@components/input/ValidCommonNumberInput';
@@ -8,10 +8,10 @@ import CommonPromptModal from '@components/modal/CommonPromptModal';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
-import { useFormDraft } from '@hooks/useFormDraft';
 import ValidCommonSelect from '@components/select/ValidCommonSelect';
 import ValidCommonTextarea from '@components/textarea/ValidCommonTextArea';
 import { QUESTIONS_SCROLL_STEP } from '@constants/evaluation.constant';
+import { useFormDraft } from '@hooks/useFormDraft';
 import { useInfiniteScroll } from '@hooks/useInfiniteScroll';
 import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
 import {
@@ -194,7 +194,10 @@ function EvaluationQuestionItem({
                                 type="button"
                                 onClick={() => onMove(index, index - 1)}
                             >
-                                <ArrowUpIcon className="w-4 h-4" weight="bold" />
+                                <ArrowUpIcon
+                                    className="w-4 h-4"
+                                    weight="bold"
+                                />
                             </button>
                             <button
                                 className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
@@ -203,7 +206,10 @@ function EvaluationQuestionItem({
                                 type="button"
                                 onClick={() => onMove(index, index + 1)}
                             >
-                                <ArrowDownIcon className="w-4 h-4" weight="bold" />
+                                <ArrowDownIcon
+                                    className="w-4 h-4"
+                                    weight="bold"
+                                />
                             </button>
                             <button
                                 className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors ml-1 cursor-pointer"
@@ -211,7 +217,10 @@ function EvaluationQuestionItem({
                                 type="button"
                                 onClick={() => onRemove(index)}
                             >
-                                <TrashIcon className="w-4 h-4" weight="bold" />
+                                <TrashIcon
+                                    className="w-4 h-4"
+                                    weight="bold"
+                                />
                             </button>
                         </div>
                     )}
@@ -233,7 +242,8 @@ function EvaluationQuestionItem({
                             : {
                                 required: 'Question text is required',
                                 validate: (val, formVals) => {
-                                    if (!val || !String(val).trim()) {
+                                    if (!val || !String(val)
+                                        .trim()) {
                                         return 'Question text cannot be empty or whitespace only';
                                     }
                                     return validateUniqueQuestion(val, formVals);
@@ -252,7 +262,9 @@ function EvaluationQuestionItem({
                     label="Question Type"
                     name={`questions.${index}.question_type` as const}
                     options={QUESTION_TYPE_OPTIONS}
-                    rules={disabled ? undefined : { required: 'Question type is required' }}
+                    rules={disabled
+                        ? undefined
+                        : { required: 'Question type is required' }}
                 />
 
                 {isRating && (
@@ -321,7 +333,7 @@ interface EvaluationWizardModalProps {
     templateId?: string | null;
     isSaving?: boolean;
     methods: UseFormReturn<EvaluationTemplateForm>;
-    onClose: () => void;
+    onClose: VoidFunction;
     onSubmit: (values: EvaluationTemplateForm) => void;
     onSwitchToEdit?: (step?: number) => void;
 }
@@ -422,7 +434,9 @@ export default function EvaluationWizardModal({
         if (!isValid) {
             const rootMessage = methods.formState.errors.questions?.root?.message;
             if (rootMessage) {
-                announceFormError({ count: 1, message: rootMessage, firstErrorField: 'questions' });
+                announceFormError({
+                    count: 1, message: rootMessage, firstErrorField: 'questions'
+                });
             }
             return;
         }
@@ -469,7 +483,8 @@ export default function EvaluationWizardModal({
         if (isSaving) return;
         if (!readOnly && draftGuard.hasRealChanges) {
             setIsConfirmCloseOpen(true);
-        } else {
+        }
+        else {
             draftGuard.clearDraft();
             setCurrentStep(1);
             onClose();
@@ -485,7 +500,8 @@ export default function EvaluationWizardModal({
                 ? undefined
                 : {
                     required: 'Section title is required',
-                    validate: (val: any) => Boolean(val && String(val).trim()) || 'Section title cannot be empty or whitespace only'
+                    validate: (val: any) => Boolean(val && String(val)
+                        .trim()) || 'Section title cannot be empty or whitespace only'
                 },
             type: 'text',
             fieldProps: { helperText: 'Shown as the section heading on the student form.' }
@@ -515,7 +531,9 @@ export default function EvaluationWizardModal({
             label: 'Program Target Mode',
             disabled: readOnly,
             fullWidth: targetMode === 'ALL',
-            gridCols: targetMode === 'ALL' ? 2 : 1,
+            gridCols: targetMode === 'ALL'
+                ? 2
+                : 1,
             options: TARGET_MODE_OPTIONS,
             rules: readOnly
                 ? undefined
@@ -525,8 +543,8 @@ export default function EvaluationWizardModal({
                 helperText: targetMode === 'ALL'
                     ? 'This evaluation section applies institution-wide to students in all programs.'
                     : targetMode === 'EXCLUDE'
-                    ? 'Selected programs will be excluded from this section.'
-                    : 'Only selected programs will be included in this section.'
+                        ? 'Selected programs will be excluded from this section.'
+                        : 'Only selected programs will be included in this section.'
             }
         },
         ...(targetMode !== 'ALL' ? [{
@@ -599,8 +617,8 @@ export default function EvaluationWizardModal({
                                 {readOnly
                                     ? 'View Evaluation Section'
                                     : templateId
-                                    ? 'Edit Evaluation Section'
-                                    : 'Create Evaluation Section'}
+                                        ? 'Edit Evaluation Section'
+                                        : 'Create Evaluation Section'}
                             </h2>
                             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                                 {readOnly
@@ -627,9 +645,9 @@ export default function EvaluationWizardModal({
                         </div>
 
                         <button
+                            aria-label="Close"
                             className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                             title="Close"
-                            aria-label="Close"
                             type="button"
                             onClick={handleCloseModal}
                         >
@@ -678,58 +696,25 @@ export default function EvaluationWizardModal({
                 {currentStep === 2 && (
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-3">
-                            {fields.length === 0 ? (
-                                <div className="p-8 text-center border-2 border-dashed border-slate-200 dark:border-zinc-700/80 rounded-xl flex flex-col items-center justify-center gap-3 bg-white dark:bg-zinc-800/50">
-                                    <InfoIcon className="w-8 h-8 text-slate-400" />
-                                    <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">
+                            {fields.length === 0
+                                ? (
+                                    <div className="p-8 text-center border-2 border-dashed border-slate-200 dark:border-zinc-700/80 rounded-xl flex flex-col items-center justify-center gap-3 bg-white dark:bg-zinc-800/50">
+                                        <InfoIcon className="w-8 h-8 text-slate-400" />
+                                        <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">
                                         No Questions Added Yet
-                                    </p>
-                                    <p className="text-xs text-slate-500">
-                                        Click &quot;+ Add Question&quot; below to add the first evaluation item.
-                                    </p>
-                                    {questionsRootError && (
-                                        <p className="text-xs font-semibold text-red-600 dark:text-red-400" role="alert">
-                                            {questionsRootError}
                                         </p>
-                                    )}
-                                    {!readOnly && (
-                                        <CommonButton
-                                            color="primary"
-                                            size="small"
-                                            startIcon={<PlusCircleIcon weight="bold" />}
-                                            variant="contained"
-                                            onClick={handleAddQuestion}
-                                        >
-                                            Add Question
-                                        </CommonButton>
-                                    )}
-                                </div>
-                            ) : (
-                                <>
-                                    {fields.slice(0, visibleCount).map((fieldItem, idx) => (
-                                        <EvaluationQuestionItem
-                                            control={control}
-                                            disabled={readOnly}
-                                            index={idx}
-                                            key={fieldItem.id}
-                                            total={fields.length}
-                                            onMove={(fromIdx, toIdx) => move(fromIdx, toIdx)}
-                                            onRemove={(removeIdx) => {
-                                                const qText = methods.getValues(`questions.${removeIdx}.question_text` as const);
-                                                setDeleteQuestionTarget({
-                                                    index: removeIdx,
-                                                    text: qText ? `"${qText.length > 50 ? qText.slice(0, 50) + '...' : qText}"` : `Question #${removeIdx + 1}`
-                                                });
-                                            }}
-                                        />
-                                    ))}
-
-                                    <div className="py-1 text-center text-xs text-slate-500" ref={sentinelRef}>
-                                        {hasMore ? 'Loading more questions...' : ''}
-                                    </div>
-
-                                    {!readOnly && (
-                                        <div className="flex justify-start pt-1">
+                                        <p className="text-xs text-slate-500">
+                                        Click &quot;+ Add Question&quot; below to add the first evaluation item.
+                                        </p>
+                                        {questionsRootError && (
+                                            <p
+                                                className="text-xs font-semibold text-red-600 dark:text-red-400"
+                                                role="alert"
+                                            >
+                                                {questionsRootError}
+                                            </p>
+                                        )}
+                                        {!readOnly && (
                                             <CommonButton
                                                 color="primary"
                                                 size="small"
@@ -737,12 +722,60 @@ export default function EvaluationWizardModal({
                                                 variant="contained"
                                                 onClick={handleAddQuestion}
                                             >
-                                                Add Question
+                                            Add Question
                                             </CommonButton>
+                                        )}
+                                    </div>
+                                )
+                                : (
+                                    <>
+                                        {fields.slice(0, visibleCount)
+                                            .map((fieldItem, idx) => (
+                                                <EvaluationQuestionItem
+                                                    control={control}
+                                                    disabled={readOnly}
+                                                    index={idx}
+                                                    key={fieldItem.id}
+                                                    total={fields.length}
+                                                    onMove={(fromIdx, toIdx) => move(fromIdx, toIdx)}
+                                                    onRemove={(removeIdx) => {
+                                                        const qText = methods.getValues(`questions.${removeIdx}.question_text` as const);
+                                                        setDeleteQuestionTarget({
+                                                            index: removeIdx,
+                                                            text: qText
+                                                                ? `"${qText.length > 50
+                                                                    ? qText.slice(0, 50) + '...'
+                                                                    : qText}"`
+                                                                : `Question #${removeIdx + 1}`
+                                                        });
+                                                    }}
+                                                />
+                                            ))}
+
+                                        <div
+                                            className="py-1 text-center text-xs text-slate-500"
+                                            ref={sentinelRef}
+                                        >
+                                            {hasMore
+                                                ? 'Loading more questions...'
+                                                : ''}
                                         </div>
-                                    )}
-                                </>
-                            )}
+
+                                        {!readOnly && (
+                                            <div className="flex justify-start pt-1">
+                                                <CommonButton
+                                                    color="primary"
+                                                    size="small"
+                                                    startIcon={<PlusCircleIcon weight="bold" />}
+                                                    variant="contained"
+                                                    onClick={handleAddQuestion}
+                                                >
+                                                Add Question
+                                                </CommonButton>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
                         </div>
                     </div>
                 )}
@@ -810,15 +843,6 @@ export default function EvaluationWizardModal({
 
             {/* Delete Question Prompt */}
             <DeletePromptModal
-                isOpen={Boolean(deleteQuestionTarget)}
-                mainContent={{
-                    title: 'Delete Evaluation Question?'
-                }}
-                subContent={{
-                    title: `Are you sure you want to delete ${deleteQuestionTarget?.text || 'this question'}? This action cannot be undone.`
-                }}
-                open={Boolean(deleteQuestionTarget)}
-                onClose={() => setDeleteQuestionTarget(null)}
                 formButtonsProps={{
                     confirmProps: {
                         onClick: () => {
@@ -829,13 +853,19 @@ export default function EvaluationWizardModal({
                         }
                     }
                 }}
+                isOpen={Boolean(deleteQuestionTarget)}
+                mainContent={{
+                    title: 'Delete Evaluation Question?'
+                }}
+                open={Boolean(deleteQuestionTarget)}
+                subContent={{
+                    title: `Are you sure you want to delete ${deleteQuestionTarget?.text || 'this question'}? This action cannot be undone.`
+                }}
+                onClose={() => setDeleteQuestionTarget(null)}
             />
 
             {/* Unsaved Changes Confirmation Modal */}
             <CommonPromptModal
-                open={isConfirmCloseOpen}
-                mainContent={{ title: 'Discard unsaved changes?' }}
-                subContent={{ title: 'You have unsaved changes in this evaluation section. Are you sure you want to discard your changes and close?' }}
                 actionIconProps={{
                     icon: WarningIcon,
                     iconContainerClassName: 'bg-amber-100 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400'
@@ -856,6 +886,9 @@ export default function EvaluationWizardModal({
                         }
                     }
                 }}
+                mainContent={{ title: 'Discard unsaved changes?' }}
+                open={isConfirmCloseOpen}
+                subContent={{ title: 'You have unsaved changes in this evaluation section. Are you sure you want to discard your changes and close?' }}
                 onClose={() => setIsConfirmCloseOpen(false)}
             />
             <DraftRecoveryPromptModal

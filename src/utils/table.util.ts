@@ -56,7 +56,9 @@ export function resolveMobileCardPlan(columnDefs: MobileCardColDef[]): MobileCar
         return columnDef !== title && columnDef !== subtitle;
     });
 
-    return { meta, subtitle, title };
+    return {
+        meta, subtitle, title
+    };
 }
 
 export function calculateMobileCardHeight(metaCount: number): number {

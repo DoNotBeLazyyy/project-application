@@ -1,7 +1,9 @@
 import SystemSettings from '@pages/admin/system-settings-management';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+    beforeEach, describe, expect, it, vi
+} from 'vitest';
 
 const mockGetSystemSettings = vi.fn();
 const mockUpdateSystemSettings = vi.fn();
@@ -35,13 +37,14 @@ describe('SystemSettings - Error Tooltip Adjustment', () => {
         });
     });
 
-    it('does not automatically open the error tooltip on the first invalid field when validation fails', async () => {
+    it('does not automatically open the error tooltip on the first invalid field when validation fails', async() => {
         const user = userEvent.setup();
         render(<SystemSettings />);
 
         // Wait for settings to load
         await waitFor(() => {
-            expect(screen.getByDisplayValue('Arellano University')).toBeInTheDocument();
+            expect(screen.getByDisplayValue('Arellano University'))
+                .toBeInTheDocument();
         });
 
         // Clear the required institution name to create an error
@@ -49,13 +52,15 @@ describe('SystemSettings - Error Tooltip Adjustment', () => {
         await user.clear(nameInput);
 
         const saveButton = screen.getByRole('button', { name: /save settings/i });
-        expect(saveButton).toBeEnabled();
+        expect(saveButton)
+            .toBeEnabled();
         await user.click(saveButton);
 
         // Validation triggers error state on the field
         await waitFor(() => {
             const errorButton = screen.getByLabelText('This field has a problem');
-            expect(errorButton).toBeInTheDocument();
+            expect(errorButton)
+                .toBeInTheDocument();
         });
 
         // The tooltip bubble must NOT automatically open
@@ -67,8 +72,10 @@ describe('SystemSettings - Error Tooltip Adjustment', () => {
 
         await waitFor(() => {
             const tooltip = screen.getByRole('tooltip');
-            expect(tooltip).toBeInTheDocument();
-            expect(tooltip).toHaveTextContent(/institution name is required/i);
+            expect(tooltip)
+                .toBeInTheDocument();
+            expect(tooltip)
+                .toHaveTextContent(/institution name is required/i);
         });
     });
 });

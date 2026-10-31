@@ -136,7 +136,9 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
                 {...props}
                 {...(props.value !== undefined
                     ? { value: props.value }
-                    : (hasNoOptions ? { value: '' } : {}))}
+                    : (hasNoOptions
+                        ? { value: '' }
+                        : {}))}
                 slotProps={{
                     ...slotProps,
                     input: {
@@ -145,7 +147,9 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
                     },
                     select: {
                         displayEmpty: true,
-                        ...(isControlledOpen ? { open: selectOpen } : {}),
+                        ...(isControlledOpen
+                            ? { open: selectOpen }
+                            : {}),
                         onOpen: (e) => {
                             if (hasNoOptions) return;
                             setUncontrolledOpen(true);

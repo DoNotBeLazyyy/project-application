@@ -13,8 +13,8 @@ interface ReleaseScheduleFormProps {
     isSaving: boolean;
     open: boolean;
     period: GradeReleaseSchedule | null;
-    onClear: () => void;
-    onClose: () => void;
+    onClear: VoidFunction;
+    onClose: VoidFunction;
     onSave: (releaseAt: string) => void;
 }
 

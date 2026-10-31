@@ -18,9 +18,9 @@ export default function ProtectedLayout() {
     const { isIdle, resetTimer } = useIdleTimeout();
 
     const isProfileIncomplete = Boolean(
-        userProfile &&
-        userProfile.profile_completed === false &&
-        pathname !== '/set-password'
+        userProfile
+        && userProfile.profile_completed === false
+        && pathname !== '/set-password'
     );
 
     useEffect(function() {

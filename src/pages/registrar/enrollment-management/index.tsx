@@ -1,6 +1,6 @@
 import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
-import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
+import { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import EnrollmentStudentFilterForm from '@pages/registrar/enrollment-management/EnrollmentStudentFilterForm';
@@ -9,7 +9,6 @@ import EnrollmentWorkspaceModal from '@pages/registrar/enrollment-management/Enr
 import { useEnrollmentStudentTableConfig } from '@pages/registrar/enrollment-management/useEnrollmentStudentTableConfig';
 import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
 import CreditTransfereeCoursesModal from '@pages/shared/records/CreditTransfereeCoursesModal';
-import { CalendarBlankIcon } from '@phosphor-icons/react';
 import { bulkEnrollStudents, getEnrollmentTargetTerm, listEnrollmentStudents } from '@services/enrollment.service';
 import { getTerms } from '@services/section.service';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
@@ -33,12 +32,24 @@ const FILTER_FORM_ID = 'filter-enrollment-students-form';
 // "<Term Type> - <School Year>" (Academic/School Year are interchangeable) or the term id, blank = the
 // enrollment target term, and each section code (case-insensitive) must exist in that term.
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'student_number', label: 'Student Number', hint: 'Required. Exact student number as registered, e.g. 2026-0001', sample: '2026-0001', aliases: ['student_id', 'student id', 'student_no', 'student no', 'id_number'] },
-    { key: 'term_label', label: 'Term Label', hint: 'Optional. "<Term> - <School Year>", e.g. 1st Semester - Academic Year 2026-2027. Blank uses the current enrollment term', sample: '1st Semester - Academic Year 2026-2027', required: false, aliases: ['term', 'semester'] },
-    { key: 'section_codes', label: 'Section Codes', hint: 'Required. Section codes offered in that term, separated with |, e.g. COCS101-001|COCS102-001', sample: 'COCS101-001', aliases: ['sections', 'section'] },
-    { key: 'allow_conflict', label: 'Allow Conflict', hint: 'Optional. true / yes / 1 to allow schedule conflicts; anything else (or blank) means false', sample: 'false', required: false, aliases: ['conflict_allowed'] },
-    { key: 'override_prerequisites', label: 'Override Prerequisites', hint: 'Optional. true / yes / 1 to skip unmet prerequisites; anything else (or blank) means false', sample: 'false', required: false, aliases: ['override_prereqs'] },
-    { key: 'conflict_reason', label: 'Conflict Reason', hint: 'Optional. Reason recorded when Allow Conflict is true', sample: '', required: false, aliases: ['reason'] }
+    {
+        key: 'student_number', label: 'Student Number', hint: 'Required. Exact student number as registered, e.g. 2026-0001', sample: '2026-0001', aliases: ['student_id', 'student id', 'student_no', 'student no', 'id_number']
+    },
+    {
+        key: 'term_label', label: 'Term Label', hint: 'Optional. "<Term> - <School Year>", e.g. 1st Semester - Academic Year 2026-2027. Blank uses the current enrollment term', sample: '1st Semester - Academic Year 2026-2027', required: false, aliases: ['term', 'semester']
+    },
+    {
+        key: 'section_codes', label: 'Section Codes', hint: 'Required. Section codes offered in that term, separated with |, e.g. COCS101-001|COCS102-001', sample: 'COCS101-001', aliases: ['sections', 'section']
+    },
+    {
+        key: 'allow_conflict', label: 'Allow Conflict', hint: 'Optional. true / yes / 1 to allow schedule conflicts; anything else (or blank) means false', sample: 'false', required: false, aliases: ['conflict_allowed']
+    },
+    {
+        key: 'override_prerequisites', label: 'Override Prerequisites', hint: 'Optional. true / yes / 1 to skip unmet prerequisites; anything else (or blank) means false', sample: 'false', required: false, aliases: ['override_prereqs']
+    },
+    {
+        key: 'conflict_reason', label: 'Conflict Reason', hint: 'Optional. Reason recorded when Allow Conflict is true', sample: '', required: false, aliases: ['reason']
+    }
 ];
 
 const defaultFilterValues: EnrollmentStudentFilterValues = {
@@ -118,20 +129,6 @@ export default function EnrollmentManagement() {
         setRefreshKey((previous) => previous + 1);
     }
 
-    function handleTermChange(newTermId: string) {
-        setTargetTermId(newTermId);
-        const selected = termOptions.find((term) => term.value === newTermId);
-        if (selected) {
-            setTargetTermLabel(selected.label);
-        }
-        filterMethods.setValue('term_id', newTermId);
-        if (activeFilters) {
-            setActiveFilters((previous) => (previous
-                ? { ...previous, term_id: newTermId }
-                : null));
-        }
-    }
-
     const { columnDefs, tableActionConfig } = useEnrollmentStudentTableConfig({
         onManage: handleOpenWorkspace,
         onAssignProgram: (row) => setAssignModalStudent(row),
@@ -170,42 +167,10 @@ export default function EnrollmentManagement() {
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            {/* Term Context & Switcher Bar */}
-            <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl shadow-xs">
-                <div className="flex items-center gap-3">
-                    <div className="bg-(--mui-palette-primary-main)/10 text-(--mui-palette-primary-main) p-2 rounded-lg flex items-center justify-center shrink-0">
-                        <CalendarBlankIcon size={20} weight="bold" />
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="text-[11px] font-semibold text-(--mui-palette-text-secondary) uppercase tracking-wider">
-                            Active Academic Term
-                        </span>
-                        <span className="text-sm font-bold text-(--mui-palette-text-primary)">
-                            {targetTermLabel || 'Loading term...'}
-                        </span>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <span className="font-medium text-(--mui-palette-text-secondary) text-xs whitespace-nowrap">
-                        Term / Academic Year:
-                    </span>
-                    <div className="w-full sm:w-80">
-                        <CommonSelect
-                            fullWidth
-                            options={termOptions}
-                            size="small"
-                            value={targetTermId ?? ''}
-                            onChange={(event) => handleTermChange(event.target.value)}
-                        />
-                    </div>
-                </div>
-            </div>
-
             <CommonTableCard<EnrollmentStudentRow>
                 cardHeaderProps={{
                     subheader: targetTermLabel
-                        ? `Enroll students into their curriculum subjects for ${targetTermLabel}.`
+                        ? `${targetTermLabel} · Change the term in Filter.`
                         : 'Enroll students into their curriculum subjects.',
                     title: 'Enrollment Management'
                 }}

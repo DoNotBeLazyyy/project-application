@@ -27,16 +27,20 @@ export function parseAuthUrlError(): ParsedAuthError | null {
         return null;
     }
 
-    const decodedDesc = rawDesc ? decodeURIComponent(rawDesc.replace(/\+/g, ' ')) : null;
+    const decodedDesc = rawDesc
+        ? decodeURIComponent(rawDesc.replace(/\+/g, ' '))
+        : null;
 
     let userMessage = decodedDesc || 'An authentication error occurred.';
     if (
-        errorCode === 'otp_expired' ||
-        decodedDesc?.toLowerCase().includes('expired') ||
-        decodedDesc?.toLowerCase().includes('invalid')
+        errorCode === 'otp_expired'
+        || decodedDesc?.toLowerCase()
+            .includes('expired')
+        || decodedDesc?.toLowerCase()
+            .includes('invalid')
     ) {
-        userMessage =
-            'Your invitation or password reset link has expired or has already been used. Please request a new link using "Forgot password?" below or contact your administrator.';
+        userMessage
+            = 'Your invitation or password reset link has expired or has already been used. Please request a new link using "Forgot password?" below or contact your administrator.';
     }
 
     return {

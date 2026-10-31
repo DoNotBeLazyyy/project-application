@@ -8,6 +8,7 @@ import { CopySimpleIcon, ShieldCheckIcon } from '@phosphor-icons/react';
 import { AcademicYearWizardFormValues, SchoolYearOption } from '@type/school-year.type';
 import { useEffect, useMemo, useRef } from 'react';
 import { Control, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
+
 import {
     checkSchoolYearCodeConflict,
     checkSchoolYearDateConflict,
@@ -31,7 +32,7 @@ interface Step1SchoolYearInfoProps {
     existingSchoolYears?: ExistingSchoolYearComparison[];
     currentSchoolYearId?: string | null;
     onSelectSourceYear?: (sourceId: string) => void;
-    onClearSourceYear?: () => void;
+    onClearSourceYear?: VoidFunction;
 }
 
 export default function Step1SchoolYearInfo({
@@ -82,9 +83,9 @@ export default function Step1SchoolYearInfo({
             return;
         }
 
-        const datesChanged =
-            prevDatesRef.current.start !== startDate ||
-            prevDatesRef.current.end !== endDate;
+        const datesChanged
+            = prevDatesRef.current.start !== startDate
+            || prevDatesRef.current.end !== endDate;
 
         prevDatesRef.current = { end: endDate, start: startDate };
 
@@ -106,28 +107,32 @@ export default function Step1SchoolYearInfo({
 
         // When creating fresh or duplicating from another school year:
         const isDuplicatedSourceCode = Boolean(
-            sourceSchoolYear &&
-            code &&
-            code.trim().toLowerCase() === sourceSchoolYear.code.trim().toLowerCase()
+            sourceSchoolYear
+            && code
+            && code.trim()
+                .toLowerCase() === sourceSchoolYear.code.trim()
+                .toLowerCase()
         );
 
-        const shouldPopulateCode =
-            !userEditedCodeRef.current &&
-            (!code || /^AY-\d{4}-\d{4}$/i.test(code.trim()) || isDuplicatedSourceCode);
+        const shouldPopulateCode
+            = !userEditedCodeRef.current
+            && (!code || /^AY-\d{4}-\d{4}$/i.test(code.trim()) || isDuplicatedSourceCode);
 
         if (shouldPopulateCode && code !== autoCode) {
             setValue('code', autoCode, { shouldValidate: true });
         }
 
         const isDuplicatedSourceLabel = Boolean(
-            sourceSchoolYear &&
-            label &&
-            label.trim().toLowerCase() === sourceSchoolYear.label.trim().toLowerCase()
+            sourceSchoolYear
+            && label
+            && label.trim()
+                .toLowerCase() === sourceSchoolYear.label.trim()
+                .toLowerCase()
         );
 
-        const shouldPopulateLabel =
-            !userEditedLabelRef.current &&
-            (!label || /^Academic Year \d{4}-\d{4}$/i.test(label.trim()) || isDuplicatedSourceLabel);
+        const shouldPopulateLabel
+            = !userEditedLabelRef.current
+            && (!label || /^Academic Year \d{4}-\d{4}$/i.test(label.trim()) || isDuplicatedSourceLabel);
 
         if (shouldPopulateLabel && label !== autoLabel) {
             setValue('label', autoLabel, { shouldValidate: true });
@@ -198,10 +203,11 @@ export default function Step1SchoolYearInfo({
                                         sourceSchoolYear
                                     );
                                     if (dateConflict) return dateConflict;
-                                } else if (
-                                    sourceSchoolYear &&
-                                    val === sourceSchoolYear.start_date &&
-                                    endDate === sourceSchoolYear.end_date
+                                }
+                                else if (
+                                    sourceSchoolYear
+                                    && val === sourceSchoolYear.start_date
+                                    && endDate === sourceSchoolYear.end_date
                                 ) {
                                     return 'Dates must be changed from the duplicated year';
                                 }
@@ -237,10 +243,11 @@ export default function Step1SchoolYearInfo({
                                         sourceSchoolYear
                                     );
                                     if (dateConflict) return dateConflict;
-                                } else if (
-                                    sourceSchoolYear &&
-                                    startDate === sourceSchoolYear.start_date &&
-                                    val === sourceSchoolYear.end_date
+                                }
+                                else if (
+                                    sourceSchoolYear
+                                    && startDate === sourceSchoolYear.start_date
+                                    && val === sourceSchoolYear.end_date
                                 ) {
                                     return 'Dates must be changed from the duplicated year';
                                 }
@@ -329,7 +336,10 @@ export default function Step1SchoolYearInfo({
                     <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                         Set as Active Academic Year
                         <span className="inline-flex align-middle ml-1.5 whitespace-nowrap">
-                            <CommonInfoTooltip content="When active, new student enrollments, curriculum schedules, and faculty grade submissions default to this academic year." size={14} />
+                            <CommonInfoTooltip
+                                content="When active, new student enrollments, curriculum schedules, and faculty grade submissions default to this academic year."
+                                size={14}
+                            />
                         </span>
                     </span>
                 </div>

@@ -4,5 +4,6 @@ export const MATERIAL_URL_PATTERN = {
 };
 
 export function isBlankText(value: unknown): boolean {
-    return !String(value ?? '').trim();
+    return !String(value ?? '')
+        .trim();
 }

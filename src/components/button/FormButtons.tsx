@@ -52,20 +52,26 @@ export default function FormButtons({
                 )
             }
         >
-            {resetProps && <CommonButton
-                {...commonProps}
-                {...resetProps}
-                disabled={Boolean(resetProps.disabled) || isConfirmLoading}
-            />}
-            {cancelProps && <CommonButton
-                {...commonProps}
-                {...cancelProps}
-                disabled={Boolean(cancelProps.disabled) || isConfirmLoading}
-            />}
-            {confirmProps && <CommonButton
-                {...commonProps}
-                {...confirmProps}
-            />}
+            {resetProps && (
+                <CommonButton
+                    {...commonProps}
+                    {...resetProps}
+                    disabled={Boolean(resetProps.disabled) || isConfirmLoading}
+                />
+            )}
+            {cancelProps && (
+                <CommonButton
+                    {...commonProps}
+                    {...cancelProps}
+                    disabled={Boolean(cancelProps.disabled) || isConfirmLoading}
+                />
+            )}
+            {confirmProps && (
+                <CommonButton
+                    {...commonProps}
+                    {...confirmProps}
+                />
+            )}
         </div>
     );
 }

@@ -10,7 +10,7 @@ interface UseInfiniteScrollSentinelParams {
     /** True while a fetch is already in flight. */
     isLoading: boolean;
     /** Called when the sentinel scrolls into (or near) view. */
-    onLoadMore: () => void;
+    onLoadMore: VoidFunction;
 }
 
 /**

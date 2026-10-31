@@ -45,8 +45,12 @@ export default function RubricGradingPanel({
 
     const tabs: TabItemData[] = [
         { label: 'All', value: 'all' },
-        { icon: <FileTextIcon />, label: `Submission (${submission.answers.length})`, value: 'submission' },
-        { icon: <ListChecksIcon />, label: `Rubric (${rubric.criteria.length})`, value: 'rubric' }
+        {
+            icon: <FileTextIcon />, label: `Submission (${submission.answers.length})`, value: 'submission'
+        },
+        {
+            icon: <ListChecksIcon />, label: `Rubric (${rubric.criteria.length})`, value: 'rubric'
+        }
     ];
 
     function handleTabChange(_: SyntheticEvent, value: string) {
@@ -70,7 +74,12 @@ export default function RubricGradingPanel({
                 <CommonButton
                     disabled={isSaving || !isDirty}
                     size="small"
-                    startIcon={<CheckCircleIcon size={14} weight="bold" />}
+                    startIcon={(
+                        <CheckCircleIcon
+                            size={14}
+                            weight="bold"
+                        />
+                    )}
                     variant="contained"
                     onClick={onSave}
                 >

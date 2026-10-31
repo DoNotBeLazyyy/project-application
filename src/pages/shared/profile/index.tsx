@@ -1,25 +1,25 @@
 import { CommonChip } from '@components/badge/CommonChip';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
-import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
-import { HourglassIcon, LockKeyIcon, UserCircleIcon } from '@phosphor-icons/react';
 import StudentProfilePromptModal from '@components/modal/StudentProfilePromptModal';
+import { CommonSelectOption } from '@components/select/CommonSelect';
+import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
+import { useHasRealChanges } from '@hooks/useHasRealChanges';
 import ChangePasswordForm from '@pages/shared/profile/ChangePasswordForm';
 import { PASSWORD_FORM_ID, PROFILE_FORM_ID } from '@pages/shared/profile/constants/profile.constant';
+import PendingChangesModal from '@pages/shared/profile/PendingChangesModal';
 import ProfileAvatarCard from '@pages/shared/profile/ProfileAvatarCard';
 import ProfileDetailsForm from '@pages/shared/profile/ProfileDetailsForm';
-import PendingChangesModal from '@pages/shared/profile/PendingChangesModal';
+import { HourglassIcon, LockKeyIcon, UserCircleIcon } from '@phosphor-icons/react';
 import { initAuthSession } from '@services/auth.service';
 import { changeMyPassword, getMyProfile, updateMyProfile } from '@services/profile.service';
+import { getPrograms } from '@services/program/program.service';
 import { cancelMyProfileRequest } from '@services/registrar-verification.service';
 import { useToastStore } from '@stores/toast.store';
 import { ChangePasswordFormValues, MyProfile, ProfileFormValues } from '@type/profile.type';
 import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
-import { getPrograms } from '@services/program/program.service';
-import { CommonSelectOption } from '@components/select/CommonSelect';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
-import { useHasRealChanges } from '@hooks/useHasRealChanges';
 
 type ProfileTab = 'details' | 'security';
 
@@ -73,29 +73,36 @@ export default function ProfilePage() {
     const roleLabels = profile?.role_labels ?? [];
 
     const isAdminUser = Boolean(
-        roleCodes.includes('Admin') ||
-        roleLabels.some((r) => r.toLowerCase().includes('admin'))
+        roleCodes.includes('Admin')
+        || roleLabels.some((r) => r.toLowerCase()
+            .includes('admin'))
     );
     const isStudentUser = !isAdminUser && Boolean(
-        profile?.student ||
-        roleCodes.includes('Student') ||
-        roleLabels.some((r) => r.toLowerCase().includes('student'))
+        profile?.student
+        || roleCodes.includes('Student')
+        || roleLabels.some((r) => r.toLowerCase()
+            .includes('student'))
     );
     const isDeanUser = Boolean(
-        roleCodes.includes('Dean') ||
-        roleLabels.some((r) => r.toLowerCase().includes('dean'))
+        roleCodes.includes('Dean')
+        || roleLabels.some((r) => r.toLowerCase()
+            .includes('dean'))
     );
     const isFacultyUser = Boolean(
-        roleCodes.includes('Faculty') ||
-        roleLabels.some((r) => r.toLowerCase().includes('faculty'))
+        roleCodes.includes('Faculty')
+        || roleLabels.some((r) => r.toLowerCase()
+            .includes('faculty'))
     );
     const isRegistrarUser = Boolean(
-        roleCodes.includes('Registrar') ||
-        roleLabels.some((r) => r.toLowerCase().includes('registrar'))
+        roleCodes.includes('Registrar')
+        || roleLabels.some((r) => r.toLowerCase()
+            .includes('registrar'))
     );
     const isStaffUser = !isAdminUser && (isDeanUser || isFacultyUser || isRegistrarUser);
     const requiresApproval = isStudentUser || isStaffUser;
-    const approverName = profile?.pending_profile_request?.approver_role || (isStudentUser ? 'Registrar' : 'Administrator');
+    const approverName = profile?.pending_profile_request?.approver_role || (isStudentUser
+        ? 'Registrar'
+        : 'Administrator');
 
     const profileMethods = useForm<ProfileFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: EMPTY_PROFILE });
     const passwordMethods = useForm<ChangePasswordFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: EMPTY_PASSWORD });
@@ -199,7 +206,8 @@ export default function ProfilePage() {
         const result = await cancelMyProfileRequest(profile.pending_profile_request.id);
         setIsCancelling(false);
         if (!result.error) {
-            useToastStore.getState().showToast('Pending profile change request cancelled.', 'info');
+            useToastStore.getState()
+                .showToast('Pending profile change request cancelled.', 'info');
             setRefreshKey((prev) => prev + 1);
         }
     }
@@ -250,11 +258,15 @@ export default function ProfilePage() {
                         {profile?.pending_profile_request && profile.pending_profile_request.status === 'Pending' && (
                             <div className="border border-(--mui-palette-warning-main) bg-(--mui-palette-warning-light) p-4 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-(--mui-palette-text-primary)">
                                 <div className="flex items-start gap-3">
-                                    <HourglassIcon size={24} className="text-(--mui-palette-warning-main) shrink-0 mt-0.5" />
+                                    <HourglassIcon
+                                        className="text-(--mui-palette-warning-main) shrink-0 mt-0.5"
+                                        size={24}
+                                    />
                                     <div>
                                         <p className="font-semibold m-0 text-sm">Profile Change Request Pending {approverName} Verification</p>
                                         <p className="m-0 mt-0.5 text-(--mui-palette-text-secondary)">
-                                            You submitted profile updates on {new Date(profile.pending_profile_request.created_at).toLocaleString()}. Changes will take effect once reviewed and approved by the {approverName}.
+                                            You submitted profile updates on {new Date(profile.pending_profile_request.created_at)
+                                                .toLocaleString()}. Changes will take effect once reviewed and approved by the {approverName}.
                                         </p>
                                     </div>
                                 </div>
@@ -273,7 +285,9 @@ export default function ProfilePage() {
                                         variant="text"
                                         onClick={handleCancelPendingRequest}
                                     >
-                                        {isCancelling ? 'Cancelling...' : 'Cancel Request'}
+                                        {isCancelling
+                                            ? 'Cancelling...'
+                                            : 'Cancel Request'}
                                     </CommonButton>
                                 </div>
                             </div>
@@ -308,15 +322,19 @@ export default function ProfilePage() {
                                 </CommonButton>
                                 <CommonButton
                                     disabled={!isProfileRealDirty || profileMethods.formState.isSubmitting || Boolean(profile?.pending_profile_request && profile.pending_profile_request.status === 'Pending')}
-                                    loading={profileMethods.formState.isSubmitting}
                                     form={PROFILE_FORM_ID}
+                                    loading={profileMethods.formState.isSubmitting}
                                     size="small"
                                     type="submit"
                                     variant="contained"
                                 >
                                     {profileMethods.formState.isSubmitting
-                                        ? (requiresApproval ? 'Submitting...' : 'Saving...')
-                                        : (requiresApproval ? 'Submit Profile Changes' : 'Save Profile')}
+                                        ? (requiresApproval
+                                            ? 'Submitting...'
+                                            : 'Saving...')
+                                        : (requiresApproval
+                                            ? 'Submit Profile Changes'
+                                            : 'Save Profile')}
                                 </CommonButton>
                             </div>
                             {requiresApproval && (
@@ -343,13 +361,15 @@ export default function ProfilePage() {
                         <div className="flex">
                             <CommonButton
                                 disabled={!isPasswordRealDirty || passwordMethods.formState.isSubmitting}
-                                loading={passwordMethods.formState.isSubmitting}
                                 form={PASSWORD_FORM_ID}
+                                loading={passwordMethods.formState.isSubmitting}
                                 size="small"
                                 type="submit"
                                 variant="contained"
                             >
-                                {passwordMethods.formState.isSubmitting ? 'Updating Password...' : 'Update Password'}
+                                {passwordMethods.formState.isSubmitting
+                                    ? 'Updating Password...'
+                                    : 'Update Password'}
                             </CommonButton>
                         </div>
                     </div>

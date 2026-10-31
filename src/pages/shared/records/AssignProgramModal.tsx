@@ -9,8 +9,8 @@ import { CommonSelectOption } from '@components/select/CommonSelect';
 import { useObjectDraft } from '@hooks/useFormDraft';
 import { ArrowsClockwiseIcon } from '@phosphor-icons/react';
 import { getPrograms } from '@services/program/program.service';
-import { registrarAssignStudentProgramAndYear, syncStudentYearLevel } from '@services/registrar-verification.service';
 import { shiftStudentProgram } from '@services/records.service';
+import { registrarAssignStudentProgramAndYear, syncStudentYearLevel } from '@services/registrar-verification.service';
 import { useToastStore } from '@stores/toast.store';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
@@ -26,8 +26,8 @@ const YEAR_LEVEL_OPTIONS: CommonSelectOption[] = [
 
 export interface AssignProgramModalProps {
     open: boolean;
-    onClose: () => void;
-    onSuccess?: () => void;
+    onClose: VoidFunction;
+    onSuccess?: VoidFunction;
     studentId?: string | null;
     currentProgramId?: string | null;
     currentProgramName?: string | null;
@@ -182,10 +182,11 @@ export default function AssignProgramModal({
         if (res.data) {
             setValue('selectedYearLevel', res.data.calculated_year_level);
             setValue('isOverride', false);
-            useToastStore.getState().showToast(
-                `Calculated Year Level from Curriculum: Year ${res.data.calculated_year_level}`,
-                'info'
-            );
+            useToastStore.getState()
+                .showToast(
+                    `Calculated Year Level from Curriculum: Year ${res.data.calculated_year_level}`,
+                    'info'
+                );
         }
     }
 
@@ -205,9 +206,12 @@ export default function AssignProgramModal({
                 trimmedReason
             );
             error = res.error;
-        } else {
+        }
+        else {
             const res = await shiftStudentProgram(null, {
-                effective_date: new Date().toISOString().slice(0, 10),
+                effective_date: new Date()
+                    .toISOString()
+                    .slice(0, 10),
                 program_id: values.selectedProgramId,
                 reason: trimmedReason,
                 year_level: yearLevel
@@ -219,10 +223,13 @@ export default function AssignProgramModal({
 
         if (!error) {
             draftGuard.clearDraft();
-            useToastStore.getState().showToast(
-                currentProgramId ? 'Program & Year Level updated successfully.' : 'Program assigned successfully.',
-                'success'
-            );
+            useToastStore.getState()
+                .showToast(
+                    currentProgramId
+                        ? 'Program & Year Level updated successfully.'
+                        : 'Program assigned successfully.',
+                    'success'
+                );
             onSuccess?.();
             onClose();
         }
@@ -239,16 +246,18 @@ export default function AssignProgramModal({
     return (
         <>
             <CommonModal
-                open={open}
-                onClose={handleRequestClose}
                 cardProps={{
                     cardHeaderProps: {
-                        title: title || (currentProgramId ? 'Manage Program & Year Level' : 'Assign Academic Program & Year Level'),
+                        title: title || (currentProgramId
+                            ? 'Manage Program & Year Level'
+                            : 'Assign Academic Program & Year Level'),
                         subheader: currentProgramName
                             ? `Currently assigned: ${currentProgramName} (Year ${currentYearLevel ?? 1})`
                             : 'Assign degree program and year level under Registrar supervision.'
                     }
                 }}
+                open={open}
+                onClose={handleRequestClose}
             >
                 <div className="flex flex-col gap-4 p-4 pt-0">
                     <CommonForm
@@ -313,7 +322,9 @@ export default function AssignProgramModal({
                         >
                             {isSaving
                                 ? 'Saving...'
-                                : (currentProgramId ? 'Update Program & Year' : 'Assign Program')}
+                                : (currentProgramId
+                                    ? 'Update Program & Year'
+                                    : 'Assign Program')}
                         </CommonButton>
                     </div>
                 </div>

@@ -24,7 +24,9 @@ export default function ValidCommonMultiSelect<T extends FieldValues = FieldValu
         field: { ref, value, onChange },
         fieldState,
         formState
-    } = useController({ control, name, rules });
+    } = useController({
+        control, name, rules
+    });
 
     function handleChange(val: string[]) {
         if (fieldState.error) {

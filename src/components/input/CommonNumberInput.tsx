@@ -3,7 +3,6 @@ import { InputAdornment } from '@mui/material';
 import { stripLeadingZeros } from '@utils/input.util';
 import { forwardRef, useCallback, useState } from 'react';
 
-
 export type CommonNumberInputProps = Omit<CommonInputProps, 'onChange' | 'value'> & {
     value?: number | string;
     onChange?: (value: number | undefined) => void;

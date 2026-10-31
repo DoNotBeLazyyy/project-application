@@ -77,8 +77,8 @@ interface SectionWizardModalProps {
     initialFacultyId?: string | null;
     readOnly?: boolean;
     sectionId?: string | null;
-    onClose: () => void;
-    onSuccess: () => void;
+    onClose: VoidFunction;
+    onSuccess: VoidFunction;
 }
 
 export default function SectionWizardModal({

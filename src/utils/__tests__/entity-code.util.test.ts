@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
 import {
     ensureUniqueCode,
     generateAcademicThresholdCode,
     generateSpecialGradeCode
 } from '@utils/entity-code.util';
+import { describe, expect, it } from 'vitest';
 
 describe('entity-code.util', () => {
     describe('generateAcademicThresholdCode', () => {

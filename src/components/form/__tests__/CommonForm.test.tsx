@@ -11,8 +11,12 @@ interface Values {
 }
 
 const FIELDS: FormFieldConfig<Values>[] = [
-    { label: 'Title', name: 'title', rules: { required: 'Title is required' }, type: 'text' },
-    { label: 'Code', name: 'code', rules: { required: 'Code is required' }, type: 'text' }
+    {
+        label: 'Title', name: 'title', rules: { required: 'Title is required' }, type: 'text'
+    },
+    {
+        label: 'Code', name: 'code', rules: { required: 'Code is required' }, type: 'text'
+    }
 ];
 
 function TestForm() {
@@ -24,27 +28,35 @@ function TestForm() {
 
     return (
         <form onSubmit={handleSubmit(() => {})}>
-            <CommonForm component="div" control={control} enableDraftRecovery={false} fields={FIELDS} />
+            <CommonForm
+                component="div"
+                control={control}
+                enableDraftRecovery={false}
+                fields={FIELDS}
+            />
             <button type="submit">Save</button>
         </form>
     );
 }
 
 describe('CommonForm - error focus', () => {
-    it('keeps focus in the field being fixed instead of jumping to the next error', async () => {
+    it('keeps focus in the field being fixed instead of jumping to the next error', async() => {
         const user = userEvent.setup();
         const { container } = render(<TestForm />);
 
         await user.click(screen.getByRole('button', { name: /save/i }));
 
         const titleInput = container.querySelector<HTMLInputElement>('input[name="title"]')!;
-        await waitFor(() => expect(document.activeElement).toBe(titleInput));
+        await waitFor(() => expect(document.activeElement)
+            .toBe(titleInput));
 
         // Fixing Title makes Code the first error; focus must stay in Title while typing
         await user.type(titleInput, 'Business');
         await new Promise((resolve) => setTimeout(resolve, 120));
 
-        expect(titleInput.value).toBe('Business');
-        expect(document.activeElement).toBe(titleInput);
+        expect(titleInput.value)
+            .toBe('Business');
+        expect(document.activeElement)
+            .toBe(titleInput);
     });
 });

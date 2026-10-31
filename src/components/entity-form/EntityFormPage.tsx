@@ -80,7 +80,8 @@ export default function EntityFormPage<TValues extends FieldValues>({
                 if (active && result.data) {
                     reset(result.data as TValues);
                 }
-            } finally {
+            }
+            finally {
                 if (active) {
                     setIsLoading(false);
                 }
@@ -175,7 +176,12 @@ export default function EntityFormPage<TValues extends FieldValues>({
                     <CommonButton
                         color="inherit"
                         size="small"
-                        startIcon={<ArrowLeftIcon size={16} weight="bold" />}
+                        startIcon={(
+                            <ArrowLeftIcon
+                                size={16}
+                                weight="bold"
+                            />
+                        )}
                         variant="outlined"
                         onClick={backGuard.requestExit}
                     >
@@ -196,7 +202,12 @@ export default function EntityFormPage<TValues extends FieldValues>({
                     {mode === 'view' && canEdit && (
                         <CommonButton
                             size="small"
-                            startIcon={<PencilSimpleIcon size={16} weight="bold" />}
+                            startIcon={(
+                                <PencilSimpleIcon
+                                    size={16}
+                                    weight="bold"
+                                />
+                            )}
                             variant="contained"
                             onClick={function() {
                                 setIsEditing(true);
@@ -217,35 +228,48 @@ export default function EntityFormPage<TValues extends FieldValues>({
                             </CommonButton>
                             <CommonButton
                                 disabled={(!isCreate && !draftGuard.hasRealChanges) || formState.isSubmitting}
-                                loading={formState.isSubmitting}
                                 form={formId}
+                                loading={formState.isSubmitting}
                                 size="small"
-                                startIcon={<FloppyDiskIcon size={16} weight="bold" />}
+                                startIcon={(
+                                    <FloppyDiskIcon
+                                        size={16}
+                                        weight="bold"
+                                    />
+                                )}
                                 type="submit"
                                 variant="contained"
                             >
                                 {isCreate
-                                    ? (formState.isSubmitting ? 'Creating…' : 'Create')
-                                    : (formState.isSubmitting ? 'Saving…' : 'Save')}
+                                    ? (formState.isSubmitting
+                                        ? 'Creating…'
+                                        : 'Create')
+                                    : (formState.isSubmitting
+                                        ? 'Saving…'
+                                        : 'Save')}
                             </CommonButton>
                         </>
                     )}
                 </div>
             </div>
             <div className="flex-1 min-h-0 min-w-0 w-full max-w-full overflow-y-auto pr-1 sm:pr-4">
-                {isLoading ? (
-                    <PageLoadingFallback />
-                ) : mode === 'view' && renderView ? (
-                    renderView(methods.watch())
-                ) : (
-                    renderForm({
-                        control,
-                        disabled: isDisabled,
-                        id: formId,
-                        mode,
-                        onSubmit: submitHandler
-                    })
-                )}
+                {isLoading
+                    ? (
+                        <PageLoadingFallback />
+                    )
+                    : mode === 'view' && renderView
+                        ? (
+                            renderView(methods.watch())
+                        )
+                        : (
+                            renderForm({
+                                control,
+                                disabled: isDisabled,
+                                id: formId,
+                                mode,
+                                onSubmit: submitHandler
+                            })
+                        )}
             </div>
             <UnsavedChangesPrompt
                 open={backGuard.isPromptOpen}

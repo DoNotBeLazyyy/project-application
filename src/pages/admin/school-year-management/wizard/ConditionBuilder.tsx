@@ -2,13 +2,13 @@ import CommonButton from '@components/button/CommonButton';
 import CommonNumberInput from '@components/input/CommonNumberInput';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
-import { PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import {
     SPECIAL_GRADE_AUTHORABLE_SIGNALS,
     SPECIAL_GRADE_OPERATOR_LABELS,
     getSignalDescriptor,
     getSignalLabel
 } from '@constants/special-grade-signals.constant';
+import { PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import {
     SpecialGradeCondition,
     SpecialGradeConditionGroup,
@@ -121,7 +121,9 @@ export default function ConditionBuilder({
         const fallback = SPECIAL_GRADE_AUTHORABLE_SIGNALS[0];
         emit(operator, [
             ...conditions,
-            { op: '>=', signal: fallback.id, value: 0 }
+            {
+                op: '>=', signal: fallback.id, value: 0
+            }
         ]);
     }
 
@@ -160,7 +162,12 @@ export default function ConditionBuilder({
                     : (
                         <CommonButton
                             size="small"
-                            startIcon={<PlusIcon size={14} weight="bold" />}
+                            startIcon={(
+                                <PlusIcon
+                                    size={14}
+                                    weight="bold"
+                                />
+                            )}
                             variant="outlined"
                             onClick={handleAdd}
                         >
@@ -312,7 +319,10 @@ export default function ConditionBuilder({
                                         type="button"
                                         onClick={() => handleRemove(index)}
                                     >
-                                        <TrashIcon size={16} weight="bold" />
+                                        <TrashIcon
+                                            size={16}
+                                            weight="bold"
+                                        />
                                     </button>
                                 )}
                         </div>

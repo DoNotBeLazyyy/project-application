@@ -28,11 +28,11 @@ export interface Step2EvaluationFormProps {
     scrolledSections: ScrolledSection[];
     sentinelRef: RefObject<HTMLDivElement | null>;
     visibleCount: number;
-    onBack: () => void;
-    onSubmit: () => void;
+    onBack: VoidFunction;
+    onSubmit: VoidFunction;
 }
 
-const QUICK_RATING_LEGEND: Array<{ label: string; value: number }> = [
+const QUICK_RATING_LEGEND: { label: string; value: number }[] = [
     { label: 'Strongly Agree', value: 5 },
     { label: 'Agree', value: 4 },
     { label: 'Uncertain', value: 3 },
@@ -78,7 +78,11 @@ export default function Step2EvaluationForm({
                         <span>Change Faculty / Instructions</span>
                     </button>
                     {isReadOnly && (
-                        <CommonBadgeStatus label="Completed" size="small" variant="success" />
+                        <CommonBadgeStatus
+                            label="Completed"
+                            size="small"
+                            variant="success"
+                        />
                     )}
                 </div>
 
@@ -104,7 +108,9 @@ export default function Step2EvaluationForm({
                     >
                         <InfoIcon size={14} />
                         <span>Rating Guide</span>
-                        {isLegendOpen ? <CaretUpIcon size={12} /> : <CaretDownIcon size={12} />}
+                        {isLegendOpen
+                            ? <CaretUpIcon size={12} />
+                            : <CaretDownIcon size={12} />}
                     </button>
                 </div>
 
@@ -112,7 +118,10 @@ export default function Step2EvaluationForm({
                 {isLegendOpen && (
                     <div className="bg-(--mui-palette-action-hover) border border-(--mui-palette-divider) p-2.5 rounded-lg text-xs flex flex-wrap items-center gap-x-4 gap-y-1.5 animate-fadeIn">
                         {QUICK_RATING_LEGEND.map((item) => (
-                            <span className="inline-flex items-center gap-1 text-(--mui-palette-text-secondary)" key={item.value}>
+                            <span
+                                className="inline-flex items-center gap-1 text-(--mui-palette-text-secondary)"
+                                key={item.value}
+                            >
                                 <strong className="font-bold text-(--mui-palette-primary-main)">{item.value}</strong>
                                 <span>= {item.label}</span>
                             </span>
@@ -181,20 +190,24 @@ export default function Step2EvaluationForm({
                     Back
                 </CommonButton>
 
-                {!isReadOnly ? (
-                    <CommonButton
-                        disabled={isSubmitting}
-                        loading={isSubmitting}
-                        variant="contained"
-                        onClick={onSubmit}
-                    >
-                        {isSubmitting ? 'Submitting...' : 'Submit Evaluation'}
-                    </CommonButton>
-                ) : (
-                    <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                {!isReadOnly
+                    ? (
+                        <CommonButton
+                            disabled={isSubmitting}
+                            loading={isSubmitting}
+                            variant="contained"
+                            onClick={onSubmit}
+                        >
+                            {isSubmitting
+                                ? 'Submitting...'
+                                : 'Submit Evaluation'}
+                        </CommonButton>
+                    )
+                    : (
+                        <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
                         Evaluation submitted
-                    </span>
-                )}
+                        </span>
+                    )}
             </div>
         </div>
     );

@@ -14,7 +14,7 @@ type EvaluationTab = 'attendance' | 'assessments' | 'grades';
 interface StudentEvaluationModalProps {
     enrollmentId: string | null;
     open: boolean;
-    onClose: () => void;
+    onClose: VoidFunction;
 }
 
 export default function StudentEvaluationModal({
@@ -80,7 +80,10 @@ export default function StudentEvaluationModal({
                         </div>
                     )}
                 </div>
-                <IconButton size="small" onClick={onClose}>
+                <IconButton
+                    size="small"
+                    onClick={onClose}
+                >
                     <XIcon />
                 </IconButton>
             </div>

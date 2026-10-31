@@ -42,7 +42,7 @@ export type CommonInputProps = TextFieldProps & {
     description?: ReactNode;
 
     // Callback invoked after the built-in clear button empties the field
-    onClear?: () => void;
+    onClear?: VoidFunction;
 };
 
 /**
@@ -111,7 +111,9 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
     const labelErrorMessage = label && error
         ? helperText
         : undefined;
-    const labelDescription = description ?? (label && !error ? helperText : undefined);
+    const labelDescription = description ?? (label && !error
+        ? helperText
+        : undefined);
     const inlineHelperText = label
         ? undefined
         : helperText;
@@ -222,7 +224,9 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
         input: {
             ...inputSlotProps,
             readOnly: isReadOnly,
-            ...(resolvedEndAdornment !== undefined ? { endAdornment: resolvedEndAdornment } : {})
+            ...(resolvedEndAdornment !== undefined
+                ? { endAdornment: resolvedEndAdornment }
+                : {})
         }
     };
 
@@ -254,6 +258,7 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
                         isRoundedFull && 'common_input_rounded_full'
                     )
                 }
+                defaultValue={resolvedDefaultValue}
                 error={error}
                 fullWidth={fullWidth}
                 helperText={inlineHelperText}
@@ -264,7 +269,6 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
                     ? 'text'
                     : type
                 }
-                defaultValue={resolvedDefaultValue}
                 value={resolvedValue}
                 onChange={handleChange}
             />

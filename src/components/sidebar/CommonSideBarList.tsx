@@ -1,8 +1,8 @@
 import SideBarSectionGroup from '@components/sidebar/SideBarSectionGroup';
+import { VARIANT_STYLES } from '@constants/sidebar.constant';
 import { HTMLAttributesDivElement } from '@type/common.type';
 import { SideBarSection, SideBarVariant } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
-import { VARIANT_STYLES } from '@constants/sidebar.constant';
 
 interface CommonSideBarListProps extends HTMLAttributesDivElement {
     // Array of sections to render

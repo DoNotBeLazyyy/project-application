@@ -6,19 +6,21 @@ export default function AlertPromptModal({
     formButtonsProps,
     ...props
 }: CommonPromptModalProps) {
-    return <CommonPromptModal
-        {...props}
-        actionIconProps={{
-            icon: WarningIcon,
-            iconContainerClassName: 'bg-[var(--mui-tokens-color-200)] text-[var(--mui-tokens-color-500)]',
-            ...actionIconProps
-        }}
-        formButtonsProps={{
-            ...formButtonsProps,
-            confirmProps: {
-                children: 'Continue',
-                ...formButtonsProps?.confirmProps
-            }
-        }}
-    />;
+    return (
+        <CommonPromptModal
+            {...props}
+            actionIconProps={{
+                icon: WarningIcon,
+                iconContainerClassName: 'bg-[var(--mui-tokens-color-200)] text-[var(--mui-tokens-color-500)]',
+                ...actionIconProps
+            }}
+            formButtonsProps={{
+                ...formButtonsProps,
+                confirmProps: {
+                    children: 'Continue',
+                    ...formButtonsProps?.confirmProps
+                }
+            }}
+        />
+    );
 }

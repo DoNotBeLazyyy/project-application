@@ -5,7 +5,9 @@ import { hasRealFormChanges } from '@hooks/useFormDraft';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+    beforeEach, describe, expect, it, vi
+} from 'vitest';
 
 interface TestFormValues {
     department: string;
@@ -15,13 +17,21 @@ interface TestFormValues {
 }
 
 const testFields: FormFieldConfig<TestFormValues>[] = [
-    { label: 'Name', name: 'name', type: 'text' },
-    { label: 'Description', name: 'description', type: 'text' },
-    { label: 'Department', name: 'department', type: 'text' }
+    {
+        label: 'Name', name: 'name', type: 'text'
+    },
+    {
+        label: 'Description', name: 'description', type: 'text'
+    },
+    {
+        label: 'Department', name: 'department', type: 'text'
+    }
 ];
 
 function TestComponent({
-    defaultValues = { department: '', description: '', name: '' },
+    defaultValues = {
+        department: '', description: '', name: ''
+    },
     formId = 'test-form',
     enableDraftRecovery
 }: {
@@ -46,13 +56,15 @@ function TestComponent({
 }
 
 function TestModalForm({
-    defaultValues = { department: 'Science', description: 'Initial desc', name: 'Biology' },
+    defaultValues = {
+        department: 'Science', description: 'Initial desc', name: 'Biology'
+    },
     formId = 'modal-test-form',
     onModalClosed
 }: {
     defaultValues?: TestFormValues;
     formId?: string;
-    onModalClosed?: () => void;
+    onModalClosed?: VoidFunction;
 }) {
     const [open, setOpen] = useState(true);
     const { control, handleSubmit } = useForm<TestFormValues>({
@@ -62,20 +74,23 @@ function TestModalForm({
     return (
         <div>
             {!open && (
-                <button type="button" onClick={() => setOpen(true)}>
+                <button
+                    type="button"
+                    onClick={() => setOpen(true)}
+                >
                     Reopen Modal
                 </button>
             )}
             <CommonFormModal
-                open={open}
-                formId={formId}
-                formContent={
+                formContent={(
                     <CommonForm
                         control={control}
                         fields={testFields}
                         formProps={{ id: formId, onSubmit: handleSubmit(() => {}) }}
                     />
-                }
+                )}
+                formId={formId}
+                open={open}
                 onClose={() => {
                     setOpen(false);
                     onModalClosed?.();
@@ -107,13 +122,17 @@ describe('useFormDraft & CommonForm draft restoration', () => {
 
         render(<TestComponent />);
 
-        expect(screen.getByText(/Restore Unsaved Draft\?/i)).toBeInTheDocument();
-        expect(screen.getByText(/You have unsaved changes from earlier/i)).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /Continue/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /Discard/i })).toBeInTheDocument();
+        expect(screen.getByText(/Restore Unsaved Draft\?/i))
+            .toBeInTheDocument();
+        expect(screen.getByText(/You have unsaved changes from earlier/i))
+            .toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Continue/i }))
+            .toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Discard/i }))
+            .toBeInTheDocument();
     });
 
-    it('restores draft values into inputs when clicking Continue', async () => {
+    it('restores draft values into inputs when clicking Continue', async() => {
         const draftPayload = {
             pathname: window.location.pathname,
             timestamp: Date.now(),
@@ -133,11 +152,13 @@ describe('useFormDraft & CommonForm draft restoration', () => {
         const nameInput = container.querySelector('input[name="name"]') as HTMLInputElement;
         const descInput = container.querySelector('input[name="description"]') as HTMLInputElement;
 
-        expect(nameInput.value).toBe('Restored Chemistry');
-        expect(descInput.value).toBe('Chemistry notes');
+        expect(nameInput.value)
+            .toBe('Restored Chemistry');
+        expect(descInput.value)
+            .toBe('Chemistry notes');
     });
 
-    it('clears the draft and keeps blank inputs when clicking Discard', async () => {
+    it('clears the draft and keeps blank inputs when clicking Discard', async() => {
         const draftPayload = {
             pathname: window.location.pathname,
             timestamp: Date.now(),
@@ -154,10 +175,12 @@ describe('useFormDraft & CommonForm draft restoration', () => {
             expect(screen.queryByText(/Restore Unsaved Draft\?/i)).not.toBeInTheDocument();
         });
 
-        expect(sessionStorage.getItem('au_draft_session_test-form')).toBeNull();
+        expect(sessionStorage.getItem('au_draft_session_test-form'))
+            .toBeNull();
 
         const nameInput = container.querySelector('input[name="name"]') as HTMLInputElement;
-        expect(nameInput.value).toBe('');
+        expect(nameInput.value)
+            .toBe('');
     });
 
     it('does not prompt when form is marked as filter form', () => {
@@ -173,19 +196,25 @@ describe('useFormDraft & CommonForm draft restoration', () => {
         expect(screen.queryByText(/Restore Unsaved Draft\?/i)).not.toBeInTheDocument();
     });
 
-    it('treats editing and reverting back to original value as no real changes and clears sessionStorage', async () => {
+    it('treats editing and reverting back to original value as no real changes and clears sessionStorage', async() => {
         expect(
             hasRealFormChanges(
-                { name: 'Biology', description: 'Initial desc', department: 'Science' },
-                { name: 'Biology', description: 'Initial desc', department: 'Science' }
+                {
+                    name: 'Biology', description: 'Initial desc', department: 'Science'
+                },
+                {
+                    name: 'Biology', description: 'Initial desc', department: 'Science'
+                }
             )
-        ).toBe(false);
+        )
+            .toBe(false);
 
         const onModalClosed = vi.fn();
         render(<TestModalForm onModalClosed={onModalClosed} />);
 
         const nameInput = document.querySelector('input[name="name"]') as HTMLInputElement;
-        expect(nameInput.value).toBe('Biology');
+        expect(nameInput.value)
+            .toBe('Biology');
 
         // Edit value -> real change occurs and draft is saved
         fireEvent.change(nameInput, { target: { value: 'Biology Updated' } });
@@ -196,7 +225,8 @@ describe('useFormDraft & CommonForm draft restoration', () => {
         // Revert value back to original 'Biology' -> no real change and draft is removed
         fireEvent.change(nameInput, { target: { value: 'Biology' } });
         await waitFor(() => {
-            expect(sessionStorage.getItem('au_draft_session_modal-test-form')).toBeNull();
+            expect(sessionStorage.getItem('au_draft_session_modal-test-form'))
+                .toBeNull();
         });
 
         // Clicking Cancel closes immediately without Discard prompt
@@ -204,10 +234,11 @@ describe('useFormDraft & CommonForm draft restoration', () => {
         fireEvent.click(cancelBtn);
 
         expect(screen.queryByText(/Discard unsaved changes\?/i)).not.toBeInTheDocument();
-        expect(onModalClosed).toHaveBeenCalledTimes(1);
+        expect(onModalClosed)
+            .toHaveBeenCalledTimes(1);
     });
 
-    it('prompts Discard or Continue Editing when closing a form with real changes, and clears draft on Discard', async () => {
+    it('prompts Discard or Continue Editing when closing a form with real changes, and clears draft on Discard', async() => {
         const onModalClosed = vi.fn();
         render(<TestModalForm onModalClosed={onModalClosed} />);
 
@@ -223,7 +254,8 @@ describe('useFormDraft & CommonForm draft restoration', () => {
         fireEvent.click(cancelBtn);
 
         // Prompt should appear
-        expect(screen.getByText(/Discard unsaved changes\?/i)).toBeInTheDocument();
+        expect(screen.getByText(/Discard unsaved changes\?/i))
+            .toBeInTheDocument();
         expect(onModalClosed).not.toHaveBeenCalled();
 
         // Click Continue Editing -> stays open, draft still present
@@ -241,8 +273,10 @@ describe('useFormDraft & CommonForm draft restoration', () => {
         const discardBtn = screen.getByRole('button', { name: /^Discard$/i });
         fireEvent.click(discardBtn);
 
-        expect(onModalClosed).toHaveBeenCalledTimes(1);
-        expect(sessionStorage.getItem('au_draft_session_modal-test-form')).toBeNull();
+        expect(onModalClosed)
+            .toHaveBeenCalledTimes(1);
+        expect(sessionStorage.getItem('au_draft_session_modal-test-form'))
+            .toBeNull();
 
         // Reopen modal -> should NOT show Restore Unsaved Draft
         const reopenBtn = screen.getByRole('button', { name: /Reopen Modal/i, hidden: true });
@@ -250,7 +284,7 @@ describe('useFormDraft & CommonForm draft restoration', () => {
         expect(screen.queryByText(/Restore Unsaved Draft\?/i)).not.toBeInTheDocument();
     });
 
-    it('keeps draft in sessionStorage for Restore Unsaved Draft only when form closes unexpectedly (unmounts without programmed close)', async () => {
+    it('keeps draft in sessionStorage for Restore Unsaved Draft only when form closes unexpectedly (unmounts without programmed close)', async() => {
         const { unmount } = render(<TestModalForm />);
 
         const nameInput = document.querySelector('input[name="name"]') as HTMLInputElement;
@@ -267,7 +301,7 @@ describe('useFormDraft & CommonForm draft restoration', () => {
 
         // Remounting the form now prompts Restore Unsaved Draft
         render(<TestModalForm />);
-        expect(screen.getByText(/Restore Unsaved Draft\?/i)).toBeInTheDocument();
+        expect(screen.getByText(/Restore Unsaved Draft\?/i))
+            .toBeInTheDocument();
     });
 });
-

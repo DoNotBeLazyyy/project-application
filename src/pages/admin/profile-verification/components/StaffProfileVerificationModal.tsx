@@ -28,9 +28,9 @@ import { useEffect, useMemo, useState } from 'react';
 
 interface StaffProfileVerificationModalProps {
     open: boolean;
-    onClose: () => void;
+    onClose: VoidFunction;
     request: StaffProfileRequestRow | null;
-    onSuccess?: () => void;
+    onSuccess?: VoidFunction;
 }
 
 const FIELD_LABELS: Record<string, string> = {
@@ -74,7 +74,9 @@ function buildInitialEditableValues(request: StaffProfileRequestRow | null): Pro
     const current = (request?.current_values || {}) as Record<string, any>;
     const requested = (request?.requested_changes || {}) as Record<string, any>;
     const approved = (request?.approved_changes || {}) as Record<string, any>;
-    const baseTarget: Record<string, any> = request?.status === 'Approved with Edits' ? approved : requested;
+    const baseTarget: Record<string, any> = request?.status === 'Approved with Edits'
+        ? approved
+        : requested;
     const baseValues: Record<string, any> = { ...current, ...baseTarget };
 
     return {
@@ -129,7 +131,9 @@ export default function StaffProfileVerificationModal({
     const draftGuard = useObjectDraft({
         defaultValues: initialDraftValues,
         enabled: open && Boolean(isPending && request?.id),
-        formId: request?.id ? `staff-profile-verification-${request.id}` : 'staff-profile-verification',
+        formId: request?.id
+            ? `staff-profile-verification-${request.id}`
+            : 'staff-profile-verification',
         onRestore: (restored) => {
             if (restored.editableValues) setEditableValues(restored.editableValues);
             if (restored.adminNotes !== undefined) setAdminNotes(restored.adminNotes);
@@ -155,10 +159,14 @@ export default function StaffProfileVerificationModal({
     const current = (request.current_values || {}) as Record<string, any>;
     const requested = (request.requested_changes || {}) as Record<string, any>;
     const approved = (request.approved_changes || {}) as Record<string, any>;
-    const targetChanges: Record<string, any> = request.status === 'Approved with Edits' ? approved : requested;
+    const targetChanges: Record<string, any> = request.status === 'Approved with Edits'
+        ? approved
+        : requested;
 
     const baselineValues = DISPLAY_FIELDS.reduce((acc, key) => {
-        acc[key] = (targetChanges[key] !== undefined ? targetChanges[key] : current[key]) || '';
+        acc[key] = (targetChanges[key] !== undefined
+            ? targetChanges[key]
+            : current[key]) || '';
         return acc;
     }, {} as Record<keyof ProfileFormValues, string>);
 
@@ -173,7 +181,9 @@ export default function StaffProfileVerificationModal({
         return curr !== req || (request.status === 'Approved with Edits' && curr !== app);
     });
 
-    const fieldsToDisplay = showOnlyChanged ? changedFields : DISPLAY_FIELDS;
+    const fieldsToDisplay = showOnlyChanged
+        ? changedFields
+        : DISPLAY_FIELDS;
 
     function handleAttemptClose() {
         if (isSubmitting) return;
@@ -226,14 +236,17 @@ export default function StaffProfileVerificationModal({
         const effectiveLastName = editableValues.last_name?.trim() || current.last_name?.trim() || '';
 
         if (!effectiveFirstName || !effectiveLastName) {
-            useToastStore.getState().showToast('First name and last name are required.', 'error');
+            useToastStore.getState()
+                .showToast('First name and last name are required.', 'error');
             return;
         }
 
         // Same format checks as the staff member's own profile form
         const nextErrors: Partial<Record<keyof ProfileFormValues, string>> = {};
-        const mobile = String(editableValues.mobile_number ?? '').trim();
-        const postal = String(editableValues.postal_code ?? '').trim();
+        const mobile = String(editableValues.mobile_number ?? '')
+            .trim();
+        const postal = String(editableValues.postal_code ?? '')
+            .trim();
         if (mobile && !MOBILE_NUMBER_RULE.value.test(mobile)) nextErrors.mobile_number = MOBILE_NUMBER_RULE.message;
         if (postal && !POSTAL_CODE_RULE.value.test(postal)) nextErrors.postal_code = POSTAL_CODE_RULE.message;
         setFieldErrors(nextErrors);
@@ -244,19 +257,22 @@ export default function StaffProfileVerificationModal({
         setIsSubmitting(true);
         const result = await approveStaffProfileRequest(
             request.id,
-            hasAdminEdits ? editableValues : null,
+            hasAdminEdits
+                ? editableValues
+                : null,
             adminNotes.trim() || null
         );
         setIsSubmitting(false);
 
         if (!result.error) {
             draftGuard.clearDraft();
-            useToastStore.getState().showToast(
-                hasAdminEdits
-                    ? 'Staff profile changes approved with administrator edits and applied.'
-                    : 'Staff profile changes approved and updated successfully.',
-                'success'
-            );
+            useToastStore.getState()
+                .showToast(
+                    hasAdminEdits
+                        ? 'Staff profile changes approved with administrator edits and applied.'
+                        : 'Staff profile changes approved and updated successfully.',
+                    'success'
+                );
             onSuccess?.();
             onClose();
         }
@@ -265,7 +281,8 @@ export default function StaffProfileVerificationModal({
     async function handleRejectSubmit() {
         if (!request) return;
         if (!rejectReason.trim()) {
-            useToastStore.getState().showToast('Please provide a reason for rejection.', 'error');
+            useToastStore.getState()
+                .showToast('Please provide a reason for rejection.', 'error');
             return;
         }
 
@@ -275,7 +292,8 @@ export default function StaffProfileVerificationModal({
 
         if (!result.error) {
             draftGuard.clearDraft();
-            useToastStore.getState().showToast('Profile change request rejected.', 'info');
+            useToastStore.getState()
+                .showToast('Profile change request rejected.', 'info');
             setIsRejectOpen(false);
             onSuccess?.();
             onClose();
@@ -285,10 +303,6 @@ export default function StaffProfileVerificationModal({
     return (
         <>
             <CommonModal
-                fullWidth
-                maxWidth="lg"
-                open={open}
-                onClose={handleAttemptClose}
                 cardProps={{
                     className: 'flex flex-col h-[100dvh] sm:h-[90dvh] max-h-[100dvh] sm:max-h-[90dvh] w-full max-w-5xl overflow-hidden',
                     defaultActionProps: {
@@ -297,17 +311,23 @@ export default function StaffProfileVerificationModal({
                     cardHeaderProps: {
                         action: <ModalCloseIcon onClick={handleAttemptClose} />,
                         className: 'shrink-0 p-3.5 sm:p-5 pb-2 sm:pb-3',
-                        subheader: `Role: ${request.role_code} • Submitted ${new Date(request.created_at).toLocaleString()}`,
+                        subheader: `Role: ${request.role_code} • Submitted ${new Date(request.created_at)
+                            .toLocaleString()}`,
                         title: `Review Staff Profile: ${request.user_name}`
                     }
                 }}
+                fullWidth
+                maxWidth="lg"
+                open={open}
+                onClose={handleAttemptClose}
             >
                 <div className="flex flex-1 flex-col gap-3 sm:gap-4 min-h-0 overflow-y-auto overscroll-contain p-3.5 sm:p-6 pt-0 sm:pt-0">
                     {/* Header Summary Banner */}
                     <div className="border border-(--mui-palette-divider) bg-(--mui-palette-background-default) p-3 sm:p-4 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
                         <div className="flex items-center gap-3 min-w-0">
                             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-(--mui-palette-primary-main)/10 text-(--mui-palette-primary-main) flex items-center justify-center font-bold text-xs sm:text-sm shrink-0">
-                                {request.user_name.slice(0, 2).toUpperCase()}
+                                {request.user_name.slice(0, 2)
+                                    .toUpperCase()}
                             </div>
                             <div className="min-w-0">
                                 <h3 className="font-semibold text-xs sm:text-sm text-(--mui-palette-text-primary) m-0 truncate">
@@ -321,7 +341,10 @@ export default function StaffProfileVerificationModal({
 
                         <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs pt-2 sm:pt-0 border-t sm:border-t-0 border-(--mui-palette-divider)">
                             <div className="flex items-center gap-1.5">
-                                <ShieldCheckIcon size={16} className="text-(--mui-palette-primary-main) shrink-0" />
+                                <ShieldCheckIcon
+                                    className="text-(--mui-palette-primary-main) shrink-0"
+                                    size={16}
+                                />
                                 <div>
                                     <span className="text-(--mui-palette-text-secondary) block text-[10px] sm:text-[11px]">Staff Role</span>
                                     <span className="font-semibold text-(--mui-palette-text-primary) text-xs">{request.role_code}</span>
@@ -330,7 +353,10 @@ export default function StaffProfileVerificationModal({
 
                             {request.department_name && (
                                 <div className="flex items-center gap-1.5">
-                                    <BuildingsIcon size={16} className="text-(--mui-palette-info-main) shrink-0" />
+                                    <BuildingsIcon
+                                        className="text-(--mui-palette-info-main) shrink-0"
+                                        size={16}
+                                    />
                                     <div>
                                         <span className="text-(--mui-palette-text-secondary) block text-[10px] sm:text-[11px]">Department</span>
                                         <span className="font-semibold text-(--mui-palette-text-primary) text-xs">
@@ -360,31 +386,37 @@ export default function StaffProfileVerificationModal({
                     </div>
 
                     {/* Pending Instructions / Status alert */}
-                    {isPending ? (
-                        <div className="border border-(--mui-palette-info-main) bg-(--mui-palette-info-light) p-2.5 sm:p-3 rounded-lg flex items-start gap-2.5 text-xs text-(--mui-palette-text-primary) shrink-0">
-                            <PencilSimpleIcon size={18} className="text-(--mui-palette-info-main) shrink-0 mt-0.5" />
-                            <div>
-                                <p className="font-semibold m-0 text-xs sm:text-sm">Administrator Verification & Edit Mode</p>
-                                <p className="m-0 mt-0.5 text-(--mui-palette-text-secondary) text-[11px] sm:text-xs">
+                    {isPending
+                        ? (
+                            <div className="border border-(--mui-palette-info-main) bg-(--mui-palette-info-light) p-2.5 sm:p-3 rounded-lg flex items-start gap-2.5 text-xs text-(--mui-palette-text-primary) shrink-0">
+                                <PencilSimpleIcon
+                                    className="text-(--mui-palette-info-main) shrink-0 mt-0.5"
+                                    size={18}
+                                />
+                                <div>
+                                    <p className="font-semibold m-0 text-xs sm:text-sm">Administrator Verification & Edit Mode</p>
+                                    <p className="m-0 mt-0.5 text-(--mui-palette-text-secondary) text-[11px] sm:text-xs">
                                     Compare current profile data against requested changes for this {request.role_code}. You may adjust any values directly in the editable fields before approving, or reject the request with remarks.
-                                </p>
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                    ) : (
-                        <div className="border border-(--mui-palette-divider) bg-(--mui-palette-background-default) p-2.5 sm:p-3 rounded-lg text-xs text-(--mui-palette-text-secondary) flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 shrink-0">
-                            <div>
-                                <span>Reviewed by: <strong className="text-(--mui-palette-text-primary)">{request.reviewer_name || 'Administrator'}</strong></span>
-                                {request.reviewed_at && (
-                                    <span className="ml-2">on {new Date(request.reviewed_at).toLocaleString()}</span>
+                        )
+                        : (
+                            <div className="border border-(--mui-palette-divider) bg-(--mui-palette-background-default) p-2.5 sm:p-3 rounded-lg text-xs text-(--mui-palette-text-secondary) flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 shrink-0">
+                                <div>
+                                    <span>Reviewed by: <strong className="text-(--mui-palette-text-primary)">{request.reviewer_name || 'Administrator'}</strong></span>
+                                    {request.reviewed_at && (
+                                        <span className="ml-2">on {new Date(request.reviewed_at)
+                                            .toLocaleString()}</span>
+                                    )}
+                                </div>
+                                {request.rejection_reason && (
+                                    <div className="text-(--mui-palette-error-main)">
+                                        <strong>Rejection Reason:</strong> {request.rejection_reason}
+                                    </div>
                                 )}
                             </div>
-                            {request.rejection_reason && (
-                                <div className="text-(--mui-palette-error-main)">
-                                    <strong>Rejection Reason:</strong> {request.rejection_reason}
-                                </div>
-                            )}
-                        </div>
-                    )}
+                        )}
 
                     {/* Verification Fields Section Header / Filter Toggle */}
                     <div className="flex items-center justify-between gap-2 shrink-0 px-0.5 pt-1">
@@ -402,9 +434,9 @@ export default function StaffProfileVerificationModal({
                         </div>
 
                         <button
+                            className="text-[11px] font-medium text-(--mui-palette-primary-main) hover:underline cursor-pointer bg-transparent border-0 p-0"
                             type="button"
                             onClick={() => setShowOnlyChanged(!showOnlyChanged)}
-                            className="text-[11px] font-medium text-(--mui-palette-primary-main) hover:underline cursor-pointer bg-transparent border-0 p-0"
                         >
                             {showOnlyChanged
                                 ? `Show all fields (${DISPLAY_FIELDS.length})`
@@ -417,9 +449,9 @@ export default function StaffProfileVerificationModal({
                             <p className="m-0 mb-1 font-medium text-(--mui-palette-text-primary)">No modified fields detected.</p>
                             <p className="m-0 mb-3 text-[11px]">The requested profile values match the current profile values.</p>
                             <button
+                                className="text-xs font-medium text-(--mui-palette-primary-main) hover:underline cursor-pointer bg-transparent border-0 p-0"
                                 type="button"
                                 onClick={() => setShowOnlyChanged(false)}
-                                className="text-xs font-medium text-(--mui-palette-primary-main) hover:underline cursor-pointer bg-transparent border-0 p-0"
                             >
                                 View all profile fields ({DISPLAY_FIELDS.length})
                             </button>
@@ -432,7 +464,9 @@ export default function StaffProfileVerificationModal({
                                     <div className="col-span-3">Profile Field</div>
                                     <div className="col-span-4">Current Value</div>
                                     <div className="col-span-5">
-                                        {isPending ? 'Verified Value (Editable)' : 'Final Approved Value'}
+                                        {isPending
+                                            ? 'Verified Value (Editable)'
+                                            : 'Final Approved Value'}
                                     </div>
                                 </div>
 
@@ -446,7 +480,6 @@ export default function StaffProfileVerificationModal({
 
                                         return (
                                             <div
-                                                key={field}
                                                 className={`grid grid-cols-12 px-3 py-2.5 items-center transition-colors ${
                                                     isModified
                                                         ? 'bg-(--mui-palette-warning-light)/25'
@@ -454,14 +487,23 @@ export default function StaffProfileVerificationModal({
                                                             ? 'bg-(--mui-palette-info-light)/25'
                                                             : ''
                                                 }`}
+                                                key={field}
                                             >
                                                 <div className="col-span-3 font-medium text-(--mui-palette-text-primary) flex items-center gap-1.5 flex-wrap">
                                                     <span>{FIELD_LABELS[field] || field}</span>
                                                     {isModified && (
-                                                        <CommonChip label="Changed" size="small" variant="light" />
+                                                        <CommonChip
+                                                            label="Changed"
+                                                            size="small"
+                                                            variant="light"
+                                                        />
                                                     )}
                                                     {isPending && isEditedByAdmin && (
-                                                        <CommonChip label="Admin Edited" size="small" variant="light" />
+                                                        <CommonChip
+                                                            label="Admin Edited"
+                                                            size="small"
+                                                            variant="light"
+                                                        />
                                                     )}
                                                 </div>
 
@@ -470,44 +512,52 @@ export default function StaffProfileVerificationModal({
                                                 </div>
 
                                                 <div className="col-span-5 pr-2">
-                                                    {isPending ? (
-                                                        field === 'gender' ? (
-                                                            <CommonSelect
-                                                                fullWidth
-                                                                options={GENDER_OPTIONS}
-                                                                size="small"
-                                                                value={String(editVal)}
-                                                                onChange={(e) => handleFieldChange('gender', e.target.value as string)}
-                                                            />
-                                                        ) : field === 'civil_status' ? (
-                                                            <CommonSelect
-                                                                fullWidth
-                                                                options={CIVIL_STATUS_OPTIONS}
-                                                                size="small"
-                                                                value={String(editVal)}
-                                                                onChange={(e) => handleFieldChange('civil_status', e.target.value as string)}
-                                                            />
-                                                        ) : field === 'date_of_birth' ? (
-                                                            <CommonDatePicker
-                                                                size="small"
-                                                                value={String(editVal || '')}
-                                                                onChange={(val) => handleFieldChange('date_of_birth', val)}
-                                                            />
-                                                        ) : (
-                                                            <CommonInput
-                                                                fullWidth
-                                                                size="small"
-                                                                value={String(editVal)}
-                                                                onChange={(e) => handleFieldChange(field, e.target.value)}
-                                                            />
+                                                    {isPending
+                                                        ? (
+                                                            field === 'gender'
+                                                                ? (
+                                                                    <CommonSelect
+                                                                        fullWidth
+                                                                        options={GENDER_OPTIONS}
+                                                                        size="small"
+                                                                        value={String(editVal)}
+                                                                        onChange={(e) => handleFieldChange('gender', e.target.value as string)}
+                                                                    />
+                                                                )
+                                                                : field === 'civil_status'
+                                                                    ? (
+                                                                        <CommonSelect
+                                                                            fullWidth
+                                                                            options={CIVIL_STATUS_OPTIONS}
+                                                                            size="small"
+                                                                            value={String(editVal)}
+                                                                            onChange={(e) => handleFieldChange('civil_status', e.target.value as string)}
+                                                                        />
+                                                                    )
+                                                                    : field === 'date_of_birth'
+                                                                        ? (
+                                                                            <CommonDatePicker
+                                                                                size="small"
+                                                                                value={String(editVal || '')}
+                                                                                onChange={(val) => handleFieldChange('date_of_birth', val)}
+                                                                            />
+                                                                        )
+                                                                        : (
+                                                                            <CommonInput
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                value={String(editVal)}
+                                                                                onChange={(e) => handleFieldChange(field, e.target.value)}
+                                                                            />
+                                                                        )
                                                         )
-                                                    ) : (
-                                                        <span className="font-medium text-(--mui-palette-text-primary) break-words">
-                                                            {request.status === 'Approved with Edits'
-                                                                ? (request.approved_changes?.[field] || reqVal)
-                                                                : reqVal}
-                                                        </span>
-                                                    )}
+                                                        : (
+                                                            <span className="font-medium text-(--mui-palette-text-primary) break-words">
+                                                                {request.status === 'Approved with Edits'
+                                                                    ? (request.approved_changes?.[field] || reqVal)
+                                                                    : reqVal}
+                                                            </span>
+                                                        )}
                                                 </div>
                                             </div>
                                         );
@@ -526,7 +576,6 @@ export default function StaffProfileVerificationModal({
 
                                     return (
                                         <div
-                                            key={`mobile-${field}`}
                                             className={`border rounded-lg p-3 transition-colors ${
                                                 isModified
                                                     ? 'border-(--mui-palette-warning-main)/40 bg-(--mui-palette-warning-light)/15'
@@ -534,6 +583,7 @@ export default function StaffProfileVerificationModal({
                                                         ? 'border-(--mui-palette-info-main)/40 bg-(--mui-palette-info-light)/15'
                                                         : 'border-(--mui-palette-divider) bg-(--mui-palette-background-default)/50'
                                             }`}
+                                            key={`mobile-${field}`}
                                         >
                                             <div className="flex items-center justify-between gap-2 mb-2">
                                                 <span className="font-semibold text-xs text-(--mui-palette-text-primary)">
@@ -541,10 +591,18 @@ export default function StaffProfileVerificationModal({
                                                 </span>
                                                 <div className="flex items-center gap-1 shrink-0">
                                                     {isModified && (
-                                                        <CommonChip label="Changed" size="small" variant="light" />
+                                                        <CommonChip
+                                                            label="Changed"
+                                                            size="small"
+                                                            variant="light"
+                                                        />
                                                     )}
                                                     {isPending && isEditedByAdmin && (
-                                                        <CommonChip label="Admin Edited" size="small" variant="light" />
+                                                        <CommonChip
+                                                            label="Admin Edited"
+                                                            size="small"
+                                                            variant="light"
+                                                        />
                                                     )}
                                                 </div>
                                             </div>
@@ -560,48 +618,58 @@ export default function StaffProfileVerificationModal({
 
                                             <div>
                                                 <span className="text-[10px] font-medium text-(--mui-palette-text-secondary) block mb-1">
-                                                    {isPending ? 'Verified Value (Editable):' : 'Final Approved Value:'}
+                                                    {isPending
+                                                        ? 'Verified Value (Editable):'
+                                                        : 'Final Approved Value:'}
                                                 </span>
-                                                {isPending ? (
-                                                    field === 'gender' ? (
-                                                        <CommonSelect
-                                                            fullWidth
-                                                            options={GENDER_OPTIONS}
-                                                            size="small"
-                                                            value={String(editVal)}
-                                                            onChange={(e) => handleFieldChange('gender', e.target.value as string)}
-                                                        />
-                                                    ) : field === 'civil_status' ? (
-                                                        <CommonSelect
-                                                            fullWidth
-                                                            options={CIVIL_STATUS_OPTIONS}
-                                                            size="small"
-                                                            value={String(editVal)}
-                                                            onChange={(e) => handleFieldChange('civil_status', e.target.value as string)}
-                                                        />
-                                                    ) : field === 'date_of_birth' ? (
-                                                        <CommonDatePicker
-                                                            size="small"
-                                                            value={String(editVal || '')}
-                                                            onChange={(val) => handleFieldChange('date_of_birth', val)}
-                                                        />
-                                                    ) : (
-                                                        <CommonInput
-                                                            error={Boolean(fieldErrors[field])}
-                                                            fullWidth
-                                                            helperText={fieldErrors[field]}
-                                                            size="small"
-                                                            value={String(editVal)}
-                                                            onChange={(e) => handleFieldChange(field, e.target.value)}
-                                                        />
+                                                {isPending
+                                                    ? (
+                                                        field === 'gender'
+                                                            ? (
+                                                                <CommonSelect
+                                                                    fullWidth
+                                                                    options={GENDER_OPTIONS}
+                                                                    size="small"
+                                                                    value={String(editVal)}
+                                                                    onChange={(e) => handleFieldChange('gender', e.target.value as string)}
+                                                                />
+                                                            )
+                                                            : field === 'civil_status'
+                                                                ? (
+                                                                    <CommonSelect
+                                                                        fullWidth
+                                                                        options={CIVIL_STATUS_OPTIONS}
+                                                                        size="small"
+                                                                        value={String(editVal)}
+                                                                        onChange={(e) => handleFieldChange('civil_status', e.target.value as string)}
+                                                                    />
+                                                                )
+                                                                : field === 'date_of_birth'
+                                                                    ? (
+                                                                        <CommonDatePicker
+                                                                            size="small"
+                                                                            value={String(editVal || '')}
+                                                                            onChange={(val) => handleFieldChange('date_of_birth', val)}
+                                                                        />
+                                                                    )
+                                                                    : (
+                                                                        <CommonInput
+                                                                            error={Boolean(fieldErrors[field])}
+                                                                            fullWidth
+                                                                            helperText={fieldErrors[field]}
+                                                                            size="small"
+                                                                            value={String(editVal)}
+                                                                            onChange={(e) => handleFieldChange(field, e.target.value)}
+                                                                        />
+                                                                    )
                                                     )
-                                                ) : (
-                                                    <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) rounded p-2 text-xs font-medium text-(--mui-palette-text-primary) break-words">
-                                                        {request.status === 'Approved with Edits'
-                                                            ? (request.approved_changes?.[field] || reqVal)
-                                                            : reqVal}
-                                                    </div>
-                                                )}
+                                                    : (
+                                                        <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) rounded p-2 text-xs font-medium text-(--mui-palette-text-primary) break-words">
+                                                            {request.status === 'Approved with Edits'
+                                                                ? (request.approved_changes?.[field] || reqVal)
+                                                                : reqVal}
+                                                        </div>
+                                                    )}
                                             </div>
                                         </div>
                                     );
@@ -612,22 +680,24 @@ export default function StaffProfileVerificationModal({
 
                     {/* Admin Notes */}
                     <div className="flex flex-col gap-1 mt-1 shrink-0">
-                        {isPending ? (
-                            <CommonInput
-                                fullWidth
-                                label="Administrator Notes & Remarks (Optional)"
-                                placeholder="e.g., Verified credentials and approved modifications..."
-                                value={adminNotes}
-                                onChange={(e) => setAdminNotes(e.target.value)}
-                            />
-                        ) : (
-                            <>
-                                <FormLabel label="Administrator Notes & Remarks" />
-                                <p className="text-xs text-(--mui-palette-text-secondary) m-0">
-                                    {request.admin_notes || 'No administrative notes recorded.'}
-                                </p>
-                            </>
-                        )}
+                        {isPending
+                            ? (
+                                <CommonInput
+                                    fullWidth
+                                    label="Administrator Notes & Remarks (Optional)"
+                                    placeholder="e.g., Verified credentials and approved modifications..."
+                                    value={adminNotes}
+                                    onChange={(e) => setAdminNotes(e.target.value)}
+                                />
+                            )
+                            : (
+                                <>
+                                    <FormLabel label="Administrator Notes & Remarks" />
+                                    <p className="text-xs text-(--mui-palette-text-secondary) m-0">
+                                        {request.admin_notes || 'No administrative notes recorded.'}
+                                    </p>
+                                </>
+                            )}
                     </div>
                 </div>
 
@@ -654,7 +724,9 @@ export default function StaffProfileVerificationModal({
                             variant="contained"
                             onClick={handleApprove}
                         >
-                            {hasAdminEdits ? 'Approve with Edits' : 'Approve Profile'}
+                            {hasAdminEdits
+                                ? 'Approve with Edits'
+                                : 'Approve Profile'}
                         </CommonButton>
                     </div>
                 )}
@@ -662,9 +734,6 @@ export default function StaffProfileVerificationModal({
 
             {/* Rejection Prompt Modal */}
             <CommonModal
-                maxWidth="sm"
-                open={isRejectOpen}
-                onClose={handleAttemptRejectClose}
                 cardProps={{
                     defaultActionProps: {
                         onClick: handleAttemptRejectClose
@@ -675,6 +744,9 @@ export default function StaffProfileVerificationModal({
                         title: 'Reject Profile Change'
                     }
                 }}
+                maxWidth="sm"
+                open={isRejectOpen}
+                onClose={handleAttemptRejectClose}
             >
                 <div className="p-4 flex flex-col gap-3">
                     <CommonTextarea
@@ -728,4 +800,3 @@ export default function StaffProfileVerificationModal({
         </>
     );
 }
-

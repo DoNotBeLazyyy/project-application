@@ -19,10 +19,14 @@ function ItemRow({ item }: ItemRowProps) {
     const isPendingReview = item.submission_status === 'Submitted' && item.earned_points === null;
     const earnedDisplay = item.earned_points !== null
         ? formatScore(item.earned_points)
-        : (isUnsubmitted ? '0' : '—');
+        : (isUnsubmitted
+            ? '0'
+            : '—');
     const percentDisplay = item.earned_points !== null
         ? formatPercent(item.earned_points, item.max_points)
-        : (isUnsubmitted ? '0%' : '—');
+        : (isUnsubmitted
+            ? '0%'
+            : '—');
 
     return (
         <div className="border-t border-slate-200/70 dark:border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 bg-white/60 dark:bg-zinc-900/60 hover:bg-slate-50 dark:hover:bg-zinc-800/40 transition-colors">
@@ -88,7 +92,9 @@ export default function GradeBreakdownComponentPanel({ component, defaultExpande
     const totalItemMax = component.items.reduce(function(acc, item) {
         return acc + (item.max_points || 0);
     }, 0);
-    const effectiveMaxPoints = component.max_points > 0 ? component.max_points : totalItemMax;
+    const effectiveMaxPoints = component.max_points > 0
+        ? component.max_points
+        : totalItemMax;
 
     const percentage = effectiveMaxPoints > 0
         ? (component.earned_points / effectiveMaxPoints) * 100
@@ -104,7 +110,9 @@ export default function GradeBreakdownComponentPanel({ component, defaultExpande
     const effectiveGradedCount = component.items.filter(
         (item) => item.is_counted || item.earned_points !== null
     ).length;
-    const gradedCountDisplay = component.graded_count > 0 ? component.graded_count : effectiveGradedCount;
+    const gradedCountDisplay = component.graded_count > 0
+        ? component.graded_count
+        : effectiveGradedCount;
 
     const itemSummary = hasItems
         ? `${gradedCountDisplay} of ${component.items.length} graded`
@@ -161,14 +169,16 @@ export default function GradeBreakdownComponentPanel({ component, defaultExpande
                     </div>
                     <div className="flex flex-col text-right min-w-[5.5rem] sm:min-w-[7rem]">
                         <span className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base">
-                            {effectiveMaxPoints > 0 ? (
-                                <>
-                                    {formatScore(component.earned_points)}
-                                    <span className="font-normal text-slate-400 text-xs"> / {effectiveMaxPoints}</span>
-                                </>
-                            ) : (
-                                '—'
-                            )}
+                            {effectiveMaxPoints > 0
+                                ? (
+                                    <>
+                                        {formatScore(component.earned_points)}
+                                        <span className="font-normal text-slate-400 text-xs"> / {effectiveMaxPoints}</span>
+                                    </>
+                                )
+                                : (
+                                    '—'
+                                )}
                         </span>
                         <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                             {`${formatScore(component.weighted_score)} / ${component.weight} pts`}

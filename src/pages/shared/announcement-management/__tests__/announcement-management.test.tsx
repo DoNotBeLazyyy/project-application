@@ -1,7 +1,7 @@
 import AnnouncementsFeedCard from '@components/dashboard/AnnouncementsFeedCard';
 import EventsFeedCard from '@components/dashboard/EventsFeedCard';
-import CommunicationGridCard from '@pages/shared/announcement-management/CommunicationGridCard';
 import AnnouncementForm from '@pages/shared/announcement-management/AnnouncementForm';
+import CommunicationGridCard from '@pages/shared/announcement-management/CommunicationGridCard';
 import AnnouncementManagement from '@pages/shared/announcement-management/index';
 import { useAnnouncementTableConfig } from '@pages/shared/announcement-management/useAnnouncementTableConfig';
 import { render, screen, fireEvent, renderHook } from '@testing-library/react';
@@ -16,17 +16,22 @@ vi.mock('@services/announcement.service', () => ({
     bulkDeleteAnnouncements: vi.fn(),
     deleteAnnouncement: vi.fn(),
     getAnnouncementById: vi.fn(),
-    getAnnouncementSectionOptions: vi.fn().mockResolvedValue({ data: [], error: null }),
-    listAnnouncements: vi.fn().mockResolvedValue({ data: { content: [], totalElements: 0 }, error: null }),
-    listMyAnnouncementsFeed: vi.fn().mockResolvedValue({ data: { content: [], totalElements: 0 }, error: null })
+    getAnnouncementSectionOptions: vi.fn()
+        .mockResolvedValue({ data: [], error: null }),
+    listAnnouncements: vi.fn()
+        .mockResolvedValue({ data: { content: [], totalElements: 0 }, error: null }),
+    listMyAnnouncementsFeed: vi.fn()
+        .mockResolvedValue({ data: { content: [], totalElements: 0 }, error: null })
 }));
 
 vi.mock('@services/event.service', () => ({
     bulkDeleteEvents: vi.fn(),
     deleteEvent: vi.fn(),
     getEventById: vi.fn(),
-    listEvents: vi.fn().mockResolvedValue({ data: { content: [], totalElements: 0 }, error: null }),
-    listMyEventsFeed: vi.fn().mockResolvedValue({ data: [], error: null })
+    listEvents: vi.fn()
+        .mockResolvedValue({ data: { content: [], totalElements: 0 }, error: null }),
+    listMyEventsFeed: vi.fn()
+        .mockResolvedValue({ data: [], error: null })
 }));
 
 describe('Announcement & Communication Module Tests', () => {
@@ -55,8 +60,10 @@ describe('Announcement & Communication Module Tests', () => {
                 />
             );
 
-            expect(screen.getByText('Midterm Examination Schedule')).toBeDefined();
-            expect(screen.getByText('Pinned')).toBeDefined();
+            expect(screen.getByText('Midterm Examination Schedule'))
+                .toBeDefined();
+            expect(screen.getByText('Pinned'))
+                .toBeDefined();
         });
 
         it('hides edit and delete actions when isViewingOnly is true', () => {
@@ -71,8 +78,10 @@ describe('Announcement & Communication Module Tests', () => {
                 />
             );
 
-            expect(screen.queryByText('Edit')).toBeNull();
-            expect(screen.queryByText('Delete')).toBeNull();
+            expect(screen.queryByText('Edit'))
+                .toBeNull();
+            expect(screen.queryByText('Delete'))
+                .toBeNull();
         });
 
         it('hides edit and delete actions when a non-admin user does not own the item', () => {
@@ -94,8 +103,10 @@ describe('Announcement & Communication Module Tests', () => {
                 />
             );
 
-            expect(screen.queryByText('Edit')).toBeNull();
-            expect(screen.queryByText('Delete')).toBeNull();
+            expect(screen.queryByText('Edit'))
+                .toBeNull();
+            expect(screen.queryByText('Delete'))
+                .toBeNull();
         });
     });
 
@@ -105,14 +116,18 @@ describe('Announcement & Communication Module Tests', () => {
                 useAnnouncementTableConfig({
                     isViewingOnly: true,
                     onView: vi.fn()
-                })
-            );
+                }));
 
             const tableConfig = result.current.tableActionConfig(vi.fn());
-            const options = tableConfig.menuOptions ? tableConfig.menuOptions(mockRow) : [];
-            expect(options).toHaveLength(1);
-            expect(options[0].preset).toBe('view');
-            expect(tableConfig.onEditClick).toBeUndefined();
+            const options = tableConfig.menuOptions
+                ? tableConfig.menuOptions(mockRow)
+                : [];
+            expect(options)
+                .toHaveLength(1);
+            expect(options[0].preset)
+                .toBe('view');
+            expect(tableConfig.onEditClick)
+                .toBeUndefined();
         });
 
         it('configures edit and delete options when in management mode for authorized user', () => {
@@ -123,16 +138,21 @@ describe('Announcement & Communication Module Tests', () => {
                     isViewingOnly: false,
                     onEdit: vi.fn(),
                     onView: vi.fn()
-                })
-            );
+                }));
 
             const tableConfig = result.current.tableActionConfig(vi.fn());
-            const options = tableConfig.menuOptions ? tableConfig.menuOptions(mockRow) : [];
-            expect(options.length).toBeGreaterThanOrEqual(3);
+            const options = tableConfig.menuOptions
+                ? tableConfig.menuOptions(mockRow)
+                : [];
+            expect(options.length)
+                .toBeGreaterThanOrEqual(3);
             const presets = options.map((o) => o.preset);
-            expect(presets).toContain('view');
-            expect(presets).toContain('edit');
-            expect(presets).toContain('delete');
+            expect(presets)
+                .toContain('view');
+            expect(presets)
+                .toContain('edit');
+            expect(presets)
+                .toContain('delete');
         });
 
         it('restricts to view only if user does not own and is not authorized to manage the item', () => {
@@ -143,8 +163,7 @@ describe('Announcement & Communication Module Tests', () => {
                     isViewingOnly: false,
                     onEdit: vi.fn(),
                     onView: vi.fn()
-                })
-            );
+                }));
 
             const adminRow: CommunicationListRow = {
                 ...mockRow,
@@ -153,11 +172,17 @@ describe('Announcement & Communication Module Tests', () => {
             };
 
             const tableConfig = result.current.tableActionConfig(vi.fn());
-            const options = tableConfig.menuOptions ? tableConfig.menuOptions(adminRow) : [];
-            expect(options).toHaveLength(1);
-            expect(options[0].preset).toBe('view');
-            expect(tableConfig.onEditClick).toBeDefined();
-            expect(tableConfig.onEditClick!(adminRow)).toBeUndefined();
+            const options = tableConfig.menuOptions
+                ? tableConfig.menuOptions(adminRow)
+                : [];
+            expect(options)
+                .toHaveLength(1);
+            expect(options[0].preset)
+                .toBe('view');
+            expect(tableConfig.onEditClick)
+                .toBeDefined();
+            expect(tableConfig.onEditClick!(adminRow))
+                .toBeUndefined();
         });
     });
 
@@ -183,7 +208,8 @@ describe('Announcement & Communication Module Tests', () => {
             );
 
             const viewAllBtn = screen.getByRole('button', { name: /view all/i });
-            expect(viewAllBtn).toBeDefined();
+            expect(viewAllBtn)
+                .toBeDefined();
         });
 
         it('renders View all button on EventsFeedCard', () => {
@@ -206,7 +232,8 @@ describe('Announcement & Communication Module Tests', () => {
             );
 
             const viewAllBtn = screen.getByRole('button', { name: /view all/i });
-            expect(viewAllBtn).toBeDefined();
+            expect(viewAllBtn)
+                .toBeDefined();
         });
     });
 
@@ -220,14 +247,17 @@ describe('Announcement & Communication Module Tests', () => {
 
             // Three dots action button is rendered
             const actionButton = screen.getByRole('button', { name: /table actions/i });
-            expect(actionButton).toBeDefined();
+            expect(actionButton)
+                .toBeDefined();
 
             // Open the action menu
             fireEvent.click(actionButton);
 
             // Admin has viewing and management mode toggle options in the menu
-            expect(screen.getByRole('button', { name: /viewing mode/i })).toBeDefined();
-            expect(screen.getByRole('button', { name: /management mode/i })).toBeDefined();
+            expect(screen.getByRole('button', { name: /viewing mode/i }))
+                .toBeDefined();
+            expect(screen.getByRole('button', { name: /management mode/i }))
+                .toBeDefined();
         });
 
         it('does not render management toggle for Student role (always viewing mode)', () => {
@@ -238,10 +268,13 @@ describe('Announcement & Communication Module Tests', () => {
             );
 
             // Student does not see the Management toggle
-            expect(screen.queryByRole('button', { name: /management mode/i })).toBeNull();
-            expect(screen.queryByText('Management')).toBeNull();
+            expect(screen.queryByRole('button', { name: /management mode/i }))
+                .toBeNull();
+            expect(screen.queryByText('Management'))
+                .toBeNull();
             // Title shows Campus Announcements & Events
-            expect(screen.getByText('Campus Announcements & Events')).toBeDefined();
+            expect(screen.getByText('Campus Announcements & Events'))
+                .toBeDefined();
         });
     });
 
@@ -256,16 +289,23 @@ describe('Announcement & Communication Module Tests', () => {
                         target_audience: 'Global'
                     }
                 });
-                return <AnnouncementForm control={control} isTypeDisabled={true} />;
+                return (
+                    <AnnouncementForm
+                        control={control}
+                        isTypeDisabled={true}
+                    />
+                );
             };
 
             render(<Wrapper />);
             const input = document.querySelector('input[name="item_type"]') as HTMLInputElement;
-            expect(input).toBeDisabled();
-            expect(input.value).toBe('Event');
+            expect(input)
+                .toBeDisabled();
+            expect(input.value)
+                .toBe('Event');
             const comboboxes = screen.getAllByRole('combobox');
-            expect(comboboxes[0]).toHaveAttribute('aria-disabled', 'true');
+            expect(comboboxes[0])
+                .toHaveAttribute('aria-disabled', 'true');
         });
     });
 });
-

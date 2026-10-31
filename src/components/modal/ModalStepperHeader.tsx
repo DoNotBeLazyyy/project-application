@@ -46,7 +46,10 @@ export default function ModalStepperHeader({
     }
 
     return (
-        <div ref={headerRef} className="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-900/60 px-2 py-1 sm:px-5 sm:py-2.5 shrink-0 relative space-y-2">
+        <div
+            className="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-900/60 px-2 py-1 sm:px-5 sm:py-2.5 shrink-0 relative space-y-2"
+            ref={headerRef}
+        >
             <div
                 className={`w-full flex items-center justify-between gap-2.5 p-1.5 sm:p-3 rounded-xl bg-white dark:bg-zinc-800 border shadow-xs transition-all group text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20 select-none ${
                     activeHasDiff
@@ -66,7 +69,9 @@ export default function ModalStepperHeader({
                 <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                     <span
                         className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-xs ${
-                            activeHasDiff ? 'bg-amber-500 dark:bg-amber-600' : 'bg-blue-600'
+                            activeHasDiff
+                                ? 'bg-amber-500 dark:bg-amber-600'
+                                : 'bg-blue-600'
                         }`}
                     >
                         {currentStep}
@@ -91,7 +96,9 @@ export default function ModalStepperHeader({
                                     }`}
                                 >
                                     {activeHasDiff
-                                        ? `${activeStepConfig.diffCount} ${activeStepConfig.diffCount === 1 ? 'diff' : 'diffs'}`
+                                        ? `${activeStepConfig.diffCount} ${activeStepConfig.diffCount === 1
+                                            ? 'diff'
+                                            : 'diffs'}`
                                         : 'No diff'}
                                 </span>
                             )}
@@ -125,7 +132,12 @@ export default function ModalStepperHeader({
                         Choose Step
                     </span>
                     <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-zinc-700/60 text-slate-500 dark:text-slate-400 group-hover:bg-blue-50 dark:group-hover:bg-blue-950 group-hover:text-blue-600 transition-colors">
-                        <CaretDownIcon className={`w-4 h-4 transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''}`} weight="bold" />
+                        <CaretDownIcon
+                            className={`w-4 h-4 transition-transform duration-200 ${isMenuOpen
+                                ? 'rotate-180'
+                                : ''}`}
+                            weight="bold"
+                        />
                     </div>
                 </div>
             </div>
@@ -140,17 +152,21 @@ export default function ModalStepperHeader({
 
                         return (
                             <button
-                                key={s.step}
                                 className={`flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer min-w-0 ${
                                     hasDiff
                                         ? isCurrent
                                             ? 'bg-amber-500 text-white border-amber-600 shadow-xs'
                                             : 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800/80 hover:bg-amber-100/80 dark:hover:bg-amber-900/50'
                                         : isCurrent
-                                        ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                                        : 'bg-white dark:bg-zinc-800/80 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800'
+                                            ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                                            : 'bg-white dark:bg-zinc-800/80 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800'
                                 }`}
-                                title={`Step ${s.step}: ${s.title}${hasDiff ? ` (${diffCount} ${diffCount === 1 ? 'difference' : 'differences'})` : ' (No differences)'}`}
+                                key={s.step}
+                                title={`Step ${s.step}: ${s.title}${hasDiff
+                                    ? ` (${diffCount} ${diffCount === 1
+                                        ? 'difference'
+                                        : 'differences'})`
+                                    : ' (No differences)'}`}
                                 type="button"
                                 onClick={() => handleSelectStep(s.step)}
                             >
@@ -164,8 +180,8 @@ export default function ModalStepperHeader({
                                                 ? 'bg-white/25 text-white'
                                                 : 'bg-amber-200/80 dark:bg-amber-800 text-amber-900 dark:text-amber-100'
                                             : isCurrent
-                                            ? 'bg-white/20 text-white'
-                                            : 'bg-slate-100 dark:bg-zinc-700 text-slate-500 dark:text-slate-400'
+                                                ? 'bg-white/20 text-white'
+                                                : 'bg-slate-100 dark:bg-zinc-700 text-slate-500 dark:text-slate-400'
                                     }`}
                                 >
                                     {diffCount}
@@ -199,16 +215,16 @@ export default function ModalStepperHeader({
 
                             return (
                                 <div
-                                    key={s.step}
                                     className={`w-full flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-xl text-left transition-all cursor-pointer select-none ${
                                         hasDiff
                                             ? isActive
                                                 ? 'bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-700 text-amber-950 dark:text-amber-100'
                                                 : 'bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50/80 dark:hover:bg-amber-950/40 border border-amber-200/70 dark:border-amber-800/40 text-slate-800 dark:text-slate-200'
                                             : isActive
-                                            ? 'bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-blue-900 dark:text-blue-100'
-                                            : 'hover:bg-slate-50 dark:hover:bg-zinc-800/70 text-slate-700 dark:text-slate-300 border border-transparent'
+                                                ? 'bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-blue-900 dark:text-blue-100'
+                                                : 'hover:bg-slate-50 dark:hover:bg-zinc-800/70 text-slate-700 dark:text-slate-300 border border-transparent'
                                     }`}
+                                    key={s.step}
                                     role="button"
                                     tabIndex={0}
                                     onClick={() => handleSelectStep(s.step)}
@@ -225,13 +241,20 @@ export default function ModalStepperHeader({
                                                 hasDiff
                                                     ? 'bg-amber-500 text-white'
                                                     : isDone
-                                                    ? 'bg-emerald-500 text-white'
-                                                    : isActive
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'bg-slate-200 dark:bg-zinc-700 text-slate-500 dark:text-slate-400'
+                                                        ? 'bg-emerald-500 text-white'
+                                                        : isActive
+                                                            ? 'bg-blue-600 text-white'
+                                                            : 'bg-slate-200 dark:bg-zinc-700 text-slate-500 dark:text-slate-400'
                                             }`}
                                         >
-                                            {isDone ? <CheckCircleIcon className="w-4 h-4" weight="bold" /> : s.step}
+                                            {isDone
+                                                ? (
+                                                    <CheckCircleIcon
+                                                        className="w-4 h-4"
+                                                        weight="bold"
+                                                    />
+                                                )
+                                                : s.step}
                                         </span>
                                         <div className="flex items-center gap-1.5 min-w-0 flex-1">
                                             <span
@@ -239,8 +262,8 @@ export default function ModalStepperHeader({
                                                     hasDiff
                                                         ? 'text-amber-800 dark:text-amber-300'
                                                         : isActive
-                                                        ? 'text-blue-700 dark:text-blue-300'
-                                                        : 'text-slate-800 dark:text-slate-200'
+                                                            ? 'text-blue-700 dark:text-blue-300'
+                                                            : 'text-slate-800 dark:text-slate-200'
                                                 }`}
                                             >
                                                 Step {s.step}: {s.title}
@@ -271,7 +294,9 @@ export default function ModalStepperHeader({
                                                 }`}
                                             >
                                                 {hasDiff
-                                                    ? `${diffCount} ${diffCount === 1 ? 'diff' : 'diffs'}`
+                                                    ? `${diffCount} ${diffCount === 1
+                                                        ? 'diff'
+                                                        : 'diffs'}`
                                                     : '0 diffs'}
                                             </span>
                                         )}

@@ -31,25 +31,67 @@ export interface FileAttachmentUploaderProps {
 
 function getFileIcon(mimeType: string | null | undefined, fileName: string) {
     if (isImageFile(mimeType ?? null, fileName)) {
-        return <FileImageIcon className="shrink-0 text-blue-600" size={22} weight="bold" />;
+        return (
+            <FileImageIcon
+                className="shrink-0 text-blue-600"
+                size={22}
+                weight="bold"
+            />
+        );
     }
     if (fileName.endsWith('.pdf') || mimeType === 'application/pdf') {
-        return <FilePdfIcon className="shrink-0 text-red-600" size={22} weight="bold" />;
+        return (
+            <FilePdfIcon
+                className="shrink-0 text-red-600"
+                size={22}
+                weight="bold"
+            />
+        );
     }
     if (/\.(doc|docx)$/i.test(fileName)) {
-        return <FileDocIcon className="shrink-0 text-blue-700" size={22} weight="bold" />;
+        return (
+            <FileDocIcon
+                className="shrink-0 text-blue-700"
+                size={22}
+                weight="bold"
+            />
+        );
     }
     if (/\.(xls|xlsx|csv)$/i.test(fileName)) {
-        return <FileXlsIcon className="shrink-0 text-emerald-600" size={22} weight="bold" />;
+        return (
+            <FileXlsIcon
+                className="shrink-0 text-emerald-600"
+                size={22}
+                weight="bold"
+            />
+        );
     }
     if (/\.(ppt|pptx)$/i.test(fileName)) {
-        return <FilePptIcon className="shrink-0 text-amber-600" size={22} weight="bold" />;
+        return (
+            <FilePptIcon
+                className="shrink-0 text-amber-600"
+                size={22}
+                weight="bold"
+            />
+        );
     }
     if (/\.(zip|rar|7z|tar|gz)$/i.test(fileName)) {
-        return <FileArchiveIcon className="shrink-0 text-purple-600" size={22} weight="bold" />;
+        return (
+            <FileArchiveIcon
+                className="shrink-0 text-purple-600"
+                size={22}
+                weight="bold"
+            />
+        );
     }
 
-    return <FileIcon className="shrink-0 text-slate-500" size={22} weight="bold" />;
+    return (
+        <FileIcon
+            className="shrink-0 text-slate-500"
+            size={22}
+            weight="bold"
+        />
+    );
 }
 
 /**
@@ -118,7 +160,8 @@ export default function FileAttachmentUploader({
                     mime_type: file.type || null,
                     url: result.data.url
                 });
-            } else if (result.error) {
+            }
+            else if (result.error) {
                 setUploadError(result.error.message || `Failed to upload "${file.name}".`);
             }
         }
@@ -191,7 +234,10 @@ export default function FileAttachmentUploader({
         <div className="flex flex-col gap-3 w-full">
             <div className="flex items-center justify-between">
                 <span className="flex font-medium gap-2 items-center text-(--mui-palette-text-primary) text-sm">
-                    <PaperclipIcon size={18} weight="bold" />
+                    <PaperclipIcon
+                        size={18}
+                        weight="bold"
+                    />
                     <span>Attachments</span>
                     <span className="font-normal text-(--mui-palette-text-secondary) text-xs">
                         ({attachments.length})
@@ -225,34 +271,36 @@ export default function FileAttachmentUploader({
                     onDrop={handleDrop}
                 >
                     <div className="flex flex-col gap-1.5 items-center pointer-events-none">
-                        {isUploading ? (
-                            <>
-                                <SpinnerIcon
-                                    className="animate-spin text-(--mui-palette-primary-main)"
-                                    size={24}
-                                />
-                                <p className="text-(--mui-palette-text-secondary) text-xs">
+                        {isUploading
+                            ? (
+                                <>
+                                    <SpinnerIcon
+                                        className="animate-spin text-(--mui-palette-primary-main)"
+                                        size={24}
+                                    />
+                                    <p className="text-(--mui-palette-text-secondary) text-xs">
                                     Uploading attachments...
-                                </p>
-                            </>
-                        ) : (
-                            <>
-                                <UploadSimpleIcon
-                                    className="text-(--mui-palette-text-secondary)"
-                                    size={24}
-                                    weight="regular"
-                                />
-                                <p className="text-(--mui-palette-text-secondary) text-xs">
-                                    <span className="font-medium text-(--mui-tokens-color-brand-900)">
+                                    </p>
+                                </>
+                            )
+                            : (
+                                <>
+                                    <UploadSimpleIcon
+                                        className="text-(--mui-palette-text-secondary)"
+                                        size={24}
+                                        weight="regular"
+                                    />
+                                    <p className="text-(--mui-palette-text-secondary) text-xs">
+                                        <span className="font-medium text-(--mui-tokens-color-brand-900)">
                                         Click to upload
-                                    </span>{' '}
+                                        </span>{' '}
                                     or drag and drop files here
-                                </p>
-                                <p className="text-(--mui-palette-text-disabled) text-[11px]">
+                                    </p>
+                                    <p className="text-(--mui-palette-text-disabled) text-[11px]">
                                     PDF, DOCX, XLSX, Images, ZIP up to {maxFileSizeMb}MB
-                                </p>
-                            </>
-                        )}
+                                    </p>
+                                </>
+                            )}
                     </div>
                 </div>
             )}
@@ -348,7 +396,10 @@ export default function FileAttachmentUploader({
                                         type="button"
                                         onClick={() => handleDownloadAttachment(attachment)}
                                     >
-                                        <DownloadSimpleIcon size={16} weight="bold" />
+                                        <DownloadSimpleIcon
+                                            size={16}
+                                            weight="bold"
+                                        />
                                     </button>
                                     {!disabled && (
                                         <button
@@ -358,7 +409,10 @@ export default function FileAttachmentUploader({
                                             type="button"
                                             onClick={() => handleRemoveAttachment(attachment)}
                                         >
-                                            <TrashIcon size={16} weight="bold" />
+                                            <TrashIcon
+                                                size={16}
+                                                weight="bold"
+                                            />
                                         </button>
                                     )}
                                 </div>

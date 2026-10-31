@@ -13,9 +13,9 @@ export interface ImageAttachmentCardProps {
     attachment: AttachmentInputDto;
     previewUrl?: string;
     disabled?: boolean;
-    onPreview: () => void;
-    onDownload: () => void;
-    onRemove?: () => void;
+    onPreview: VoidFunction;
+    onDownload: VoidFunction;
+    onRemove?: VoidFunction;
 }
 
 export default function ImageAttachmentCard({
@@ -26,7 +26,9 @@ export default function ImageAttachmentCard({
     onRemove,
     previewUrl
 }: ImageAttachmentCardProps) {
-    const extension = attachment.file_name.split('.').pop()?.toUpperCase() || 'IMG';
+    const extension = attachment.file_name.split('.')
+        .pop()
+        ?.toUpperCase() || 'IMG';
 
     return (
         <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) flex flex-col group max-w-full overflow-hidden rounded-xl shadow-xs hover:border-(--mui-palette-primary-main)/40 hover:shadow-md transition-all w-56 sm:w-64">
@@ -54,13 +56,19 @@ export default function ImageAttachmentCard({
                         />
                         {/* Hover Overlay */}
                         <div className="absolute bg-black/45 flex gap-1.5 inset-0 items-center justify-center opacity-0 text-white transition-opacity group-hover:opacity-100">
-                            <MagnifyingGlassPlusIcon size={20} weight="bold" />
+                            <MagnifyingGlassPlusIcon
+                                size={20}
+                                weight="bold"
+                            />
                             <span className="font-semibold text-xs">Click to preview</span>
                         </div>
                     </>
                 ) : (
                     <div className="flex flex-col gap-1.5 items-center justify-center p-3 text-(--mui-palette-text-secondary)">
-                        <SpinnerIcon className="animate-spin text-(--mui-palette-primary-main)" size={20} />
+                        <SpinnerIcon
+                            className="animate-spin text-(--mui-palette-primary-main)"
+                            size={20}
+                        />
                         <span className="text-[11px]">Loading preview...</span>
                     </div>
                 )}
@@ -107,7 +115,10 @@ export default function ImageAttachmentCard({
                             onDownload();
                         }}
                     >
-                        <DownloadSimpleIcon size={16} weight="bold" />
+                        <DownloadSimpleIcon
+                            size={16}
+                            weight="bold"
+                        />
                     </button>
 
                     {!disabled && onRemove && (
@@ -121,7 +132,10 @@ export default function ImageAttachmentCard({
                                 onRemove();
                             }}
                         >
-                            <TrashIcon size={16} weight="bold" />
+                            <TrashIcon
+                                size={16}
+                                weight="bold"
+                            />
                         </button>
                     )}
                 </div>

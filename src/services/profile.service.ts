@@ -151,7 +151,12 @@ export async function changeMyPassword(
             const message = 'Your current password is incorrect.';
             useToastStore.getState()
                 .showToast(message, 'error');
-            return { data: null, error: { code: null, message, status: null } };
+            return {
+                data: null,
+                error: {
+                    code: null, message, status: null
+                }
+            };
         }
 
         const { error } = await supabase.auth.updateUser({ password: values.new_password });

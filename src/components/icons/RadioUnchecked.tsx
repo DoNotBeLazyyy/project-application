@@ -19,8 +19,24 @@ export default function RadioUncheckedIcon({
     ...props
 }: IconSvgProps) {
     return (
-        <svg fill="none" height={height} overflow="visible" viewBox="0 0 24 24" width={width} xmlns="http://www.w3.org/2000/svg" {...props}>
-            <rect height="22" rx="11" stroke="currentColor" strokeWidth={strokeWidth} width="21" x="1.5" y="1.5" />
+        <svg
+            fill="none"
+            height={height}
+            overflow="visible"
+            viewBox="0 0 24 24"
+            width={width}
+            xmlns="http://www.w3.org/2000/svg"
+            {...props}
+        >
+            <rect
+                height="22"
+                rx="11"
+                stroke="currentColor"
+                strokeWidth={strokeWidth}
+                width="21"
+                x="1.5"
+                y="1.5"
+            />
         </svg>
     );
 };

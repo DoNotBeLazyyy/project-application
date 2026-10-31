@@ -1,6 +1,6 @@
-import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import { FormField, FormFieldConfig } from '@components/form/FormField';
 import FormLabel from '@components/form/FormLabel';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import { useFormDraft } from '@hooks/useFormDraft';
 import { ComponentPropsForm } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
@@ -8,9 +8,7 @@ import {
     announceFormError, ensureSubmitValidationMode, focusAndOpenFirstErrorField, formatFieldLabel, getFieldErrorMessage
 } from '@utils/form.util';
 import { useEffect, useMemo, useRef } from 'react';
-import {
-    Control, FieldErrors, FieldValues, useFormState
-} from 'react-hook-form';
+import { Control, FieldErrors, FieldValues, useFormState } from 'react-hook-form';
 
 const COL_SPAN_CLASSES: Record<number, string> = {
     1: 'col-span-full md:col-span-1',
@@ -194,12 +192,16 @@ export default function CommonForm<T extends FieldValues>({
                 return (
                     <CommonFormRow
                         control={control}
-                        defaultOpenErrorTooltip={resolvedAutoOpenErrorTooltip ? isFirstError : false}
+                        defaultOpenErrorTooltip={resolvedAutoOpenErrorTooltip
+                            ? isFirstError
+                            : false}
                         field={field}
                         formErrors={errors}
                         hasHelper={hasHelper}
                         helperPlacement={helperPlacement}
-                        isFirstError={resolvedAutoOpenErrorTooltip ? isFirstError : false}
+                        isFirstError={resolvedAutoOpenErrorTooltip
+                            ? isFirstError
+                            : false}
                         key={field.name as string}
                     />
                 );
@@ -207,16 +209,18 @@ export default function CommonForm<T extends FieldValues>({
         </div>
     );
 
-    const formElement = component === 'div' ? (
-        content
-    ) : (
-        <form
-            {...formProps}
-            className={classMerge('w-full', formProps?.className)}
-        >
-            {content}
-        </form>
-    );
+    const formElement = component === 'div'
+        ? (
+            content
+        )
+        : (
+            <form
+                {...formProps}
+                className={classMerge('w-full', formProps?.className)}
+            >
+                {content}
+            </form>
+        );
 
     return (
         <>

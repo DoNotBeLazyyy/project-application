@@ -23,7 +23,9 @@ export default function ValidCommonCheckbox<T extends FieldValues = FieldValues>
     ...props
 }: ValidCommonCheckboxProps<T>) {
     ensureSubmitValidationMode(control);
-    const { field: { value, onChange, ref }, fieldState } = useController({ control, name, rules });
+    const { field: { value, onChange, ref }, fieldState } = useController({
+        control, name, rules
+    });
     const helperMessage = fieldState.error?.message ?? helperText;
 
     return (
@@ -31,7 +33,7 @@ export default function ValidCommonCheckbox<T extends FieldValues = FieldValues>
             {label
                 ? (
                     <FormControlLabel
-                        control={
+                        control={(
                             <Checkbox
                                 {...props}
                                 checked={!!value}
@@ -46,9 +48,11 @@ export default function ValidCommonCheckbox<T extends FieldValues = FieldValues>
                                     onChange(e.target.checked);
                                 }}
                             />
-                        }
+                        )}
                         label={label}
-                        sx={{ marginLeft: 0, marginRight: 0, width: 'fit-content' }}
+                        sx={{
+                            marginLeft: 0, marginRight: 0, width: 'fit-content'
+                        }}
                     />
                 )
                 : (

@@ -13,7 +13,7 @@ interface ProfileAvatarCardProps {
     avatarUrl: string | null;
     initials: string;
     userId: string;
-    onChanged: () => void;
+    onChanged: VoidFunction;
 }
 
 function resolveExtension(fileName: string, mimeType: string): string {
@@ -84,7 +84,9 @@ export default function ProfileAvatarCard({
         setIsUploading(true);
 
         const path = `${userId}/avatar.${resolveExtension(file.name, file.type)}`;
-        const uploaded = await uploadFile({ bucket: 'avatars', file, path, upsert: true });
+        const uploaded = await uploadFile({
+            bucket: 'avatars', file, path, upsert: true
+        });
 
         if (!uploaded.data) {
             setIsUploading(false);
@@ -121,14 +123,18 @@ export default function ProfileAvatarCard({
     return (
         <div className="flex flex-col gap-4 items-center sm:flex-row sm:items-center">
             {avatarUrl
-                ? <img
-                    alt="Your profile photo"
-                    className="border border-(--mui-palette-divider) h-24 object-cover rounded-full shrink-0 w-24"
-                    src={avatarUrl}
-                />
-                : <span className="bg-(--mui-palette-primary-main) flex font-semibold h-24 items-center justify-center rounded-full shrink-0 text-2xl text-white w-24">
-                    {initials}
-                </span>}
+                ? (
+                    <img
+                        alt="Your profile photo"
+                        className="border border-(--mui-palette-divider) h-24 object-cover rounded-full shrink-0 w-24"
+                        src={avatarUrl}
+                    />
+                )
+                : (
+                    <span className="bg-(--mui-palette-primary-main) flex font-semibold h-24 items-center justify-center rounded-full shrink-0 text-2xl text-white w-24">
+                        {initials}
+                    </span>
+                )}
             <div className="flex flex-col gap-2 items-center sm:items-start">
                 <h2 className="font-semibold text-(--mui-palette-text-primary) text-sm">
                     Profile Photo

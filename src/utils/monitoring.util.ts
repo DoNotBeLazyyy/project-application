@@ -4,7 +4,7 @@ import { parseServiceError } from '@utils/error.util';
 const MAX_BREADCRUMBS = 50;
 const MAX_DIAGNOSTIC_REPORTS = 20;
 
-let currentUserContext: MonitoringUserContext | null = null;
+const currentUserContext: MonitoringUserContext | null = null;
 const breadcrumbsBuffer: MonitoringBreadcrumb[] = [];
 const diagnosticReportsBuffer: DiagnosticReport[] = [];
 let isInitialized = false;

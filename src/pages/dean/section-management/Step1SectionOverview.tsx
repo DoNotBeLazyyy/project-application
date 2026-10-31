@@ -250,7 +250,9 @@ export default function Step1SectionOverview({
                     max: { value: 999, message: 'Cannot exceed 999' },
                     validate: (val: any) => Number.isInteger(Number(val)) || 'Max slots must be a whole number'
                 },
-            fieldProps: { helperText: 'Maximum number of enrollees (1-999)', maxDecimals: 0, min: 1, max: 999 },
+            fieldProps: {
+                helperText: 'Maximum number of enrollees (1-999)', maxDecimals: 0, min: 1, max: 999
+            },
             type: 'number',
             gridCols: 2
         },
@@ -276,7 +278,10 @@ export default function Step1SectionOverview({
                 {/* Section Overview Header with Title & Description on Left, Clear Button on Right */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-800 pb-3">
                     <div className="flex items-center gap-2.5">
-                        <ChalkboardIcon className="w-5 h-5 text-brand-600 dark:text-brand-400 shrink-0" weight="bold" />
+                        <ChalkboardIcon
+                            className="w-5 h-5 text-brand-600 dark:text-brand-400 shrink-0"
+                            weight="bold"
+                        />
                         <div>
                             <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
                                 Section Overview

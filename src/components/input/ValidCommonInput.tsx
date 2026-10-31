@@ -22,7 +22,9 @@ export default function ValidCommonInput<T extends FieldValues = FieldValues>({
     ...props
 }: ValidCommonInputProps<T>) {
     ensureSubmitValidationMode(control);
-    const { field: { ref, value, onChange }, fieldState, formState } = useController({ control, name, rules });
+    const { field: { ref, value, onChange }, fieldState, formState } = useController({
+        control, name, rules
+    });
 
     function handleChange(event: InputChangeEvent) {
         if (fieldState.error) {

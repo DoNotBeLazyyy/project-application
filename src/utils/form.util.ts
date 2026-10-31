@@ -120,21 +120,28 @@ export function focusAndOpenFirstErrorField(
     if (methods && typeof methods.setFocus === 'function') {
         try {
             methods.setFocus(name);
-        } catch {
+        }
+        catch {
             // Ignore if field is not registered in RHF
         }
     }
 
     setTimeout(() => {
         const escaped = name.replace(/\./g, '\\.');
-        const altName = name === 'description' ? 'content' : (name === 'content' ? 'description' : undefined);
-        const selector = `[name="${name}"], [id="${name}"], [data-field-name~="${name}"], [data-field-name="${name}"], [name="${escaped}"], #${escaped}` +
-            (altName ? `, [name="${altName}"], [id="${altName}"], [data-field-name~="${altName}"], [data-field-name="${altName}"]` : '');
+        const altName = name === 'description'
+            ? 'content'
+            : (name === 'content'
+                ? 'description'
+                : undefined);
+        const selector = `[name="${name}"], [id="${name}"], [data-field-name~="${name}"], [data-field-name="${name}"], [name="${escaped}"], #${escaped}`
+            + (altName
+                ? `, [name="${altName}"], [id="${altName}"], [data-field-name~="${altName}"], [data-field-name="${altName}"]`
+                : '');
         let element = document.querySelector<HTMLElement>(selector);
 
         if (!element) {
             element = document.querySelector<HTMLElement>(
-                `[aria-invalid="true"], .Mui-error input, .Mui-error textarea, .Mui-error [role="combobox"], .Mui-error`
+                '[aria-invalid="true"], .Mui-error input, .Mui-error textarea, .Mui-error [role="combobox"], .Mui-error'
             );
         }
 
@@ -143,8 +150,10 @@ export function focusAndOpenFirstErrorField(
         const container = element.closest('.MuiFormControl-root, .flex-col, .common_input_container') || element.parentElement;
 
         // 1. Check if Dropdown / Select
-        const combobox = container?.querySelector<HTMLElement>('[role="combobox"], .MuiSelect-select') ||
-            (element.getAttribute('role') === 'combobox' ? element : null);
+        const combobox = container?.querySelector<HTMLElement>('[role="combobox"], .MuiSelect-select')
+            || (element.getAttribute('role') === 'combobox'
+                ? element
+                : null);
 
         if (combobox) {
             combobox.focus({ preventScroll: true });
@@ -152,7 +161,8 @@ export function focusAndOpenFirstErrorField(
                 combobox.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
                 combobox.click();
             }
-        } else {
+        }
+        else {
             // 2. Check for Toast UI Editor or contenteditable
             // (a date field is focused like a text input: opening its calendar would take focus away
             // from the field, so the date could no longer be typed)
@@ -160,14 +170,18 @@ export function focusAndOpenFirstErrorField(
                 '.toastui-editor-contents, [contenteditable="true"], .ProseMirror'
             );
 
-            const textInput = container?.querySelector<HTMLInputElement | HTMLTextAreaElement>('input, textarea') ||
-                (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement ? element : null);
+            const textInput = container?.querySelector<HTMLInputElement | HTMLTextAreaElement>('input, textarea')
+                || (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement
+                    ? element
+                    : null);
 
             if (editorEditable) {
                 editorEditable.focus({ preventScroll: true });
-            } else if (textInput) {
+            }
+            else if (textInput) {
                 textInput.focus({ preventScroll: true });
-            } else {
+            }
+            else {
                 element.focus({ preventScroll: true });
             }
         }
@@ -330,7 +344,9 @@ export function checkForMessage<T extends FieldValues>(
     // Report errors in the order the fields appear on screen, not the order they registered
     // (a rich-text editor registers before the inputs above it)
     const ordered = orderByScreenPosition(list);
-    return { firstError: ordered[0] ?? firstError, count, list: ordered };
+    return {
+        firstError: ordered[0] ?? firstError, count, list: ordered
+    };
 }
 
 function findFieldElement(key: string): Element | null {

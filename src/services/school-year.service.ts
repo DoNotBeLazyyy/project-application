@@ -61,7 +61,9 @@ export async function saveAcademicYearCalendar(
         p_terms: payload.p_terms,
         p_thresholds: payload.p_thresholds || [],
         p_transmutation_rows: payload.p_transmutation_rows,
-        p_max_units_per_term: payload.p_max_units_per_term ? Number(payload.p_max_units_per_term) : 24,
+        p_max_units_per_term: payload.p_max_units_per_term
+            ? Number(payload.p_max_units_per_term)
+            : 24,
         p_evaluation_scope: payload.p_evaluation_scope || 'Period',
         p_holidays: payload.p_holidays || [],
         p_revert_history_id: payload.p_revert_history_id || null

@@ -120,7 +120,9 @@ export default function CommonInfoTooltip({
             return;
         }
 
-        const activeEl = typeof document !== 'undefined' ? document.activeElement : null;
+        const activeEl = typeof document !== 'undefined'
+            ? document.activeElement
+            : null;
         if (activeEl && (container.contains(activeEl) || container === activeEl)) {
             pinnedAtRef.current = Date.now();
             setIsPinned(true);
@@ -154,29 +156,43 @@ export default function CommonInfoTooltip({
                 const container = buttonRef.current.closest('.flex-col, .MuiFormControl-root, .common_input_container') || buttonRef.current.parentElement;
                 if (container) {
                     const errorField = detail.firstErrorField;
-                    const altField = errorField === 'description' ? 'content' : (errorField === 'content' ? 'description' : undefined);
+                    const altField = errorField === 'description'
+                        ? 'content'
+                        : (errorField === 'content'
+                            ? 'description'
+                            : undefined);
                     const escaped = errorField.replace(/\./g, '\\.');
                     const isDirectMatch = Boolean(
-                        container.getAttribute('data-field-name')?.split(/\s+/).includes(errorField) ||
-                        (altField && container.getAttribute('data-field-name')?.split(/\s+/).includes(altField)) ||
-                        container.getAttribute('name') === errorField ||
-                        container.id === errorField ||
-                        (altField && (container.getAttribute('name') === altField || container.id === altField))
+                        container.getAttribute('data-field-name')
+                            ?.split(/\s+/)
+                            .includes(errorField)
+                        || (altField && container.getAttribute('data-field-name')
+                            ?.split(/\s+/)
+                            .includes(altField))
+                        || container.getAttribute('name') === errorField
+                        || container.id === errorField
+                        || (altField && (container.getAttribute('name') === altField || container.id === altField))
                     );
                     let matchedInput: Element | null = null;
                     if (isDirectMatch) {
                         matchedInput = container;
-                    } else {
+                    }
+                    else {
                         try {
                             matchedInput = container.querySelector(
-                                `[name="${errorField}"], [id="${errorField}"], [data-field-name~="${errorField}"], [data-field-name="${errorField}"], [name="${escaped}"], #${escaped}` +
-                                (altField ? `, [name="${altField}"], [id="${altField}"], [data-field-name~="${altField}"], [data-field-name="${altField}"]` : '')
+                                `[name="${errorField}"], [id="${errorField}"], [data-field-name~="${errorField}"], [data-field-name="${errorField}"], [name="${escaped}"], #${escaped}`
+                                + (altField
+                                    ? `, [name="${altField}"], [id="${altField}"], [data-field-name~="${altField}"], [data-field-name="${altField}"]`
+                                    : '')
                             );
-                        } catch {
+                        }
+                        catch {
                             matchedInput = container.querySelector(`[name="${errorField}"]`);
                         }
                     }
-                    const activeEl = typeof document !== 'undefined' ? document.activeElement : null;
+                    const activeEl = typeof document !== 'undefined'
+                        ? document.activeElement
+                        : null;
                     if (matchedInput || (activeEl && container.contains(activeEl))) {
                         pinnedAtRef.current = Date.now();
                         setIsPinned(true);
@@ -308,7 +324,10 @@ export default function CommonInfoTooltip({
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
                 >
-                    <Icon size={size} weight="fill" />
+                    <Icon
+                        size={size}
+                        weight="fill"
+                    />
                 </button>
             </Tooltip>
         </ClickAwayListener>

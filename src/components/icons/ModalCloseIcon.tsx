@@ -31,8 +31,8 @@ export default function ModalCloseIcon({ className, onClick, ...props }: ModalCl
             onClick={onClick}
         >
             <XIcon
-                weight="bold"
                 size={18}
+                weight="bold"
                 {...props}
             />
         </button>

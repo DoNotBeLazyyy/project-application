@@ -6,19 +6,21 @@ export default function ConfirmPromptModal({
     formButtonsProps,
     ...props
 }: CommonPromptModalProps) {
-    return <CommonPromptModal
-        {...props}
-        actionIconProps={{
-            icon: CheckIcon,
-            iconContainerClassName: 'bg-(--mui-tokens-color-state-successLight) text-(--mui-tokens-color-state-success)',
-            ...actionIconProps
-        }}
-        formButtonsProps={{
-            ...formButtonsProps,
-            confirmProps: {
-                children: 'Proceed',
-                ...formButtonsProps?.confirmProps
-            }
-        }}
-    />;
+    return (
+        <CommonPromptModal
+            {...props}
+            actionIconProps={{
+                icon: CheckIcon,
+                iconContainerClassName: 'bg-(--mui-tokens-color-state-successLight) text-(--mui-tokens-color-state-success)',
+                ...actionIconProps
+            }}
+            formButtonsProps={{
+                ...formButtonsProps,
+                confirmProps: {
+                    children: 'Proceed',
+                    ...formButtonsProps?.confirmProps
+                }
+            }}
+        />
+    );
 }

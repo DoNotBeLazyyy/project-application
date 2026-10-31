@@ -1,7 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
-import { ICellRendererParams } from 'ag-grid-community';
-import { MobileCardColDef } from '@type/table.type';
 import { StudentProfileRequestRow } from '@type/registrar-verification.type';
+import { MobileCardColDef } from '@type/table.type';
+import { ICellRendererParams } from 'ag-grid-community';
 import { useMemo } from 'react';
 
 export function useStudentVerificationTableConfig() {
@@ -42,13 +42,18 @@ export function useStudentVerificationTableConfig() {
                 cellRenderer: function(params: ICellRendererParams<StudentProfileRequestRow>) {
                     if (!params.value) return null;
                     const status = params.value as string;
-                    const variant =
-                        status === 'Pending'
+                    const variant
+                        = status === 'Pending'
                             ? 'warning'
                             : status === 'Approved' || status === 'Approved with Edits'
                                 ? 'success'
                                 : 'error';
-                    return <CommonBadgeStatus label={status} variant={variant} />;
+                    return (
+                        <CommonBadgeStatus
+                            label={status}
+                            variant={variant}
+                        />
+                    );
                 },
                 field: 'status',
                 flex: 1.5,
@@ -65,13 +70,14 @@ export function useStudentVerificationTableConfig() {
                 sortable: true,
                 valueFormatter: (params: any) =>
                     params.value
-                        ? new Date(params.value as string).toLocaleString('en-PH', {
-                            day: 'numeric',
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            month: 'short',
-                            year: 'numeric'
-                        })
+                        ? new Date(params.value as string)
+                            .toLocaleString('en-PH', {
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                            })
                         : '—'
             },
             {

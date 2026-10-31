@@ -1,6 +1,5 @@
 import { getDepartments } from '@services/department.service';
 import { callRpc } from '@services/supabase.wrapper';
-import { generateCourseCode } from '@utils/course.util';
 import { BulkImportResult } from '@type/bulk-import.type';
 import {
     CourseBulkRow, CourseFilterValues, CourseFormValues, CourseListRow, CourseOption
@@ -8,6 +7,7 @@ import {
 import { DepartmentOption } from '@type/department.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
+import { generateCourseCode } from '@utils/course.util';
 import { nullIfBlank } from '@utils/uuid.util';
 
 export async function listCourses(

@@ -38,7 +38,10 @@ export default function SpecialGradeFlagBanner({
     return (
         <div className="bg-(--mui-palette-warning-main)/10 border border-(--mui-palette-warning-main) flex flex-col gap-2 max-h-72 overflow-y-auto p-3 rounded-lg">
             <div className="flex gap-2 items-center text-(--mui-palette-warning-main)">
-                <FlagIcon size={16} weight="fill" />
+                <FlagIcon
+                    size={16}
+                    weight="fill"
+                />
                 <p className="font-semibold text-sm">
                     {pending.length}
                     {' student(s) meet the conditions for a special grade'}
@@ -70,7 +73,10 @@ export default function SpecialGradeFlagBanner({
                                 {flag.is_passing
                                     ? (
                                         <span className="flex gap-1 items-center text-(--mui-palette-success-main) text-xs">
-                                            <SealCheckIcon size={12} weight="fill" />
+                                            <SealCheckIcon
+                                                size={12}
+                                                weight="fill"
+                                            />
                                             Counts as passing
                                         </span>
                                     )

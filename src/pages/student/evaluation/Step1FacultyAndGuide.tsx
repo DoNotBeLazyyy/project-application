@@ -1,7 +1,9 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
-import { ArrowRightIcon, CheckCircleIcon, ClockIcon, InfoIcon, UserFocusIcon } from '@phosphor-icons/react';
+import {
+    ArrowRightIcon, CheckCircleIcon, ClockIcon, InfoIcon, UserFocusIcon
+} from '@phosphor-icons/react';
 import { ChangeEventInputTextarea } from '@type/common.type';
 import { MyEvaluationRow } from '@type/evaluation.type';
 
@@ -14,7 +16,7 @@ export interface Step1FacultyAndGuideProps {
     pendingCount: number;
     isLoadingForm: boolean;
     onSelectTarget: (enrollmentId: string, gradingPeriodId: string) => void;
-    onProceed: () => void;
+    onProceed: VoidFunction;
 }
 
 const RATING_SCALE_ITEMS = [
@@ -64,7 +66,8 @@ export default function Step1FacultyAndGuide({
     const hasTarget = Boolean(enrollmentId && gradingPeriodId);
 
     function handleDropdownChange(event: ChangeEventInputTextarea) {
-        const [nextEnrollmentId = '', nextGradingPeriodId = ''] = String(event.target.value).split('|');
+        const [nextEnrollmentId = '', nextGradingPeriodId = ''] = String(event.target.value)
+            .split('|');
         onSelectTarget(nextEnrollmentId, nextGradingPeriodId);
     }
 
@@ -73,7 +76,9 @@ export default function Step1FacultyAndGuide({
         ...targetOptions
     ];
 
-    const currentKey = hasTarget ? `${enrollmentId}|${gradingPeriodId}` : '';
+    const currentKey = hasTarget
+        ? `${enrollmentId}|${gradingPeriodId}`
+        : '';
 
     return (
         <div className="flex flex-1 flex-col gap-5 min-h-0 overflow-y-auto pr-1">
@@ -102,12 +107,17 @@ export default function Step1FacultyAndGuide({
                 {targets.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1">
                         {targets.map((target) => {
-                            const isSelected =
-                                target.enrollment_id === enrollmentId &&
-                                target.grading_period_id === gradingPeriodId;
+                            const isSelected
+                                = target.enrollment_id === enrollmentId
+                                && target.grading_period_id === gradingPeriodId;
 
                             return (
                                 <div
+                                    className={`flex items-start justify-between gap-3 p-3 rounded-xl border text-left cursor-pointer transition-all select-none ${
+                                        isSelected
+                                            ? 'border-(--mui-palette-primary-main) bg-(--mui-palette-primary-main)/8 ring-1 ring-(--mui-palette-primary-main)'
+                                            : 'border-(--mui-palette-divider) hover:border-(--mui-palette-primary-main)/50 bg-(--mui-palette-background-paper)'
+                                    }`}
                                     key={`${target.enrollment_id}-${target.grading_period_id}`}
                                     role="button"
                                     tabIndex={0}
@@ -118,11 +128,6 @@ export default function Step1FacultyAndGuide({
                                             onSelectTarget(target.enrollment_id, target.grading_period_id);
                                         }
                                     }}
-                                    className={`flex items-start justify-between gap-3 p-3 rounded-xl border text-left cursor-pointer transition-all select-none ${
-                                        isSelected
-                                            ? 'border-(--mui-palette-primary-main) bg-(--mui-palette-primary-main)/8 ring-1 ring-(--mui-palette-primary-main)'
-                                            : 'border-(--mui-palette-divider) hover:border-(--mui-palette-primary-main)/50 bg-(--mui-palette-background-paper)'
-                                    }`}
                                 >
                                     <div className="flex items-start gap-2.5 min-w-0">
                                         <div
@@ -147,11 +152,21 @@ export default function Step1FacultyAndGuide({
                                         </div>
                                     </div>
                                     <div className="shrink-0 mt-0.5">
-                                        {target.is_completed ? (
-                                            <CommonBadgeStatus label="Completed" size="small" variant="success" />
-                                        ) : (
-                                            <CommonBadgeStatus label="Pending" size="small" variant="warning" />
-                                        )}
+                                        {target.is_completed
+                                            ? (
+                                                <CommonBadgeStatus
+                                                    label="Completed"
+                                                    size="small"
+                                                    variant="success"
+                                                />
+                                            )
+                                            : (
+                                                <CommonBadgeStatus
+                                                    label="Pending"
+                                                    size="small"
+                                                    variant="warning"
+                                                />
+                                            )}
                                     </div>
                                 </div>
                             );
@@ -180,24 +195,29 @@ export default function Step1FacultyAndGuide({
                             {selectedTarget.course_code} — {selectedTarget.course_title} · {selectedTarget.section_code}
                         </span>
                     </div>
-                    {selectedTarget.is_completed ? (
-                        <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                            <CheckCircleIcon size={16} />
-                            <span>Submitted & Completed</span>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-800">
-                            <ClockIcon size={16} />
-                            <span>Awaiting Evaluation</span>
-                        </div>
-                    )}
+                    {selectedTarget.is_completed
+                        ? (
+                            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                                <CheckCircleIcon size={16} />
+                                <span>Submitted & Completed</span>
+                            </div>
+                        )
+                        : (
+                            <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-800">
+                                <ClockIcon size={16} />
+                                <span>Awaiting Evaluation</span>
+                            </div>
+                        )}
                 </div>
             )}
 
             {/* Evaluation Guidelines & Instructions */}
             <div className="border border-(--mui-palette-divider) rounded-xl p-4 flex flex-col gap-3 bg-(--mui-palette-background-paper)">
                 <div className="flex items-center gap-2">
-                    <InfoIcon className="text-(--mui-palette-primary-main)" size={20} />
+                    <InfoIcon
+                        className="text-(--mui-palette-primary-main)"
+                        size={20}
+                    />
                     <h2 className="font-semibold text-sm sm:text-base text-(--mui-palette-text-primary)">
                         Evaluation Instructions
                     </h2>
@@ -228,8 +248,8 @@ export default function Step1FacultyAndGuide({
                 <div className="flex flex-col gap-2">
                     {RATING_SCALE_ITEMS.map((item) => (
                         <div
-                            key={item.rating}
                             className="flex items-center gap-3 p-2 rounded-lg border border-(--mui-palette-divider) bg-(--mui-palette-action-hover)/40"
+                            key={item.rating}
                         >
                             <span
                                 className={`size-7 rounded-lg border font-bold text-xs flex items-center justify-center shrink-0 ${item.color}`}

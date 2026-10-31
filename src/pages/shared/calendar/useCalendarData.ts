@@ -1,13 +1,14 @@
-import { callRpc } from '@services/supabase.wrapper';
 import { listMyEventsFeed } from '@services/event.service';
 import { getAcademicYearCalendarDetails, listSchoolYears } from '@services/school-year.service';
 import { getStudentDashboard, getStudentSchedule } from '@services/student-portal.service';
+import { callRpc } from '@services/supabase.wrapper';
 import { useAppStore } from '@stores/app.store';
 import { UserRole } from '@type/app.type';
 import { DayOfWeek } from '@type/student-portal.type';
 import { getRoleFromPath } from '@utils/role-path.util';
 import { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+
 import { UnifiedCalendarEvent } from './calendar.types';
 
 const DAY_NAME_MAP: Record<number, DayOfWeek> = {
@@ -42,10 +43,16 @@ function isClassDay(
 }
 
 function parseTimeToHoursAndMinutes(timeStr: string): { hours: number; minutes: number } {
-    const parts = timeStr.slice(0, 5).split(':').map(Number);
+    const parts = timeStr.slice(0, 5)
+        .split(':')
+        .map(Number);
     return {
-        hours: Number.isNaN(parts[0]) ? 8 : parts[0],
-        minutes: Number.isNaN(parts[1]) ? 0 : parts[1]
+        hours: Number.isNaN(parts[0])
+            ? 8
+            : parts[0],
+        minutes: Number.isNaN(parts[1])
+            ? 0
+            : parts[1]
     };
 }
 
@@ -58,7 +65,7 @@ export function useCalendarData(currentDate: Date) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const loadData = useCallback(async () => {
+    const loadData = useCallback(async() => {
         setIsLoading(true);
         setError(null);
 
@@ -83,7 +90,9 @@ export function useCalendarData(currentDate: Date) {
             if (eventsRes.data) {
                 for (const item of eventsRes.data) {
                     const start = new Date(item.start_at);
-                    const end = item.end_at ? new Date(item.end_at) : new Date(start.getTime() + 60 * 60 * 1000);
+                    const end = item.end_at
+                        ? new Date(item.end_at)
+                        : new Date(start.getTime() + 60 * 60 * 1000);
 
                     loadedEvents.push({
                         id: `event-${item.id}`,
@@ -136,7 +145,9 @@ export function useCalendarData(currentDate: Date) {
                                 allDay: true,
                                 category: 'holiday',
                                 metadata: {
-                                    rawStatus: isSuspension ? 'Suspension' : 'Holiday'
+                                    rawStatus: isSuspension
+                                        ? 'Suspension'
+                                        : 'Holiday'
                                 }
                             });
                         }
@@ -190,7 +201,7 @@ export function useCalendarData(currentDate: Date) {
                                 loadedEvents.push({
                                     id: `term-grade-deadline-${term.id || termLabel}`,
                                     title: `Grade Submission Deadline (${termLabel})`,
-                                    description: `Final institutional deadline for faculty to submit grade sheets`,
+                                    description: 'Final institutional deadline for faculty to submit grade sheets',
                                     start: new Date(term.grading_deadline),
                                     end: new Date(term.grading_deadline),
                                     allDay: true,
@@ -254,10 +265,13 @@ export function useCalendarData(currentDate: Date) {
                                     );
 
                                     loadedEvents.push({
-                                        id: `class-${sec.section_id}-${slot.id}-${cursor.toISOString().slice(0, 10)}`,
+                                        id: `class-${sec.section_id}-${slot.id}-${cursor.toISOString()
+                                            .slice(0, 10)}`,
                                         title: `${sec.course_code}: ${sec.course_title}`,
                                         description: `Section ${sec.section_code} • Instructor: ${sec.faculty_name}`,
-                                        location: slot.room ? `Room ${slot.room}` : 'Assigned Classroom',
+                                        location: slot.room
+                                            ? `Room ${slot.room}`
+                                            : 'Assigned Classroom',
                                         start: classStart,
                                         end: classEnd,
                                         allDay: false,
@@ -345,10 +359,13 @@ export function useCalendarData(currentDate: Date) {
                                 );
 
                                 loadedEvents.push({
-                                    id: `class-${slot.section_id}-${slot.day_of_week}-${slot.time_start}-${cursor.toISOString().slice(0, 10)}`,
+                                    id: `class-${slot.section_id}-${slot.day_of_week}-${slot.time_start}-${cursor.toISOString()
+                                        .slice(0, 10)}`,
                                     title: `${slot.course_code}: ${slot.section_code}`,
                                     description: `${slot.course_title} • Instructor: ${slot.faculty_name || 'TBA'}`,
-                                    location: slot.room ? `Room ${slot.room}` : 'Assigned Classroom',
+                                    location: slot.room
+                                        ? `Room ${slot.room}`
+                                        : 'Assigned Classroom',
                                     start: classStart,
                                     end: classEnd,
                                     allDay: false,
@@ -407,10 +424,14 @@ export function useCalendarData(currentDate: Date) {
             }
 
             setEvents(loadedEvents);
-        } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : 'Failed to load calendar data';
+        }
+        catch (err: unknown) {
+            const message = err instanceof Error
+                ? err.message
+                : 'Failed to load calendar data';
             setError(message);
-        } finally {
+        }
+        finally {
             setIsLoading(false);
         }
     }, [currentDate, role]);

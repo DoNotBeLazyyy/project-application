@@ -13,7 +13,7 @@ interface DiscussionAttachmentPickerProps {
 interface PendingAttachmentChipProps {
     file: File;
     isDisabled?: boolean;
-    onRemove: () => void;
+    onRemove: VoidFunction;
 }
 
 function PendingAttachmentChip({ file, isDisabled, onRemove }: PendingAttachmentChipProps) {

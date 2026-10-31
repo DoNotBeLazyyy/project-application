@@ -140,19 +140,21 @@ export default function CommonModal({
         onClose?.(event, reason ?? 'escapeKeyDown');
     }
 
-    return <Dialog
-        fullScreen={isFullScreen}
-        open={isModalOpen}
-        {...props}
-        disableEscapeKeyDown={(props as any).disableEscapeKeyDown ?? disableEscapeKeyDown}
-        slotProps={{
-            ...slotProps,
-            paper: resolvedPaperSlot
-        }}
-        slots={{
-            paper: CommonCard,
-            ...slots
-        }}
-        onClose={handleClose}
-    />;
+    return (
+        <Dialog
+            fullScreen={isFullScreen}
+            open={isModalOpen}
+            {...props}
+            disableEscapeKeyDown={(props as any).disableEscapeKeyDown ?? disableEscapeKeyDown}
+            slotProps={{
+                ...slotProps,
+                paper: resolvedPaperSlot
+            }}
+            slots={{
+                paper: CommonCard,
+                ...slots
+            }}
+            onClose={handleClose}
+        />
+    );
 }

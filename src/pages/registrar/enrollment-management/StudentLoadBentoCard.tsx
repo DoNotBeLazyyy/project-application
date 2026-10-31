@@ -31,9 +31,9 @@ export type StudentLoadCardState = 'enrolled' | 'new' | 'dropped';
 export interface StudentLoadBentoCardProps {
     item: StudentLoadCardItem;
     state: StudentLoadCardState;
-    onDrop?: () => void;
-    onUndoDrop?: () => void;
-    onRemoveNew?: () => void;
+    onDrop?: VoidFunction;
+    onUndoDrop?: VoidFunction;
+    onRemoveNew?: VoidFunction;
 }
 
 export default function StudentLoadBentoCard({
@@ -102,39 +102,61 @@ export default function StudentLoadBentoCard({
                                         : 'bg-(--mui-palette-action-hover) text-(--mui-palette-text-secondary)'
                             }`}
                         >
-                            {isNew ? `+${Number(item.units).toFixed(1)} u` : isDropped ? `-${Number(item.units).toFixed(1)} u` : `${Number(item.units).toFixed(1)} u`}
+                            {isNew
+                                ? `+${Number(item.units)
+                                    .toFixed(1)} u`
+                                : isDropped
+                                    ? `-${Number(item.units)
+                                        .toFixed(1)} u`
+                                    : `${Number(item.units)
+                                        .toFixed(1)} u`}
                         </span>
 
-                        {isNew ? (
-                            <span className="bg-blue-600 text-white font-semibold text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded">
+                        {isNew
+                            ? (
+                                <span className="bg-blue-600 text-white font-semibold text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded">
                                 New (Staged)
-                            </span>
-                        ) : isDropped ? (
-                            <span className="bg-red-600 text-white font-semibold text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded">
+                                </span>
+                            )
+                            : isDropped
+                                ? (
+                                    <span className="bg-red-600 text-white font-semibold text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded">
                                 Marked for Drop
-                            </span>
-                        ) : (
-                            <CommonBadgeStatus
-                                label={item.status || 'Enrolled'}
-                                variant={item.status === 'Enrolled' || !item.status ? 'success' : 'info'}
-                            />
-                        )}
+                                    </span>
+                                )
+                                : (
+                                    <CommonBadgeStatus
+                                        label={item.status || 'Enrolled'}
+                                        variant={item.status === 'Enrolled' || !item.status
+                                            ? 'success'
+                                            : 'info'}
+                                    />
+                                )}
                     </div>
                 </div>
 
                 {/* Details: Schedule, Faculty, Room */}
                 <div className="flex flex-col gap-1 text-xs text-(--mui-palette-text-secondary) pt-1 border-t border-(--mui-palette-divider)/60">
                     <div className="flex items-center gap-1.5 truncate">
-                        <CalendarBlankIcon size={14} className="shrink-0 text-(--mui-palette-primary-main)" />
+                        <CalendarBlankIcon
+                            className="shrink-0 text-(--mui-palette-primary-main)"
+                            size={14}
+                        />
                         <span className="truncate">{item.schedule_label || 'Schedule TBA'}</span>
                     </div>
                     <div className="flex items-center gap-1.5 truncate">
-                        <ChalkboardTeacherIcon size={14} className="shrink-0 text-(--mui-palette-info-main)" />
+                        <ChalkboardTeacherIcon
+                            className="shrink-0 text-(--mui-palette-info-main)"
+                            size={14}
+                        />
                         <span className="truncate">{item.faculty_name || 'Instructor TBA'}</span>
                     </div>
                     {item.room && (
                         <div className="flex items-center gap-1.5">
-                            <MapPinIcon size={14} className="shrink-0 text-(--mui-palette-warning-main)" />
+                            <MapPinIcon
+                                className="shrink-0 text-(--mui-palette-warning-main)"
+                                size={14}
+                            />
                             <span>Room: {item.room}</span>
                         </div>
                     )}
@@ -145,13 +167,21 @@ export default function StudentLoadBentoCard({
                     <div className="flex flex-col gap-1 pt-1">
                         {item.conflict_with && (
                             <div className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1.5 px-2 py-1 rounded text-[11px]">
-                                <WarningIcon size={14} weight="fill" className="shrink-0 text-amber-500" />
+                                <WarningIcon
+                                    className="shrink-0 text-amber-500"
+                                    size={14}
+                                    weight="fill"
+                                />
                                 <span className="truncate">Schedule overlap with {item.conflict_with}</span>
                             </div>
                         )}
                         {item.unmet_prerequisites && (
                             <div className="bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/30 flex items-center gap-1.5 px-2 py-1 rounded text-[11px]">
-                                <WarningCircleIcon size={14} weight="fill" className="shrink-0 text-red-500" />
+                                <WarningCircleIcon
+                                    className="shrink-0 text-red-500"
+                                    size={14}
+                                    weight="fill"
+                                />
                                 <span className="truncate">Prerequisite: {item.unmet_prerequisites}</span>
                             </div>
                         )}
@@ -173,7 +203,12 @@ export default function StudentLoadBentoCard({
                     <CommonButton
                         color="inherit"
                         size="small"
-                        startIcon={<XIcon size={14} weight="bold" />}
+                        startIcon={(
+                            <XIcon
+                                size={14}
+                                weight="bold"
+                            />
+                        )}
                         variant="outlined"
                         onClick={onRemoveNew}
                     >
@@ -185,7 +220,12 @@ export default function StudentLoadBentoCard({
                     <CommonButton
                         color="success"
                         size="small"
-                        startIcon={<ArrowUUpLeftIcon size={14} weight="bold" />}
+                        startIcon={(
+                            <ArrowUUpLeftIcon
+                                size={14}
+                                weight="bold"
+                            />
+                        )}
                         variant="contained"
                         onClick={onUndoDrop}
                     >
@@ -197,7 +237,12 @@ export default function StudentLoadBentoCard({
                     <CommonButton
                         color="error"
                         size="small"
-                        startIcon={<TrashSimpleIcon size={14} weight="bold" />}
+                        startIcon={(
+                            <TrashSimpleIcon
+                                size={14}
+                                weight="bold"
+                            />
+                        )}
                         variant="outlined"
                         onClick={onDrop}
                     >

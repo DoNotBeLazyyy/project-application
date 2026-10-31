@@ -72,7 +72,7 @@ export interface CommonBentoCardProps {
     status?: string;
     subtitle?: string;
     title: string;
-    onClick?: () => void;
+    onClick?: VoidFunction;
     onToggleSelect?: (selected: boolean) => void;
 }
 
@@ -163,7 +163,9 @@ export default function CommonBentoCard({
                                 }}
                             >
                                 <button
-                                    aria-label={isSelected ? 'Unselect card' : 'Select card'}
+                                    aria-label={isSelected
+                                        ? 'Unselect card'
+                                        : 'Select card'}
                                     className={classMerge(
                                         'cursor-pointer transition-all duration-150 flex items-center justify-center shrink-0 select-none',
                                         'w-6 h-6 sm:w-5 sm:h-5 rounded-md border text-xs',
@@ -171,7 +173,9 @@ export default function CommonBentoCard({
                                             ? 'bg-blue-600 text-white border-blue-600 ring-2 ring-blue-600/30 shadow-xs'
                                             : 'bg-white border-slate-300 text-slate-400 hover:border-blue-400 hover:text-blue-500 shadow-2xs'
                                     )}
-                                    title={isSelected ? 'Unselect' : 'Select'}
+                                    title={isSelected
+                                        ? 'Unselect'
+                                        : 'Select'}
                                     type="button"
                                     onClick={function(e) {
                                         e.stopPropagation();
@@ -207,7 +211,8 @@ export default function CommonBentoCard({
                                         : status.toLowerCase() === 'ongoing' || status.toLowerCase() === 'full'
                                             ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200/70 dark:border-amber-800/60'
                                             : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
-                                )}>
+                                )}
+                            >
                                 {status}
                             </span>
                         )}

@@ -3,8 +3,8 @@ import CommonModal from '@components/modal/CommonModal';
 
 interface SessionTimeoutModalProps {
     open: boolean;
-    onLogout: () => void;
-    onStayLoggedIn: () => void;
+    onLogout: VoidFunction;
+    onStayLoggedIn: VoidFunction;
 }
 
 export default function SessionTimeoutModal({

@@ -54,7 +54,8 @@ function moduleMatchesPeriod(mod: ContentModule, periodName: string): boolean {
     const text = `${mod.title} ${mod.description ?? ''}`.toLowerCase();
     const target = periodName.toLowerCase();
     if (target.startsWith('final')) {
-        return text.replace(/semi-?finals?/g, '').includes('final');
+        return text.replace(/semi-?finals?/g, '')
+            .includes('final');
     }
     return text.includes(target);
 }
@@ -81,8 +82,10 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
         .flatMap((mod) => mod.materials)
         .find(
             (mat) =>
-                mat.title.toLowerCase().includes('syllabus') ||
-                (mat.description?.toLowerCase().includes('syllabus') ?? false)
+                mat.title.toLowerCase()
+                    .includes('syllabus')
+                || (mat.description?.toLowerCase()
+                    .includes('syllabus') ?? false)
         );
 
     async function loadContent() {
@@ -151,14 +154,15 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
 
         setIsDeleting(true);
         try {
-            const result =
-                pendingDelete.kind === 'module'
+            const result
+                = pendingDelete.kind === 'module'
                     ? await deleteModule(pendingDelete.id)
                     : await deleteMaterial(pendingDelete.id);
 
             setPendingDelete(null);
             if (!result.error) await loadContent();
-        } finally {
+        }
+        finally {
             setIsDeleting(false);
         }
     }
@@ -172,62 +176,79 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
     return (
         <div className="flex flex-col gap-4 h-full min-h-0 overflow-y-auto pr-1">
             {/* Pinned Official Course Syllabus Bento Card */}
-            {syllabusMaterial ? (
-                <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl border-2 border-blue-500/30 bg-gradient-to-r from-blue-50/80 via-blue-50/40 to-white dark:from-blue-950/40 dark:via-zinc-900 dark:to-zinc-900 shadow-xs">
-                    <div className="flex items-center gap-3.5 min-w-0">
-                        <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                            <BookOpenIcon size={24} weight="duotone" />
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                            <div className="flex items-center gap-2">
-                                <span className="font-bold text-slate-900 dark:text-slate-100 text-base truncate">
-                                    {syllabusMaterial.title}
-                                </span>
-                                <span className="text-[10px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-blue-600 text-white shadow-2xs">
+            {syllabusMaterial
+                ? (
+                    <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl border-2 border-blue-500/30 bg-gradient-to-r from-blue-50/80 via-blue-50/40 to-white dark:from-blue-950/40 dark:via-zinc-900 dark:to-zinc-900 shadow-xs">
+                        <div className="flex items-center gap-3.5 min-w-0">
+                            <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                                <BookOpenIcon
+                                    size={24}
+                                    weight="duotone"
+                                />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-base truncate">
+                                        {syllabusMaterial.title}
+                                    </span>
+                                    <span className="text-[10px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-blue-600 text-white shadow-2xs">
                                     Official Syllabus
+                                    </span>
+                                </div>
+                                <span className="text-slate-500 dark:text-slate-400 text-xs truncate mt-0.5">
+                                    {syllabusMaterial.description
+                                    || 'Institutional Course Outline, Weekly Schedule of Topics, and Grading Policies'}
                                 </span>
                             </div>
-                            <span className="text-slate-500 dark:text-slate-400 text-xs truncate mt-0.5">
-                                {syllabusMaterial.description ||
-                                    'Institutional Course Outline, Weekly Schedule of Topics, and Grading Policies'}
-                            </span>
                         </div>
-                    </div>
-                    <CommonButton
-                        size="small"
-                        variant="contained"
-                        startIcon={<ArrowSquareOutIcon size={16} weight="bold" />}
-                        onClick={() => handleOpenMaterial(syllabusMaterial)}
-                    >
+                        <CommonButton
+                            size="small"
+                            startIcon={(
+                                <ArrowSquareOutIcon
+                                    size={16}
+                                    weight="bold"
+                                />
+                            )}
+                            variant="contained"
+                            onClick={() => handleOpenMaterial(syllabusMaterial)}
+                        >
                         View Official Syllabus
-                    </CommonButton>
-                </div>
-            ) : canManage ? (
-                <div className="flex items-center justify-between p-3.5 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800 bg-slate-50/60 dark:bg-zinc-900/40">
-                    <div className="flex items-center gap-2.5">
-                        <BookOpenIcon size={20} className="text-slate-400" />
-                        <span className="text-slate-500 text-xs">
-                            Course Syllabus not yet pinned. Name any document or module material &ldquo;Syllabus&rdquo; to highlight it here for students.
-                        </span>
+                        </CommonButton>
                     </div>
-                </div>
-            ) : null}
+                )
+                : canManage
+                    ? (
+                        <div className="flex items-center justify-between p-3.5 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800 bg-slate-50/60 dark:bg-zinc-900/40">
+                            <div className="flex items-center gap-2.5">
+                                <BookOpenIcon
+                                    className="text-slate-400"
+                                    size={20}
+                                />
+                                <span className="text-slate-500 text-xs">
+                            Course Syllabus not yet pinned. Name any document or module material &ldquo;Syllabus&rdquo; to highlight it here for students.
+                                </span>
+                            </div>
+                        </div>
+                    )
+                    : null}
 
             {/* Filter Tabs and Add Module Action */}
             <div className="flex flex-wrap gap-2 items-center justify-between border-b border-slate-200 dark:border-zinc-800 pb-3">
                 <div className="flex gap-1.5 items-center overflow-x-auto py-0.5">
                     {PERIOD_TABS.map((period) => (
                         <button
-                            key={period}
-                            type="button"
-                            onClick={() => setSelectedPeriod(period)}
                             className={`px-3 py-1.5 text-xs rounded-full font-bold transition-all cursor-pointer ${
                                 selectedPeriod === period
                                     ? 'bg-blue-600 text-white shadow-xs'
                                     : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                             }`}
+                            key={period}
+                            type="button"
+                            onClick={() => setSelectedPeriod(period)}
                         >
-                            {period === 'All' ? 'All Content' : period}
+                            {period === 'All'
+                                ? 'All Content'
+                                : period}
                         </button>
                     ))}
                 </div>
@@ -235,7 +256,12 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
                 {canManage && (
                     <CommonButton
                         size="small"
-                        startIcon={<PlusIcon size={16} weight="bold" />}
+                        startIcon={(
+                            <PlusIcon
+                                size={16}
+                                weight="bold"
+                            />
+                        )}
                         variant="contained"
                         onClick={handleOpenCreateWizard}
                     >
@@ -248,11 +274,16 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
             {modules.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
                     <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center">
-                        <BookOpenIcon size={28} weight="duotone" />
+                        <BookOpenIcon
+                            size={28}
+                            weight="duotone"
+                        />
                     </div>
                     <div className="flex flex-col gap-1 max-w-sm">
                         <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                            {canManage ? 'No modules yet' : 'No content published'}
+                            {canManage
+                                ? 'No modules yet'
+                                : 'No content published'}
                         </h3>
                         <p className="text-xs text-slate-500">
                             {canManage
@@ -263,7 +294,12 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
                     {canManage && (
                         <CommonButton
                             size="small"
-                            startIcon={<PlusIcon size={16} weight="bold" />}
+                            startIcon={(
+                                <PlusIcon
+                                    size={16}
+                                    weight="bold"
+                                />
+                            )}
                             variant="contained"
                             onClick={handleOpenCreateWizard}
                         >
@@ -276,13 +312,15 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
             {/* Modules Bento Grid */}
             <div className="flex flex-col gap-4 pb-6">
                 {modules.map(function(mod) {
-                    const progress =
-                        mod.material_count > 0 ? (mod.completed_count / mod.material_count) * 100 : 0;
+                    const progress
+                        = mod.material_count > 0
+                            ? (mod.completed_count / mod.material_count) * 100
+                            : 0;
 
                     return (
                         <div
-                            key={mod.id}
                             className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col gap-3"
+                            key={mod.id}
                         >
                             {/* Module Header */}
                             <div className="flex flex-wrap gap-2 items-start justify-between">
@@ -299,11 +337,15 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
                                                         : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
                                                 }`}
                                             >
-                                                {mod.is_published ? 'Published' : 'Draft'}
+                                                {mod.is_published
+                                                    ? 'Published'
+                                                    : 'Draft'}
                                             </span>
                                         )}
                                         <span className="text-[11px] font-medium text-slate-400">
-                                            {mod.materials.length} resource{mod.materials.length === 1 ? '' : 's'}
+                                            {mod.materials.length} resource{mod.materials.length === 1
+                                                ? ''
+                                                : 's'}
                                         </span>
                                     </div>
                                     {mod.description && (
@@ -316,15 +358,17 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
                                 {canManage && (
                                     <div className="flex items-center gap-1 shrink-0">
                                         <button
-                                            type="button"
-                                            onClick={() => handleToggleModulePublish(mod)}
                                             className={`text-xs font-semibold px-2.5 py-1 rounded-lg border transition-colors ${
                                                 mod.is_published
                                                     ? 'text-amber-700 bg-amber-50 hover:bg-amber-100 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
                                                     : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
                                             }`}
+                                            type="button"
+                                            onClick={() => handleToggleModulePublish(mod)}
                                         >
-                                            {mod.is_published ? 'Unpublish' : 'Publish'}
+                                            {mod.is_published
+                                                ? 'Unpublish'
+                                                : 'Publish'}
                                         </button>
                                         <button
                                             className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
@@ -332,7 +376,10 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
                                             type="button"
                                             onClick={() => setDuplicatingModule(mod)}
                                         >
-                                            <CopySimpleIcon size={16} weight="bold" />
+                                            <CopySimpleIcon
+                                                size={16}
+                                                weight="bold"
+                                            />
                                         </button>
                                         <button
                                             className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
@@ -340,17 +387,25 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
                                             type="button"
                                             onClick={() => handleOpenEditWizard(mod)}
                                         >
-                                            <PencilSimpleIcon size={16} weight="bold" />
+                                            <PencilSimpleIcon
+                                                size={16}
+                                                weight="bold"
+                                            />
                                         </button>
                                         <button
                                             className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
                                             title="Delete module"
                                             type="button"
                                             onClick={() =>
-                                                setPendingDelete({ id: mod.id, kind: 'module', label: mod.title })
+                                                setPendingDelete({
+                                                    id: mod.id, kind: 'module', label: mod.title
+                                                })
                                             }
                                         >
-                                            <TrashIcon size={16} weight="bold" />
+                                            <TrashIcon
+                                                size={16}
+                                                weight="bold"
+                                            />
                                         </button>
                                     </div>
                                 )}
@@ -369,16 +424,17 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
                             {/* Materials Bento Grid */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                                 {mod.materials.map(function(material) {
-                                    const isSyl = material.title.toLowerCase().includes('syllabus');
+                                    const isSyl = material.title.toLowerCase()
+                                        .includes('syllabus');
 
                                     return (
                                         <div
-                                            key={material.id}
                                             className={`p-3 rounded-xl border transition-all flex items-center justify-between gap-3 ${
                                                 isSyl
                                                     ? 'border-blue-300 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-800/80'
                                                     : 'border-slate-200/80 dark:border-zinc-800 bg-slate-50/60 dark:bg-zinc-800/40'
                                             }`}
+                                            key={material.id}
                                         >
                                             <button
                                                 className="flex flex-1 gap-2.5 items-center text-left min-w-0 cursor-pointer group"
@@ -390,17 +446,30 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
                                                         material.material_type === 'Link'
                                                             ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300'
                                                             : isSyl
-                                                            ? 'bg-blue-600 text-white'
-                                                            : 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
+                                                                ? 'bg-blue-600 text-white'
+                                                                : 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
                                                     }`}
                                                 >
-                                                    {material.material_type === 'Link' ? (
-                                                        <LinkSimpleIcon size={16} weight="bold" />
-                                                    ) : isSyl ? (
-                                                        <BookOpenIcon size={16} weight="bold" />
-                                                    ) : (
-                                                        <FileTextIcon size={16} weight="bold" />
-                                                    )}
+                                                    {material.material_type === 'Link'
+                                                        ? (
+                                                            <LinkSimpleIcon
+                                                                size={16}
+                                                                weight="bold"
+                                                            />
+                                                        )
+                                                        : isSyl
+                                                            ? (
+                                                                <BookOpenIcon
+                                                                    size={16}
+                                                                    weight="bold"
+                                                                />
+                                                            )
+                                                            : (
+                                                                <FileTextIcon
+                                                                    size={16}
+                                                                    weight="bold"
+                                                                />
+                                                            )}
                                                 </div>
 
                                                 <div className="flex flex-col min-w-0 flex-1">
@@ -423,61 +492,73 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
                                             </button>
 
                                             <div className="flex gap-1 items-center shrink-0">
-                                                {canManage ? (
-                                                    <>
+                                                {canManage
+                                                    ? (
+                                                        <>
+                                                            <button
+                                                                className={`text-[10px] font-bold px-2 py-0.5 rounded border transition-colors ${
+                                                                    material.is_published
+                                                                        ? 'text-slate-600 dark:text-slate-300 bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700'
+                                                                        : 'text-amber-700 bg-amber-50 border-amber-200'
+                                                                }`}
+                                                                type="button"
+                                                                onClick={() => handleToggleMaterialPublish(material)}
+                                                            >
+                                                                {material.is_published
+                                                                    ? 'Public'
+                                                                    : 'Draft'}
+                                                            </button>
+                                                            <button
+                                                                className="p-1 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                                title="Edit resource"
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    setMaterialModal({ material, moduleId: mod.id })
+                                                                }
+                                                            >
+                                                                <PencilSimpleIcon
+                                                                    size={14}
+                                                                    weight="bold"
+                                                                />
+                                                            </button>
+                                                            <button
+                                                                className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
+                                                                title="Delete resource"
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    setPendingDelete({
+                                                                        id: material.id,
+                                                                        kind: 'material',
+                                                                        label: material.title
+                                                                    })
+                                                                }
+                                                            >
+                                                                <TrashIcon
+                                                                    size={14}
+                                                                    weight="bold"
+                                                                />
+                                                            </button>
+                                                        </>
+                                                    )
+                                                    : (
                                                         <button
+                                                            className="p-1 text-slate-400 hover:text-emerald-600 transition-colors"
                                                             type="button"
-                                                            onClick={() => handleToggleMaterialPublish(material)}
-                                                            className={`text-[10px] font-bold px-2 py-0.5 rounded border transition-colors ${
-                                                                material.is_published
-                                                                    ? 'text-slate-600 dark:text-slate-300 bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700'
-                                                                    : 'text-amber-700 bg-amber-50 border-amber-200'
-                                                            }`}
+                                                            onClick={() => handleToggleComplete(material)}
                                                         >
-                                                            {material.is_published ? 'Public' : 'Draft'}
+                                                            {material.is_completed
+                                                                ? (
+                                                                    <CheckCircleIcon
+                                                                        className="text-emerald-600"
+                                                                        size={20}
+                                                                        weight="fill"
+                                                                    />
+                                                                )
+                                                                : (
+                                                                    <CircleIcon size={20} />
+                                                                )}
                                                         </button>
-                                                        <button
-                                                            className="p-1 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                                                            type="button"
-                                                            title="Edit resource"
-                                                            onClick={() =>
-                                                                setMaterialModal({ material, moduleId: mod.id })
-                                                            }
-                                                        >
-                                                            <PencilSimpleIcon size={14} weight="bold" />
-                                                        </button>
-                                                        <button
-                                                            className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
-                                                            type="button"
-                                                            title="Delete resource"
-                                                            onClick={() =>
-                                                                setPendingDelete({
-                                                                    id: material.id,
-                                                                    kind: 'material',
-                                                                    label: material.title
-                                                                })
-                                                            }
-                                                        >
-                                                            <TrashIcon size={14} weight="bold" />
-                                                        </button>
-                                                    </>
-                                                ) : (
-                                                    <button
-                                                        className="p-1 text-slate-400 hover:text-emerald-600 transition-colors"
-                                                        type="button"
-                                                        onClick={() => handleToggleComplete(material)}
-                                                    >
-                                                        {material.is_completed ? (
-                                                            <CheckCircleIcon
-                                                                className="text-emerald-600"
-                                                                size={20}
-                                                                weight="fill"
-                                                            />
-                                                        ) : (
-                                                            <CircleIcon size={20} />
-                                                        )}
-                                                    </button>
-                                                )}
+                                                    )}
                                             </div>
                                         </div>
                                     );

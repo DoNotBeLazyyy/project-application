@@ -3,8 +3,8 @@ import { WarningIcon } from '@phosphor-icons/react';
 
 export interface DiscardChangesPromptModalProps {
     open: boolean;
-    onContinueEditing: () => void;
-    onDiscard: () => void;
+    onContinueEditing: VoidFunction;
+    onDiscard: VoidFunction;
     title?: string;
     subtitle?: string;
     continueLabel?: string;

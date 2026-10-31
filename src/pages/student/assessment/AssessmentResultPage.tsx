@@ -18,8 +18,8 @@ import {
     XCircleIcon
 } from '@phosphor-icons/react';
 import { getAttachmentSignedUrl } from '@services/assessment.service';
-import { getMyAssessmentResult } from '@services/student-portal.service';
 import { getFileUrl } from '@services/storage.service';
+import { getMyAssessmentResult } from '@services/student-portal.service';
 import { StudentAssessmentResult, StudentResultAnswer, StudentResultRubric } from '@type/student-portal.type';
 import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -28,13 +28,14 @@ const CHOICE_TYPES = ['Multiple Choice', 'True or False', 'Matching'];
 
 function formatDateTime(value: string | null): string {
     return value
-        ? new Date(value).toLocaleString(undefined, {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit'
-        })
+        ? new Date(value)
+            .toLocaleString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit'
+            })
         : '—';
 }
 
@@ -95,19 +96,21 @@ interface NoticeBannerProps {
 function NoticeBanner({ icon, message }: NoticeBannerProps) {
     return (
         <div className="border border-blue-200 dark:border-blue-800/80 bg-blue-50/60 dark:bg-blue-950/30 flex gap-3 items-center p-3.5 rounded-xl">
-            {icon === 'lock' ? (
-                <LockIcon
-                    className="text-slate-500 dark:text-slate-400 shrink-0"
-                    size={20}
-                    weight="fill"
-                />
-            ) : (
-                <ClockIcon
-                    className="text-amber-500 shrink-0"
-                    size={20}
-                    weight="fill"
-                />
-            )}
+            {icon === 'lock'
+                ? (
+                    <LockIcon
+                        className="text-slate-500 dark:text-slate-400 shrink-0"
+                        size={20}
+                        weight="fill"
+                    />
+                )
+                : (
+                    <ClockIcon
+                        className="text-amber-500 shrink-0"
+                        size={20}
+                        weight="fill"
+                    />
+                )}
             <p className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm m-0">
                 {message}
             </p>
@@ -243,29 +246,36 @@ function ResultAnswerCard({ answer, hasSubmission, index, resultsAvailable }: Re
                     <span className="font-semibold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider">
                         Submitted Response
                     </span>
-                    {answer.answer_text ? (
-                        <div className="bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/70 dark:border-zinc-800/80 break-words p-3.5 rounded-xl text-slate-900 dark:text-slate-100 text-sm whitespace-pre-wrap leading-relaxed">
-                            <LinkifiedText text={answer.answer_text} />
-                        </div>
-                    ) : answer.file_attachments.length > 0 ? (
-                        <div className="flex flex-col gap-1 items-start">
-                            {answer.file_attachments.map(function(file) {
-                                return (
-                                    <button
-                                        className="flex items-center min-h-11 text-(--mui-palette-primary-main) text-left text-sm underline wrap-break-word cursor-pointer"
-                                        key={file.path}
-                                        type="button"
-                                        onClick={() => openSubmissionFile(file.path)}
-                                    >
-                                        <FileTextIcon className="inline mr-1.5 shrink-0" size={16} />
-                                        {file.name}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <span className="text-slate-400 italic text-xs">No response provided.</span>
-                    )}
+                    {answer.answer_text
+                        ? (
+                            <div className="bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/70 dark:border-zinc-800/80 break-words p-3.5 rounded-xl text-slate-900 dark:text-slate-100 text-sm whitespace-pre-wrap leading-relaxed">
+                                <LinkifiedText text={answer.answer_text} />
+                            </div>
+                        )
+                        : answer.file_attachments.length > 0
+                            ? (
+                                <div className="flex flex-col gap-1 items-start">
+                                    {answer.file_attachments.map(function(file) {
+                                        return (
+                                            <button
+                                                className="flex items-center min-h-11 text-(--mui-palette-primary-main) text-left text-sm underline wrap-break-word cursor-pointer"
+                                                key={file.path}
+                                                type="button"
+                                                onClick={() => openSubmissionFile(file.path)}
+                                            >
+                                                <FileTextIcon
+                                                    className="inline mr-1.5 shrink-0"
+                                                    size={16}
+                                                />
+                                                {file.name}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )
+                            : (
+                                <span className="text-slate-400 italic text-xs">No response provided.</span>
+                            )}
                 </div>
             )}
         </div>
@@ -324,7 +334,12 @@ export default function AssessmentResultPage() {
                 <CommonButton
                     color="inherit"
                     size="small"
-                    startIcon={<ArrowLeftIcon size={16} weight="bold" />}
+                    startIcon={(
+                        <ArrowLeftIcon
+                            size={16}
+                            weight="bold"
+                        />
+                    )}
                     variant="outlined"
                     onClick={function() {
                         navigate(`/student/subjects/${result?.enrollment_id || enrollmentId}?tab=assessments`);
@@ -353,7 +368,10 @@ export default function AssessmentResultPage() {
                         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/30 border border-blue-200/80 dark:border-blue-800/80 flex flex-col md:flex-row gap-3 items-start md:items-center justify-between p-4 rounded-2xl shadow-2xs">
                             <div className="flex gap-3.5 items-center">
                                 <div className="bg-blue-600 dark:bg-blue-500 p-2.5 rounded-xl text-white shrink-0">
-                                    <SparkleIcon size={24} weight="fill" />
+                                    <SparkleIcon
+                                        size={24}
+                                        weight="fill"
+                                    />
                                 </div>
                                 <div className="flex flex-col gap-0.5">
                                     <span className="font-bold text-slate-900 dark:text-slate-100 text-base">
@@ -373,9 +391,15 @@ export default function AssessmentResultPage() {
                     {/* Assessment Meta Header */}
                     <div className="flex flex-col gap-2">
                         <div className="flex flex-wrap gap-2 items-center">
-                            <CommonBadgeStatus label={result.assessment_type} variant="info" />
+                            <CommonBadgeStatus
+                                label={result.assessment_type}
+                                variant="info"
+                            />
                             {result.grading_period_name && (
-                                <CommonBadgeStatus label={result.grading_period_name} variant="info" />
+                                <CommonBadgeStatus
+                                    label={result.grading_period_name}
+                                    variant="info"
+                                />
                             )}
                             <CommonBadgeStatus
                                 label={result.status ?? 'Not Started'}
@@ -383,12 +407,19 @@ export default function AssessmentResultPage() {
                             />
                             {passed !== null && (
                                 <CommonBadgeStatus
-                                    label={passed ? 'Passing' : 'Below Passing'}
-                                    variant={passed ? 'success' : 'error'}
+                                    label={passed
+                                        ? 'Passing'
+                                        : 'Below Passing'}
+                                    variant={passed
+                                        ? 'success'
+                                        : 'error'}
                                 />
                             )}
                             {result.is_late && (
-                                <CommonBadgeStatus label="Late Submission" variant="warning" />
+                                <CommonBadgeStatus
+                                    label="Late Submission"
+                                    variant="warning"
+                                />
                             )}
                         </div>
                         <h1 className="font-bold text-slate-900 dark:text-slate-100 text-xl sm:text-2xl tracking-tight">
@@ -421,7 +452,9 @@ export default function AssessmentResultPage() {
                             iconBg="bg-emerald-50 dark:bg-emerald-950/60"
                             iconColor="text-emerald-600 dark:text-emerald-400"
                             label="Passing Mark"
-                            value={result.passing_points !== null ? `${result.passing_points} pts` : '—'}
+                            value={result.passing_points !== null
+                                ? `${result.passing_points} pts`
+                                : '—'}
                         />
                         <ResultDetailTile
                             icon={<ShieldCheckIcon size={20} />}
@@ -478,7 +511,12 @@ export default function AssessmentResultPage() {
                                         <CommonButton
                                             key={file.id}
                                             size="small"
-                                            startIcon={<ArrowLineDownIcon size={14} weight="bold" />}
+                                            startIcon={(
+                                                <ArrowLineDownIcon
+                                                    size={14}
+                                                    weight="bold"
+                                                />
+                                            )}
                                             variant="outlined"
                                             onClick={function() {
                                                 downloadAttachment(file.file_url, file.file_name);
@@ -518,7 +556,10 @@ export default function AssessmentResultPage() {
                     )}
 
                     {!result.review_available && result.review_blocked_reason && (
-                        <NoticeBanner icon="lock" message={result.review_blocked_reason} />
+                        <NoticeBanner
+                            icon="lock"
+                            message={result.review_blocked_reason}
+                        />
                     )}
 
                     {result.review_available && !result.has_submission && (
@@ -540,7 +581,9 @@ export default function AssessmentResultPage() {
                     {result.answers.length > 0 && (
                         <div className="flex flex-col gap-3">
                             <span className="font-bold text-slate-900 dark:text-slate-100 text-base">
-                                {result.has_submission ? 'Your Submitted Responses' : 'Assessment Questions'}
+                                {result.has_submission
+                                    ? 'Your Submitted Responses'
+                                    : 'Assessment Questions'}
                             </span>
                             {result.answers.map(function(answer, index) {
                                 return (

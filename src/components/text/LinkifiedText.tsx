@@ -22,7 +22,9 @@ export default function LinkifiedText({ className, text }: LinkifiedTextProps) {
         }
 
         const rawUrl = match[0];
-        const href = rawUrl.toLowerCase().startsWith('http://') || rawUrl.toLowerCase().startsWith('https://')
+        const href = rawUrl.toLowerCase()
+            .startsWith('http://') || rawUrl.toLowerCase()
+            .startsWith('https://')
             ? rawUrl
             : `https://${rawUrl}`;
 

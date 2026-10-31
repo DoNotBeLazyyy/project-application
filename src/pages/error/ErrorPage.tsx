@@ -99,14 +99,24 @@ export default function ErrorPage({ isNotFound = false }: ErrorPageProps) {
             )}
             <div className="flex flex-wrap gap-2 justify-center">
                 <CommonButton
-                    startIcon={<ArrowClockwiseIcon size={16} weight="bold" />}
+                    startIcon={(
+                        <ArrowClockwiseIcon
+                            size={16}
+                            weight="bold"
+                        />
+                    )}
                     variant="outlined"
                     onClick={handleReload}
                 >
                     Reload Page
                 </CommonButton>
                 <CommonButton
-                    startIcon={<HouseIcon size={16} weight="bold" />}
+                    startIcon={(
+                        <HouseIcon
+                            size={16}
+                            weight="bold"
+                        />
+                    )}
                     variant="contained"
                     onClick={handleGoHome}
                 >

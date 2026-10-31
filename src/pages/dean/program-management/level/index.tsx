@@ -2,6 +2,7 @@ import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
+import { useHasRealChanges } from '@hooks/useHasRealChanges';
 import ProgramLevelForm from '@pages/dean/program-management/level/ProgramLevelForm';
 import ProgramLevelGridCard from '@pages/dean/program-management/level/ProgramLevelGridCard';
 import { useProgramLevelTableConfig } from '@pages/dean/program-management/level/useProgramLevelTableConfig';
@@ -17,7 +18,6 @@ import { generateProgramLevelCode } from '@utils/entity-code.util';
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';
 import { FieldErrors, useForm, UseFormReturn } from 'react-hook-form';
-import { useHasRealChanges } from '@hooks/useHasRealChanges';
 
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'code', label: 'Code' },
@@ -30,9 +30,15 @@ const UPDATE_FORM_ID = 'update-program-level-form';
 // Mirrors fn_bulk_create_program_levels: only the name is required, and both the code and
 // the name must be new (existing ones such as UG/Undergraduate and GRAD/Graduate are rejected).
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'code', label: 'Program Level Code', hint: 'Optional - unique code, auto-generated from the name if blank, e.g. DOC', sample: 'DOC', required: false },
-    { key: 'label', label: 'Program Level Name', hint: 'Unique name, e.g. Doctorate', sample: 'Doctorate' },
-    { key: 'description', label: 'Description', hint: 'Optional', sample: 'Doctoral degree programs', required: false }
+    {
+        key: 'code', label: 'Program Level Code', hint: 'Optional - unique code, auto-generated from the name if blank, e.g. DOC', sample: 'DOC', required: false
+    },
+    {
+        key: 'label', label: 'Program Level Name', hint: 'Unique name, e.g. Doctorate', sample: 'Doctorate'
+    },
+    {
+        key: 'description', label: 'Description', hint: 'Optional', sample: 'Doctoral degree programs', required: false
+    }
 ];
 
 const defaultFormValues: ProgramLevelFormValues = {
@@ -149,7 +155,9 @@ export default function ProgramLevelManagement() {
         const result = await updateProgramLevel(selectedId, {
             ...values,
             label: values.label.trim(),
-            description: values.description ? values.description.trim() : ''
+            description: values.description
+                ? values.description.trim()
+                : ''
         });
 
         if (!result.error) {

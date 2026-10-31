@@ -78,7 +78,8 @@ describe('CommonSelect', () => {
 
         const combobox = screen.getByRole('combobox');
         fireEvent.mouseDown(combobox);
-        expect(screen.getByRole('listbox')).toBeInTheDocument();
+        expect(screen.getByRole('listbox'))
+            .toBeInTheDocument();
 
         // Click Option 1
         fireEvent.click(screen.getByText('Option 1'));
@@ -91,6 +92,7 @@ describe('CommonSelect', () => {
                 value="1"
             />
         );
-        expect(screen.getAllByText('Option 1').length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText('Option 1').length)
+            .toBeGreaterThanOrEqual(1);
     });
 });

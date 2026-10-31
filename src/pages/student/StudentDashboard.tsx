@@ -9,7 +9,9 @@ import InstitutionalIdentityCard from '@components/dashboard/InstitutionalIdenti
 import StudentInsightSummaryCard from '@components/dashboard/StudentInsightSummaryCard';
 import StudentProfilePromptModal from '@components/modal/StudentProfilePromptModal';
 import useDashboardFeeds from '@hooks/useDashboardFeeds';
-import { BookOpenIcon, CalendarCheckIcon, ClockIcon, GraduationCapIcon, UserFocusIcon } from '@phosphor-icons/react';
+import {
+    BookOpenIcon, CalendarCheckIcon, ClockIcon, GraduationCapIcon, UserFocusIcon
+} from '@phosphor-icons/react';
 import { getStudentInsight } from '@services/analytics.service';
 import { getMyProfile } from '@services/profile.service';
 import { getStudentDashboard } from '@services/student-portal.service';
@@ -139,7 +141,10 @@ export default function StudentDashboard() {
                 <div className="border border-amber-200 dark:border-amber-800/80 bg-amber-50/70 dark:bg-amber-950/40 p-4 rounded-2xl flex items-center justify-between flex-wrap gap-3.5 shadow-2xs">
                     <div className="flex items-center gap-3">
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400">
-                            <UserFocusIcon size={24} weight="bold" />
+                            <UserFocusIcon
+                                size={24}
+                                weight="bold"
+                            />
                         </div>
                         <div>
                             <p className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base m-0">
@@ -166,7 +171,10 @@ export default function StudentDashboard() {
                 <div className="border border-amber-200 dark:border-amber-800/80 bg-amber-50/70 dark:bg-amber-950/40 p-4 rounded-2xl flex items-center justify-between flex-wrap gap-3.5 shadow-2xs">
                     <div className="flex items-center gap-3">
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400">
-                            <GraduationCapIcon size={24} weight="bold" />
+                            <GraduationCapIcon
+                                size={24}
+                                weight="bold"
+                            />
                         </div>
                         <div>
                             <p className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base m-0">
@@ -193,7 +201,10 @@ export default function StudentDashboard() {
                 <div className="border border-blue-200 dark:border-blue-800/80 bg-blue-50/70 dark:bg-blue-950/40 p-4 rounded-2xl flex items-center justify-between flex-wrap gap-3.5 shadow-2xs">
                     <div className="flex items-center gap-3">
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
-                            <ClockIcon size={24} weight="bold" />
+                            <ClockIcon
+                                size={24}
+                                weight="bold"
+                            />
                         </div>
                         <div>
                             <p className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base m-0">
@@ -274,7 +285,8 @@ export default function StudentDashboard() {
                                             <span>·</span>
                                             <span className="flex items-center gap-1">
                                                 <ClockIcon size={13} />
-                                                Due {new Date(assessment.due_at).toLocaleString()}
+                                                Due {new Date(assessment.due_at)
+                                                    .toLocaleString()}
                                             </span>
                                         </>
                                     )}

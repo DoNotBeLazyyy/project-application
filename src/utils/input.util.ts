@@ -57,7 +57,9 @@ export function stripLeadingZeros(val: string | number | null | undefined): stri
     }
 
     const isNegative = str.startsWith('-');
-    const unsigned = isNegative ? str.slice(1) : str;
+    const unsigned = isNegative
+        ? str.slice(1)
+        : str;
 
     const parts = unsigned.split('.');
 
@@ -65,5 +67,7 @@ export function stripLeadingZeros(val: string | number | null | undefined): stri
     parts[0] = parts[0].replace(/^0+(?=\d)/, '');
 
     const result = parts.join('.');
-    return isNegative ? `-${result}` : result;
+    return isNegative
+        ? `-${result}`
+        : result;
 }

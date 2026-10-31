@@ -26,18 +26,23 @@ export default function RegistrarLogDetailContent({ row }: RegistrarLogDetailCon
             <div className="border border-(--mui-palette-divider) bg-(--mui-palette-background-default) p-4 rounded-lg grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div>
                     <span className="text-(--mui-palette-text-secondary) block text-[11px]">Action</span>
-                    <CommonChip label={formatActionLabel(row.action)} size="small" variant="light" />
+                    <CommonChip
+                        label={formatActionLabel(row.action)}
+                        size="small"
+                        variant="light"
+                    />
                 </div>
                 <div>
                     <span className="text-(--mui-palette-text-secondary) block text-[11px]">Timestamp</span>
                     <span className="font-semibold text-(--mui-palette-text-primary)">
-                        {new Date(row.created_at).toLocaleString('en-PH', {
-                            day: 'numeric',
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            month: 'short',
-                            year: 'numeric'
-                        })}
+                        {new Date(row.created_at)
+                            .toLocaleString('en-PH', {
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                            })}
                     </span>
                 </div>
                 <div>
@@ -55,17 +60,23 @@ export default function RegistrarLogDetailContent({ row }: RegistrarLogDetailCon
             </div>
 
             {/* Details & Rejection Warning */}
-            <div className={`border p-3 rounded-lg flex flex-col gap-2 ${
-                row.action.includes('REJECTED') || (row.metadata as any)?.is_false_info
-                    ? 'border-(--mui-palette-error-main) bg-(--mui-palette-error-light)/30'
-                    : row.action.includes('APPROVED')
-                        ? 'border-(--mui-palette-success-main) bg-(--mui-palette-success-light)/20'
-                        : 'border-(--mui-palette-divider)'
-            }`}>
+            <div
+                className={`border p-3 rounded-lg flex flex-col gap-2 ${
+                    row.action.includes('REJECTED') || (row.metadata as any)?.is_false_info
+                        ? 'border-(--mui-palette-error-main) bg-(--mui-palette-error-light)/30'
+                        : row.action.includes('APPROVED')
+                            ? 'border-(--mui-palette-success-main) bg-(--mui-palette-success-light)/20'
+                            : 'border-(--mui-palette-divider)'
+                }`}
+            >
                 <div className="flex items-center justify-between">
                     <span className="text-(--mui-palette-text-secondary) text-[11px] font-semibold">Details & Status</span>
                     {(row.metadata as any)?.is_false_info && (
-                        <CommonChip label="Flagged: False Information" size="small" variant="light" />
+                        <CommonChip
+                            label="Flagged: False Information"
+                            size="small"
+                            variant="light"
+                        />
                     )}
                 </div>
                 <p className="m-0 text-(--mui-palette-text-primary) text-xs">
@@ -87,12 +98,16 @@ export default function RegistrarLogDetailContent({ row }: RegistrarLogDetailCon
                 <div className="border border-(--mui-palette-divider) p-3 rounded-lg bg-(--mui-palette-background-default)">
                     <span className="text-(--mui-palette-text-secondary) block text-[11px] font-semibold mb-1">Event Audit Metadata</span>
                     <div className="space-y-1">
-                        {Object.entries(row.metadata).map(([key, val]) => (
-                            <div key={key} className="flex gap-2">
-                                <span className="font-medium text-(--mui-palette-text-secondary) capitalize">{key.replace(/_/g, ' ')}:</span>
-                                <span className="text-(--mui-palette-text-primary)">{String(val)}</span>
-                            </div>
-                        ))}
+                        {Object.entries(row.metadata)
+                            .map(([key, val]) => (
+                                <div
+                                    className="flex gap-2"
+                                    key={key}
+                                >
+                                    <span className="font-medium text-(--mui-palette-text-secondary) capitalize">{key.replace(/_/g, ' ')}:</span>
+                                    <span className="text-(--mui-palette-text-primary)">{String(val)}</span>
+                                </div>
+                            ))}
                     </div>
                 </div>
             )}
@@ -113,7 +128,10 @@ export default function RegistrarLogDetailContent({ row }: RegistrarLogDetailCon
                             const before = String(oldValues[key] || '—');
                             const after = String(newValues[key] || '—');
                             return (
-                                <div key={key} className="grid grid-cols-12 px-3 py-2 items-center bg-(--mui-palette-warning-light)/10">
+                                <div
+                                    className="grid grid-cols-12 px-3 py-2 items-center bg-(--mui-palette-warning-light)/10"
+                                    key={key}
+                                >
                                     <div className="col-span-4 font-medium text-(--mui-palette-text-primary) capitalize">
                                         {key.replace(/_/g, ' ')}
                                     </div>

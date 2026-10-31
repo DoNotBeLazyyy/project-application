@@ -10,7 +10,7 @@ export interface CommonEmptyStateProps {
     icon?: ReactNode;
     isSearch?: boolean;
     title?: string;
-    onAction?: () => void;
+    onAction?: VoidFunction;
 }
 
 export default function CommonEmptyState({
@@ -35,8 +35,18 @@ export default function CommonEmptyState({
         <div className={`flex flex-1 flex-col items-center justify-center min-h-[320px] p-8 text-center select-none w-full ${className}`}>
             <div className="bg-(--mui-tokens-color-neutral-100) border border-(--mui-tokens-color-neutral-200) flex items-center justify-center mb-4 p-5 rounded-full shadow-2xs text-(--mui-tokens-color-neutral-400)">
                 {icon ?? (isSearch
-                    ? <MagnifyingGlassIcon size={48} weight="duotone" />
-                    : <TrayIcon size={48} weight="duotone" />)}
+                    ? (
+                        <MagnifyingGlassIcon
+                            size={48}
+                            weight="duotone"
+                        />
+                    )
+                    : (
+                        <TrayIcon
+                            size={48}
+                            weight="duotone"
+                        />
+                    ))}
             </div>
 
             <h3 className="font-bold mb-1.5 md:text-xl text-(--mui-palette-text-primary) text-lg tracking-tight">

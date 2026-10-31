@@ -98,12 +98,12 @@ export default function SideBarAccordionGroup({
                                 : ''
                         )
                     }
-                    expandIcon={
+                    expandIcon={(
                         <KeyboardArrowDownRoundedIcon
                             className={expandIcon}
                             fontSize="small"
                         />
-                    }
+                    )}
                     onClick={handleSummaryClick}
                 >
                     {icon && (
@@ -135,11 +135,13 @@ export default function SideBarAccordionGroup({
             </Tooltip>
             <AccordionDetails>
                 <div className="relative ml-[1.450rem] flex flex-col gap-0.5">
-                    {subItemBorder && <SubItemBorderLine
-                        activeColor={subItemBorderActive}
-                        inactiveColor={subItemBorderInactive}
-                        items={items}
-                    />}
+                    {subItemBorder && (
+                        <SubItemBorderLine
+                            activeColor={subItemBorderActive}
+                            inactiveColor={subItemBorderInactive}
+                            items={items}
+                        />
+                    )}
                     {items.map((subItem) => (
                         <CommonButton
                             className={

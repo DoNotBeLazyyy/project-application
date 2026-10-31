@@ -15,11 +15,11 @@ import { FieldErrors, useForm, useWatch } from 'react-hook-form';
 
 interface NotifyStudentModalProps {
     open: boolean;
-    onClose: () => void;
+    onClose: VoidFunction;
     studentId?: string | null;
     studentName?: string;
     studentNumber?: string;
-    onSuccess?: () => void;
+    onSuccess?: VoidFunction;
 }
 
 const TEMPLATE_OPTIONS: CommonSelectOption[] = [
@@ -85,7 +85,8 @@ const NOTIFY_FORM_ID = 'notify-student-form';
 function requiredText(label: string) {
     return {
         required: `${label} is required.`,
-        validate: (value: unknown) => String(value ?? '').trim() !== '' || `${label} cannot be blank.`
+        validate: (value: unknown) => String(value ?? '')
+            .trim() !== '' || `${label} cannot be blank.`
     };
 }
 
@@ -129,7 +130,9 @@ export default function NotifyStudentModal({
     const draftGuard = useFormDraft({
         control: methods.control,
         enabled: open,
-        formId: studentId ? `notify-student-${studentId}` : NOTIFY_FORM_ID,
+        formId: studentId
+            ? `notify-student-${studentId}`
+            : NOTIFY_FORM_ID,
         onRestore: (restored) => {
             // A restored draft carries its own title/message - do not overwrite them with template text
             if (restored.selectedTemplate !== undefined) lastTemplateRef.current = restored.selectedTemplate;
@@ -175,7 +178,8 @@ export default function NotifyStudentModal({
 
     async function handleSend(values: NotifyStudentFormValues) {
         if (!studentId) {
-            useToastStore.getState().showToast('Student ID is missing.', 'error');
+            useToastStore.getState()
+                .showToast('Student ID is missing.', 'error');
             return;
         }
 
@@ -186,7 +190,8 @@ export default function NotifyStudentModal({
         if (!result.error) {
             draftGuard.clearDraft();
             resetToInitial();
-            useToastStore.getState().showToast('Notification sent to student and recorded in Registrar Log.', 'success');
+            useToastStore.getState()
+                .showToast('Notification sent to student and recorded in Registrar Log.', 'success');
             onSuccess?.();
             onClose();
         }
@@ -195,20 +200,23 @@ export default function NotifyStudentModal({
     return (
         <>
             <CommonModal
-                fullWidth
-                maxWidth="sm"
-                open={open}
-                onClose={handleAttemptClose}
                 cardProps={{
                     cardHeaderProps: {
                         title: 'Send Notification to Student',
                         subheader: `Recipient: ${studentName || 'Student'} (${studentNumber || 'N/A'})`
                     }
                 }}
+                fullWidth
+                maxWidth="sm"
+                open={open}
+                onClose={handleAttemptClose}
             >
                 <div className="flex flex-col gap-4 p-4 pt-0">
                     <div className="border border-(--mui-palette-error-main) bg-(--mui-palette-error-light) p-3 rounded-lg flex items-start gap-3 text-xs text-(--mui-palette-text-primary)">
-                        <WarningCircleIcon size={22} className="text-(--mui-palette-error-main) shrink-0 mt-0.5" />
+                        <WarningCircleIcon
+                            className="text-(--mui-palette-error-main) shrink-0 mt-0.5"
+                            size={22}
+                        />
                         <div>
                             <p className="font-semibold m-0 text-sm">Official Registrar Notification</p>
                             <p className="m-0 mt-0.5 text-(--mui-palette-text-secondary)">
@@ -246,7 +254,9 @@ export default function NotifyStudentModal({
                             type="submit"
                             variant="contained"
                         >
-                            {isSubmitting ? 'Sending...' : 'Send Notification'}
+                            {isSubmitting
+                                ? 'Sending...'
+                                : 'Send Notification'}
                         </CommonButton>
                     </div>
                 </div>
@@ -264,4 +274,3 @@ export default function NotifyStudentModal({
         </>
     );
 }
-

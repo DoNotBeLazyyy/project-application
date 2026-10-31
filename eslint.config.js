@@ -2,17 +2,19 @@ import javascriptESLint from '@eslint/js';
 import importPlugin from 'eslint-plugin-import';
 import reactHookESLintPlugin from 'eslint-plugin-react-hooks';
 import reactRefreshESLintPlugin from 'eslint-plugin-react-refresh';
-import reactESLintRecommeded from 'eslint-plugin-react/configs/recommended.js';
+import reactESLintPlugin from 'eslint-plugin-react';
 import globals from 'globals';
 import typescriptESLint from 'typescript-eslint';
 
 const eslintConfig = typescriptESLint.config(
+    {
+        ignores: ['node_modules/**', '@types/**', 'dist/**', 'supabase/**', 'scripts/**', 'backups/**', '*.config.js', '*.config.ts', '*.json']
+    },
     javascriptESLint.configs.recommended,
-    reactESLintRecommeded,
+    reactESLintPlugin.configs.flat.recommended,
     ...typescriptESLint.configs.strict,
     ...typescriptESLint.configs.stylistic,
     {
-        ignores: ['node_modules/**', '@types/**', 'dist/**', 'supabase/**', '*.config.js', '*.config.ts', '*.json'],
         languageOptions: {
             ecmaVersion: 'latest',
             globals: {
@@ -124,6 +126,11 @@ const eslintConfig = typescriptESLint.config(
                     ImportDeclaration: {
                         minProperties: 5,
                         multiline: true
+                    },
+                    ObjectExpression: {
+                        consistent: true,
+                        minProperties: 3,
+                        multiline: true
                     }
                 }
             ],
@@ -156,12 +163,12 @@ const eslintConfig = typescriptESLint.config(
             ],
             '@typescript-eslint/ban-ts-comment': 'off',
             '@typescript-eslint/no-empty-function': 'off',
+            'react/jsx-closing-bracket-location': ['error', 'tag-aligned'],
             'react/jsx-first-prop-new-line': ['error', 'multiline'],
             'react/jsx-max-props-per-line': [
                 'error',
                 {
-                    maximum: 1,
-                    when: 'multiline'
+                    maximum: 1
                 }
             ],
             'react/jsx-sort-props': [
@@ -175,12 +182,54 @@ const eslintConfig = typescriptESLint.config(
                     reservedFirst: false
                 }
             ],
+            'react/jsx-wrap-multilines': [
+                'error',
+                {
+                    arrow: 'parens-new-line',
+                    assignment: 'parens-new-line',
+                    condition: 'parens-new-line',
+                    declaration: 'parens-new-line',
+                    logical: 'parens-new-line',
+                    prop: 'parens-new-line',
+                    return: 'parens-new-line'
+                }
+            ],
             'react/react-in-jsx-scope': 'off',
             'react-refresh/only-export-components': [
                 'warn', {
                     allowConstantExport: true
                 }
             ],
+            'import/order': [
+                'error',
+                {
+                    alphabetize: {
+                        order: 'asc',
+                        caseInsensitive: true
+                    },
+                    groups: [
+                        'internal',
+                        'external',
+                        'builtin',
+                        'parent',
+                        'sibling',
+                        'index',
+                        'object',
+                        'type'
+                    ],
+                    'newlines-between': 'always',
+                    pathGroups: [
+                        {
+                            pattern: '@/**',
+                            group: 'internal',
+                            position: 'before'
+                        }
+                    ],
+                    pathGroupsExcludedImportTypes: [
+                        'builtin'
+                    ]
+                }
+            ]
         },
         settings: {
             react: {

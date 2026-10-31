@@ -1,13 +1,15 @@
 import BentoCardActionMenu from '@components/card/BentoCardActionMenu';
 import CommonBentoCard from '@components/card/CommonBentoCard';
-import { ClockCounterClockwiseIcon, CopySimpleIcon, EyeIcon, PencilSimpleIcon, TrashIcon } from '@phosphor-icons/react';
+import {
+    ClockCounterClockwiseIcon, CopySimpleIcon, EyeIcon, PencilSimpleIcon, TrashIcon
+} from '@phosphor-icons/react';
 import { SchoolYearListRow } from '@type/school-year.type';
 import { formatShortDate } from '@utils/date.util';
 
 export interface SchoolYearGridCardProps {
     row: SchoolYearListRow;
     isSelected: boolean;
-    onToggleSelect: () => void;
+    onToggleSelect: VoidFunction;
     onView: (id: string) => void;
     onEdit: (id: string) => void;
     onDuplicate?: (id: string) => void;
@@ -41,13 +43,19 @@ export default function SchoolYearGridCard({
                         {
                             key: 'view',
                             label: 'View',
-                            icon: <EyeIcon size={18} weight="bold" />,
+                            icon: <EyeIcon
+                                size={18}
+                                weight="bold"
+                            />,
                             onClick: () => onView(row.id)
                         },
                         {
                             key: 'edit',
                             label: 'Edit',
-                            icon: <PencilSimpleIcon size={18} weight="bold" />,
+                            icon: <PencilSimpleIcon
+                                size={18}
+                                weight="bold"
+                            />,
                             onClick: () => onEdit(row.id)
                         },
                         ...(onDuplicate
@@ -55,7 +63,10 @@ export default function SchoolYearGridCard({
                                 {
                                     key: 'duplicate',
                                     label: 'Duplicate',
-                                    icon: <CopySimpleIcon size={18} weight="bold" />,
+                                    icon: <CopySimpleIcon
+                                        size={18}
+                                        weight="bold"
+                                    />,
                                     onClick: () => onDuplicate(row.id)
                                 }
                             ]
@@ -65,7 +76,10 @@ export default function SchoolYearGridCard({
                                 {
                                     key: 'history',
                                     label: 'History',
-                                    icon: <ClockCounterClockwiseIcon size={18} weight="bold" />,
+                                    icon: <ClockCounterClockwiseIcon
+                                        size={18}
+                                        weight="bold"
+                                    />,
                                     onClick: () => onOpenHistory(row.id, row.label)
                                 }
                             ]
@@ -73,7 +87,10 @@ export default function SchoolYearGridCard({
                         {
                             key: 'delete',
                             label: 'Delete',
-                            icon: <TrashIcon size={18} weight="bold" />,
+                            icon: <TrashIcon
+                                size={18}
+                                weight="bold"
+                            />,
                             destructive: true,
                             onClick: () => onRequestDelete(row.id)
                         }

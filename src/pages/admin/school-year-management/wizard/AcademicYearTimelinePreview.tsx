@@ -19,13 +19,18 @@ interface TimelineEvent {
 function formatTimelineDate(dateStr?: string | null): string {
     if (!dateStr) return '';
     // Append T00:00:00 to avoid timezone offset shifts
-    const cleanDate = dateStr.includes('T') ? dateStr : `${dateStr}T00:00:00`;
+    const cleanDate = dateStr.includes('T')
+        ? dateStr
+        : `${dateStr}T00:00:00`;
     const d = new Date(cleanDate);
     if (isNaN(d.getTime())) return dateStr;
 
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    const yy = String(d.getFullYear()).slice(-2);
+    const mm = String(d.getMonth() + 1)
+        .padStart(2, '0');
+    const dd = String(d.getDate())
+        .padStart(2, '0');
+    const yy = String(d.getFullYear())
+        .slice(-2);
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const dayName = dayNames[d.getDay()];
 
@@ -182,7 +187,9 @@ export default function AcademicYearTimelinePreview({
         });
 
         // Sort chronologically by date
-        return events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        return events.sort((a, b) => new Date(a.date)
+            .getTime() - new Date(b.date)
+            .getTime());
     }, [startDate, endDate, terms, holidays]);
 
     if (!startDate || !endDate) {
@@ -211,30 +218,32 @@ export default function AcademicYearTimelinePreview({
             </div>
 
             {/* Chronological Text List */}
-            {timelineEvents.length === 0 ? (
-                <p className="text-xs text-slate-500 text-center py-4">No events or terms configured yet.</p>
-            ) : (
-                <div className="space-y-2.5 max-h-[60vh] sm:max-h-96 overflow-y-auto pr-1 pb-20 sm:pb-3">
-                    {timelineEvents.map((evt) => {
-                        const style = categoryBadges[evt.category];
-                        return (
-                            <div
-                                key={evt.id}
-                                className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 p-3 rounded-xl border border-slate-100 dark:border-zinc-700/50 bg-slate-50/50 dark:bg-zinc-800/40 text-xs hover:bg-slate-100/70 dark:hover:bg-zinc-700/40 transition-colors"
-                            >
-                                <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3 min-w-0 flex-1">
-                                    <span className={`px-2.5 py-1 rounded-md font-mono font-bold text-[11px] shrink-0 self-start ${style.bg} ${style.text}`}>
-                                        {evt.formattedDate}
-                                    </span>
-                                    <span className="font-semibold text-slate-800 dark:text-slate-200 break-words whitespace-normal leading-relaxed pt-0.5">
-                                        {evt.label}
-                                    </span>
+            {timelineEvents.length === 0
+                ? (
+                    <p className="text-xs text-slate-500 text-center py-4">No events or terms configured yet.</p>
+                )
+                : (
+                    <div className="space-y-2.5 max-h-[60vh] sm:max-h-96 overflow-y-auto pr-1 pb-20 sm:pb-3">
+                        {timelineEvents.map((evt) => {
+                            const style = categoryBadges[evt.category];
+                            return (
+                                <div
+                                    className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 p-3 rounded-xl border border-slate-100 dark:border-zinc-700/50 bg-slate-50/50 dark:bg-zinc-800/40 text-xs hover:bg-slate-100/70 dark:hover:bg-zinc-700/40 transition-colors"
+                                    key={evt.id}
+                                >
+                                    <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3 min-w-0 flex-1">
+                                        <span className={`px-2.5 py-1 rounded-md font-mono font-bold text-[11px] shrink-0 self-start ${style.bg} ${style.text}`}>
+                                            {evt.formattedDate}
+                                        </span>
+                                        <span className="font-semibold text-slate-800 dark:text-slate-200 break-words whitespace-normal leading-relaxed pt-0.5">
+                                            {evt.label}
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
+                            );
+                        })}
+                    </div>
+                )}
         </div>
     );
 }

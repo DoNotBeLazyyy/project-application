@@ -101,7 +101,10 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                     if (released) {
                         return (
                             <div className="flex flex-wrap gap-2 h-full items-center">
-                                <CommonBadgeStatus label="Released" variant="success" />
+                                <CommonBadgeStatus
+                                    label="Released"
+                                    variant="success"
+                                />
                                 <CommonButton
                                     color="inherit"
                                     size="small"
@@ -119,7 +122,10 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                     if (needsEvaluation) {
                         return (
                             <div className="flex flex-wrap gap-2 h-full items-center">
-                                <CommonBadgeStatus label="Evaluation Required" variant="warning" />
+                                <CommonBadgeStatus
+                                    label="Evaluation Required"
+                                    variant="warning"
+                                />
                                 <CommonButton
                                     color="primary"
                                     size="small"
@@ -136,7 +142,10 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
 
                     return (
                         <div className="flex h-full items-center">
-                            <CommonBadgeStatus label="Pending Registrar Release" variant="warning" />
+                            <CommonBadgeStatus
+                                label="Pending Registrar Release"
+                                variant="warning"
+                            />
                         </div>
                     );
                 }

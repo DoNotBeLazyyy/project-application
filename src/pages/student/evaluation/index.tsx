@@ -1,5 +1,5 @@
-import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonCard from '@components/card/CommonCard';
+import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
 import { QUESTIONS_SCROLL_STEP } from '@constants/evaluation.constant';
 import { useInfiniteScroll } from '@hooks/useInfiniteScroll';
 import { EvaluationRatingRow } from '@pages/student/evaluation/EvaluationRatingMatrix';
@@ -15,6 +15,19 @@ import { Path, useFieldArray, useForm } from 'react-hook-form';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 const BASE_PATH = '/student/evaluations';
+
+const EVALUATION_STEPS: ModalStepItem[] = [
+    {
+        step: 1,
+        subtitle: 'Choose a faculty member and read the rating guide.',
+        title: 'Select & Guide'
+    },
+    {
+        step: 2,
+        subtitle: 'Rate each statement and add comments.',
+        title: 'Evaluation Form'
+    }
+];
 
 function toAnswerForms(form: EvaluationForm): EvaluationAnswerForm[] {
     const saved = new Map((form.answers ?? []).map(function(answer) {
@@ -92,7 +105,9 @@ export default function StudentEvaluations() {
 
     const hasTarget = Boolean(enrollmentId && gradingPeriodId);
     const isStep2 = searchParams.get('step') === '2' && hasTarget;
-    const currentStep: 1 | 2 = isStep2 ? 2 : 1;
+    const currentStep: 1 | 2 = isStep2
+        ? 2
+        : 1;
 
     const selectedTarget = useMemo(function() {
         return targets.find(function(target) {
@@ -142,7 +157,8 @@ export default function StudentEvaluations() {
 
                 setForm(result.data);
                 methods.reset({ responses: toAnswerForms(result.data) });
-            } finally {
+            }
+            finally {
                 if (active) {
                     setIsLoadingForm(false);
                 }
@@ -234,7 +250,8 @@ export default function StudentEvaluations() {
     function handleStepClick(stepNumber: number) {
         if (stepNumber === 1) {
             setSearchParams({});
-        } else if (stepNumber === 2 && hasTarget) {
+        }
+        else if (stepNumber === 2 && hasTarget) {
             setSearchParams({ step: '2' });
         }
     }
@@ -296,7 +313,8 @@ export default function StudentEvaluations() {
                     return previous + 1;
                 });
             }
-        } finally {
+        }
+        finally {
             setIsSubmitting(false);
         }
     }
@@ -304,8 +322,7 @@ export default function StudentEvaluations() {
     return (
         <div className="flex flex-col h-full w-full min-h-0">
             <CommonCard className="flex flex-col gap-3 sm:gap-4 h-full min-h-0 overflow-hidden p-3 sm:p-5">
-                {/* Stepper Navigation Header */}
-                <div className="flex flex-col gap-3 shrink-0 border-b border-(--mui-palette-divider) pb-3">
+                <div className="flex flex-col gap-3 shrink-0">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex flex-col min-w-0">
                             <h1 className="font-bold text-(--mui-palette-text-primary) text-lg sm:text-xl truncate">
@@ -313,93 +330,52 @@ export default function StudentEvaluations() {
                             </h1>
                             <p className="text-(--mui-palette-text-secondary) text-xs sm:text-sm">
                                 {pendingCount > 0
-                                    ? `${pendingCount} faculty evaluation${pendingCount === 1 ? '' : 's'} awaiting your review`
+                                    ? `${pendingCount} faculty evaluation${pendingCount === 1
+                                        ? ''
+                                        : 's'} awaiting your review`
                                     : 'You have completed all available faculty evaluations'}
                             </p>
                         </div>
-                        {selectedTarget?.is_completed && (
-                            <CommonBadgeStatus label="Completed" size="small" variant="success" />
-                        )}
-                    </div>
-
-                    {/* 2-Step Interactive Stepper Bar */}
-                    <div className="grid grid-cols-2 gap-1.5 p-1 bg-(--mui-palette-action-hover) rounded-xl select-none">
-                        <button
-                            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-                                currentStep === 1
-                                    ? 'bg-white dark:bg-zinc-800 text-(--mui-palette-primary-main) shadow-xs'
-                                    : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
-                            }`}
-                            type="button"
-                            onClick={() => handleStepClick(1)}
-                        >
-                            <span
-                                className={`size-5 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${
-                                    currentStep === 1
-                                        ? 'bg-(--mui-palette-primary-main) text-(--mui-palette-primary-contrastText)'
-                                        : 'bg-(--mui-palette-divider) text-(--mui-palette-text-secondary)'
-                                }`}
-                            >
-                                1
-                            </span>
-                            <span className="truncate">1. Select & Guide</span>
-                        </button>
-
-                        <button
-                            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
-                                !hasTarget
-                                    ? 'opacity-40 cursor-not-allowed text-(--mui-palette-text-secondary)'
-                                    : currentStep === 2
-                                        ? 'bg-white dark:bg-zinc-800 text-(--mui-palette-primary-main) shadow-xs cursor-pointer'
-                                        : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary) cursor-pointer'
-                            }`}
-                            disabled={!hasTarget}
-                            type="button"
-                            onClick={() => handleStepClick(2)}
-                        >
-                            <span
-                                className={`size-5 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${
-                                    currentStep === 2
-                                        ? 'bg-(--mui-palette-primary-main) text-(--mui-palette-primary-contrastText)'
-                                        : 'bg-(--mui-palette-divider) text-(--mui-palette-text-secondary)'
-                                }`}
-                            >
-                                2
-                            </span>
-                            <span className="truncate">2. Evaluation Form</span>
-                        </button>
                     </div>
                 </div>
 
+                <ModalStepperHeader
+                    currentStep={currentStep}
+                    steps={EVALUATION_STEPS}
+                    onStepClick={handleStepClick}
+                />
+
                 {/* Step Body */}
-                {currentStep === 1 ? (
-                    <Step1FacultyAndGuide
-                        enrollmentId={enrollmentId}
-                        gradingPeriodId={gradingPeriodId}
-                        isLoadingForm={isLoadingForm}
-                        pendingCount={pendingCount}
-                        selectedTarget={selectedTarget}
-                        targetOptions={targetOptions}
-                        targets={targets}
-                        onProceed={handleProceed}
-                        onSelectTarget={handleSelectTarget}
-                    />
-                ) : (
-                    <Step2EvaluationForm
-                        control={methods.control}
-                        fieldsCount={fields.length}
-                        form={form}
-                        hasMore={hasMore}
-                        isLoading={isLoadingForm}
-                        isReadOnly={isReadOnly}
-                        isSubmitting={isSubmitting}
-                        scrolledSections={scrolledSections}
-                        sentinelRef={sentinelRef}
-                        visibleCount={visibleCount}
-                        onBack={handleBack}
-                        onSubmit={handleSubmit}
-                    />
-                )}
+                {currentStep === 1
+                    ? (
+                        <Step1FacultyAndGuide
+                            enrollmentId={enrollmentId}
+                            gradingPeriodId={gradingPeriodId}
+                            isLoadingForm={isLoadingForm}
+                            pendingCount={pendingCount}
+                            selectedTarget={selectedTarget}
+                            targetOptions={targetOptions}
+                            targets={targets}
+                            onProceed={handleProceed}
+                            onSelectTarget={handleSelectTarget}
+                        />
+                    )
+                    : (
+                        <Step2EvaluationForm
+                            control={methods.control}
+                            fieldsCount={fields.length}
+                            form={form}
+                            hasMore={hasMore}
+                            isLoading={isLoadingForm}
+                            isReadOnly={isReadOnly}
+                            isSubmitting={isSubmitting}
+                            scrolledSections={scrolledSections}
+                            sentinelRef={sentinelRef}
+                            visibleCount={visibleCount}
+                            onBack={handleBack}
+                            onSubmit={handleSubmit}
+                        />
+                    )}
             </CommonCard>
         </div>
     );

@@ -197,13 +197,16 @@ export default function AnnouncementForm({
                     ? 'Name of the event'
                     : 'A short, descriptive headline'
             },
-            label: itemType === 'Event' ? 'Event Title' : 'Title',
+            label: itemType === 'Event'
+                ? 'Event Title'
+                : 'Title',
             name: 'title',
             rules: disabled
                 ? undefined
                 : {
                     required: 'Title is required',
-                    validate: (val: unknown) => Boolean(val && String(val).trim()) || 'Title cannot be empty or whitespace only'
+                    validate: (val: unknown) => Boolean(val && String(val)
+                        .trim()) || 'Title cannot be empty or whitespace only'
                 },
             type: 'text'
         },
@@ -356,7 +359,10 @@ export default function AnnouncementForm({
     }
 
     return (
-        <form {...formProps} className="flex flex-col gap-5 w-full min-w-0 max-w-full">
+        <form
+            {...formProps}
+            className="flex flex-col gap-5 w-full min-w-0 max-w-full"
+        >
             <CommonForm
                 component="div"
                 containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
@@ -376,14 +382,24 @@ export default function AnnouncementForm({
                 disabled={disabled}
                 height="320px"
                 isRequired={!disabled}
-                label={itemType === 'Event' ? 'Event Description' : 'Announcement Content'}
+                label={itemType === 'Event'
+                    ? 'Event Description'
+                    : 'Announcement Content'}
                 name="description"
-                placeholder={itemType === 'Event' ? 'Add event details...' : 'Write the announcement details here...'}
+                placeholder={itemType === 'Event'
+                    ? 'Add event details...'
+                    : 'Write the announcement details here...'}
                 rules={disabled
                     ? undefined
                     : {
-                        required: `${itemType === 'Event' ? 'Description' : 'Content'} is required`,
-                        validate: (val: unknown) => Boolean(val && String(val).replace(/<[^>]*>/g, '').trim()) || `${itemType === 'Event' ? 'Description' : 'Content'} cannot be empty or whitespace only`
+                        required: `${itemType === 'Event'
+                            ? 'Description'
+                            : 'Content'} is required`,
+                        validate: (val: unknown) => Boolean(val && String(val)
+                            .replace(/<[^>]*>/g, '')
+                            .trim()) || `${itemType === 'Event'
+                            ? 'Description'
+                            : 'Content'} cannot be empty or whitespace only`
                     }}
                 onChange={handleEditorChange}
             />
@@ -392,7 +408,9 @@ export default function AnnouncementForm({
                 attachments={attachments ?? []}
                 bucket="materials"
                 disabled={disabled}
-                folderPrefix={itemType === 'Event' ? 'events' : 'announcements'}
+                folderPrefix={itemType === 'Event'
+                    ? 'events'
+                    : 'announcements'}
                 onChange={setAttachments}
             />
         </form>

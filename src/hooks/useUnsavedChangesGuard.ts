@@ -2,16 +2,16 @@ import { useState } from 'react';
 
 export interface UnsavedChangesGuardConfig {
     isDirty: boolean;
-    onDiscard: () => void;
-    onSave: () => void;
+    onDiscard: VoidFunction;
+    onSave: VoidFunction;
 }
 
 export interface UnsavedChangesGuardResult {
-    closePrompt: () => void;
-    confirmDiscard: () => void;
-    confirmSave: () => void;
+    closePrompt: VoidFunction;
+    confirmDiscard: VoidFunction;
+    confirmSave: VoidFunction;
     isPromptOpen: boolean;
-    requestExit: () => void;
+    requestExit: VoidFunction;
 }
 
 export function useUnsavedChangesGuard({

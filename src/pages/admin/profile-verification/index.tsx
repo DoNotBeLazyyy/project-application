@@ -135,7 +135,8 @@ export default function StaffProfileVerificationPage() {
             },
             {
                 label: 'Submitted',
-                value: new Date(item.created_at).toLocaleDateString()
+                value: new Date(item.created_at)
+                    .toLocaleDateString()
             },
             {
                 label: 'Reviewer',

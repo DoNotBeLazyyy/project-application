@@ -171,7 +171,9 @@ export default function AiAssistant() {
             .filter((item) => !item.isFailed)
             .map((item) => ({ role: item.role, content: item.content }));
 
-        setMessages((prev) => [...prev, { id: createMessageId(), role: 'user', content: trimmed }]);
+        setMessages((prev) => [...prev, {
+            id: createMessageId(), role: 'user', content: trimmed
+        }]);
         setDraft('');
         setIsSending(true);
 
@@ -197,7 +199,9 @@ export default function AiAssistant() {
             return;
         }
 
-        setMessages((prev) => [...prev, { id: createMessageId(), role: 'assistant', content: reply }]);
+        setMessages((prev) => [...prev, {
+            id: createMessageId(), role: 'assistant', content: reply
+        }]);
     }
 
     function handleComposerKeyDown(event: KeyboardEvent<HTMLDivElement>) {

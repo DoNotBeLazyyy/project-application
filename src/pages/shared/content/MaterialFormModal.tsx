@@ -12,7 +12,9 @@ import { createMaterial, MATERIAL_TYPE_OPTIONS, updateMaterial } from '@services
 import { uploadFile } from '@services/storage.service';
 import { CourseMaterial, MaterialType } from '@type/content.type';
 import { generateId } from '@utils/uuid.util';
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    ChangeEvent, useEffect, useMemo, useRef, useState
+} from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
 interface MaterialFormModalProps {
@@ -20,8 +22,8 @@ interface MaterialFormModalProps {
     sectionId: string;
     moduleId: string;
     material: CourseMaterial | null;
-    onClose: () => void;
-    onSaved: () => void;
+    onClose: VoidFunction;
+    onSaved: VoidFunction;
 }
 
 interface MaterialFormValues {
@@ -247,7 +249,9 @@ export default function MaterialFormModal({
         }
 
         const path = `${sectionId}/${moduleId}/${generateId()}-${file.name}`;
-        const uploadResult = await uploadFile({ bucket: 'materials', file, path });
+        const uploadResult = await uploadFile({
+            bucket: 'materials', file, path
+        });
 
         if (uploadResult.error) {
             setIsSaving(false);
@@ -326,7 +330,10 @@ export default function MaterialFormModal({
                                 : 'Choose file'}
                         </CommonButton>
                         {fileError && (
-                            <span className="text-(--mui-palette-error-main) text-xs" role="alert">
+                            <span
+                                className="text-(--mui-palette-error-main) text-xs"
+                                role="alert"
+                            >
                                 {fileError}
                             </span>
                         )}

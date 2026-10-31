@@ -3,7 +3,7 @@ import { create } from 'zustand';
 interface BreadcrumbStore {
     customLabels: Record<string, string>;
     setCustomLabel: (pathOrId: string, label: string) => void;
-    clearCustomLabels: () => void;
+    clearCustomLabels: VoidFunction;
 }
 
 export const useBreadcrumbStore = create<BreadcrumbStore>((set) => ({

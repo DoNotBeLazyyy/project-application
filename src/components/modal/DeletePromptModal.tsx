@@ -6,20 +6,22 @@ export default function DeletePromptModal({
     formButtonsProps,
     ...props
 }: CommonPromptModalProps) {
-    return <CommonPromptModal
-        {...props}
-        actionIconProps={{
-            icon: TrashIcon,
-            iconContainerClassName: 'bg-(--mui-tokens-color-state-errorLight) text-(--mui-palette-error-main)',
-            ...actionIconProps
-        }}
-        formButtonsProps={{
-            ...formButtonsProps,
-            confirmProps: {
-                children: 'Yes, Delete',
-                color: 'error',
-                ...formButtonsProps?.confirmProps
-            }
-        }}
-    />;
+    return (
+        <CommonPromptModal
+            {...props}
+            actionIconProps={{
+                icon: TrashIcon,
+                iconContainerClassName: 'bg-(--mui-tokens-color-state-errorLight) text-(--mui-palette-error-main)',
+                ...actionIconProps
+            }}
+            formButtonsProps={{
+                ...formButtonsProps,
+                confirmProps: {
+                    children: 'Yes, Delete',
+                    color: 'error',
+                    ...formButtonsProps?.confirmProps
+                }
+            }}
+        />
+    );
 }

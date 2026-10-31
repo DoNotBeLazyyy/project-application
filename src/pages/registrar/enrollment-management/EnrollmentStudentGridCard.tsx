@@ -1,13 +1,15 @@
 import BentoCardActionMenu from '@components/card/BentoCardActionMenu';
 import CommonBentoCard from '@components/card/CommonBentoCard';
-import { CopyIcon, EnvelopeSimpleIcon, EyeIcon, GraduationCapIcon, PencilSimpleIcon } from '@phosphor-icons/react';
+import {
+    CopyIcon, EnvelopeSimpleIcon, EyeIcon, GraduationCapIcon, PencilSimpleIcon
+} from '@phosphor-icons/react';
 import { useToastStore } from '@stores/toast.store';
 import { EnrollmentStudentRow } from '@type/enrollment.type';
 
 export interface EnrollmentStudentGridCardProps {
     row: EnrollmentStudentRow;
     isSelected: boolean;
-    onToggleSelect: () => void;
+    onToggleSelect: VoidFunction;
     onManage: (id: string) => void;
     onAssignProgram?: (row: EnrollmentStudentRow) => void;
 }
@@ -30,7 +32,8 @@ export default function EnrollmentStudentGridCard({
     function handleCopy(text: string, message: string) {
         if (navigator?.clipboard?.writeText) {
             navigator.clipboard.writeText(text);
-            useToastStore.getState().showToast(message, 'success');
+            useToastStore.getState()
+                .showToast(message, 'success');
         }
     }
 
@@ -38,7 +41,10 @@ export default function EnrollmentStudentGridCard({
         {
             key: 'manage',
             label: 'Manage Enrollment',
-            icon: <PencilSimpleIcon size={18} weight="bold" />,
+            icon: <PencilSimpleIcon
+                size={18}
+                weight="bold"
+            />,
             onClick: () => onManage(row.id)
         },
         ...(onAssignProgram
@@ -46,7 +52,10 @@ export default function EnrollmentStudentGridCard({
                 {
                     key: 'assign_program',
                     label: 'Assign Program & Year',
-                    icon: <GraduationCapIcon size={18} weight="bold" />,
+                    icon: <GraduationCapIcon
+                        size={18}
+                        weight="bold"
+                    />,
                     onClick: () => onAssignProgram(row)
                 }
             ]
@@ -54,13 +63,19 @@ export default function EnrollmentStudentGridCard({
         {
             key: 'view',
             label: 'View Current Load',
-            icon: <EyeIcon size={18} weight="bold" />,
+            icon: <EyeIcon
+                size={18}
+                weight="bold"
+            />,
             onClick: () => onManage(row.id)
         },
         {
             key: 'copy_student_no',
             label: 'Copy Student No.',
-            icon: <CopyIcon size={18} weight="bold" />,
+            icon: <CopyIcon
+                size={18}
+                weight="bold"
+            />,
             onClick: () => handleCopy(row.student_number, 'Student number copied to clipboard')
         },
         ...(row.email
@@ -68,14 +83,18 @@ export default function EnrollmentStudentGridCard({
                 {
                     key: 'copy_email',
                     label: 'Copy Email',
-                    icon: <EnvelopeSimpleIcon size={18} weight="bold" />,
+                    icon: <EnvelopeSimpleIcon
+                        size={18}
+                        weight="bold"
+                    />,
                     onClick: () => handleCopy(row.email, 'Email copied to clipboard')
                 }
             ]
             : [])
     ];
 
-    const enrolledUnits = Number(row.enrolled_units).toFixed(1);
+    const enrolledUnits = Number(row.enrolled_units)
+        .toFixed(1);
 
     return (
         <CommonBentoCard
@@ -86,7 +105,11 @@ export default function EnrollmentStudentGridCard({
                 />
             )}
             code={row.student_number}
-            details={row.email ? [{ label: 'Email', value: row.email, lines: 1 }] : undefined}
+            details={row.email
+                ? [{
+                    label: 'Email', value: row.email, lines: 1
+                }]
+                : undefined}
             footerMeta={`Student: ${row.status}`}
             isSelected={isSelected}
             metrics={[

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 
 interface AssessmentTimerProps {
     expiresAt: string | null;
-    onExpire: () => void;
+    onExpire: VoidFunction;
 }
 
 export default function AssessmentTimer({ expiresAt, onExpire }: AssessmentTimerProps) {

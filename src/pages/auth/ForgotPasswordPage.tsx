@@ -53,16 +53,18 @@ export default function ForgotPasswordPage() {
                 message: result.error.message
             });
 
-            useToastStore.getState().showToast(result.error.message, 'error');
+            useToastStore.getState()
+                .showToast(result.error.message, 'error');
             return;
         }
 
         setSentEmail(values.email);
         setIsSent(true);
-        useToastStore.getState().showToast(
-            'Email verified. Password reset link has been sent to your email.',
-            'success'
-        );
+        useToastStore.getState()
+            .showToast(
+                'Email verified. Password reset link has been sent to your email.',
+                'success'
+            );
     }
 
     async function handleVerifyOnly() {
@@ -92,8 +94,10 @@ export default function ForgotPasswordPage() {
                 type: 'manual',
                 message
             });
-            useToastStore.getState().showToast(message, 'error');
-        } else if (data.status === 'Suspended' || data.status === 'Inactive') {
+            useToastStore.getState()
+                .showToast(message, 'error');
+        }
+        else if (data.status === 'Suspended' || data.status === 'Inactive') {
             const message = data.message || `Your account is ${data.status.toLowerCase()}. Please contact your administrator.`;
             setVerificationNotice({
                 type: 'error',
@@ -104,14 +108,17 @@ export default function ForgotPasswordPage() {
                 type: 'manual',
                 message
             });
-            useToastStore.getState().showToast(message, 'error');
-        } else {
+            useToastStore.getState()
+                .showToast(message, 'error');
+        }
+        else {
             setVerificationNotice({
                 type: 'success',
                 title: 'Email Verified',
                 message: `Account found for "${email}". You can now proceed to send the reset link.`
             });
-            useToastStore.getState().showToast('Email verified: Account exists.', 'success');
+            useToastStore.getState()
+                .showToast('Email verified: Account exists.', 'success');
         }
     }
 
@@ -142,7 +149,10 @@ export default function ForgotPasswordPage() {
                         <div className="flex flex-col gap-6 p-6">
                             <div className="flex items-center gap-3">
                                 <div className="bg-(--mui-palette-success-light)/50 dark:bg-green-950/40 flex items-center justify-center p-2.5 rounded-full text-(--mui-palette-success-main)">
-                                    <CheckCircleIcon size={28} weight="fill" />
+                                    <CheckCircleIcon
+                                        size={28}
+                                        weight="fill"
+                                    />
                                 </div>
                                 <div>
                                     <h6 className="font-semibold m-0 text-xl text-(--mui-palette-text-primary)">
@@ -205,17 +215,19 @@ export default function ForgotPasswordPage() {
                                             : 'bg-(--mui-palette-success-light)/30 border border-(--mui-palette-success-main) dark:bg-green-950/20 flex gap-3 items-start p-3.5 rounded-lg text-sm'
                                     }
                                 >
-                                    {verificationNotice.type === 'error' ? (
-                                        <WarningCircleIcon
-                                            size={20}
-                                            className="text-(--mui-palette-error-main) shrink-0 mt-0.5"
-                                        />
-                                    ) : (
-                                        <CheckCircleIcon
-                                            size={20}
-                                            className="text-(--mui-palette-success-main) shrink-0 mt-0.5"
-                                        />
-                                    )}
+                                    {verificationNotice.type === 'error'
+                                        ? (
+                                            <WarningCircleIcon
+                                                className="text-(--mui-palette-error-main) shrink-0 mt-0.5"
+                                                size={20}
+                                            />
+                                        )
+                                        : (
+                                            <CheckCircleIcon
+                                                className="text-(--mui-palette-success-main) shrink-0 mt-0.5"
+                                                size={20}
+                                            />
+                                        )}
                                     <div className="flex flex-col gap-0.5">
                                         <span
                                             className={
@@ -259,8 +271,8 @@ export default function ForgotPasswordPage() {
                             <div className="flex flex-col gap-3">
                                 <CommonButton
                                     disabled={isSubmitting || isVerifyingOnly}
-                                    loading={isSubmitting}
                                     fullWidth
+                                    loading={isSubmitting}
                                     size="large"
                                     type="submit"
                                     variant="contained"
@@ -286,7 +298,9 @@ export default function ForgotPasswordPage() {
                                         type="button"
                                         onClick={handleVerifyOnly}
                                     >
-                                        {isVerifyingOnly ? 'Checking email…' : 'Verify Email Only'}
+                                        {isVerifyingOnly
+                                            ? 'Checking email…'
+                                            : 'Verify Email Only'}
                                     </button>
                                 </div>
                             </div>

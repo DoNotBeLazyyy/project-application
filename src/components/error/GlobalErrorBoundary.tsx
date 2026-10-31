@@ -108,14 +108,24 @@ export default class GlobalErrorBoundary extends Component<Props, State> {
 
                     <div className="flex flex-wrap gap-2 justify-center mt-2">
                         <CommonButton
-                            startIcon={<ArrowClockwiseIcon size={16} weight="bold" />}
+                            startIcon={(
+                                <ArrowClockwiseIcon
+                                    size={16}
+                                    weight="bold"
+                                />
+                            )}
                             variant="outlined"
                             onClick={this.handleReload}
                         >
                             Reload Application
                         </CommonButton>
                         <CommonButton
-                            startIcon={<CopyIcon size={16} weight="bold" />}
+                            startIcon={(
+                                <CopyIcon
+                                    size={16}
+                                    weight="bold"
+                                />
+                            )}
                             variant="outlined"
                             onClick={this.handleCopyDiagnostics}
                         >
@@ -124,7 +134,12 @@ export default class GlobalErrorBoundary extends Component<Props, State> {
                                 : 'Copy Incident Report'}
                         </CommonButton>
                         <CommonButton
-                            startIcon={<HouseIcon size={16} weight="bold" />}
+                            startIcon={(
+                                <HouseIcon
+                                    size={16}
+                                    weight="bold"
+                                />
+                            )}
                             variant="contained"
                             onClick={this.handleGoHome}
                         >

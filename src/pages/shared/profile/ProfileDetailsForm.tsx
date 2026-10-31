@@ -38,7 +38,8 @@ export default function ProfileDetailsForm({
             name: 'first_name',
             rules: {
                 required: 'First name is required',
-                validate: (v: unknown) => Boolean(v && String(v).trim()) || 'First name cannot be empty or whitespace only'
+                validate: (v: unknown) => Boolean(v && String(v)
+                    .trim()) || 'First name cannot be empty or whitespace only'
             },
             type: 'text',
             fieldProps: { helperText: 'Your legal given name.' }
@@ -54,7 +55,8 @@ export default function ProfileDetailsForm({
             name: 'last_name',
             rules: {
                 required: 'Last name is required',
-                validate: (v: unknown) => Boolean(v && String(v).trim()) || 'Last name cannot be empty or whitespace only'
+                validate: (v: unknown) => Boolean(v && String(v)
+                    .trim()) || 'Last name cannot be empty or whitespace only'
             },
             type: 'text',
             fieldProps: { helperText: 'Your legal family name.' }
@@ -104,45 +106,49 @@ export default function ProfileDetailsForm({
         }
     ];
 
-    const studentFields: FormFieldConfig<ProfileFormValues>[] = isStudentUser ? [
-        {
-            disabled: true,
-            label: 'Student Number',
-            name: 'student_number',
-            type: 'text',
-            fieldProps: {
-                helperText: 'System generated student number (read-only).'
+    const studentFields: FormFieldConfig<ProfileFormValues>[] = isStudentUser
+        ? [
+            {
+                disabled: true,
+                label: 'Student Number',
+                name: 'student_number',
+                type: 'text',
+                fieldProps: {
+                    helperText: 'System generated student number (read-only).'
+                }
+            },
+            {
+                disabled: true,
+                label: 'Program',
+                name: 'program_id',
+                options: programOptions,
+                type: 'select',
+                fieldProps: { helperText: 'Academic program assigned by the Registrar (read-only).' }
+            },
+            {
+                disabled: true,
+                label: 'Year Level',
+                name: 'year_level',
+                options: YEAR_LEVEL_OPTIONS,
+                type: 'select',
+                fieldProps: { helperText: 'Current academic level (assigned by Registrar / auto-updated with curriculum).' }
             }
-        },
-        {
-            disabled: true,
-            label: 'Program',
-            name: 'program_id',
-            options: programOptions,
-            type: 'select',
-            fieldProps: { helperText: 'Academic program assigned by the Registrar (read-only).' }
-        },
-        {
-            disabled: true,
-            label: 'Year Level',
-            name: 'year_level',
-            options: YEAR_LEVEL_OPTIONS,
-            type: 'select',
-            fieldProps: { helperText: 'Current academic level (assigned by Registrar / auto-updated with curriculum).' }
-        }
-    ] : [];
+        ]
+        : [];
 
-    const deanFields: FormFieldConfig<ProfileFormValues>[] = isDeanUser ? [
-        {
-            disabled: true,
-            label: 'Assigned Department',
-            name: 'department_name',
-            type: 'text',
-            fieldProps: {
-                helperText: 'Academic department assigned by Administrator (read-only).'
+    const deanFields: FormFieldConfig<ProfileFormValues>[] = isDeanUser
+        ? [
+            {
+                disabled: true,
+                label: 'Assigned Department',
+                name: 'department_name',
+                type: 'text',
+                fieldProps: {
+                    helperText: 'Academic department assigned by Administrator (read-only).'
+                }
             }
-        }
-    ] : [];
+        ]
+        : [];
 
     const addressFields: FormFieldConfig<ProfileFormValues>[] = [
         {
@@ -189,11 +195,13 @@ export default function ProfileDetailsForm({
         })) as FormFieldConfig<ProfileFormValues>[]
         : rawFields;
 
-    return <CommonForm
-        containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
-        control={control}
-        fields={fields}
-        formProps={formProps}
-        hasHelper
-    />;
+    return (
+        <CommonForm
+            containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
+            control={control}
+            fields={fields}
+            formProps={formProps}
+            hasHelper
+        />
+    );
 }

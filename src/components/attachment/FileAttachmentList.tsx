@@ -24,25 +24,67 @@ export interface FileAttachmentListProps {
 
 function getFileIcon(mimeType: string | null | undefined, fileName: string) {
     if (isImageFile(mimeType ?? null, fileName)) {
-        return <FileImageIcon className="shrink-0 text-blue-600" size={22} weight="bold" />;
+        return (
+            <FileImageIcon
+                className="shrink-0 text-blue-600"
+                size={22}
+                weight="bold"
+            />
+        );
     }
     if (fileName.endsWith('.pdf') || mimeType === 'application/pdf') {
-        return <FilePdfIcon className="shrink-0 text-red-600" size={22} weight="bold" />;
+        return (
+            <FilePdfIcon
+                className="shrink-0 text-red-600"
+                size={22}
+                weight="bold"
+            />
+        );
     }
     if (/\.(doc|docx)$/i.test(fileName)) {
-        return <FileDocIcon className="shrink-0 text-blue-700" size={22} weight="bold" />;
+        return (
+            <FileDocIcon
+                className="shrink-0 text-blue-700"
+                size={22}
+                weight="bold"
+            />
+        );
     }
     if (/\.(xls|xlsx|csv)$/i.test(fileName)) {
-        return <FileXlsIcon className="shrink-0 text-emerald-600" size={22} weight="bold" />;
+        return (
+            <FileXlsIcon
+                className="shrink-0 text-emerald-600"
+                size={22}
+                weight="bold"
+            />
+        );
     }
     if (/\.(ppt|pptx)$/i.test(fileName)) {
-        return <FilePptIcon className="shrink-0 text-amber-600" size={22} weight="bold" />;
+        return (
+            <FilePptIcon
+                className="shrink-0 text-amber-600"
+                size={22}
+                weight="bold"
+            />
+        );
     }
     if (/\.(zip|rar|7z|tar|gz)$/i.test(fileName)) {
-        return <FileArchiveIcon className="shrink-0 text-purple-600" size={22} weight="bold" />;
+        return (
+            <FileArchiveIcon
+                className="shrink-0 text-purple-600"
+                size={22}
+                weight="bold"
+            />
+        );
     }
 
-    return <FileIcon className="shrink-0 text-slate-500" size={22} weight="bold" />;
+    return (
+        <FileIcon
+            className="shrink-0 text-slate-500"
+            size={22}
+            weight="bold"
+        />
+    );
 }
 
 /**
@@ -84,7 +126,8 @@ export default function FileAttachmentList({
             setDownloadingIndex(index);
             try {
                 await triggerFileDownload(directUrl, attachment.file_name);
-            } finally {
+            }
+            finally {
                 setDownloadingIndex(null);
             }
             return;
@@ -100,7 +143,8 @@ export default function FileAttachmentList({
             if (result.data?.url) {
                 await triggerFileDownload(result.data.url, attachment.file_name);
             }
-        } finally {
+        }
+        finally {
             setDownloadingIndex(null);
         }
     }
@@ -176,11 +220,19 @@ export default function FileAttachmentList({
                                         handleDownload(attachment, fileIndex);
                                     }}
                                 >
-                                    {isDownloading ? (
-                                        <SpinnerIcon className="animate-spin text-(--mui-palette-primary-main)" size={16} />
-                                    ) : (
-                                        <DownloadSimpleIcon size={16} weight="bold" />
-                                    )}
+                                    {isDownloading
+                                        ? (
+                                            <SpinnerIcon
+                                                className="animate-spin text-(--mui-palette-primary-main)"
+                                                size={16}
+                                            />
+                                        )
+                                        : (
+                                            <DownloadSimpleIcon
+                                                size={16}
+                                                weight="bold"
+                                            />
+                                        )}
                                 </button>
                             </div>
                         );

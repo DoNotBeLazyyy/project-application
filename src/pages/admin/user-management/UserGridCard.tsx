@@ -8,7 +8,7 @@ import { UserListRow } from '@type/user.type';
 export interface UserGridCardProps {
     row: UserListRow;
     isSelected: boolean;
-    onToggleSelect: () => void;
+    onToggleSelect: VoidFunction;
     onView: (id: string) => void;
     onEdit: (id: string) => void;
     onRequestDelete: (id: string) => void;
@@ -41,26 +41,40 @@ export default function UserGridCard({
         {
             key: 'view',
             label: 'View',
-            icon: <EyeIcon size={18} weight="bold" />,
+            icon: <EyeIcon
+                size={18}
+                weight="bold"
+                  />,
             onClick: () => onView(row.id)
         },
         {
             key: 'edit',
             label: 'Edit',
-            icon: <PencilSimpleIcon size={18} weight="bold" />,
+            icon: <PencilSimpleIcon
+                size={18}
+                weight="bold"
+                  />,
             onClick: () => onEdit(row.id)
         },
         ...(row.status === 'Inactive'
             ? [{
                 key: 'reactivate',
                 label: 'Reactivate',
-                icon: <ArrowCounterClockwiseIcon size={18} weight="bold" className="text-emerald-600" />,
+                icon: <ArrowCounterClockwiseIcon
+                    className="text-emerald-600"
+                    size={18}
+                    weight="bold"
+                />,
                 onClick: () => onReactivate?.(row.id)
             }]
             : [{
                 key: 'deactivate',
                 label: 'Deactivate',
-                icon: <ProhibitIcon size={18} weight="bold" className="text-rose-600" />,
+                icon: <ProhibitIcon
+                    className="text-rose-600"
+                    size={18}
+                    weight="bold"
+                />,
                 destructive: true,
                 onClick: () => onRequestDelete(row.id)
             }]),
@@ -68,7 +82,10 @@ export default function UserGridCard({
             ? [{
                 key: 'resend-invite',
                 label: 'Resend Invite',
-                icon: <PaperPlaneTiltIcon size={18} weight="bold" />,
+                icon: <PaperPlaneTiltIcon
+                    size={18}
+                    weight="bold"
+                      />,
                 onClick: () => onResendInvite(row.email)
             }]
             : []),
@@ -76,7 +93,10 @@ export default function UserGridCard({
             ? [{
                 key: 'reset-password',
                 label: 'Reset Password',
-                icon: <LockKeyIcon size={18} weight="bold" />,
+                icon: <LockKeyIcon
+                    size={18}
+                    weight="bold"
+                      />,
                 onClick: () => onResetPassword(row.email)
             }]
             : [])

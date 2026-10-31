@@ -20,6 +20,7 @@ import { useEffect, useState } from 'react';
 import {
     Control, useFieldArray, useFormState, UseFormSetValue, useWatch
 } from 'react-hook-form';
+
 import { NUMERIC_4_2_MAX } from './wizard.constants';
 
 interface Step5ThresholdsConfigProps {
@@ -147,8 +148,14 @@ export default function Step5ThresholdsConfig({
                                                 • Max GWA: {item.max_gwa}
                                             </span>
                                         )}
-                                        <span className={`px-2 py-0.5 text-[11px] font-bold rounded-full shrink-0 ${item.is_active ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-slate-400'}`}>
-                                            {item.is_active ? 'Active' : 'Inactive'}
+                                        <span
+                                            className={`px-2 py-0.5 text-[11px] font-bold rounded-full shrink-0 ${item.is_active
+                                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                                : 'bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-slate-400'}`}
+                                        >
+                                            {item.is_active
+                                                ? 'Active'
+                                                : 'Inactive'}
                                         </span>
                                     </div>
 
@@ -198,7 +205,8 @@ export default function Step5ThresholdsConfig({
                                 <div
                                     className={collapsedThresholds[idx]
                                         ? 'hidden'
-                                        : 'flex flex-col gap-4'}>
+                                        : 'flex flex-col gap-4'}
+                                >
 
                                     {/* Row 2: Category, Threshold Name, and Status */}
                                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
@@ -232,7 +240,8 @@ export default function Step5ThresholdsConfig({
                                                 placeholder="e.g. Summa Cum Laude, Full Scholar"
                                                 rules={{
                                                     required: 'Threshold name is required',
-                                                    validate: (val) => Boolean(String(val || '').trim()) || 'Threshold name is required'
+                                                    validate: (val) => Boolean(String(val || '')
+                                                        .trim()) || 'Threshold name is required'
                                                 }}
                                                 onChange={(e) => {
                                                     clearFieldError(control, 'thresholds');
@@ -258,7 +267,9 @@ export default function Step5ThresholdsConfig({
                                                     item.is_active
                                                         ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
                                                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-zinc-800 dark:text-slate-400 border border-slate-300 dark:border-zinc-700'
-                                                } ${disabled ? 'cursor-default' : 'cursor-pointer'}`}
+                                                } ${disabled
+                                                    ? 'cursor-default'
+                                                    : 'cursor-pointer'}`}
                                                 disabled={disabled}
                                                 type="button"
                                                 onClick={() => setValue(`thresholds.${idx}.is_active`, !item.is_active, { shouldDirty: true })}
@@ -291,9 +302,9 @@ export default function Step5ThresholdsConfig({
                                                     validate: (val) => {
                                                         const maxGwa = item.max_gwa;
                                                         if (
-                                                            val !== null && val !== undefined && val !== '' &&
-                                                            maxGwa !== null && maxGwa !== undefined && maxGwa !== '' &&
-                                                            Number(val) > Number(maxGwa)
+                                                            val !== null && val !== undefined && val !== ''
+                                                            && maxGwa !== null && maxGwa !== undefined && maxGwa !== ''
+                                                            && Number(val) > Number(maxGwa)
                                                         ) {
                                                             return 'Min GWA cannot be greater than Max GWA';
                                                         }
@@ -358,7 +369,10 @@ export default function Step5ThresholdsConfig({
                                                 label="No failing grades permitted"
                                                 name={`thresholds.${idx}.requires_no_failing`}
                                             />
-                                            <CommonInfoTooltip content="Requires that the student has zero failing marks (5.00, DRP, INC) in the evaluation period." size={13} />
+                                            <CommonInfoTooltip
+                                                content="Requires that the student has zero failing marks (5.00, DRP, INC) in the evaluation period."
+                                                size={13}
+                                            />
                                         </div>
                                     </div>
                                 </div>

@@ -19,7 +19,10 @@ import {
     WizardCalendarExceptionItem
 } from '@type/school-year.type';
 import { useEffect, useState } from 'react';
-import { Control, useFieldArray, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
+import {
+    Control, useFieldArray, useFormState, UseFormSetValue, useWatch
+} from 'react-hook-form';
+
 import ManageExceptionTypesModal from './ManageExceptionTypesModal';
 import { CALENDAR_EXCEPTION_TYPE_LABELS, CALENDAR_EXCEPTION_TYPES, toCalendarExceptionType } from './wizard.constants';
 
@@ -38,7 +41,9 @@ const INITIAL_EXCEPTION_TYPE_ITEMS: ExceptionTypeOptionItem[] = CALENDAR_EXCEPTI
 
 function getExceptionTypeLabel(value: string): string {
     const type = toCalendarExceptionType(value);
-    return type ? CALENDAR_EXCEPTION_TYPE_LABELS[type] : value;
+    return type
+        ? CALENDAR_EXCEPTION_TYPE_LABELS[type]
+        : value;
 }
 
 export default function Step4HolidaysConfig({
@@ -91,11 +96,11 @@ export default function Step4HolidaysConfig({
             {!disabled && (
                 <div className="flex justify-end items-center gap-2 flex-wrap">
                     <CommonButton
+                        className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
                         color="primary"
                         size="small"
                         startIcon={<GearIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
                         variant="outlined"
-                        className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
                         onClick={() => setIsManageTypesOpen(true)}
                     >
                         Configure Types
@@ -142,8 +147,8 @@ export default function Step4HolidaysConfig({
 
                         return (
                             <div
-                                key={item.id}
                                 className="p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-zinc-700/70 bg-white dark:bg-zinc-800/80 shadow-xs space-y-4 w-full"
+                                key={item.id}
                             >
                                 <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-700/60 pb-3">
                                     <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -160,7 +165,9 @@ export default function Step4HolidaysConfig({
                                         )}
                                         {current.start_date && (
                                             <span className="text-xs text-slate-400 shrink-0 hidden md:inline">
-                                                • {current.start_date}{current.end_date && current.end_date !== current.start_date ? ` to ${current.end_date}` : ''}
+                                                • {current.start_date}{current.end_date && current.end_date !== current.start_date
+                                                    ? ` to ${current.end_date}`
+                                                    : ''}
                                             </span>
                                         )}
                                     </div>
@@ -171,6 +178,7 @@ export default function Step4HolidaysConfig({
                                                 color="error"
                                                 size="small"
                                                 startIcon={<TrashIcon className="w-3.5 h-3.5" />}
+                                                title="Remove Exception"
                                                 variant="outlined"
                                                 onClick={() => {
                                                     setDeleteExceptionTarget({
@@ -178,28 +186,39 @@ export default function Step4HolidaysConfig({
                                                         title: current.title || `Exception #${idx + 1}`
                                                     });
                                                 }}
-                                                title="Remove Exception"
                                             >
                                                 <span className="hidden sm:inline">Remove</span>
                                             </CommonButton>
                                         )}
                                         <button
+                                            aria-label={collapsedExceptions[idx]
+                                                ? 'Expand exception'
+                                                : 'Collapse exception'}
                                             className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer"
-                                            title={collapsedExceptions[idx] ? 'Expand exception' : 'Collapse exception'}
+                                            title={collapsedExceptions[idx]
+                                                ? 'Expand exception'
+                                                : 'Collapse exception'}
                                             type="button"
-                                            aria-label={collapsedExceptions[idx] ? 'Expand exception' : 'Collapse exception'}
                                             onClick={() => toggleExceptionCollapse(idx)}
                                         >
                                             <CaretDownIcon
-                                                className={`w-4 h-4 transition-transform duration-200 ${collapsedExceptions[idx] ? '-rotate-90' : 'rotate-0'}`}
+                                                className={`w-4 h-4 transition-transform duration-200 ${collapsedExceptions[idx]
+                                                    ? '-rotate-90'
+                                                    : 'rotate-0'}`}
                                                 weight="bold"
                                             />
-                                            <span className="text-xs hidden sm:inline">{collapsedExceptions[idx] ? 'Expand' : 'Collapse'}</span>
+                                            <span className="text-xs hidden sm:inline">{collapsedExceptions[idx]
+                                                ? 'Expand'
+                                                : 'Collapse'}</span>
                                         </button>
                                     </div>
                                 </div>
 
-                                <div className={collapsedExceptions[idx] ? 'hidden' : 'space-y-4'}>
+                                <div
+                                    className={collapsedExceptions[idx]
+                                        ? 'hidden'
+                                        : 'space-y-4'}
+                                >
                                     {/* school_year_calendar_exceptions.title text NOT NULL */}
                                     <div>
                                         <ValidCommonInput
@@ -212,7 +231,8 @@ export default function Step4HolidaysConfig({
                                             placeholder="Holiday / Exception Title (e.g. Independence Day)"
                                             rules={{
                                                 required: 'Title is required',
-                                                validate: (val) => Boolean(String(val || '').trim()) || 'Title is required'
+                                                validate: (val) => Boolean(String(val || '')
+                                                    .trim()) || 'Title is required'
                                             }}
                                         />
                                     </div>
@@ -228,7 +248,9 @@ export default function Step4HolidaysConfig({
                                                 label="Exception Type"
                                                 name={`holidays.${idx}.exception_type`}
                                                 options={optionsToRender.map((opt) => ({
-                                                    label: `${getExceptionTypeLabel(opt.label)}${!opt.is_active ? ' (Deprecated)' : ''}`,
+                                                    label: `${getExceptionTypeLabel(opt.label)}${!opt.is_active
+                                                        ? ' (Deprecated)'
+                                                        : ''}`,
                                                     value: opt.label
                                                 }))}
                                                 rules={{
@@ -320,22 +342,14 @@ export default function Step4HolidaysConfig({
             <ManageExceptionTypesModal
                 exceptionTypes={exceptionTypeOptions}
                 open={isManageTypesOpen}
-                usedTypes={Array.from(new Set(holidays.map((h) => h.exception_type).filter(Boolean)))}
+                usedTypes={Array.from(new Set(holidays.map((h) => h.exception_type)
+                    .filter(Boolean)))}
                 onClose={() => setIsManageTypesOpen(false)}
                 onSave={(updated) => setExceptionTypeOptions(updated)}
             />
 
             {/* Delete Exception Prompt Modal */}
             <DeletePromptModal
-                isOpen={Boolean(deleteExceptionTarget)}
-                mainContent={{
-                    title: 'Delete Exception?'
-                }}
-                subContent={{
-                    title: `Are you sure you want to delete "${deleteExceptionTarget?.title}"?`
-                }}
-                open={Boolean(deleteExceptionTarget)}
-                onClose={() => setDeleteExceptionTarget(null)}
                 formButtonsProps={{
                     cancelProps: {
                         onClick: () => setDeleteExceptionTarget(null)
@@ -349,6 +363,15 @@ export default function Step4HolidaysConfig({
                         }
                     }
                 }}
+                isOpen={Boolean(deleteExceptionTarget)}
+                mainContent={{
+                    title: 'Delete Exception?'
+                }}
+                open={Boolean(deleteExceptionTarget)}
+                subContent={{
+                    title: `Are you sure you want to delete "${deleteExceptionTarget?.title}"?`
+                }}
+                onClose={() => setDeleteExceptionTarget(null)}
             />
         </div>
     );

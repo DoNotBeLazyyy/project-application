@@ -50,12 +50,14 @@ export default function SubItemBorderLine({
         return { start, end };
     }, [activeIndex, total]); // Calculate the start and end positions for the gradient based on the active index and total items.
 
-    return <div
-        className="absolute left-0 top-0 h-full w-0.5 rounded-full"
-        style={{
-            background: activeIndex >= 0
-                ? `linear-gradient(to bottom, ${inactiveColor} ${start}%, ${activeColor} ${start}%, ${activeColor} ${end}%, ${inactiveColor} ${end}%)`
-                : inactiveColor
-        }}
-    />;
+    return (
+        <div
+            className="absolute left-0 top-0 h-full w-0.5 rounded-full"
+            style={{
+                background: activeIndex >= 0
+                    ? `linear-gradient(to bottom, ${inactiveColor} ${start}%, ${activeColor} ${start}%, ${activeColor} ${end}%, ${inactiveColor} ${end}%)`
+                    : inactiveColor
+            }}
+        />
+    );
 }

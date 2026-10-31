@@ -94,7 +94,8 @@ export function useActiveTermOptions(schoolYearIdOverride?: string) {
                     const found = canonicalMap.get(id);
                     if (found) {
                         filtered.push(found);
-                    } else {
+                    }
+                    else {
                         const calTerm = calendarRes.data?.terms?.find((t) => String(t.term_type_id) === id);
                         const listTerm = listRes.data?.content?.find((t) => String(t.term_type_id) === id);
                         filtered.push({
@@ -108,7 +109,8 @@ export function useActiveTermOptions(schoolYearIdOverride?: string) {
                 if (isMounted) {
                     setTermOptions(filtered);
                 }
-            } else {
+            }
+            else {
                 if (isMounted) {
                     setTermOptions(canonicalTypes);
                 }
@@ -126,5 +128,7 @@ export function useActiveTermOptions(schoolYearIdOverride?: string) {
         };
     }, [schoolYearIdOverride]);
 
-    return { termOptions, allTermTypes, activeSchoolYearId, isLoading };
+    return {
+        termOptions, allTermTypes, activeSchoolYearId, isLoading
+    };
 }

@@ -9,7 +9,7 @@ interface ChoiceBuilderProps {
     control: Control<QuestionFormValues>;
     errorMessage?: string;
     questionType: QuestionType;
-    onAddChoice: () => void;
+    onAddChoice: VoidFunction;
     onRemoveChoice: (index: number) => void;
     onToggleCorrect: (index: number) => void;
 }
@@ -35,7 +35,12 @@ export default function ChoiceBuilder({
                 {questionType !== 'True or False' && (
                     <CommonButton
                         size="small"
-                        startIcon={<PlusIcon size={12} weight="bold" />}
+                        startIcon={(
+                            <PlusIcon
+                                size={12}
+                                weight="bold"
+                            />
+                        )}
                         variant="outlined"
                         onClick={onAddChoice}
                     >
@@ -89,7 +94,8 @@ export default function ChoiceBuilder({
                                 name={`choices.${index}.choice_text`}
                                 placeholder={`Choice ${index + 1}`}
                                 rules={{
-                                    validate: (value) => String(value ?? '').trim() !== '' || `Choice ${index + 1} text is required.`
+                                    validate: (value) => String(value ?? '')
+                                        .trim() !== '' || `Choice ${index + 1} text is required.`
                                 }}
                             />
                         </div>
@@ -103,7 +109,10 @@ export default function ChoiceBuilder({
                                     onRemoveChoice(index);
                                 }}
                             >
-                                <TrashIcon size={14} weight="bold" />
+                                <TrashIcon
+                                    size={14}
+                                    weight="bold"
+                                />
                             </CommonButton>
                         )}
                     </div>

@@ -3,8 +3,8 @@ import { ClockCounterClockwiseIcon } from '@phosphor-icons/react';
 
 export interface DraftRecoveryPromptModalProps {
     open: boolean;
-    onContinue: () => void;
-    onDiscard: () => void;
+    onContinue: VoidFunction;
+    onDiscard: VoidFunction;
     title?: string;
     subtitle?: string;
 }

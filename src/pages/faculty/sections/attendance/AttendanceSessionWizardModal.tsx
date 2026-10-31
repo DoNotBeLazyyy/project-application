@@ -47,7 +47,7 @@ export const ATTENDANCE_WIZARD_STEPS: ModalStepItem[] = [
 interface AttendanceSessionWizardModalProps {
     open: boolean;
     sectionId: string;
-    onClose: () => void;
+    onClose: VoidFunction;
     onSuccess: (newSession?: AttendanceSession) => void;
 }
 
@@ -68,7 +68,9 @@ interface AttendanceSessionWizardValues {
 
 function getDefaultValues(): AttendanceSessionWizardValues {
     // Local calendar date - toISOString() would roll back a day before 8 AM in UTC+8
-    return { notes: '', session_date: formatDate(new Date()), session_type: 'Lecture' };
+    return {
+        notes: '', session_date: formatDate(new Date()), session_type: 'Lecture'
+    };
 }
 
 interface StudentAttendanceDraft {
@@ -107,7 +109,8 @@ export default function AttendanceSessionWizardModal({
     });
 
     const hasStudentDraftChanges = useMemo(
-        () => Object.values(studentDrafts).some((d) => d.status !== 'Present' || Boolean(d.remarks?.trim())),
+        () => Object.values(studentDrafts)
+            .some((d) => d.status !== 'Present' || Boolean(d.remarks?.trim())),
         [studentDrafts]
     );
     const hasRealChanges = draftGuard.hasRealChanges || hasStudentDraftChanges;
@@ -124,9 +127,10 @@ export default function AttendanceSessionWizardModal({
         setIsConfirmCloseOpen(false);
 
         // fn_create_attendance_session rejects a second session on the same date
-        listAttendanceSessions(sectionId).then((res) => {
-            setExistingSessionDates((res.data ?? []).map((session) => session.session_date));
-        });
+        listAttendanceSessions(sectionId)
+            .then((res) => {
+                setExistingSessionDates((res.data ?? []).map((session) => session.session_date));
+            });
 
         async function fetchRoster() {
             setIsLoadingStudents(true);
@@ -198,7 +202,9 @@ export default function AttendanceSessionWizardModal({
             else if (draft.status === 'Excused') excused++;
         }
 
-        return { absent, excused, late, present, total: Object.keys(studentDrafts).length };
+        return {
+            absent, excused, late, present, total: Object.keys(studentDrafts).length
+        };
     }, [studentDrafts]);
 
     const filteredStudents = useMemo(() => {
@@ -206,8 +212,10 @@ export default function AttendanceSessionWizardModal({
         const q = searchQuery.toLowerCase();
         return students.filter(
             (s) =>
-                s.full_name.toLowerCase().includes(q) ||
-                s.student_number.toLowerCase().includes(q)
+                s.full_name.toLowerCase()
+                    .includes(q)
+                || s.student_number.toLowerCase()
+                    .includes(q)
         );
     }, [students, searchQuery]);
 
@@ -304,7 +312,8 @@ export default function AttendanceSessionWizardModal({
             showToast('Attendance session recorded successfully.', 'success');
             onSuccess(createdSession);
             onClose();
-        } catch {
+        }
+        catch {
             setIsSaving(false);
             showToast('An unexpected error occurred while saving the attendance session.', 'error');
         }
@@ -341,25 +350,31 @@ export default function AttendanceSessionWizardModal({
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
                             <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 flex items-center justify-center font-bold">
-                                <CalendarDotsIcon size={20} weight="duotone" />
+                                <CalendarDotsIcon
+                                    size={20}
+                                    weight="duotone"
+                                />
                             </div>
                             <span className="font-bold text-base sm:text-lg text-slate-900 dark:text-slate-100">
                                 New Attendance Session
                             </span>
                         </div>
                         <button
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
                             type="button"
                             onClick={handleCloseModal}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
                         >
-                            <XIcon size={18} weight="bold" />
+                            <XIcon
+                                size={18}
+                                weight="bold"
+                            />
                         </button>
                     </div>
 
                     <ModalStepperHeader
                         currentStep={currentStep}
                         steps={ATTENDANCE_WIZARD_STEPS}
-                        onStepClick={async (step) => {
+                        onStepClick={async(step) => {
                             if (step > currentStep && currentStep === 1 && !(await validateStep1())) return;
                             setCurrentStep(step);
                         }}
@@ -373,7 +388,11 @@ export default function AttendanceSessionWizardModal({
                             {/* Card: Session Date & Type */}
                             <div className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-5 shadow-2xs flex flex-col gap-4">
                                 <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-zinc-800 text-slate-900 dark:text-slate-100 font-bold text-sm">
-                                    <CalendarCheckIcon size={18} className="text-blue-600" weight="duotone" />
+                                    <CalendarCheckIcon
+                                        className="text-blue-600"
+                                        size={18}
+                                        weight="duotone"
+                                    />
                                     <span>Date & Session Classification</span>
                                 </div>
 
@@ -389,7 +408,11 @@ export default function AttendanceSessionWizardModal({
                             {/* Card: Default Student Mark */}
                             <div className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-5 shadow-2xs flex flex-col gap-3">
                                 <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-zinc-800 text-slate-900 dark:text-slate-100 font-bold text-sm">
-                                    <UsersIcon size={18} className="text-blue-600" weight="duotone" />
+                                    <UsersIcon
+                                        className="text-blue-600"
+                                        size={18}
+                                        weight="duotone"
+                                    />
                                     <span>Default Attendance Baseline</span>
                                 </div>
                                 <p className="text-xs text-slate-500 leading-relaxed">
@@ -401,14 +424,14 @@ export default function AttendanceSessionWizardModal({
                                         const isSelected = defaultStatus === status;
                                         return (
                                             <button
-                                                key={status}
-                                                type="button"
-                                                onClick={() => handleDefaultStatusChange(status)}
                                                 className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
                                                     isSelected
                                                         ? 'bg-blue-50 dark:bg-blue-950/50 border-blue-500 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/20 font-bold'
                                                         : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-zinc-700/60'
                                                 }`}
+                                                key={status}
+                                                type="button"
+                                                onClick={() => handleDefaultStatusChange(status)}
                                             >
                                                 <span className="text-xs font-bold">{status}</span>
                                                 <span className="text-[10px] text-slate-400">Default all</span>
@@ -446,16 +469,16 @@ export default function AttendanceSessionWizardModal({
                                 {/* Quick Bulk Actions */}
                                 <div className="flex items-center gap-1.5">
                                     <button
+                                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition-colors"
                                         type="button"
                                         onClick={() => handleBulkSet('Present')}
-                                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition-colors"
                                     >
                                         All Present
                                     </button>
                                     <button
+                                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 transition-colors"
                                         type="button"
                                         onClick={() => handleBulkSet('Absent')}
-                                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 transition-colors"
                                     >
                                         All Absent
                                     </button>
@@ -469,7 +492,10 @@ export default function AttendanceSessionWizardModal({
                                 size="small"
                                 slotProps={{
                                     input: {
-                                        startAdornment: <MagnifyingGlassIcon className="mr-2 text-slate-400" size={16} />
+                                        startAdornment: <MagnifyingGlassIcon
+                                            className="mr-2 text-slate-400"
+                                            size={16}
+                                        />
                                     }
                                 }}
                                 value={searchQuery}
@@ -498,8 +524,8 @@ export default function AttendanceSessionWizardModal({
 
                                         return (
                                             <div
-                                                key={s.enrollment_id}
                                                 className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                                                key={s.enrollment_id}
                                             >
                                                 <div className="flex items-center gap-3 min-w-0">
                                                     <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300 text-xs shrink-0">
@@ -528,21 +554,24 @@ export default function AttendanceSessionWizardModal({
                                                         if (isSelected) {
                                                             if (status === 'Present') {
                                                                 colorClasses = 'bg-emerald-600 text-white border-emerald-600 shadow-xs font-bold';
-                                                            } else if (status === 'Late') {
+                                                            }
+                                                            else if (status === 'Late') {
                                                                 colorClasses = 'bg-amber-600 text-white border-amber-600 shadow-xs font-bold';
-                                                            } else if (status === 'Absent') {
+                                                            }
+                                                            else if (status === 'Absent') {
                                                                 colorClasses = 'bg-rose-600 text-white border-rose-600 shadow-xs font-bold';
-                                                            } else {
+                                                            }
+                                                            else {
                                                                 colorClasses = 'bg-blue-600 text-white border-blue-600 shadow-xs font-bold';
                                                             }
                                                         }
 
                                                         return (
                                                             <button
+                                                                className={`px-2.5 py-1 text-xs rounded-lg border transition-all cursor-pointer ${colorClasses}`}
                                                                 key={status}
                                                                 type="button"
                                                                 onClick={() => handleStudentStatusChange(s.enrollment_id, status)}
-                                                                className={`px-2.5 py-1 text-xs rounded-lg border transition-all cursor-pointer ${colorClasses}`}
                                                             >
                                                                 {status}
                                                             </button>
@@ -561,10 +590,10 @@ export default function AttendanceSessionWizardModal({
                 {/* Footer Controls */}
                 <div className="bg-white dark:bg-zinc-900 border-t border-slate-200 dark:border-zinc-800 p-4 sm:p-5 flex items-center justify-between">
                     <CommonButton
+                        disabled={isSaving}
                         size="small"
                         variant="outlined"
                         onClick={handleCloseModal}
-                        disabled={isSaving}
                     >
                         Cancel
                     </CommonButton>
@@ -572,37 +601,56 @@ export default function AttendanceSessionWizardModal({
                     <div className="flex items-center gap-2">
                         {currentStep > 1 && (
                             <CommonButton
+                                disabled={isSaving}
                                 size="small"
-                                startIcon={<ArrowLeftIcon size={14} weight="bold" />}
+                                startIcon={(
+                                    <ArrowLeftIcon
+                                        size={14}
+                                        weight="bold"
+                                    />
+                                )}
                                 variant="outlined"
                                 onClick={() => setCurrentStep((prev) => prev - 1)}
-                                disabled={isSaving}
                             >
                                 Back
                             </CommonButton>
                         )}
 
-                        {currentStep < ATTENDANCE_WIZARD_STEPS.length ? (
-                            <CommonButton
-                                size="small"
-                                endIcon={<ArrowRightIcon size={14} weight="bold" />}
-                                variant="contained"
-                                onClick={handleNextStep}
-                            >
+                        {currentStep < ATTENDANCE_WIZARD_STEPS.length
+                            ? (
+                                <CommonButton
+                                    endIcon={(
+                                        <ArrowRightIcon
+                                            size={14}
+                                            weight="bold"
+                                        />
+                                    )}
+                                    size="small"
+                                    variant="contained"
+                                    onClick={handleNextStep}
+                                >
                                 Continue to Student List
-                            </CommonButton>
-                        ) : (
-                            <CommonButton
-                                size="small"
-                                startIcon={<CheckCircleIcon size={16} weight="bold" />}
-                                variant="contained"
-                                onClick={handleSaveSession}
-                                disabled={isSaving}
-                                loading={isSaving}
-                            >
-                                {isSaving ? 'Recording Session...' : 'Create Session'}
-                            </CommonButton>
-                        )}
+                                </CommonButton>
+                            )
+                            : (
+                                <CommonButton
+                                    disabled={isSaving}
+                                    loading={isSaving}
+                                    size="small"
+                                    startIcon={(
+                                        <CheckCircleIcon
+                                            size={16}
+                                            weight="bold"
+                                        />
+                                    )}
+                                    variant="contained"
+                                    onClick={handleSaveSession}
+                                >
+                                    {isSaving
+                                        ? 'Recording Session...'
+                                        : 'Create Session'}
+                                </CommonButton>
+                            )}
                     </div>
                 </div>
             </div>

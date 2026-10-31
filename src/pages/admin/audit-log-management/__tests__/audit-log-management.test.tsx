@@ -1,10 +1,11 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { AuditLogFilterValues, AuditLogRow } from '@type/audit-log.type';
 import { useForm } from 'react-hook-form';
 import { describe, expect, it, vi } from 'vitest';
+
 import AuditLogDetailContent from '../components/AuditLogDetailContent';
 import FilterAuditLogForm from '../forms/FilterAuditLogForm';
 import { useAuditLogTableConfig } from '../hooks/useAuditLogTableConfig';
-import { AuditLogFilterValues, AuditLogRow } from '@type/audit-log.type';
 
 describe('useAuditLogTableConfig', () => {
     it('configures table columns with required fields and payload inspector', () => {
@@ -20,12 +21,18 @@ describe('useAuditLogTableConfig', () => {
         render(<TestComponent />);
 
         const fieldNames = columnDefs.map((col) => col.field);
-        expect(fieldNames).toContain('changed_at');
-        expect(fieldNames).toContain('action');
-        expect(fieldNames).toContain('event_name');
-        expect(fieldNames).toContain('table_name');
-        expect(fieldNames).toContain('changed_by_name');
-        expect(fieldNames).toContain('id');
+        expect(fieldNames)
+            .toContain('changed_at');
+        expect(fieldNames)
+            .toContain('action');
+        expect(fieldNames)
+            .toContain('event_name');
+        expect(fieldNames)
+            .toContain('table_name');
+        expect(fieldNames)
+            .toContain('changed_by_name');
+        expect(fieldNames)
+            .toContain('id');
     });
 });
 
@@ -55,20 +62,28 @@ describe('AuditLogDetailContent (JSON Payload Inspector)', () => {
     it('renders transaction banner with action badge and event name', () => {
         render(<AuditLogDetailContent row={mockUserProvisionedLog} />);
 
-        expect(screen.getByText('INSERT')).toBeInTheDocument();
-        expect(screen.getByText('USER_PROVISIONED')).toBeInTheDocument();
-        expect(screen.getByText('Admin Master')).toBeInTheDocument();
-        expect(screen.getByText('USER_PROVISIONED: baki@aujas.edu.ph')).toBeInTheDocument();
+        expect(screen.getByText('INSERT'))
+            .toBeInTheDocument();
+        expect(screen.getByText('USER_PROVISIONED'))
+            .toBeInTheDocument();
+        expect(screen.getByText('Admin Master'))
+            .toBeInTheDocument();
+        expect(screen.getByText('USER_PROVISIONED: baki@aujas.edu.ph'))
+            .toBeInTheDocument();
     });
 
     it('displays state diff with field details and indicates initial creation for INSERT', () => {
         render(<AuditLogDetailContent row={mockUserProvisionedLog} />);
 
         // By default State Diff tab is active
-        expect(screen.getByText('State Diff (Before / After)')).toBeInTheDocument();
-        expect(screen.getByText('email')).toBeInTheDocument();
-        expect(screen.getByText('baki@aujas.edu.ph')).toBeInTheDocument();
-        expect(screen.getAllByText('(None — initial creation)').length).toBeGreaterThan(0);
+        expect(screen.getByText('State Diff (Before / After)'))
+            .toBeInTheDocument();
+        expect(screen.getByText('email'))
+            .toBeInTheDocument();
+        expect(screen.getByText('baki@aujas.edu.ph'))
+            .toBeInTheDocument();
+        expect(screen.getAllByText('(None — initial creation)').length)
+            .toBeGreaterThan(0);
     });
 
     it('switches to raw JSON payload view when clicked', () => {
@@ -77,10 +92,14 @@ describe('AuditLogDetailContent (JSON Payload Inspector)', () => {
         const jsonTab = screen.getByRole('button', { name: /raw json payload/i });
         fireEvent.click(jsonTab);
 
-        expect(screen.getByText(/payload before/i)).toBeInTheDocument();
-        expect(screen.getByText(/payload after/i)).toBeInTheDocument();
-        expect(screen.getByText(/None \(Initial creation/i)).toBeInTheDocument();
-        expect(screen.getByText(/"email": "baki@aujas.edu.ph"/i)).toBeInTheDocument();
+        expect(screen.getByText(/payload before/i))
+            .toBeInTheDocument();
+        expect(screen.getByText(/payload after/i))
+            .toBeInTheDocument();
+        expect(screen.getByText(/None \(Initial creation/i))
+            .toBeInTheDocument();
+        expect(screen.getByText(/"email": "baki@aujas.edu.ph"/i))
+            .toBeInTheDocument();
     });
 });
 
@@ -100,10 +119,10 @@ describe('FilterAuditLogForm', () => {
         return (
             <FilterAuditLogForm
                 control={control}
-                id="test-filter-form"
-                tableOptions={[{ label: 'Users', value: 'users' }]}
                 eventOptions={[{ label: 'USER_PROVISIONED', value: 'USER_PROVISIONED' }]}
+                id="test-filter-form"
                 operatorOptions={[{ label: 'Admin Master', value: 'Admin Master' }]}
+                tableOptions={[{ label: 'Users', value: 'users' }]}
             />
         );
     }
@@ -111,11 +130,17 @@ describe('FilterAuditLogForm', () => {
     it('renders all filterable fields for forensic audit trail', () => {
         render(<FilterWrapper />);
 
-        expect(screen.getByText('Action Type')).toBeInTheDocument();
-        expect(screen.getByText('Transaction Event')).toBeInTheDocument();
-        expect(screen.getByText('Target Entity / Table')).toBeInTheDocument();
-        expect(screen.getByText('Operator / Performed By')).toBeInTheDocument();
-        expect(screen.getByText('Date From')).toBeInTheDocument();
-        expect(screen.getByText('Date To')).toBeInTheDocument();
+        expect(screen.getByText('Action Type'))
+            .toBeInTheDocument();
+        expect(screen.getByText('Transaction Event'))
+            .toBeInTheDocument();
+        expect(screen.getByText('Target Entity / Table'))
+            .toBeInTheDocument();
+        expect(screen.getByText('Operator / Performed By'))
+            .toBeInTheDocument();
+        expect(screen.getByText('Date From'))
+            .toBeInTheDocument();
+        expect(screen.getByText('Date To'))
+            .toBeInTheDocument();
     });
 });

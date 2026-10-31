@@ -13,7 +13,10 @@ export default function Step2SectionSchedule({
 }: Step2SectionScheduleProps) {
     return (
         <div className="flex flex-col gap-4">
-            <SectionScheduleConfig control={control} disabled={disabled} />
+            <SectionScheduleConfig
+                control={control}
+                disabled={disabled}
+            />
         </div>
     );
 }

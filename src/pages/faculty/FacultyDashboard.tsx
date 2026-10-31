@@ -165,7 +165,10 @@ export default function FacultyDashboard() {
                                     </span>
                                 </div>
                                 <span className="flex gap-1.5 items-center shrink-0 font-medium text-xs px-2.5 py-1 rounded-md bg-white dark:bg-zinc-800 border border-slate-200/60 dark:border-zinc-700 text-slate-700 dark:text-slate-300">
-                                    <ClockIcon size={14} className="text-blue-500" />
+                                    <ClockIcon
+                                        className="text-blue-500"
+                                        size={14}
+                                    />
                                     {formatTime(session.time_start)} - {formatTime(session.time_end)}
                                 </span>
                             </button>
@@ -297,7 +300,9 @@ export default function FacultyDashboard() {
                                         </span>
                                     </div>
                                     <CommonBadgeStatus
-                                        label={missingAlert ? `${student.risk_level} (${student.missing_count} missing)` : student.risk_level}
+                                        label={missingAlert
+                                            ? `${student.risk_level} (${student.missing_count} missing)`
+                                            : student.risk_level}
                                         variant={RISK_VARIANT[student.risk_level]}
                                     />
                                 </div>

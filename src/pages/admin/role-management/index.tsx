@@ -1,10 +1,10 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
+import { useHasRealChanges } from '@hooks/useHasRealChanges';
 import { useRoleTableConfig } from '@pages/admin/role-management/hooks/useRoleTableConfig';
 import RoleForm from '@pages/admin/role-management/RoleForm';
 import RoleGridCard from '@pages/admin/role-management/RoleGridCard';
-import { useHasRealChanges } from '@hooks/useHasRealChanges';
 import {
     createRole, deleteRole, getRoleById, listRoles, updateRole
 } from '@services/role.service';
@@ -124,7 +124,9 @@ export default function RoleManagement() {
 
         const result = await updateRole(selectedRoleId, {
             code: values.code,
-            description: values.description ? values.description.trim() : '',
+            description: values.description
+                ? values.description.trim()
+                : '',
             label: values.label.trim()
         });
 

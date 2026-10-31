@@ -4,8 +4,8 @@ import CommonTableCard from '@components/table-card/CommonTableCard';
 import StudentProfileVerificationModal from '@pages/registrar/student-verification/components/StudentProfileVerificationModal';
 import FilterStudentVerificationForm from '@pages/registrar/student-verification/forms/FilterStudentVerificationForm';
 import { useStudentVerificationTableConfig } from '@pages/registrar/student-verification/hooks/useStudentVerificationTableConfig';
-import { supabase } from '@services/supabase.client';
 import { listStudentProfileRequests } from '@services/registrar-verification.service';
+import { supabase } from '@services/supabase.client';
 import { SortStringDto } from '@type/http.type';
 import {
     StudentProfileRequestFilterValues,

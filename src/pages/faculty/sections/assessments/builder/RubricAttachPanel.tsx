@@ -104,8 +104,19 @@ export default function RubricAttachPanel({ assessmentId, sectionId }: RubricAtt
                         }}
                     >
                         {useScoring
-                            ? <CheckCircleIcon className="text-(--mui-palette-primary-main) shrink-0" size={20} weight="fill" />
-                            : <CircleIcon className="text-(--mui-palette-text-disabled) shrink-0" size={20} />}
+                            ? (
+                                <CheckCircleIcon
+                                    className="text-(--mui-palette-primary-main) shrink-0"
+                                    size={20}
+                                    weight="fill"
+                                />
+                            )
+                            : (
+                                <CircleIcon
+                                    className="text-(--mui-palette-text-disabled) shrink-0"
+                                    size={20}
+                                />
+                            )}
                         <span className="text-(--mui-palette-text-primary) text-sm">
                             Use rubric to score submissions
                         </span>

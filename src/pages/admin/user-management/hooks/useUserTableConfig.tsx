@@ -92,7 +92,9 @@ export function useUserTableConfig({
                             label={params.data.status}
                             variant={params.data.status === 'Active'
                                 ? 'success'
-                                : (params.data.status === 'Inactive' ? 'error' : 'warning')}
+                                : (params.data.status === 'Inactive'
+                                    ? 'error'
+                                    : 'warning')}
                         />
                     </div>
                 )
@@ -118,7 +120,10 @@ export function useUserTableConfig({
                     ? {
                         children: (
                             <div className="flex gap-2 items-center text-emerald-600 font-medium">
-                                <ArrowCounterClockwiseIcon size={20} weight="bold" />
+                                <ArrowCounterClockwiseIcon
+                                    size={20}
+                                    weight="bold"
+                                />
                                 <span>Reactivate</span>
                             </div>
                         ),
@@ -127,7 +132,10 @@ export function useUserTableConfig({
                     : {
                         children: (
                             <div className="flex gap-2 items-center text-rose-600 font-medium">
-                                <ProhibitIcon size={20} weight="bold" />
+                                <ProhibitIcon
+                                    size={20}
+                                    weight="bold"
+                                />
                                 <span>Deactivate</span>
                             </div>
                         ),

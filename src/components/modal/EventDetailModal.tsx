@@ -16,7 +16,7 @@ import { ReactNode, useEffect, useState } from 'react';
 export interface EventDetailModalProps {
     event?: EventFeedRow | null;
     eventId?: string | null;
-    onClose: () => void;
+    onClose: VoidFunction;
 }
 
 interface EventDetailFieldProps {
@@ -125,7 +125,8 @@ export function EventDetailModal({ event, eventId, onClose }: EventDetailModalPr
                 if (isMounted) {
                     if (res.data) {
                         setDetail(res.data);
-                    } else if (res.error && !event) {
+                    }
+                    else if (res.error && !event) {
                         setError(res.error.message || 'Failed to load event details.');
                     }
                     setIsLoading(false);
@@ -181,7 +182,10 @@ export function EventDetailModal({ event, eventId, onClose }: EventDetailModalPr
                     type="button"
                     onClick={onClose}
                 >
-                    <XIcon size={18} weight="bold" />
+                    <XIcon
+                        size={18}
+                        weight="bold"
+                    />
                 </button>
             </div>
 
@@ -204,7 +208,9 @@ export function EventDetailModal({ event, eventId, onClose }: EventDetailModalPr
                             <EventDetailField
                                 icon={<ClockIcon size={16} />}
                                 label="When"
-                                value={formatEventRange({ all_day: allDay, end_at: endAt, start_at: startAt })}
+                                value={formatEventRange({
+                                    all_day: allDay, end_at: endAt, start_at: startAt
+                                })}
                             />
                             {location && (
                                 <EventDetailField
@@ -235,7 +241,10 @@ export function EventDetailModal({ event, eventId, onClose }: EventDetailModalPr
                         {attachments.length > 0 && (
                             <div className="border-(--mui-palette-divider) border-t flex flex-col gap-3 pt-4">
                                 <span className="flex font-semibold gap-1.5 items-center text-(--mui-palette-text-secondary) text-xs uppercase tracking-wider">
-                                    <PaperclipIcon size={15} weight="bold" />
+                                    <PaperclipIcon
+                                        size={15}
+                                        weight="bold"
+                                    />
                                     Attachments ({attachments.length})
                                 </span>
                                 <FileAttachmentList

@@ -39,8 +39,8 @@ interface AttendanceRecordListProps {
     isDirty: boolean;
     records: AttendanceRecord[];
     selectedSession: AttendanceSession;
-    onBackToSessions?: () => void;
-    onMarkAllPresent?: () => void;
+    onBackToSessions?: VoidFunction;
+    onMarkAllPresent?: VoidFunction;
     onSave: () => Promise<void>;
     onStatusChange: (recordId: string, status: AttendanceStatus) => void;
 }
@@ -57,12 +57,13 @@ export default function AttendanceRecordList({
 }: AttendanceRecordListProps) {
     const [searchQuery, setSearchQuery] = useState('');
 
-    const formattedSessionDate = new Date(selectedSession.session_date).toLocaleDateString(undefined, {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+    const formattedSessionDate = new Date(selectedSession.session_date)
+        .toLocaleDateString(undefined, {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
 
     const presentCount = draftRecords.filter((r) => r.status === 'Present').length;
     const lateCount = draftRecords.filter((r) => r.status === 'Late').length;
@@ -87,12 +88,15 @@ export default function AttendanceRecordList({
                 <div className="flex items-center gap-2.5 min-w-0">
                     {onBackToSessions && (
                         <button
-                            type="button"
-                            onClick={onBackToSessions}
                             className="p-1.5 md:hidden text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
                             title="Back to Sessions"
+                            type="button"
+                            onClick={onBackToSessions}
                         >
-                            <ArrowLeftIcon size={18} weight="bold" />
+                            <ArrowLeftIcon
+                                size={18}
+                                weight="bold"
+                            />
                         </button>
                     )}
                     <div className="flex flex-col min-w-0">
@@ -125,7 +129,12 @@ export default function AttendanceRecordList({
                             color="inherit"
                             disabled={draftRecords.length === 0}
                             size="small"
-                            startIcon={<CheckCircleIcon size={14} weight="bold" />}
+                            startIcon={(
+                                <CheckCircleIcon
+                                    size={14}
+                                    weight="bold"
+                                />
+                            )}
                             variant="outlined"
                             onClick={onMarkAllPresent}
                         >
@@ -136,7 +145,12 @@ export default function AttendanceRecordList({
                         color="primary"
                         disabled={!isDirty}
                         size="small"
-                        startIcon={<FloppyDiskIcon size={14} weight="bold" />}
+                        startIcon={(
+                            <FloppyDiskIcon
+                                size={14}
+                                weight="bold"
+                            />
+                        )}
                         variant="contained"
                         onClick={onSave}
                     >
@@ -152,11 +166,11 @@ export default function AttendanceRecordList({
                     size={16}
                 />
                 <input
-                    type="text"
+                    className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                     placeholder="Search student by name or student number..."
+                    type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                 />
             </div>
 
@@ -175,8 +189,8 @@ export default function AttendanceRecordList({
 
                             return (
                                 <div
-                                    key={draft.id}
                                     className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between gap-3"
+                                    key={draft.id}
                                 >
                                     <div className="flex items-center justify-between gap-2">
                                         <div className="flex items-center gap-2.5 min-w-0">
@@ -202,10 +216,10 @@ export default function AttendanceRecordList({
                                                 draft.status === 'Present'
                                                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                                                     : draft.status === 'Late'
-                                                    ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
-                                                    : draft.status === 'Absent'
-                                                    ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300'
-                                                    : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                                                        ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
+                                                        : draft.status === 'Absent'
+                                                            ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300'
+                                                            : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
                                             }`}
                                         >
                                             {draft.status}
@@ -220,12 +234,14 @@ export default function AttendanceRecordList({
 
                                             return (
                                                 <button
+                                                    className={`py-1.5 px-2 rounded-xl text-xs border transition-all cursor-pointer text-center select-none active:scale-95 ${
+                                                        isCurrent
+                                                            ? styles.active
+                                                            : styles.idle
+                                                    }`}
                                                     key={status}
                                                     type="button"
                                                     onClick={() => onStatusChange(draft.id, status)}
-                                                    className={`py-1.5 px-2 rounded-xl text-xs border transition-all cursor-pointer text-center select-none active:scale-95 ${
-                                                        isCurrent ? styles.active : styles.idle
-                                                    }`}
                                                 >
                                                     {styles.label}
                                                 </button>

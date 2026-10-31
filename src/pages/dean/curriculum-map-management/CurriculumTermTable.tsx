@@ -36,17 +36,24 @@ export default function CurriculumTermTable({
 
         entries.forEach((entry) => {
             if (entry.course_type_code) {
-                const code = entry.course_type_code.toUpperCase().trim();
-                const label = entry.course_type_label || (code === 'LABORATORY' ? 'Lab' : code === 'LECTURE' ? 'Lec' : code);
+                const code = entry.course_type_code.toUpperCase()
+                    .trim();
+                const label = entry.course_type_label || (code === 'LABORATORY'
+                    ? 'Lab'
+                    : code === 'LECTURE'
+                        ? 'Lec'
+                        : code);
                 typeMap.set(code, label);
             }
             if (entry.type_units) {
-                Object.keys(entry.type_units).forEach((key) => {
-                    const code = key.toUpperCase().trim();
-                    if (!typeMap.has(code)) {
-                        typeMap.set(code, code);
-                    }
-                });
+                Object.keys(entry.type_units)
+                    .forEach((key) => {
+                        const code = key.toUpperCase()
+                            .trim();
+                        if (!typeMap.has(code)) {
+                            typeMap.set(code, code);
+                        }
+                    });
             }
         });
 
@@ -60,26 +67,36 @@ export default function CurriculumTermTable({
     }, [entries]);
 
     function getEntryTypeUnit(entry: CurriculumMapEntry, typeCode: string): number | null {
-        const code = typeCode.toUpperCase().trim();
+        const code = typeCode.toUpperCase()
+            .trim();
 
         if (entry.type_units && entry.type_units[code] !== undefined) {
             const val = Number(entry.type_units[code]);
-            return val > 0 ? val : null;
+            return val > 0
+                ? val
+                : null;
         }
 
         if (code === 'LEC' || code === 'LECTURE') {
             const val = Number(entry.lecture_units ?? 0);
-            return val > 0 ? val : null;
+            return val > 0
+                ? val
+                : null;
         }
 
         if (code === 'LAB' || code === 'LABORATORY') {
             const val = Number(entry.laboratory_units ?? 0);
-            return val > 0 ? val : null;
+            return val > 0
+                ? val
+                : null;
         }
 
-        if (entry.course_type_code?.toUpperCase().trim() === code) {
+        if (entry.course_type_code?.toUpperCase()
+            .trim() === code) {
             const val = Number(entry.units ?? entry.total_units ?? 0);
-            return val > 0 ? val : null;
+            return val > 0
+                ? val
+                : null;
         }
 
         return null;
@@ -94,33 +111,35 @@ export default function CurriculumTermTable({
                         {termTypeLabel}
                     </span>
                     <span className="px-2.5 py-0.5 rounded-md text-xs font-bold bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800/60 shrink-0">
-                        {totalUnits.toFixed(1)} Units ({entries.length} {entries.length === 1 ? 'Course' : 'Courses'})
+                        {totalUnits.toFixed(1)} Units ({entries.length} {entries.length === 1
+                            ? 'Course'
+                            : 'Courses'})
                     </span>
                 </div>
 
                 <div className="flex items-center gap-1 bg-white dark:bg-zinc-800 p-0.5 rounded-lg border border-slate-200 dark:border-zinc-700">
                     <button
-                        type="button"
-                        onClick={() => setViewMode('table')}
                         className={`p-1 rounded-md text-xs font-medium flex items-center gap-1 transition-colors ${
                             viewMode === 'table'
                                 ? 'bg-brand-600 text-white shadow-2xs'
                                 : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
                         }`}
                         title="Table View (Dynamic Course Type Columns)"
+                        type="button"
+                        onClick={() => setViewMode('table')}
                     >
                         <TableIcon className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline">Table</span>
                     </button>
                     <button
-                        type="button"
-                        onClick={() => setViewMode('card')}
                         className={`p-1 rounded-md text-xs font-medium flex items-center gap-1 transition-colors ${
                             viewMode === 'card'
                                 ? 'bg-brand-600 text-white shadow-2xs'
                                 : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
                         }`}
                         title="Card View"
+                        type="button"
+                        onClick={() => setViewMode('card')}
                     >
                         <SquaresFourIcon className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline">Cards</span>
@@ -142,7 +161,10 @@ export default function CurriculumTermTable({
                                 <th className="py-2.5 px-3 min-w-[90px]">Code</th>
                                 <th className="py-2.5 px-3 min-w-[180px]">Course Title</th>
                                 {dynamicTypes.map((t) => (
-                                    <th key={t.code} className="py-2.5 px-3 text-center min-w-[55px]">
+                                    <th
+                                        className="py-2.5 px-3 text-center min-w-[55px]"
+                                        key={t.code}
+                                    >
                                         {t.label}
                                     </th>
                                 ))}
@@ -160,8 +182,8 @@ export default function CurriculumTermTable({
 
                                 return (
                                     <tr
-                                        key={entry.id}
                                         className="hover:bg-slate-50/60 dark:hover:bg-zinc-800/30 transition-colors group"
+                                        key={entry.id}
                                     >
                                         {/* Course Code */}
                                         <td className="py-2 px-3 font-mono font-bold text-slate-800 dark:text-slate-200">
@@ -177,25 +199,32 @@ export default function CurriculumTermTable({
                                         {dynamicTypes.map((t) => {
                                             const unitVal = getEntryTypeUnit(entry, t.code);
                                             return (
-                                                <td key={t.code} className="py-2 px-3 text-center">
-                                                    {unitVal !== null ? (
-                                                        !readOnly ? (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => onView(entry)}
-                                                                className="px-2 py-0.5 rounded font-semibold text-slate-800 dark:text-slate-200 hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-950/60 dark:hover:text-brand-400 border border-slate-200 dark:border-zinc-700 hover:border-brand-300 transition-all cursor-pointer text-xs"
-                                                                title={`Edit ${t.label} units for ${entry.course_code}`}
-                                                            >
-                                                                {unitVal.toFixed(1)}
-                                                            </button>
-                                                        ) : (
-                                                            <span className="font-semibold text-slate-700 dark:text-slate-300">
-                                                                {unitVal.toFixed(1)}
-                                                            </span>
+                                                <td
+                                                    className="py-2 px-3 text-center"
+                                                    key={t.code}
+                                                >
+                                                    {unitVal !== null
+                                                        ? (
+                                                            !readOnly
+                                                                ? (
+                                                                    <button
+                                                                        className="px-2 py-0.5 rounded font-semibold text-slate-800 dark:text-slate-200 hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-950/60 dark:hover:text-brand-400 border border-slate-200 dark:border-zinc-700 hover:border-brand-300 transition-all cursor-pointer text-xs"
+                                                                        title={`Edit ${t.label} units for ${entry.course_code}`}
+                                                                        type="button"
+                                                                        onClick={() => onView(entry)}
+                                                                    >
+                                                                        {unitVal.toFixed(1)}
+                                                                    </button>
+                                                                )
+                                                                : (
+                                                                    <span className="font-semibold text-slate-700 dark:text-slate-300">
+                                                                        {unitVal.toFixed(1)}
+                                                                    </span>
+                                                                )
                                                         )
-                                                    ) : (
-                                                        <span className="text-slate-300 dark:text-slate-600 text-xs">—</span>
-                                                    )}
+                                                        : (
+                                                            <span className="text-slate-300 dark:text-slate-600 text-xs">—</span>
+                                                        )}
                                                 </td>
                                             );
                                         })}
@@ -208,19 +237,22 @@ export default function CurriculumTermTable({
                                         {/* Prerequisites */}
                                         <td className="py-2 px-3 text-slate-500 dark:text-slate-400 text-[11px]">
                                             {entry.prerequisites && entry.prerequisites.length > 0
-                                                ? entry.prerequisites.map((p) => p.code).join(', ')
+                                                ? entry.prerequisites.map((p) => p.code)
+                                                    .join(', ')
                                                 : <span className="text-slate-400 italic">None</span>}
                                         </td>
 
                                         {/* Elective Tag */}
                                         <td className="py-2 px-3 text-center">
-                                            {entry.is_elective ? (
-                                                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                            {entry.is_elective
+                                                ? (
+                                                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                                                     Elective
-                                                </span>
-                                            ) : (
-                                                <span className="text-slate-400 text-[10px]">Req</span>
-                                            )}
+                                                    </span>
+                                                )
+                                                : (
+                                                    <span className="text-slate-400 text-[10px]">Req</span>
+                                                )}
                                         </td>
 
                                         {/* Actions */}
@@ -228,18 +260,18 @@ export default function CurriculumTermTable({
                                             <td className="py-2 px-3 text-right no-print">
                                                 <div className="flex items-center justify-end gap-1">
                                                     <button
-                                                        type="button"
-                                                        onClick={() => onView(entry)}
                                                         className="p-1 rounded text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/50 transition-colors"
                                                         title="Edit Course Units"
+                                                        type="button"
+                                                        onClick={() => onView(entry)}
                                                     >
                                                         <PencilSimpleIcon className="w-3.5 h-3.5" />
                                                     </button>
                                                     <button
-                                                        type="button"
-                                                        onClick={() => onDelete(entry.id)}
                                                         className="p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
                                                         title="Delete Entry"
+                                                        type="button"
+                                                        onClick={() => onDelete(entry.id)}
                                                     >
                                                         <TrashIcon className="w-3.5 h-3.5" />
                                                     </button>
@@ -272,9 +304,9 @@ export default function CurriculumTermTable({
 
                             return (
                                 <div
+                                    className="p-3.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xs hover:shadow-md hover:border-brand-300 dark:hover:border-brand-700 transition-all flex flex-col justify-between gap-3 group relative cursor-pointer"
                                     key={entry.id}
                                     onClick={() => onView(entry)}
-                                    className="p-3.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xs hover:shadow-md hover:border-brand-300 dark:hover:border-brand-700 transition-all flex flex-col justify-between gap-3 group relative cursor-pointer"
                                 >
                                     {/* Top Row: Code, Elective Tag, Action Buttons */}
                                     <div className="flex items-start justify-between gap-2">
@@ -292,24 +324,24 @@ export default function CurriculumTermTable({
                                         {!readOnly && (
                                             <div className="flex items-center gap-1 no-print">
                                                 <button
+                                                    className="p-1 rounded-md text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/50 transition-colors"
+                                                    title="Edit Course Units"
                                                     type="button"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         onView(entry);
                                                     }}
-                                                    className="p-1 rounded-md text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/50 transition-colors"
-                                                    title="Edit Course Units"
                                                 >
                                                     <PencilSimpleIcon className="w-3.5 h-3.5" />
                                                 </button>
                                                 <button
+                                                    className="p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
+                                                    title="Delete Entry"
                                                     type="button"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         onDelete(entry.id);
                                                     }}
-                                                    className="p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
-                                                    title="Delete Entry"
                                                 >
                                                     <TrashIcon className="w-3.5 h-3.5" />
                                                 </button>
@@ -324,7 +356,8 @@ export default function CurriculumTermTable({
                                         </h4>
                                         {entry.prerequisites && entry.prerequisites.length > 0 && (
                                             <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
-                                                Prereq: {entry.prerequisites.map((p) => p.code).join(', ')}
+                                                Prereq: {entry.prerequisites.map((p) => p.code)
+                                                    .join(', ')}
                                             </p>
                                         )}
                                     </div>
@@ -332,16 +365,21 @@ export default function CurriculumTermTable({
                                     {/* Dynamic Units Breakdown Footer */}
                                     <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 text-xs">
                                         <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 font-medium flex-wrap">
-                                            {unitChips.length > 0 ? (
-                                                unitChips.map((chip, i) => (
-                                                    <span key={chip.label} className="flex items-center gap-1">
-                                                        {i > 0 && <span className="text-slate-300 dark:text-slate-600">•</span>}
-                                                        <span>{chip.label}: <strong className="text-slate-700 dark:text-slate-200">{chip.value}</strong></span>
-                                                    </span>
-                                                ))
-                                            ) : (
-                                                <span>Units: <strong className="text-slate-700 dark:text-slate-200">{sumUnits}</strong></span>
-                                            )}
+                                            {unitChips.length > 0
+                                                ? (
+                                                    unitChips.map((chip, i) => (
+                                                        <span
+                                                            className="flex items-center gap-1"
+                                                            key={chip.label}
+                                                        >
+                                                            {i > 0 && <span className="text-slate-300 dark:text-slate-600">•</span>}
+                                                            <span>{chip.label}: <strong className="text-slate-700 dark:text-slate-200">{chip.value}</strong></span>
+                                                        </span>
+                                                    ))
+                                                )
+                                                : (
+                                                    <span>Units: <strong className="text-slate-700 dark:text-slate-200">{sumUnits}</strong></span>
+                                                )}
                                         </div>
                                         <span className="font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-[11px] shrink-0">
                                             {sumUnits.toFixed(1)} Units

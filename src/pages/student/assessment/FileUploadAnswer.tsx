@@ -1,7 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import { ArrowLineUpIcon, FileIcon, TrashIcon } from '@phosphor-icons/react';
-import { saveStudentAnswerFiles, uploadSubmissionFile } from '@services/student-portal.service';
 import { getFileUrl } from '@services/storage.service';
+import { saveStudentAnswerFiles, uploadSubmissionFile } from '@services/student-portal.service';
 import { StudentQuestion, SubmissionFileAttachment } from '@type/student-portal.type';
 import { useRef, useState } from 'react';
 
@@ -111,7 +111,12 @@ export default function FileUploadAnswer({
                 <CommonButton
                     disabled={isBusy || files.length >= maxCount}
                     size="small"
-                    startIcon={<ArrowLineUpIcon size={14} weight="bold" />}
+                    startIcon={(
+                        <ArrowLineUpIcon
+                            size={14}
+                            weight="bold"
+                        />
+                    )}
                     variant="outlined"
                     onClick={function() {
                         fileInputRef.current?.click();
@@ -172,7 +177,10 @@ export default function FileUploadAnswer({
                                     handleRemove(file.path);
                                 }}
                             >
-                                <TrashIcon size={13} weight="bold" />
+                                <TrashIcon
+                                    size={13}
+                                    weight="bold"
+                                />
                             </CommonButton>
                         </div>
                     ))}

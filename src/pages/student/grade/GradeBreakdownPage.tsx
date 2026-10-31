@@ -114,7 +114,12 @@ export default function GradeBreakdownPage() {
                     <CommonButton
                         color="inherit"
                         size="small"
-                        startIcon={<ArrowLeftIcon size={16} weight="bold" />}
+                        startIcon={(
+                            <ArrowLeftIcon
+                                size={16}
+                                weight="bold"
+                            />
+                        )}
                         variant="outlined"
                         onClick={handleBack}
                     >
@@ -129,7 +134,10 @@ export default function GradeBreakdownPage() {
                                 {breakdown?.course_title ?? 'Grade Breakdown'}
                             </h1>
                             {breakdown && (
-                                <CommonBadgeStatus label={breakdown.grading_period_name} variant="info" />
+                                <CommonBadgeStatus
+                                    label={breakdown.grading_period_name}
+                                    variant="info"
+                                />
                             )}
                         </div>
                         {breakdown && (
@@ -161,7 +169,10 @@ export default function GradeBreakdownPage() {
 
             {errorMessage && (
                 <div className="flex flex-col gap-2 items-center py-16 text-center">
-                    <WarningCircleIcon size={36} className="text-amber-500" />
+                    <WarningCircleIcon
+                        className="text-amber-500"
+                        size={36}
+                    />
                     <span className="font-semibold text-slate-900 dark:text-slate-100 text-base">
                         Breakdown unavailable
                     </span>
@@ -214,8 +225,12 @@ export default function GradeBreakdownPage() {
                     {breakdown.transmuted_grade !== null && breakdown.passing_grade !== null && (
                         <div className="flex flex-wrap gap-2 items-center px-1">
                             <CommonBadgeStatus
-                                label={isPassing ? 'Passing Standing' : 'Below Passing Threshold'}
-                                variant={isPassing ? 'success' : 'error'}
+                                label={isPassing
+                                    ? 'Passing Standing'
+                                    : 'Below Passing Threshold'}
+                                variant={isPassing
+                                    ? 'success'
+                                    : 'error'}
                             />
                             <span className="text-slate-500 dark:text-slate-400 text-xs">
                                 Institution passing grade benchmark: <strong>{breakdown.passing_grade}</strong>
@@ -234,23 +249,25 @@ export default function GradeBreakdownPage() {
                             </span>
                         </div>
 
-                        {breakdown.components.length === 0 ? (
-                            <p className="italic py-8 text-center text-slate-500 dark:text-slate-400 text-sm">
+                        {breakdown.components.length === 0
+                            ? (
+                                <p className="italic py-8 text-center text-slate-500 dark:text-slate-400 text-sm">
                                 No grading components were configured for this period.
-                            </p>
-                        ) : (
-                            <div className="flex flex-col gap-2.5">
-                                {breakdown.components.map(function(component) {
-                                    return (
-                                        <GradeBreakdownComponentPanel
-                                            component={component}
-                                            defaultExpanded={breakdown.components.length === 1}
-                                            key={component.id}
-                                        />
-                                    );
-                                })}
-                            </div>
-                        )}
+                                </p>
+                            )
+                            : (
+                                <div className="flex flex-col gap-2.5">
+                                    {breakdown.components.map(function(component) {
+                                        return (
+                                            <GradeBreakdownComponentPanel
+                                                component={component}
+                                                defaultExpanded={breakdown.components.length === 1}
+                                                key={component.id}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            )}
                     </div>
 
                     {/* Grade Computation Information Card */}

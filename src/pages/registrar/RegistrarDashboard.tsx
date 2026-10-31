@@ -142,7 +142,10 @@ export default function RegistrarDashboard() {
                             >
                                 <div className="flex items-center gap-3 min-w-0">
                                     <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/50">
-                                        <SealCheckIcon size={20} weight="duotone" />
+                                        <SealCheckIcon
+                                            size={20}
+                                            weight="duotone"
+                                        />
                                     </div>
                                     <div className="flex flex-col gap-0.5 min-w-0">
                                         <span className="font-semibold text-slate-800 dark:text-slate-100 text-sm truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
@@ -157,7 +160,10 @@ export default function RegistrarDashboard() {
                                     <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/60">
                                         {release.pending_count} pending
                                     </span>
-                                    <CaretRightIcon size={16} className="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 group-hover:translate-x-0.5 transition-all" />
+                                    <CaretRightIcon
+                                        className="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 group-hover:translate-x-0.5 transition-all"
+                                        size={16}
+                                    />
                                 </div>
                             </button>
                         ))}
@@ -189,7 +195,10 @@ export default function RegistrarDashboard() {
                                     <div className="flex gap-3 items-center justify-between">
                                         <div className="flex items-center gap-2 min-w-0">
                                             <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 shrink-0">
-                                                <GraduationCapIcon size={16} weight="duotone" />
+                                                <GraduationCapIcon
+                                                    size={16}
+                                                    weight="duotone"
+                                                />
                                             </div>
                                             <span className="font-semibold text-slate-800 dark:text-slate-100 text-sm truncate">
                                                 {program.program_code}

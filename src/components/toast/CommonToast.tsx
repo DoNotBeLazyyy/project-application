@@ -1,4 +1,6 @@
-import { CheckFatIcon, CircleIcon, WarningIcon, XCircleIcon, XIcon } from '@phosphor-icons/react';
+import {
+    CheckFatIcon, CircleIcon, WarningIcon, XCircleIcon, XIcon
+} from '@phosphor-icons/react';
 import { ToastItem, useToastStore } from '@stores/toast.store';
 import { ReactElement } from 'react';
 
@@ -16,25 +18,37 @@ const TOAST_VARIANTS: Record<ToastVariant, ToastVariantConfig> = {
         bg: 'var(--mui-tokens-color-state-errorLight)',
         border: 'var(--mui-tokens-color-state-error)',
         color: 'var(--mui-tokens-color-state-error)',
-        icon: <XCircleIcon size={18} weight="fill" />
+        icon: <XCircleIcon
+            size={18}
+            weight="fill"
+              />
     },
     success: {
         bg: 'var(--mui-tokens-color-state-successLight)',
         border: 'var(--mui-tokens-color-state-success)',
         color: 'var(--mui-tokens-color-state-success)',
-        icon: <CheckFatIcon size={18} weight="fill" />
+        icon: <CheckFatIcon
+            size={18}
+            weight="fill"
+              />
     },
     warning: {
         bg: 'var(--mui-tokens-color-state-warningLight)',
         border: 'var(--mui-tokens-color-state-warning)',
         color: 'var(--mui-tokens-color-state-warning)',
-        icon: <WarningIcon size={18} weight="fill" />
+        icon: <WarningIcon
+            size={18}
+            weight="fill"
+              />
     },
     info: {
         bg: 'var(--mui-tokens-color-secondary-light)',
         border: 'var(--mui-tokens-color-secondary-main)',
         color: 'var(--mui-tokens-color-secondary-main)',
-        icon: <CircleIcon size={18} weight="fill" />
+        icon: <CircleIcon
+            size={18}
+            weight="fill"
+              />
     }
 };
 
@@ -61,7 +75,10 @@ export default function CommonToast() {
                         }}
                     >
                         <div className="flex gap-2 items-center min-w-0 flex-1">
-                            <span className="shrink-0 flex items-center" style={{ color: config.color }}>
+                            <span
+                                className="shrink-0 flex items-center"
+                                style={{ color: config.color }}
+                            >
                                 {config.icon}
                             </span>
                             <span
@@ -86,7 +103,10 @@ export default function CommonToast() {
                                 removeToast(toast.id);
                             }}
                         >
-                            <XIcon size={14} weight="bold" />
+                            <XIcon
+                                size={14}
+                                weight="bold"
+                            />
                         </button>
                     </div>
                 );

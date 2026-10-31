@@ -86,7 +86,9 @@ export default function FormLabel({
                     <CommonInfoTooltip
                         autoOpenOnError={autoOpenErrorTooltip ?? (defaultOpenErrorTooltip !== false)}
                         content={errorMessage}
-                        defaultOpen={defaultOpenErrorTooltip === false ? false : Boolean(defaultOpenErrorTooltip ?? isFirstError)}
+                        defaultOpen={defaultOpenErrorTooltip === false
+                            ? false
+                            : Boolean(defaultOpenErrorTooltip ?? isFirstError)}
                         label="This field has a problem"
                         size={16}
                         variant="error"

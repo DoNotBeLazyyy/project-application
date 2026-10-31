@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
 export interface AnnouncementDetailModalProps {
     announcement?: AnnouncementFeedRow | null;
     announcementId?: string | null;
-    onClose: () => void;
+    onClose: VoidFunction;
 }
 
 const AUDIENCE_LABELS: Record<AnnouncementAudience, string> = {
@@ -66,7 +66,8 @@ export function AnnouncementDetailModal({
                 if (isMounted) {
                     if (res.data) {
                         setDetail(res.data);
-                    } else if (res.error && !announcement) {
+                    }
+                    else if (res.error && !announcement) {
                         setError(res.error.message || 'Failed to load announcement details.');
                     }
                     setIsLoading(false);
@@ -115,7 +116,10 @@ export function AnnouncementDetailModal({
                     <div className="flex flex-wrap gap-2 items-center">
                         {isPinned && (
                             <span className="bg-(--mui-palette-warning-main)/10 flex font-medium gap-1 items-center px-2 py-0.5 rounded text-(--mui-palette-warning-main) text-xs">
-                                <PushPinIcon size={14} weight="fill" />
+                                <PushPinIcon
+                                    size={14}
+                                    weight="fill"
+                                />
                                 Pinned
                             </span>
                         )}
@@ -135,7 +139,10 @@ export function AnnouncementDetailModal({
                     type="button"
                     onClick={onClose}
                 >
-                    <XIcon size={18} weight="bold" />
+                    <XIcon
+                        size={18}
+                        weight="bold"
+                    />
                 </button>
             </div>
 
@@ -181,7 +188,10 @@ export function AnnouncementDetailModal({
                         {attachments.length > 0 && (
                             <div className="border-(--mui-palette-divider) border-t flex flex-col gap-3 pt-4">
                                 <span className="flex font-semibold gap-1.5 items-center text-(--mui-palette-text-secondary) text-xs uppercase tracking-wider">
-                                    <PaperclipIcon size={15} weight="bold" />
+                                    <PaperclipIcon
+                                        size={15}
+                                        weight="bold"
+                                    />
                                     Attachments ({attachments.length})
                                 </span>
                                 <FileAttachmentList

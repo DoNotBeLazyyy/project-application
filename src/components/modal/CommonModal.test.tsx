@@ -11,12 +11,16 @@ describe('CommonModal & Derived Modals', () => {
         it('does not close when pressing Escape key', () => {
             const handleClose = vi.fn();
             render(
-                <CommonModal open={true} onClose={handleClose}>
+                <CommonModal
+                    open={true}
+                    onClose={handleClose}
+                >
                     <div>Modal Content</div>
                 </CommonModal>
             );
 
-            expect(screen.getByText('Modal Content')).toBeInTheDocument();
+            expect(screen.getByText('Modal Content'))
+                .toBeInTheDocument();
 
             fireEvent.keyDown(document.body, { key: 'Escape', code: 'Escape' });
             expect(handleClose).not.toHaveBeenCalled();
@@ -25,13 +29,17 @@ describe('CommonModal & Derived Modals', () => {
         it('does not close when clicking the dark backdrop area', () => {
             const handleClose = vi.fn();
             render(
-                <CommonModal open={true} onClose={handleClose}>
+                <CommonModal
+                    open={true}
+                    onClose={handleClose}
+                >
                     <div>Modal Content</div>
                 </CommonModal>
             );
 
             const backdrop = document.querySelector('.MuiBackdrop-root');
-            expect(backdrop).toBeInTheDocument();
+            expect(backdrop)
+                .toBeInTheDocument();
             if (backdrop) {
                 fireEvent.click(backdrop);
                 expect(handleClose).not.toHaveBeenCalled();
@@ -41,14 +49,21 @@ describe('CommonModal & Derived Modals', () => {
         it('allows closing via explicit button trigger', () => {
             const handleClose = vi.fn();
             render(
-                <CommonModal open={true} onClose={handleClose}>
-                    <button type="button" onClick={() => handleClose()}>Close Button</button>
+                <CommonModal
+                    open={true}
+                    onClose={handleClose}
+                >
+                    <button
+                        type="button"
+                        onClick={() => handleClose()}
+                    >Close Button</button>
                 </CommonModal>
             );
 
             const closeBtn = screen.getByText('Close Button');
             fireEvent.click(closeBtn);
-            expect(handleClose).toHaveBeenCalledTimes(1);
+            expect(handleClose)
+                .toHaveBeenCalledTimes(1);
         });
     });
 
@@ -56,7 +71,10 @@ describe('CommonModal & Derived Modals', () => {
         it('does not close on Escape key or backdrop click', () => {
             const handleClose = vi.fn();
             render(
-                <CommonActionModal open={true} onClose={handleClose}>
+                <CommonActionModal
+                    open={true}
+                    onClose={handleClose}
+                >
                     <div>Action Modal Content</div>
                 </CommonActionModal>
             );
@@ -77,8 +95,8 @@ describe('CommonModal & Derived Modals', () => {
             const handleClose = vi.fn();
             render(
                 <CommonFormModal
-                    open={true}
                     formContent={<div>Form Modal Content</div>}
+                    open={true}
                     onClose={handleClose}
                 />
             );
@@ -99,8 +117,8 @@ describe('CommonModal & Derived Modals', () => {
             const handleClose = vi.fn();
             render(
                 <CommonPromptModal
-                    open={true}
                     mainContent={{ title: 'Are you sure?' }}
+                    open={true}
                     onClose={handleClose}
                 />
             );
@@ -120,17 +138,20 @@ describe('CommonModal & Derived Modals', () => {
         it('renders filter form content and sort configuration with full width', () => {
             render(
                 <FilterSortModal
-                    open={true}
                     currentSort={[]}
-                    sortColumns={[{ field: 'name', label: 'Name' }]}
                     formContent={<div data-testid="filter-form-content">Filter Form Inputs</div>}
+                    open={true}
+                    sortColumns={[{ field: 'name', label: 'Name' }]}
                     onApplySort={vi.fn()}
                 />
             );
 
-            expect(screen.getByText('Filter Options')).toBeInTheDocument();
-            expect(screen.getByTestId('filter-form-content')).toBeInTheDocument();
-            expect(screen.getByText('Sort Configuration')).toBeInTheDocument();
+            expect(screen.getByText('Filter Options'))
+                .toBeInTheDocument();
+            expect(screen.getByTestId('filter-form-content'))
+                .toBeInTheDocument();
+            expect(screen.getByText('Sort Configuration'))
+                .toBeInTheDocument();
         });
     });
 });

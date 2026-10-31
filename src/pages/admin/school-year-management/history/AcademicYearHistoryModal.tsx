@@ -44,14 +44,15 @@ import {
     WizardTransmutationRow
 } from '@type/school-year.type';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+
 import { isSpecialGradeRow, WIZARD_STEPS } from '../wizard/wizard.constants';
 
 interface AcademicYearHistoryModalProps {
     open: boolean;
     schoolYearId?: string | null;
     schoolYearLabel?: string;
-    onClose: () => void;
-    onReverted?: () => void;
+    onClose: VoidFunction;
+    onReverted?: VoidFunction;
 }
 
 interface EnrichedHistoryItem extends AcademicYearHistoryItem {
@@ -80,7 +81,8 @@ const DEFAULT_EXCEPTION_TYPE_OPTIONS = [
 ];
 
 function normalizeStr(val: unknown): string {
-    return String(val ?? '').trim();
+    return String(val ?? '')
+        .trim();
 }
 
 // Joins non-empty identity parts; falls back to a positional key when every part is empty
@@ -93,12 +95,15 @@ function buildCompositeKey(parts: string[], fallback: string): string {
 function normalizeNum(val: unknown, fallback = 0): number {
     if (val === null || val === undefined || val === '') return fallback;
     const n = Number(val);
-    return Number.isNaN(n) ? fallback : n;
+    return Number.isNaN(n)
+        ? fallback
+        : n;
 }
 
 function serializeTermStep2(t: WizardTermItem): string {
     return JSON.stringify({
-        label: normalizeStr(t.term_type_label).toLowerCase(),
+        label: normalizeStr(t.term_type_label)
+            .toLowerCase(),
         status: normalizeStr(t.status || 'Upcoming'),
         start_date: normalizeStr(t.start_date),
         end_date: normalizeStr(t.end_date),
@@ -111,7 +116,8 @@ function serializeTermStep2(t: WizardTermItem): string {
 
 function serializeGradingPeriod(gp: WizardGradingPeriodItem): string {
     return JSON.stringify({
-        name: normalizeStr(gp.name).toLowerCase(),
+        name: normalizeStr(gp.name)
+            .toLowerCase(),
         sequence: normalizeNum(gp.sequence, 1),
         weight: normalizeNum(gp.weight, 0),
         start_date: normalizeStr(gp.start_date),
@@ -121,7 +127,8 @@ function serializeGradingPeriod(gp: WizardGradingPeriodItem): string {
         grade_encoding_start_date: normalizeStr(gp.grade_encoding_start_date),
         grade_encoding_end_date: normalizeStr(gp.grade_encoding_end_date),
         components: (gp.components || []).map((c) => ({
-            name: normalizeStr(c.name).toLowerCase(),
+            name: normalizeStr(c.name)
+                .toLowerCase(),
             weight: normalizeNum(c.weight, 0)
         }))
     });
@@ -129,7 +136,8 @@ function serializeGradingPeriod(gp: WizardGradingPeriodItem): string {
 
 function serializeHoliday(h: WizardCalendarExceptionItem): string {
     return JSON.stringify({
-        title: normalizeStr(h.title).toLowerCase(),
+        title: normalizeStr(h.title)
+            .toLowerCase(),
         exception_type: normalizeStr(h.exception_type || 'Holiday'),
         start_date: normalizeStr(h.start_date),
         end_date: normalizeStr(h.end_date),
@@ -140,11 +148,18 @@ function serializeHoliday(h: WizardCalendarExceptionItem): string {
 
 function serializeTransmutationRow(r: WizardTransmutationRow): string {
     return JSON.stringify({
-        label: normalizeStr(r.label).toLowerCase(),
+        label: normalizeStr(r.label)
+            .toLowerCase(),
         is_conditional: Boolean(isSpecialGradeRow(r)),
-        min_percentage: r.min_percentage !== null && r.min_percentage !== undefined && r.min_percentage !== '' ? Number(r.min_percentage) : null,
-        max_percentage: r.max_percentage !== null && r.max_percentage !== undefined && r.max_percentage !== '' ? Number(r.max_percentage) : null,
-        transmuted_grade: r.transmuted_grade !== null && r.transmuted_grade !== undefined && r.transmuted_grade !== '' ? Number(r.transmuted_grade) : null,
+        min_percentage: r.min_percentage !== null && r.min_percentage !== undefined && r.min_percentage !== ''
+            ? Number(r.min_percentage)
+            : null,
+        max_percentage: r.max_percentage !== null && r.max_percentage !== undefined && r.max_percentage !== ''
+            ? Number(r.max_percentage)
+            : null,
+        transmuted_grade: r.transmuted_grade !== null && r.transmuted_grade !== undefined && r.transmuted_grade !== ''
+            ? Number(r.transmuted_grade)
+            : null,
         is_passing: Boolean(r.is_passing),
         special_code: normalizeStr(r.special_code),
         description: normalizeStr(r.description),
@@ -157,14 +172,23 @@ function serializeTransmutationRow(r: WizardTransmutationRow): string {
 
 function serializeThreshold(th: WizardThresholdItem): string {
     return JSON.stringify({
-        label: normalizeStr(th.label).toLowerCase(),
+        label: normalizeStr(th.label)
+            .toLowerCase(),
         category: normalizeStr(th.category || 'Honor'),
         max_gwa: normalizeNum(th.max_gwa, 0),
-        min_gwa: th.min_gwa !== null && th.min_gwa !== undefined && th.min_gwa !== '' ? Number(th.min_gwa) : null,
-        min_subject_grade: th.min_subject_grade !== null && th.min_subject_grade !== undefined && th.min_subject_grade !== '' ? Number(th.min_subject_grade) : null,
+        min_gwa: th.min_gwa !== null && th.min_gwa !== undefined && th.min_gwa !== ''
+            ? Number(th.min_gwa)
+            : null,
+        min_subject_grade: th.min_subject_grade !== null && th.min_subject_grade !== undefined && th.min_subject_grade !== ''
+            ? Number(th.min_subject_grade)
+            : null,
         requires_no_failing: Boolean(th.requires_no_failing),
-        scholarship_discount_pct: th.scholarship_discount_pct !== null && th.scholarship_discount_pct !== undefined && th.scholarship_discount_pct !== '' ? Number(th.scholarship_discount_pct) : null,
-        is_active: th.is_active !== undefined ? Boolean(th.is_active) : true
+        scholarship_discount_pct: th.scholarship_discount_pct !== null && th.scholarship_discount_pct !== undefined && th.scholarship_discount_pct !== ''
+            ? Number(th.scholarship_discount_pct)
+            : null,
+        is_active: th.is_active !== undefined
+            ? Boolean(th.is_active)
+            : true
     });
 }
 
@@ -198,7 +222,9 @@ function countCollectionDiffs<T>(
 
 function computeStepDiffCounts(snapA?: SnapshotData, snapB?: SnapshotData): Record<number, number> {
     if (!snapA || !snapB) {
-        return { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+        return {
+            1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0
+        };
     }
 
     // Step 1: 5 displayed fields in Step 1 form (Start Date, End Date, Code, Label, Active Status)
@@ -215,24 +241,29 @@ function computeStepDiffCounts(snapA?: SnapshotData, snapB?: SnapshotData): Reco
     const step2Diffs = countCollectionDiffs(
         termsA,
         termsB,
-        (t, idx) => normalizeStr(t.term_type_label).toLowerCase() || `term_${idx}`,
+        (t, idx) => normalizeStr(t.term_type_label)
+            .toLowerCase() || `term_${idx}`,
         serializeTermStep2
     );
 
     // Step 3: Grading periods across terms
     const periodsA: { key: string; gp: WizardGradingPeriodItem }[] = [];
     termsA.forEach((t, tIdx) => {
-        const termKey = normalizeStr(t.term_type_label).toLowerCase() || `term_${tIdx}`;
+        const termKey = normalizeStr(t.term_type_label)
+            .toLowerCase() || `term_${tIdx}`;
         (t.grading_periods || []).forEach((gp, gpIdx) => {
-            const gpKey = normalizeStr(gp.name).toLowerCase() || `gp_${gpIdx}`;
+            const gpKey = normalizeStr(gp.name)
+                .toLowerCase() || `gp_${gpIdx}`;
             periodsA.push({ key: `${termKey}::${gpKey}`, gp });
         });
     });
     const periodsB: { key: string; gp: WizardGradingPeriodItem }[] = [];
     termsB.forEach((t, tIdx) => {
-        const termKey = normalizeStr(t.term_type_label).toLowerCase() || `term_${tIdx}`;
+        const termKey = normalizeStr(t.term_type_label)
+            .toLowerCase() || `term_${tIdx}`;
         (t.grading_periods || []).forEach((gp, gpIdx) => {
-            const gpKey = normalizeStr(gp.name).toLowerCase() || `gp_${gpIdx}`;
+            const gpKey = normalizeStr(gp.name)
+                .toLowerCase() || `gp_${gpIdx}`;
             periodsB.push({ key: `${termKey}::${gpKey}`, gp });
         });
     });
@@ -249,7 +280,8 @@ function computeStepDiffCounts(snapA?: SnapshotData, snapB?: SnapshotData): Reco
     const step4Diffs = countCollectionDiffs(
         holidaysA,
         holidaysB,
-        (h, idx) => buildCompositeKey([normalizeStr(h.title).toLowerCase(), normalizeStr(h.start_date)], `h_${idx}`),
+        (h, idx) => buildCompositeKey([normalizeStr(h.title)
+            .toLowerCase(), normalizeStr(h.start_date)], `h_${idx}`),
         serializeHoliday
     );
 
@@ -259,7 +291,8 @@ function computeStepDiffCounts(snapA?: SnapshotData, snapB?: SnapshotData): Reco
     const step5Diffs = countCollectionDiffs(
         rowsA,
         rowsB,
-        (r, idx) => normalizeStr(r.label).toLowerCase() || `r_${idx}`,
+        (r, idx) => normalizeStr(r.label)
+            .toLowerCase() || `r_${idx}`,
         serializeTransmutationRow
     );
 
@@ -269,7 +302,9 @@ function computeStepDiffCounts(snapA?: SnapshotData, snapB?: SnapshotData): Reco
     const step6Diffs = countCollectionDiffs(
         thresholdsA,
         thresholdsB,
-        (th, idx) => buildCompositeKey([normalizeStr(th.category).toLowerCase(), normalizeStr(th.label).toLowerCase()], `th_${idx}`),
+        (th, idx) => buildCompositeKey([normalizeStr(th.category)
+            .toLowerCase(), normalizeStr(th.label)
+            .toLowerCase()], `th_${idx}`),
         serializeThreshold
     );
 
@@ -312,7 +347,7 @@ export default function AcademicYearHistoryModal({
     const [revertTargetEntry, setRevertTargetEntry] = useState<EnrichedHistoryItem | null>(null);
     const [mobileMenuAnchorEl, setMobileMenuAnchorEl] = useState<null | HTMLElement>(null);
 
-    const loadHistory = useCallback(async (preferredSelectedId?: string | null) => {
+    const loadHistory = useCallback(async(preferredSelectedId?: string | null) => {
         if (!schoolYearId) return;
         setIsLoading(true);
         try {
@@ -321,8 +356,8 @@ export default function AcademicYearHistoryModal({
                 setHistory(res.data);
                 if (res.data.length > 0) {
                     const activeId = resolveActiveHistoryId(res.data);
-                    const nextSelectedId =
-                        preferredSelectedId && res.data.some((r) => r.id === preferredSelectedId)
+                    const nextSelectedId
+                        = preferredSelectedId && res.data.some((r) => r.id === preferredSelectedId)
                             ? preferredSelectedId
                             : activeId || res.data[0].id;
                     setSelectedVersionId(nextSelectedId);
@@ -332,15 +367,16 @@ export default function AcademicYearHistoryModal({
                         setComparedVersionId((prev) =>
                             prev && prev !== nextSelectedId && res.data!.some((r) => r.id === prev)
                                 ? prev
-                                : fallbackCompared.id
-                        );
-                    } else {
+                                : fallbackCompared.id);
+                    }
+                    else {
                         setComparedVersionId(null);
                         setIsCompareMode(false);
                     }
                 }
             }
-        } finally {
+        }
+        finally {
             setIsLoading(false);
         }
     }, [schoolYearId]);
@@ -412,20 +448,25 @@ export default function AcademicYearHistoryModal({
 
     const totalDiffCount = useMemo(() => {
         if (!stepDiffCounts) return 0;
-        return Object.values(stepDiffCounts).reduce((sum, count) => sum + count, 0);
+        return Object.values(stepDiffCounts)
+            .reduce((sum, count) => sum + count, 0);
     }, [stepDiffCounts]);
 
     // Version currently shown in the step body
     const activeDisplayVersion = useMemo(() => {
         if (isCompareMode && comparedVersion) {
-            return compareViewMode === 'original' ? comparedVersion : selectedVersion;
+            return compareViewMode === 'original'
+                ? comparedVersion
+                : selectedVersion;
         }
         return selectedVersion;
     }, [isCompareMode, compareViewMode, comparedVersion, selectedVersion]);
 
     const counterpartVersion = useMemo(() => {
         if (!isCompareMode || !comparedVersion || !selectedVersion) return null;
-        return compareViewMode === 'original' ? selectedVersion : comparedVersion;
+        return compareViewMode === 'original'
+            ? selectedVersion
+            : comparedVersion;
     }, [isCompareMode, compareViewMode, comparedVersion, selectedVersion]);
 
     function handleSwapVersions() {
@@ -450,7 +491,9 @@ export default function AcademicYearHistoryModal({
                 p_start_date: snap.start_date || '',
                 p_end_date: snap.end_date || '',
                 p_is_active: Boolean(snap.is_active),
-                p_max_units_per_term: snap.max_units_per_term ? Number(snap.max_units_per_term) : 24,
+                p_max_units_per_term: snap.max_units_per_term
+                    ? Number(snap.max_units_per_term)
+                    : 24,
                 p_evaluation_scope: (snap.evaluation_scope || 'Period') as EvaluationScope,
                 p_terms: (snap.terms || []).map((t) => ({
                     ...t,
@@ -463,26 +506,31 @@ export default function AcademicYearHistoryModal({
 
             const res = await saveAcademicYearCalendar(payload);
             if (res.error) {
-                useToastStore.getState().showToast(
-                    res.error.message || 'Failed to revert academic year version.',
-                    'error'
-                );
+                useToastStore.getState()
+                    .showToast(
+                        res.error.message || 'Failed to revert academic year version.',
+                        'error'
+                    );
                 return;
             }
 
-            useToastStore.getState().showToast(
-                `Academic year successfully reverted to Version ${targetVerNum}.`,
-                'success'
-            );
+            useToastStore.getState()
+                .showToast(
+                    `Academic year successfully reverted to Version ${targetVerNum}.`,
+                    'success'
+                );
             setRevertTargetEntry(null);
             onReverted?.();
             onClose();
-        } catch (err: any) {
-            useToastStore.getState().showToast(
-                err?.message || 'Error occurred while reverting version.',
-                'error'
-            );
-        } finally {
+        }
+        catch (err: any) {
+            useToastStore.getState()
+                .showToast(
+                    err?.message || 'Error occurred while reverting version.',
+                    'error'
+                );
+        }
+        finally {
             setIsReverting(false);
         }
     }
@@ -558,17 +606,21 @@ export default function AcademicYearHistoryModal({
                                             ? 'bg-emerald-50/90 border-emerald-400 text-emerald-900 focus:ring-emerald-500/40 dark:bg-emerald-950/50 dark:border-emerald-600 dark:text-emerald-200'
                                             : 'bg-amber-50/80 border-amber-300 text-amber-900 focus:ring-amber-500/40 dark:bg-amber-950/40 dark:border-amber-700 dark:text-amber-200'
                                     }`}
-                                    title={selectedVersion?.isCurrentActive ? 'Active Version' : 'Archived Version'}
+                                    title={selectedVersion?.isCurrentActive
+                                        ? 'Active Version'
+                                        : 'Archived Version'}
                                     value={selectedVersion?.id || ''}
                                     onChange={(e) => setSelectedVersionId(e.target.value)}
                                 >
                                     {enrichedHistory.map((item) => (
                                         <option
+                                            className="bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100"
                                             key={item.id}
                                             value={item.id}
-                                            className="bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100"
                                         >
-                                            {item.versionLabel} — {item.formattedDate} ({item.action}){item.isCurrentActive ? ' [Active]' : ''}
+                                            {item.versionLabel} — {item.formattedDate} ({item.action}){item.isCurrentActive
+                                                ? ' [Active]'
+                                                : ''}
                                         </option>
                                     ))}
                                 </select>
@@ -584,7 +636,10 @@ export default function AcademicYearHistoryModal({
                                     type="button"
                                     onClick={(e) => setMobileMenuAnchorEl(e.currentTarget)}
                                 >
-                                    <DotsThreeVerticalIcon className="w-4 h-4" weight="bold" />
+                                    <DotsThreeVerticalIcon
+                                        className="w-4 h-4"
+                                        weight="bold"
+                                    />
                                 </button>
                             </div>
                         )}
@@ -596,7 +651,12 @@ export default function AcademicYearHistoryModal({
                                     className="min-w-0 px-2.5 py-1.5 text-xs"
                                     color="primary"
                                     size="small"
-                                    startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" weight="bold" />}
+                                    startIcon={(
+                                        <ArrowCounterClockwiseIcon
+                                            className="w-3.5 h-3.5"
+                                            weight="bold"
+                                        />
+                                    )}
                                     variant="outlined"
                                     onClick={() => setRevertTargetEntry(selectedVersion)}
                                 >
@@ -614,7 +674,10 @@ export default function AcademicYearHistoryModal({
                                         setIsCompareMode(true);
                                     }}
                                 >
-                                    <ArrowsLeftRightIcon className="w-3.5 h-3.5" weight="bold" />
+                                    <ArrowsLeftRightIcon
+                                        className="w-3.5 h-3.5"
+                                        weight="bold"
+                                    />
                                     <span>Compare Versions</span>
                                 </button>
                             )}
@@ -633,7 +696,9 @@ export default function AcademicYearHistoryModal({
                                             : 'bg-brand-600 text-white'
                                     }`}
                                 >
-                                    Viewing {compareViewMode === 'original' ? 'Original' : 'Modified'}
+                                    Viewing {compareViewMode === 'original'
+                                        ? 'Original'
+                                        : 'Modified'}
                                 </span>
                                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                                     v{activeDisplayVersion?.versionNum} ({activeDisplayVersion?.formattedDate})
@@ -645,7 +710,10 @@ export default function AcademicYearHistoryModal({
                                 type="button"
                                 onClick={(e) => setMobileMenuAnchorEl(e.currentTarget)}
                             >
-                                <DotsThreeVerticalIcon className="w-4 h-4" weight="bold" />
+                                <DotsThreeVerticalIcon
+                                    className="w-4 h-4"
+                                    weight="bold"
+                                />
                             </button>
                         </div>
 
@@ -667,7 +735,12 @@ export default function AcademicYearHistoryModal({
                                     type="button"
                                     onClick={() => setCompareViewMode('original')}
                                 >
-                                    <EyeIcon className="w-3.5 h-3.5 shrink-0" weight={compareViewMode === 'original' ? 'fill' : 'regular'} />
+                                    <EyeIcon
+                                        className="w-3.5 h-3.5 shrink-0"
+                                        weight={compareViewMode === 'original'
+                                            ? 'fill'
+                                            : 'regular'}
+                                    />
                                     <span className="truncate">Original (v{comparedVersion?.versionNum})</span>
                                 </button>
 
@@ -681,7 +754,12 @@ export default function AcademicYearHistoryModal({
                                     type="button"
                                     onClick={() => setCompareViewMode('modified')}
                                 >
-                                    <EyeIcon className="w-3.5 h-3.5 shrink-0" weight={compareViewMode === 'modified' ? 'fill' : 'regular'} />
+                                    <EyeIcon
+                                        className="w-3.5 h-3.5 shrink-0"
+                                        weight={compareViewMode === 'modified'
+                                            ? 'fill'
+                                            : 'regular'}
+                                    />
                                     <span className="truncate">Modified (v{selectedVersion?.versionNum})</span>
                                 </button>
                             </div>
@@ -696,7 +774,9 @@ export default function AcademicYearHistoryModal({
                                     }`}
                                 >
                                     {totalDiffCount > 0
-                                        ? `${totalDiffCount} total ${totalDiffCount === 1 ? 'difference' : 'differences'}`
+                                        ? `${totalDiffCount} total ${totalDiffCount === 1
+                                            ? 'difference'
+                                            : 'differences'}`
                                         : 'No differences'}
                                 </span>
 
@@ -707,7 +787,12 @@ export default function AcademicYearHistoryModal({
                                             className="min-w-0 px-2.5 py-1 text-xs"
                                             color="primary"
                                             size="small"
-                                            startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" weight="bold" />}
+                                            startIcon={(
+                                                <ArrowCounterClockwiseIcon
+                                                    className="w-3.5 h-3.5"
+                                                    weight="bold"
+                                                />
+                                            )}
                                             variant="outlined"
                                             onClick={() => setRevertTargetEntry(activeDisplayVersion)}
                                         >
@@ -721,7 +806,10 @@ export default function AcademicYearHistoryModal({
                                         type="button"
                                         onClick={() => setIsCompareMode(false)}
                                     >
-                                        <XIcon className="w-3.5 h-3.5" weight="bold" />
+                                        <XIcon
+                                            className="w-3.5 h-3.5"
+                                            weight="bold"
+                                        />
                                         <span>Exit Compare</span>
                                     </button>
                                 </div>
@@ -737,7 +825,9 @@ export default function AcademicYearHistoryModal({
                                         comparedVersion.isCurrentActive
                                             ? 'bg-emerald-50/90 dark:bg-emerald-950/45 border-emerald-400 dark:border-emerald-600'
                                             : 'bg-amber-50/75 dark:bg-amber-950/35 border-amber-300 dark:border-amber-700'
-                                    } ${compareViewMode === 'original' ? 'ring-2 ring-slate-400/30 shadow-2xs' : ''}`}
+                                    } ${compareViewMode === 'original'
+                                        ? 'ring-2 ring-slate-400/30 shadow-2xs'
+                                        : ''}`}
                                 >
                                     <button
                                         className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-200/90 dark:bg-zinc-700 text-slate-800 dark:text-slate-200 shrink-0 cursor-pointer"
@@ -750,7 +840,9 @@ export default function AcademicYearHistoryModal({
                                     <span
                                         aria-hidden="true"
                                         className={`w-2 h-2 rounded-full shrink-0 ${
-                                            comparedVersion.isCurrentActive ? 'bg-emerald-500' : 'bg-amber-500'
+                                            comparedVersion.isCurrentActive
+                                                ? 'bg-emerald-500'
+                                                : 'bg-amber-500'
                                         }`}
                                     />
                                     <select
@@ -770,11 +862,13 @@ export default function AcademicYearHistoryModal({
                                             .filter((v) => v.id !== selectedVersion.id)
                                             .map((item) => (
                                                 <option
+                                                    className="bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100"
                                                     key={item.id}
                                                     value={item.id}
-                                                    className="bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100"
                                                 >
-                                                    {item.versionLabel} — {item.formattedDate} ({item.action}){item.isCurrentActive ? ' [Active]' : ''}
+                                                    {item.versionLabel} — {item.formattedDate} ({item.action}){item.isCurrentActive
+                                                        ? ' [Active]'
+                                                        : ''}
                                                 </option>
                                             ))}
                                     </select>
@@ -788,7 +882,10 @@ export default function AcademicYearHistoryModal({
                                         type="button"
                                         onClick={handleSwapVersions}
                                     >
-                                        <ArrowsLeftRightIcon className="w-3.5 h-3.5" weight="bold" />
+                                        <ArrowsLeftRightIcon
+                                            className="w-3.5 h-3.5"
+                                            weight="bold"
+                                        />
                                     </button>
                                 </div>
 
@@ -798,7 +895,9 @@ export default function AcademicYearHistoryModal({
                                         selectedVersion.isCurrentActive
                                             ? 'bg-emerald-50/90 dark:bg-emerald-950/45 border-emerald-400 dark:border-emerald-600'
                                             : 'bg-amber-50/75 dark:bg-amber-950/35 border-amber-300 dark:border-amber-700'
-                                    } ${compareViewMode === 'modified' ? 'ring-2 ring-brand-500/30 shadow-2xs' : ''}`}
+                                    } ${compareViewMode === 'modified'
+                                        ? 'ring-2 ring-brand-500/30 shadow-2xs'
+                                        : ''}`}
                                 >
                                     <button
                                         className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-brand-100 dark:bg-brand-950/80 text-brand-700 dark:text-brand-300 shrink-0 cursor-pointer"
@@ -811,7 +910,9 @@ export default function AcademicYearHistoryModal({
                                     <span
                                         aria-hidden="true"
                                         className={`w-2 h-2 rounded-full shrink-0 ${
-                                            selectedVersion.isCurrentActive ? 'bg-emerald-500' : 'bg-amber-500'
+                                            selectedVersion.isCurrentActive
+                                                ? 'bg-emerald-500'
+                                                : 'bg-amber-500'
                                         }`}
                                     />
                                     <select
@@ -831,11 +932,13 @@ export default function AcademicYearHistoryModal({
                                             .filter((v) => v.id !== comparedVersion.id)
                                             .map((item) => (
                                                 <option
+                                                    className="bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100"
                                                     key={item.id}
                                                     value={item.id}
-                                                    className="bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100"
                                                 >
-                                                    {item.versionLabel} — {item.formattedDate} ({item.action}){item.isCurrentActive ? ' [Active]' : ''}
+                                                    {item.versionLabel} — {item.formattedDate} ({item.action}){item.isCurrentActive
+                                                        ? ' [Active]'
+                                                        : ''}
                                                 </option>
                                             ))}
                                     </select>
@@ -875,7 +978,10 @@ export default function AcademicYearHistoryModal({
                                 }}
                             >
                                 <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
-                                    <ArrowCounterClockwiseIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" weight="bold" />
+                                    <ArrowCounterClockwiseIcon
+                                        className="w-4 h-4 text-brand-600 dark:text-brand-400"
+                                        weight="bold"
+                                    />
                                     <span>Revert to v{selectedVersion.versionNum}</span>
                                 </div>
                             </MenuItem>
@@ -889,7 +995,10 @@ export default function AcademicYearHistoryModal({
                                 }}
                             >
                                 <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
-                                    <ArrowsLeftRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" weight="bold" />
+                                    <ArrowsLeftRightIcon
+                                        className="w-4 h-4 text-brand-600 dark:text-brand-400"
+                                        weight="bold"
+                                    />
                                     <span>Compare Versions</span>
                                 </div>
                             </MenuItem>
@@ -910,11 +1019,19 @@ export default function AcademicYearHistoryModal({
                         >
                             <div className="flex items-center justify-between w-full text-xs font-semibold">
                                 <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200">
-                                    <EyeIcon className="w-4 h-4 text-slate-500" weight={compareViewMode === 'original' ? 'fill' : 'regular'} />
+                                    <EyeIcon
+                                        className="w-4 h-4 text-slate-500"
+                                        weight={compareViewMode === 'original'
+                                            ? 'fill'
+                                            : 'regular'}
+                                    />
                                     <span>Original (v{comparedVersion.versionNum})</span>
                                 </div>
                                 {compareViewMode === 'original' && (
-                                    <CheckCircleIcon className="w-4 h-4 text-brand-600" weight="fill" />
+                                    <CheckCircleIcon
+                                        className="w-4 h-4 text-brand-600"
+                                        weight="fill"
+                                    />
                                 )}
                             </div>
                         </MenuItem>
@@ -927,11 +1044,19 @@ export default function AcademicYearHistoryModal({
                         >
                             <div className="flex items-center justify-between w-full text-xs font-semibold">
                                 <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200">
-                                    <EyeIcon className="w-4 h-4 text-brand-600" weight={compareViewMode === 'modified' ? 'fill' : 'regular'} />
+                                    <EyeIcon
+                                        className="w-4 h-4 text-brand-600"
+                                        weight={compareViewMode === 'modified'
+                                            ? 'fill'
+                                            : 'regular'}
+                                    />
                                     <span>Modified (v{selectedVersion.versionNum})</span>
                                 </div>
                                 {compareViewMode === 'modified' && (
-                                    <CheckCircleIcon className="w-4 h-4 text-brand-600" weight="fill" />
+                                    <CheckCircleIcon
+                                        className="w-4 h-4 text-brand-600"
+                                        weight="fill"
+                                    />
                                 )}
                             </div>
                         </MenuItem>
@@ -942,7 +1067,10 @@ export default function AcademicYearHistoryModal({
                         <div className="px-3 py-1 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                             Original Version
                         </div>
-                        <div className="px-3 pb-2 pt-0.5" onClick={(e) => e.stopPropagation()}>
+                        <div
+                            className="px-3 pb-2 pt-0.5"
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <select
                                 aria-label="Select Original Version"
                                 className="w-full h-8 px-2 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none cursor-pointer"
@@ -956,8 +1084,13 @@ export default function AcademicYearHistoryModal({
                                 {enrichedHistory
                                     .filter((v) => v.id !== selectedVersion.id)
                                     .map((item) => (
-                                        <option key={item.id} value={item.id}>
-                                            {item.versionLabel} — {item.formattedDate} ({item.action}){item.isCurrentActive ? ' [Active]' : ''}
+                                        <option
+                                            key={item.id}
+                                            value={item.id}
+                                        >
+                                            {item.versionLabel} — {item.formattedDate} ({item.action}){item.isCurrentActive
+                                                ? ' [Active]'
+                                                : ''}
                                         </option>
                                     ))}
                             </select>
@@ -966,7 +1099,10 @@ export default function AcademicYearHistoryModal({
                         <div className="px-3 py-1 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                             Modified Version
                         </div>
-                        <div className="px-3 pb-2 pt-0.5" onClick={(e) => e.stopPropagation()}>
+                        <div
+                            className="px-3 pb-2 pt-0.5"
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <select
                                 aria-label="Select Modified Version"
                                 className="w-full h-8 px-2 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none cursor-pointer"
@@ -980,8 +1116,13 @@ export default function AcademicYearHistoryModal({
                                 {enrichedHistory
                                     .filter((v) => v.id !== comparedVersion.id)
                                     .map((item) => (
-                                        <option key={item.id} value={item.id}>
-                                            {item.versionLabel} — {item.formattedDate} ({item.action}){item.isCurrentActive ? ' [Active]' : ''}
+                                        <option
+                                            key={item.id}
+                                            value={item.id}
+                                        >
+                                            {item.versionLabel} — {item.formattedDate} ({item.action}){item.isCurrentActive
+                                                ? ' [Active]'
+                                                : ''}
                                         </option>
                                     ))}
                             </select>
@@ -997,7 +1138,10 @@ export default function AcademicYearHistoryModal({
                             }}
                         >
                             <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
-                                <ArrowsLeftRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" weight="bold" />
+                                <ArrowsLeftRightIcon
+                                    className="w-4 h-4 text-brand-600 dark:text-brand-400"
+                                    weight="bold"
+                                />
                                 <span>Swap Original &amp; Modified</span>
                             </div>
                         </MenuItem>
@@ -1011,7 +1155,10 @@ export default function AcademicYearHistoryModal({
                                 }}
                             >
                                 <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
-                                    <ArrowCounterClockwiseIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" weight="bold" />
+                                    <ArrowCounterClockwiseIcon
+                                        className="w-4 h-4 text-brand-600 dark:text-brand-400"
+                                        weight="bold"
+                                    />
                                     <span>Revert to v{activeDisplayVersion.versionNum}</span>
                                 </div>
                             </MenuItem>
@@ -1025,7 +1172,10 @@ export default function AcademicYearHistoryModal({
                             }}
                         >
                             <div className="flex items-center gap-2 text-xs font-semibold text-rose-600 dark:text-rose-400">
-                                <XIcon className="w-4 h-4" weight="bold" />
+                                <XIcon
+                                    className="w-4 h-4"
+                                    weight="bold"
+                                />
                                 <span>Exit Compare</span>
                             </div>
                         </MenuItem>
@@ -1041,42 +1191,54 @@ export default function AcademicYearHistoryModal({
                     step: s.step,
                     title: s.title,
                     subtitle: s.subtitle,
-                    diffCount: stepDiffCounts ? stepDiffCounts[s.step] : undefined
+                    diffCount: stepDiffCounts
+                        ? stepDiffCounts[s.step]
+                        : undefined
                 }))}
                 onStepClick={(step) => setCurrentStep(step)}
             />
 
             {/* Stepper Content Area */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/60 dark:bg-zinc-900/50 min-h-[340px]">
-                {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-3">
-                        <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
-                        <p className="text-xs text-slate-500">Loading academic year history & versions...</p>
-                    </div>
-                ) : !activeDisplayVersion ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center gap-2">
-                        <InfoIcon className="w-10 h-10 text-slate-400" />
-                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                {isLoading
+                    ? (
+                        <div className="flex flex-col items-center justify-center py-20 gap-3">
+                            <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
+                            <p className="text-xs text-slate-500">Loading academic year history & versions...</p>
+                        </div>
+                    )
+                    : !activeDisplayVersion
+                        ? (
+                            <div className="flex flex-col items-center justify-center py-16 text-center gap-2">
+                                <InfoIcon className="w-10 h-10 text-slate-400" />
+                                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                             No history records found
-                        </p>
-                        <p className="text-xs text-slate-500 max-w-sm">
+                                </p>
+                                <p className="text-xs text-slate-500 max-w-sm">
                             Any changes or revisions made to this academic year will be versioned and recorded here.
-                        </p>
-                    </div>
-                ) : (
-                    <StepBaseContent
-                        compareViewMode={isCompareMode && counterpartVersion ? compareViewMode : undefined}
-                        counterpartVersion={counterpartVersion}
-                        currentStep={currentStep}
-                        stepDiffCount={stepDiffCounts ? stepDiffCounts[currentStep] : undefined}
-                        version={activeDisplayVersion}
-                        onToggleCompareViewMode={
-                            isCompareMode && counterpartVersion
-                                ? () => setCompareViewMode((prev) => (prev === 'original' ? 'modified' : 'original'))
-                                : undefined
-                        }
-                    />
-                )}
+                                </p>
+                            </div>
+                        )
+                        : (
+                            <StepBaseContent
+                                compareViewMode={isCompareMode && counterpartVersion
+                                    ? compareViewMode
+                                    : undefined}
+                                counterpartVersion={counterpartVersion}
+                                currentStep={currentStep}
+                                stepDiffCount={stepDiffCounts
+                                    ? stepDiffCounts[currentStep]
+                                    : undefined}
+                                version={activeDisplayVersion}
+                                onToggleCompareViewMode={
+                                    isCompareMode && counterpartVersion
+                                        ? () => setCompareViewMode((prev) => (prev === 'original'
+                                            ? 'modified'
+                                            : 'original'))
+                                        : undefined
+                                }
+                            />
+                        )}
             </div>
 
             {/* Bottom Footer: Stepper Navigation Buttons */}
@@ -1085,7 +1247,12 @@ export default function AcademicYearHistoryModal({
                     color="inherit"
                     disabled={currentStep <= 1}
                     size="small"
-                    startIcon={<ArrowLeftIcon className="w-4 h-4" weight="bold" />}
+                    startIcon={(
+                        <ArrowLeftIcon
+                            className="w-4 h-4"
+                            weight="bold"
+                        />
+                    )}
                     variant="outlined"
                     onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
                 >
@@ -1093,26 +1260,33 @@ export default function AcademicYearHistoryModal({
                 </CommonButton>
 
                 <div className="flex items-center gap-2">
-                    {currentStep < WIZARD_STEPS.length ? (
-                        <CommonButton
-                            color="primary"
-                            endIcon={<ArrowRightIcon className="w-4 h-4" weight="bold" />}
-                            size="small"
-                            variant="contained"
-                            onClick={() => setCurrentStep((prev) => Math.min(WIZARD_STEPS.length, prev + 1))}
-                        >
+                    {currentStep < WIZARD_STEPS.length
+                        ? (
+                            <CommonButton
+                                color="primary"
+                                endIcon={(
+                                    <ArrowRightIcon
+                                        className="w-4 h-4"
+                                        weight="bold"
+                                    />
+                                )}
+                                size="small"
+                                variant="contained"
+                                onClick={() => setCurrentStep((prev) => Math.min(WIZARD_STEPS.length, prev + 1))}
+                            >
                             Next Step
-                        </CommonButton>
-                    ) : (
-                        <CommonButton
-                            color="primary"
-                            size="small"
-                            variant="contained"
-                            onClick={onClose}
-                        >
+                            </CommonButton>
+                        )
+                        : (
+                            <CommonButton
+                                color="primary"
+                                size="small"
+                                variant="contained"
+                                onClick={onClose}
+                            >
                             Close
-                        </CommonButton>
-                    )}
+                            </CommonButton>
+                        )}
                 </div>
             </div>
 
@@ -1128,7 +1302,9 @@ export default function AcademicYearHistoryModal({
                         onClick: () => setRevertTargetEntry(null)
                     },
                     confirmProps: {
-                        children: isReverting ? 'Reverting...' : `Revert to Version ${revertTargetEntry?.versionNum}`,
+                        children: isReverting
+                            ? 'Reverting...'
+                            : `Revert to Version ${revertTargetEntry?.versionNum}`,
                         color: 'primary',
                         disabled: isReverting,
                         loading: isReverting,
@@ -1167,7 +1343,7 @@ function StepBaseContent({
     counterpartVersion?: EnrichedHistoryItem | null;
     compareViewMode?: CompareViewMode;
     stepDiffCount?: number;
-    onToggleCompareViewMode?: () => void;
+    onToggleCompareViewMode?: VoidFunction;
 }) {
     const [collapsedTermsStep2, setCollapsedTermsStep2] = useState<Record<number, boolean>>({});
     const [collapsedTermsStep3, setCollapsedTermsStep3] = useState<Record<number, boolean>>({});
@@ -1215,7 +1391,9 @@ function StepBaseContent({
                                     : 'bg-brand-100 text-brand-700 dark:bg-brand-950/80 dark:text-brand-300'
                             }`}
                         >
-                            Viewing {compareViewMode === 'original' ? 'Original' : 'Modified'}
+                            Viewing {compareViewMode === 'original'
+                                ? 'Original'
+                                : 'Modified'}
                         </span>
                         <span className="font-bold text-slate-800 dark:text-slate-200 truncate">
                             {version.versionLabel} — {version.formattedDate}
@@ -1229,7 +1407,9 @@ function StepBaseContent({
                                 }`}
                             >
                                 {stepDiffCount > 0
-                                    ? `${stepDiffCount} ${stepDiffCount === 1 ? 'difference' : 'differences'} in Step ${currentStep}`
+                                    ? `${stepDiffCount} ${stepDiffCount === 1
+                                        ? 'difference'
+                                        : 'differences'} in Step ${currentStep}`
                                     : `No differences in Step ${currentStep}`}
                             </span>
                         )}
@@ -1241,9 +1421,14 @@ function StepBaseContent({
                             type="button"
                             onClick={onToggleCompareViewMode}
                         >
-                            <ArrowsLeftRightIcon className="w-3.5 h-3.5" weight="bold" />
+                            <ArrowsLeftRightIcon
+                                className="w-3.5 h-3.5"
+                                weight="bold"
+                            />
                             <span>
-                                Switch to {compareViewMode === 'original' ? `Modified (v${counterpartVersion.versionNum})` : `Original (v${counterpartVersion.versionNum})`}
+                                Switch to {compareViewMode === 'original'
+                                    ? `Modified (v${counterpartVersion.versionNum})`
+                                    : `Original (v${counterpartVersion.versionNum})`}
                             </span>
                         </button>
                     )}
@@ -1254,7 +1439,11 @@ function StepBaseContent({
             {currentStep === 1 && (
                 <div className="flex flex-col gap-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                        <div className={startDateChanged ? 'p-2.5 rounded-xl bg-amber-50/50 dark:bg-amber-950/25 border border-amber-300 dark:border-amber-700' : ''}>
+                        <div
+                            className={startDateChanged
+                                ? 'p-2.5 rounded-xl bg-amber-50/50 dark:bg-amber-950/25 border border-amber-300 dark:border-amber-700'
+                                : ''}
+                        >
                             <CommonDatePicker
                                 description="Official start date of the academic calendar. Terms must begin on or after this date."
                                 disabled
@@ -1265,12 +1454,18 @@ function StepBaseContent({
                             />
                             {startDateChanged && (
                                 <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-1 font-medium">
-                                    {compareViewMode === 'original' ? 'Modified' : 'Original'}: <strong>{otherSnap?.start_date || '—'}</strong>
+                                    {compareViewMode === 'original'
+                                        ? 'Modified'
+                                        : 'Original'}: <strong>{otherSnap?.start_date || '—'}</strong>
                                 </p>
                             )}
                         </div>
 
-                        <div className={endDateChanged ? 'p-2.5 rounded-xl bg-amber-50/50 dark:bg-amber-950/25 border border-amber-300 dark:border-amber-700' : ''}>
+                        <div
+                            className={endDateChanged
+                                ? 'p-2.5 rounded-xl bg-amber-50/50 dark:bg-amber-950/25 border border-amber-300 dark:border-amber-700'
+                                : ''}
+                        >
                             <CommonDatePicker
                                 description="Official concluding date of this academic year. Terms must end on or before this date."
                                 disabled
@@ -1281,12 +1476,18 @@ function StepBaseContent({
                             />
                             {endDateChanged && (
                                 <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-1 font-medium">
-                                    {compareViewMode === 'original' ? 'Modified' : 'Original'}: <strong>{otherSnap?.end_date || '—'}</strong>
+                                    {compareViewMode === 'original'
+                                        ? 'Modified'
+                                        : 'Original'}: <strong>{otherSnap?.end_date || '—'}</strong>
                                 </p>
                             )}
                         </div>
 
-                        <div className={codeChanged ? 'p-2.5 rounded-xl bg-amber-50/50 dark:bg-amber-950/25 border border-amber-300 dark:border-amber-700' : ''}>
+                        <div
+                            className={codeChanged
+                                ? 'p-2.5 rounded-xl bg-amber-50/50 dark:bg-amber-950/25 border border-amber-300 dark:border-amber-700'
+                                : ''}
+                        >
                             <CommonInput
                                 description="Auto-generated unique system identifier for this academic year based on Start and End dates (e.g. AY-2026-2027)."
                                 disabled
@@ -1298,12 +1499,18 @@ function StepBaseContent({
                             />
                             {codeChanged && (
                                 <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-1 font-medium">
-                                    {compareViewMode === 'original' ? 'Modified' : 'Original'}: <strong>{otherSnap?.code || '—'}</strong>
+                                    {compareViewMode === 'original'
+                                        ? 'Modified'
+                                        : 'Original'}: <strong>{otherSnap?.code || '—'}</strong>
                                 </p>
                             )}
                         </div>
 
-                        <div className={labelChanged ? 'p-2.5 rounded-xl bg-amber-50/50 dark:bg-amber-950/25 border border-amber-300 dark:border-amber-700' : ''}>
+                        <div
+                            className={labelChanged
+                                ? 'p-2.5 rounded-xl bg-amber-50/50 dark:bg-amber-950/25 border border-amber-300 dark:border-amber-700'
+                                : ''}
+                        >
                             <CommonInput
                                 description="Auto-generated title displayed on portal headers, report cards, and official transcripts based on Start and End dates."
                                 disabled
@@ -1315,7 +1522,9 @@ function StepBaseContent({
                             />
                             {labelChanged && (
                                 <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-1 font-medium">
-                                    {compareViewMode === 'original' ? 'Modified' : 'Original'}: <strong>{otherSnap?.label || '—'}</strong>
+                                    {compareViewMode === 'original'
+                                        ? 'Modified'
+                                        : 'Original'}: <strong>{otherSnap?.label || '—'}</strong>
                                 </p>
                             )}
                         </div>
@@ -1346,7 +1555,11 @@ function StepBaseContent({
                                 </span>
                             )}
                         </div>
-                        <Checkbox checked={Boolean(snap.is_active)} disabled sx={{ padding: 0.5, width: 'fit-content' }} />
+                        <Checkbox
+                            checked={Boolean(snap.is_active)}
+                            disabled
+                            sx={{ padding: 0.5, width: 'fit-content' }}
+                        />
                     </div>
 
                     {/* Audit Details Footer */}
@@ -1374,22 +1587,24 @@ function StepBaseContent({
                     ) : (
                         <div className="space-y-4">
                             {terms.map((currentTerm, index) => {
-                                const termKey = normalizeStr(currentTerm.term_type_label).toLowerCase() || `term_${index}`;
+                                const termKey = normalizeStr(currentTerm.term_type_label)
+                                    .toLowerCase() || `term_${index}`;
                                 const matchedOther = isComparing
-                                    ? otherTerms.find((ot, oIdx) => (normalizeStr(ot.term_type_label).toLowerCase() || `term_${oIdx}`) === termKey)
+                                    ? otherTerms.find((ot, oIdx) => (normalizeStr(ot.term_type_label)
+                                        .toLowerCase() || `term_${oIdx}`) === termKey)
                                     : undefined;
                                 const isAddedOrRemoved = isComparing && !matchedOther;
-                                const isModified =
-                                    isComparing && Boolean(matchedOther) && serializeTermStep2(currentTerm) !== serializeTermStep2(matchedOther!);
+                                const isModified
+                                    = isComparing && Boolean(matchedOther) && serializeTermStep2(currentTerm) !== serializeTermStep2(matchedOther!);
 
                                 return (
                                     <div
-                                        key={currentTerm.id || index}
                                         className={`p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-800/80 border shadow-sm space-y-4 transition-all ${
                                             isAddedOrRemoved || isModified
                                                 ? 'border-amber-300 dark:border-amber-700/70'
                                                 : 'border-slate-200 dark:border-zinc-700/60'
                                         }`}
+                                        key={currentTerm.id || index}
                                     >
                                         {/* Card Header */}
                                         <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-700/40 pb-3">
@@ -1418,26 +1633,38 @@ function StepBaseContent({
 
                                             <div className="flex items-center gap-1.5 shrink-0">
                                                 <button
-                                                    aria-label={collapsedTermsStep2[index] ? 'Expand Term' : 'Collapse Term'}
+                                                    aria-label={collapsedTermsStep2[index]
+                                                        ? 'Expand Term'
+                                                        : 'Collapse Term'}
                                                     className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer"
-                                                    title={collapsedTermsStep2[index] ? 'Expand Term' : 'Collapse Term'}
+                                                    title={collapsedTermsStep2[index]
+                                                        ? 'Expand Term'
+                                                        : 'Collapse Term'}
                                                     type="button"
                                                     onClick={() =>
                                                         setCollapsedTermsStep2((prev) => ({ ...prev, [index]: !prev[index] }))
                                                     }
                                                 >
                                                     <CaretDownIcon
-                                                        className={`w-4 h-4 transition-transform duration-200 ${collapsedTermsStep2[index] ? '-rotate-90' : 'rotate-0'}`}
+                                                        className={`w-4 h-4 transition-transform duration-200 ${collapsedTermsStep2[index]
+                                                            ? '-rotate-90'
+                                                            : 'rotate-0'}`}
                                                         weight="bold"
                                                     />
                                                     <span className="text-xs hidden sm:inline">
-                                                        {collapsedTermsStep2[index] ? 'Expand' : 'Collapse'}
+                                                        {collapsedTermsStep2[index]
+                                                            ? 'Expand'
+                                                            : 'Collapse'}
                                                     </span>
                                                 </button>
                                             </div>
                                         </div>
 
-                                        <div className={collapsedTermsStep2[index] ? 'hidden' : 'space-y-4'}>
+                                        <div
+                                            className={collapsedTermsStep2[index]
+                                                ? 'hidden'
+                                                : 'space-y-4'}
+                                        >
                                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                                 <div className="col-span-1 sm:col-span-2 lg:col-span-1">
                                                     <CommonInput
@@ -1563,21 +1790,25 @@ function StepBaseContent({
                                 const totalWeight = periods.reduce((sum, p) => sum + (Number(p.weight) || 0), 0);
                                 const isBalanced = totalWeight === 100;
                                 const termTitle = term.term_type_label || `Term #${tIdx + 1}`;
-                                const termKey = normalizeStr(term.term_type_label).toLowerCase() || `term_${tIdx}`;
+                                const termKey = normalizeStr(term.term_type_label)
+                                    .toLowerCase() || `term_${tIdx}`;
                                 const matchedOtherTerm = isComparing
-                                    ? otherTerms.find((ot, oIdx) => (normalizeStr(ot.term_type_label).toLowerCase() || `term_${oIdx}`) === termKey)
+                                    ? otherTerms.find((ot, oIdx) => (normalizeStr(ot.term_type_label)
+                                        .toLowerCase() || `term_${oIdx}`) === termKey)
                                     : undefined;
                                 const otherGps = matchedOtherTerm?.grading_periods || [];
 
                                 return (
                                     <div
-                                        key={term.id || tIdx}
                                         className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700/60 shadow-sm space-y-4"
+                                        key={term.id || tIdx}
                                     >
                                         {/* Term Heading & Weight Meter */}
                                         <div
                                             className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                                                collapsedTermsStep3[tIdx] ? '' : 'border-b border-slate-100 dark:border-zinc-700/40 pb-3'
+                                                collapsedTermsStep3[tIdx]
+                                                    ? ''
+                                                    : 'border-b border-slate-100 dark:border-zinc-700/40 pb-3'
                                             }`}
                                         >
                                             <div>
@@ -1589,7 +1820,9 @@ function StepBaseContent({
                                                         {termTitle}
                                                     </h4>
                                                     <span className="text-xs text-slate-500 font-normal">
-                                                        ({periods.length} {periods.length === 1 ? 'period' : 'periods'})
+                                                        ({periods.length} {periods.length === 1
+                                                            ? 'period'
+                                                            : 'periods'})
                                                     </span>
                                                 </div>
                                                 <p className="text-xs text-slate-500 mt-0.5 ml-8">
@@ -1605,36 +1838,52 @@ function StepBaseContent({
                                                             : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
                                                     }`}
                                                 >
-                                                    {isBalanced ? (
-                                                        <CheckCircleIcon className="w-4 h-4 text-emerald-600" />
-                                                    ) : (
-                                                        <WarningCircleIcon className="w-4 h-4 text-amber-600" />
-                                                    )}
-                                                    Weight: {totalWeight}% {isBalanced ? '(100%)' : '(Must equal 100%)'}
+                                                    {isBalanced
+                                                        ? (
+                                                            <CheckCircleIcon className="w-4 h-4 text-emerald-600" />
+                                                        )
+                                                        : (
+                                                            <WarningCircleIcon className="w-4 h-4 text-amber-600" />
+                                                        )}
+                                                    Weight: {totalWeight}% {isBalanced
+                                                        ? '(100%)'
+                                                        : '(Must equal 100%)'}
                                                 </span>
 
                                                 <button
-                                                    aria-label={collapsedTermsStep3[tIdx] ? 'Expand Term' : 'Collapse Term'}
+                                                    aria-label={collapsedTermsStep3[tIdx]
+                                                        ? 'Expand Term'
+                                                        : 'Collapse Term'}
                                                     className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer"
-                                                    title={collapsedTermsStep3[tIdx] ? 'Expand Term' : 'Collapse Term'}
+                                                    title={collapsedTermsStep3[tIdx]
+                                                        ? 'Expand Term'
+                                                        : 'Collapse Term'}
                                                     type="button"
                                                     onClick={() =>
                                                         setCollapsedTermsStep3((prev) => ({ ...prev, [tIdx]: !prev[tIdx] }))
                                                     }
                                                 >
                                                     <CaretDownIcon
-                                                        className={`w-4 h-4 transition-transform duration-200 ${collapsedTermsStep3[tIdx] ? '-rotate-90' : 'rotate-0'}`}
+                                                        className={`w-4 h-4 transition-transform duration-200 ${collapsedTermsStep3[tIdx]
+                                                            ? '-rotate-90'
+                                                            : 'rotate-0'}`}
                                                         weight="bold"
                                                     />
                                                     <span className="text-xs hidden sm:inline">
-                                                        {collapsedTermsStep3[tIdx] ? 'Expand' : 'Collapse'}
+                                                        {collapsedTermsStep3[tIdx]
+                                                            ? 'Expand'
+                                                            : 'Collapse'}
                                                     </span>
                                                 </button>
                                             </div>
                                         </div>
 
                                         {/* Periods List */}
-                                        <div className={collapsedTermsStep3[tIdx] ? 'hidden' : 'space-y-4'}>
+                                        <div
+                                            className={collapsedTermsStep3[tIdx]
+                                                ? 'hidden'
+                                                : 'space-y-4'}
+                                        >
                                             {periods.length === 0 ? (
                                                 <div className="p-6 text-center border-2 border-dashed border-slate-200 dark:border-zinc-700/60 rounded-xl space-y-2 bg-slate-50/40 dark:bg-zinc-800/20">
                                                     <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -1643,17 +1892,19 @@ function StepBaseContent({
                                                 </div>
                                             ) : (
                                                 periods.map((period, pIdx) => {
-                                                    const gpKey = normalizeStr(period.name).toLowerCase() || `gp_${pIdx}`;
+                                                    const gpKey = normalizeStr(period.name)
+                                                        .toLowerCase() || `gp_${pIdx}`;
                                                     const matchedOtherGp = isComparing
                                                         ? otherGps.find(
-                                                              (ogp, oIdx) => (normalizeStr(ogp.name).toLowerCase() || `gp_${oIdx}`) === gpKey
-                                                          )
+                                                            (ogp, oIdx) => (normalizeStr(ogp.name)
+                                                                .toLowerCase() || `gp_${oIdx}`) === gpKey
+                                                        )
                                                         : undefined;
                                                     const gpAddedOrRemoved = isComparing && !matchedOtherGp;
-                                                    const gpModified =
-                                                        isComparing &&
-                                                        Boolean(matchedOtherGp) &&
-                                                        serializeGradingPeriod(period) !== serializeGradingPeriod(matchedOtherGp!);
+                                                    const gpModified
+                                                        = isComparing
+                                                        && Boolean(matchedOtherGp)
+                                                        && serializeGradingPeriod(period) !== serializeGradingPeriod(matchedOtherGp!);
 
                                                     const components = period.components || [];
                                                     const compTotalWeight = components.reduce((sum, c) => sum + (Number(c.weight) || 0), 0);
@@ -1662,12 +1913,12 @@ function StepBaseContent({
 
                                                     return (
                                                         <div
-                                                            key={period.id || `term_${tIdx}_period_${pIdx}`}
                                                             className={`p-4 rounded-xl border flex flex-col gap-3 transition-colors ${
                                                                 gpAddedOrRemoved || gpModified
                                                                     ? 'border-amber-300 dark:border-amber-700/70 bg-amber-50/20 dark:bg-amber-950/10'
                                                                     : 'border-slate-200 dark:border-zinc-700 bg-slate-50/60 dark:bg-zinc-800/40'
                                                             }`}
+                                                            key={period.id || `term_${tIdx}_period_${pIdx}`}
                                                         >
                                                             {/* Row 1: Entry number and collapse */}
                                                             <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-zinc-700/50 pb-2.5">
@@ -1700,9 +1951,13 @@ function StepBaseContent({
                                                                 </div>
 
                                                                 <button
-                                                                    aria-label={collapsedPeriodsStep3[periodCollapseKey] ? 'Expand period' : 'Collapse period'}
+                                                                    aria-label={collapsedPeriodsStep3[periodCollapseKey]
+                                                                        ? 'Expand period'
+                                                                        : 'Collapse period'}
                                                                     className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer shrink-0"
-                                                                    title={collapsedPeriodsStep3[periodCollapseKey] ? 'Expand period' : 'Collapse period'}
+                                                                    title={collapsedPeriodsStep3[periodCollapseKey]
+                                                                        ? 'Expand period'
+                                                                        : 'Collapse period'}
                                                                     type="button"
                                                                     onClick={() =>
                                                                         setCollapsedPeriodsStep3((prev) => ({
@@ -1712,16 +1967,24 @@ function StepBaseContent({
                                                                     }
                                                                 >
                                                                     <CaretDownIcon
-                                                                        className={`w-4 h-4 transition-transform duration-200 ${collapsedPeriodsStep3[periodCollapseKey] ? '-rotate-90' : 'rotate-0'}`}
+                                                                        className={`w-4 h-4 transition-transform duration-200 ${collapsedPeriodsStep3[periodCollapseKey]
+                                                                            ? '-rotate-90'
+                                                                            : 'rotate-0'}`}
                                                                         weight="bold"
                                                                     />
                                                                     <span className="text-xs hidden sm:inline">
-                                                                        {collapsedPeriodsStep3[periodCollapseKey] ? 'Expand' : 'Collapse'}
+                                                                        {collapsedPeriodsStep3[periodCollapseKey]
+                                                                            ? 'Expand'
+                                                                            : 'Collapse'}
                                                                     </span>
                                                                 </button>
                                                             </div>
 
-                                                            <div className={collapsedPeriodsStep3[periodCollapseKey] ? 'hidden' : 'flex flex-col gap-3'}>
+                                                            <div
+                                                                className={collapsedPeriodsStep3[periodCollapseKey]
+                                                                    ? 'hidden'
+                                                                    : 'flex flex-col gap-3'}
+                                                            >
                                                                 {/* Row 2: Period name and weight */}
                                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                                     <div>
@@ -1871,73 +2134,77 @@ function StepBaseContent({
                                                                                     : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
                                                                             }`}
                                                                         >
-                                                                            {isCompBalanced ? (
-                                                                                <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600" />
-                                                                            ) : (
-                                                                                <WarningCircleIcon className="w-3.5 h-3.5 text-amber-600" />
-                                                                            )}
+                                                                            {isCompBalanced
+                                                                                ? (
+                                                                                    <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600" />
+                                                                                )
+                                                                                : (
+                                                                                    <WarningCircleIcon className="w-3.5 h-3.5 text-amber-600" />
+                                                                                )}
                                                                             <span>{compTotalWeight}/100</span>
                                                                         </span>
                                                                     </div>
 
-                                                                    {components.length === 0 ? (
-                                                                        <div className="p-3 text-center rounded-lg border border-dashed border-slate-200 dark:border-zinc-700/60 bg-white/50 dark:bg-zinc-800/30">
-                                                                            <p className="text-xs text-slate-500">No component breakdown declared yet.</p>
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div className="space-y-2">
-                                                                            {components.map((comp, cIdx) => (
-                                                                                <div
-                                                                                    key={comp.id || `comp_${tIdx}_${pIdx}_${cIdx}`}
-                                                                                    className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-2 bg-white dark:bg-zinc-800 p-2.5 sm:p-2 rounded-lg border border-slate-200 dark:border-zinc-700"
-                                                                                >
-                                                                                    <div className="flex items-center gap-1.5 sm:hidden w-full">
-                                                                                        <span className="w-5 h-5 rounded bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold flex items-center justify-center shrink-0">
+                                                                    {components.length === 0
+                                                                        ? (
+                                                                            <div className="p-3 text-center rounded-lg border border-dashed border-slate-200 dark:border-zinc-700/60 bg-white/50 dark:bg-zinc-800/30">
+                                                                                <p className="text-xs text-slate-500">No component breakdown declared yet.</p>
+                                                                            </div>
+                                                                        )
+                                                                        : (
+                                                                            <div className="space-y-2">
+                                                                                {components.map((comp, cIdx) => (
+                                                                                    <div
+                                                                                        className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-2 bg-white dark:bg-zinc-800 p-2.5 sm:p-2 rounded-lg border border-slate-200 dark:border-zinc-700"
+                                                                                        key={comp.id || `comp_${tIdx}_${pIdx}_${cIdx}`}
+                                                                                    >
+                                                                                        <div className="flex items-center gap-1.5 sm:hidden w-full">
+                                                                                            <span className="w-5 h-5 rounded bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold flex items-center justify-center shrink-0">
                                                                                             c{cIdx + 1}
-                                                                                        </span>
-                                                                                        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                                                                            </span>
+                                                                                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                                                                                             Component #{cIdx + 1}
-                                                                                        </span>
-                                                                                    </div>
+                                                                                            </span>
+                                                                                        </div>
 
-                                                                                    <span className="hidden sm:flex w-5 h-5 rounded bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold items-center justify-center shrink-0">
+                                                                                        <span className="hidden sm:flex w-5 h-5 rounded bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold items-center justify-center shrink-0">
                                                                                         c{cIdx + 1}
-                                                                                    </span>
+                                                                                        </span>
 
-                                                                                    <div className="w-full sm:flex-1">
-                                                                                        <span className="block sm:hidden text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                                                        <div className="w-full sm:flex-1">
+                                                                                            <span className="block sm:hidden text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
                                                                                             Component Name
-                                                                                        </span>
-                                                                                        <CommonInput
-                                                                                            containerClassName="w-full"
-                                                                                            disabled
-                                                                                            fullWidth
-                                                                                            placeholder="e.g. Quizzes, Midterm Exam, Recitation"
-                                                                                            size="small"
-                                                                                            value={comp.name || ''}
-                                                                                        />
-                                                                                    </div>
+                                                                                            </span>
+                                                                                            <CommonInput
+                                                                                                containerClassName="w-full"
+                                                                                                disabled
+                                                                                                fullWidth
+                                                                                                placeholder="e.g. Quizzes, Midterm Exam, Recitation"
+                                                                                                size="small"
+                                                                                                value={comp.name || ''}
+                                                                                            />
+                                                                                        </div>
 
-                                                                                    <div className="w-full sm:w-28 sm:shrink-0">
-                                                                                        <span className="block sm:hidden text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                                                        <div className="w-full sm:w-28 sm:shrink-0">
+                                                                                            <span className="block sm:hidden text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
                                                                                             Weight (%)
-                                                                                        </span>
-                                                                                        <CommonNumberInput
-                                                                                            containerClassName="w-full"
-                                                                                            disabled
-                                                                                            fullWidth
-                                                                                            max={100}
-                                                                                            min={0}
-                                                                                            placeholder="Weight"
-                                                                                            size="small"
-                                                                                            suffixText="%"
-                                                                                            value={comp.weight ?? ''}
-                                                                                        />
+                                                                                            </span>
+                                                                                            <CommonNumberInput
+                                                                                                containerClassName="w-full"
+                                                                                                disabled
+                                                                                                fullWidth
+                                                                                                max={100}
+                                                                                                min={0}
+                                                                                                placeholder="Weight"
+                                                                                                size="small"
+                                                                                                suffixText="%"
+                                                                                                value={comp.weight ?? ''}
+                                                                                            />
+                                                                                        </div>
                                                                                     </div>
-                                                                                </div>
-                                                                            ))}
-                                                                        </div>
-                                                                    )}
+                                                                                ))}
+                                                                            </div>
+                                                                        )}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1956,175 +2223,196 @@ function StepBaseContent({
             {/* Step 4: Calendar Exceptions & Holidays — Matching Step4HolidaysConfig form field appearance */}
             {currentStep === 4 && (
                 <div className="flex flex-col gap-5">
-                    {holidays.length === 0 ? (
-                        <div className="p-8 text-center rounded-2xl border-2 border-dashed border-slate-200 dark:border-zinc-800 space-y-2 bg-slate-50/40 dark:bg-zinc-800/20">
-                            <SunIcon className="w-10 h-10 text-amber-500 mx-auto" />
-                            <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">
+                    {holidays.length === 0
+                        ? (
+                            <div className="p-8 text-center rounded-2xl border-2 border-dashed border-slate-200 dark:border-zinc-800 space-y-2 bg-slate-50/40 dark:bg-zinc-800/20">
+                                <SunIcon className="w-10 h-10 text-amber-500 mx-auto" />
+                                <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">
                                 No Calendar Exceptions or Holidays Added
-                            </p>
-                            <p className="text-xs text-slate-500 max-w-md mx-auto">
+                                </p>
+                                <p className="text-xs text-slate-500 max-w-md mx-auto">
                                 No holidays, breaks, or class suspensions were recorded in this version.
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {holidays.map((current, idx) => {
-                                const hKey = buildCompositeKey([normalizeStr(current.title).toLowerCase(), normalizeStr(current.start_date)], `h_${idx}`);
-                                const matchedOtherH = isComparing
-                                    ? otherHolidays.find(
-                                          (oh, oIdx) =>
-                                              (buildCompositeKey([normalizeStr(oh.title).toLowerCase(), normalizeStr(oh.start_date)], `h_${oIdx}`)) === hKey
-                                      )
-                                    : undefined;
-                                const hAddedOrRemoved = isComparing && !matchedOtherH;
-                                const hModified =
-                                    isComparing && Boolean(matchedOtherH) && serializeHoliday(current) !== serializeHoliday(matchedOtherH!);
+                                </p>
+                            </div>
+                        )
+                        : (
+                            <div className="space-y-3">
+                                {holidays.map((current, idx) => {
+                                    const hKey = buildCompositeKey([normalizeStr(current.title)
+                                        .toLowerCase(), normalizeStr(current.start_date)], `h_${idx}`);
+                                    const matchedOtherH = isComparing
+                                        ? otherHolidays.find(
+                                            (oh, oIdx) =>
+                                                (buildCompositeKey([normalizeStr(oh.title)
+                                                    .toLowerCase(), normalizeStr(oh.start_date)], `h_${oIdx}`)) === hKey
+                                        )
+                                        : undefined;
+                                    const hAddedOrRemoved = isComparing && !matchedOtherH;
+                                    const hModified
+                                    = isComparing && Boolean(matchedOtherH) && serializeHoliday(current) !== serializeHoliday(matchedOtherH!);
 
-                                const exceptionOptions = DEFAULT_EXCEPTION_TYPE_OPTIONS.some((o) => o.value === current.exception_type)
-                                    ? DEFAULT_EXCEPTION_TYPE_OPTIONS
-                                    : [
-                                          ...DEFAULT_EXCEPTION_TYPE_OPTIONS,
-                                          ...(current.exception_type
-                                              ? [{ label: current.exception_type, value: current.exception_type }]
-                                              : [])
-                                      ];
+                                    const exceptionOptions = DEFAULT_EXCEPTION_TYPE_OPTIONS.some((o) => o.value === current.exception_type)
+                                        ? DEFAULT_EXCEPTION_TYPE_OPTIONS
+                                        : [
+                                            ...DEFAULT_EXCEPTION_TYPE_OPTIONS,
+                                            ...(current.exception_type
+                                                ? [{ label: current.exception_type, value: current.exception_type }]
+                                                : [])
+                                        ];
 
-                                return (
-                                    <div
-                                        key={current.id || idx}
-                                        className={`p-4 sm:p-5 rounded-2xl border bg-white dark:bg-zinc-800/80 shadow-xs space-y-4 w-full ${
-                                            hAddedOrRemoved || hModified
-                                                ? 'border-amber-300 dark:border-amber-700/70'
-                                                : 'border-slate-200 dark:border-zinc-700/70'
-                                        }`}
-                                    >
-                                        <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-700/60 pb-3">
-                                            <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
-                                                <span className="w-6 h-6 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 text-xs font-bold flex items-center justify-center shrink-0">
+                                    return (
+                                        <div
+                                            className={`p-4 sm:p-5 rounded-2xl border bg-white dark:bg-zinc-800/80 shadow-xs space-y-4 w-full ${
+                                                hAddedOrRemoved || hModified
+                                                    ? 'border-amber-300 dark:border-amber-700/70'
+                                                    : 'border-slate-200 dark:border-zinc-700/70'
+                                            }`}
+                                            key={current.id || idx}
+                                        >
+                                            <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-700/60 pb-3">
+                                                <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
+                                                    <span className="w-6 h-6 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 text-xs font-bold flex items-center justify-center shrink-0">
                                                     #{idx + 1}
-                                                </span>
-                                                <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
-                                                    {current.title || `Exception #${idx + 1}`}
-                                                </span>
-                                                {current.exception_type && (
-                                                    <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 shrink-0">
-                                                        {current.exception_type}
                                                     </span>
-                                                )}
-                                                {current.start_date && (
-                                                    <span className="text-xs text-slate-400 shrink-0 hidden md:inline">
+                                                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                                        {current.title || `Exception #${idx + 1}`}
+                                                    </span>
+                                                    {current.exception_type && (
+                                                        <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 shrink-0">
+                                                            {current.exception_type}
+                                                        </span>
+                                                    )}
+                                                    {current.start_date && (
+                                                        <span className="text-xs text-slate-400 shrink-0 hidden md:inline">
                                                         • {current.start_date}
-                                                        {current.end_date && current.end_date !== current.start_date ? ` to ${current.end_date}` : ''}
+                                                            {current.end_date && current.end_date !== current.start_date
+                                                                ? ` to ${current.end_date}`
+                                                                : ''}
+                                                        </span>
+                                                    )}
+                                                    {(hAddedOrRemoved || hModified) && (
+                                                        <span className="px-2 py-0.5 rounded-full bg-amber-200/80 dark:bg-amber-900/70 text-amber-900 dark:text-amber-200 text-[10px] font-bold">
+                                                            {hAddedOrRemoved
+                                                                ? compareViewMode === 'modified'
+                                                                    ? 'Added'
+                                                                    : 'Removed in Modified'
+                                                                : 'Changed'}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <button
+                                                    aria-label={collapsedExceptionsStep4[idx]
+                                                        ? 'Expand exception'
+                                                        : 'Collapse exception'}
+                                                    className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer shrink-0"
+                                                    title={collapsedExceptionsStep4[idx]
+                                                        ? 'Expand exception'
+                                                        : 'Collapse exception'}
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setCollapsedExceptionsStep4((prev) => ({ ...prev, [idx]: !prev[idx] }))
+                                                    }
+                                                >
+                                                    <CaretDownIcon
+                                                        className={`w-4 h-4 transition-transform duration-200 ${collapsedExceptionsStep4[idx]
+                                                            ? '-rotate-90'
+                                                            : 'rotate-0'}`}
+                                                        weight="bold"
+                                                    />
+                                                    <span className="text-xs hidden sm:inline">
+                                                        {collapsedExceptionsStep4[idx]
+                                                            ? 'Expand'
+                                                            : 'Collapse'}
                                                     </span>
-                                                )}
-                                                {(hAddedOrRemoved || hModified) && (
-                                                    <span className="px-2 py-0.5 rounded-full bg-amber-200/80 dark:bg-amber-900/70 text-amber-900 dark:text-amber-200 text-[10px] font-bold">
-                                                        {hAddedOrRemoved
-                                                            ? compareViewMode === 'modified'
-                                                                ? 'Added'
-                                                                : 'Removed in Modified'
-                                                            : 'Changed'}
-                                                    </span>
-                                                )}
+                                                </button>
                                             </div>
 
-                                            <button
-                                                aria-label={collapsedExceptionsStep4[idx] ? 'Expand exception' : 'Collapse exception'}
-                                                className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer shrink-0"
-                                                title={collapsedExceptionsStep4[idx] ? 'Expand exception' : 'Collapse exception'}
-                                                type="button"
-                                                onClick={() =>
-                                                    setCollapsedExceptionsStep4((prev) => ({ ...prev, [idx]: !prev[idx] }))
-                                                }
+                                            <div
+                                                className={collapsedExceptionsStep4[idx]
+                                                    ? 'hidden'
+                                                    : 'space-y-4'}
                                             >
-                                                <CaretDownIcon
-                                                    className={`w-4 h-4 transition-transform duration-200 ${collapsedExceptionsStep4[idx] ? '-rotate-90' : 'rotate-0'}`}
-                                                    weight="bold"
-                                                />
-                                                <span className="text-xs hidden sm:inline">
-                                                    {collapsedExceptionsStep4[idx] ? 'Expand' : 'Collapse'}
-                                                </span>
-                                            </button>
-                                        </div>
-
-                                        <div className={collapsedExceptionsStep4[idx] ? 'hidden' : 'space-y-4'}>
-                                            <div>
-                                                <CommonInput
-                                                    disabled
-                                                    fullWidth
-                                                    isRequired
-                                                    label="Holiday / Exception Title"
-                                                    placeholder="Holiday / Exception Title (e.g. Independence Day)"
-                                                    size="small"
-                                                    value={current.title || ''}
-                                                />
-                                            </div>
-
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
                                                 <div>
-                                                    <CommonSelect
+                                                    <CommonInput
                                                         disabled
                                                         fullWidth
-                                                        label="Exception Type"
-                                                        options={exceptionOptions}
+                                                        isRequired
+                                                        label="Holiday / Exception Title"
+                                                        placeholder="Holiday / Exception Title (e.g. Independence Day)"
                                                         size="small"
-                                                        value={current.exception_type || 'Holiday'}
+                                                        value={current.title || ''}
                                                     />
                                                 </div>
 
-                                                <div className="flex flex-col gap-(--mui-tokens-spacing-2) relative">
-                                                    <FormLabel className="tw_body_small_bold" label="Class Impact" />
-                                                    <label className="flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-slate-700 dark:text-slate-300 select-none cursor-default">
-                                                        <input
-                                                            checked={Boolean(current.affects_attendance)}
-                                                            className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 disabled:opacity-100"
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                                                    <div>
+                                                        <CommonSelect
                                                             disabled
-                                                            type="checkbox"
+                                                            fullWidth
+                                                            label="Exception Type"
+                                                            options={exceptionOptions}
+                                                            size="small"
+                                                            value={current.exception_type || 'Holiday'}
+                                                        />
+                                                    </div>
+
+                                                    <div className="flex flex-col gap-(--mui-tokens-spacing-2) relative">
+                                                        <FormLabel
+                                                            className="tw_body_small_bold"
+                                                            label="Class Impact"
+                                                        />
+                                                        <label className="flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-slate-700 dark:text-slate-300 select-none cursor-default">
+                                                            <input
+                                                                checked={Boolean(current.affects_attendance)}
+                                                                className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 disabled:opacity-100"
+                                                                disabled
+                                                                type="checkbox"
+                                                                onChange={() => {}}
+                                                            />
+                                                            <span className="font-medium">Class Suspended</span>
+                                                        </label>
+                                                    </div>
+
+                                                    <div>
+                                                        <CommonDatePicker
+                                                            disabled
+                                                            isRequired
+                                                            label="Start Date"
+                                                            size="small"
+                                                            value={current.start_date || ''}
                                                             onChange={() => {}}
                                                         />
-                                                        <span className="font-medium">Class Suspended</span>
-                                                    </label>
+                                                    </div>
+
+                                                    <div>
+                                                        <CommonDatePicker
+                                                            disabled
+                                                            isRequired
+                                                            label="End Date"
+                                                            size="small"
+                                                            value={current.end_date || ''}
+                                                            onChange={() => {}}
+                                                        />
+                                                    </div>
                                                 </div>
 
                                                 <div>
-                                                    <CommonDatePicker
+                                                    <CommonInput
                                                         disabled
-                                                        isRequired
-                                                        label="Start Date"
+                                                        fullWidth
+                                                        label="Description / Note (Optional)"
+                                                        placeholder="e.g. Regular National Non-Working Holiday"
                                                         size="small"
-                                                        value={current.start_date || ''}
-                                                        onChange={() => {}}
+                                                        value={current.description || ''}
                                                     />
                                                 </div>
-
-                                                <div>
-                                                    <CommonDatePicker
-                                                        disabled
-                                                        isRequired
-                                                        label="End Date"
-                                                        size="small"
-                                                        value={current.end_date || ''}
-                                                        onChange={() => {}}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <CommonInput
-                                                    disabled
-                                                    fullWidth
-                                                    label="Description / Note (Optional)"
-                                                    placeholder="e.g. Regular National Non-Working Holiday"
-                                                    size="small"
-                                                    value={current.description || ''}
-                                                />
                                             </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
+                                    );
+                                })}
+                            </div>
+                        )}
                 </div>
             )}
 
@@ -2139,24 +2427,26 @@ function StepBaseContent({
                         <div className="space-y-3">
                             {transmutationRows.map((row, index) => {
                                 const isCond = Boolean(isSpecialGradeRow(row));
-                                const rKey = normalizeStr(row.label).toLowerCase() || `r_${index}`;
+                                const rKey = normalizeStr(row.label)
+                                    .toLowerCase() || `r_${index}`;
                                 const matchedOtherRow = isComparing
-                                    ? otherTransmutationRows.find((or, oIdx) => (normalizeStr(or.label).toLowerCase() || `r_${oIdx}`) === rKey)
+                                    ? otherTransmutationRows.find((or, oIdx) => (normalizeStr(or.label)
+                                        .toLowerCase() || `r_${oIdx}`) === rKey)
                                     : undefined;
                                 const rAddedOrRemoved = isComparing && !matchedOtherRow;
-                                const rModified =
-                                    isComparing && Boolean(matchedOtherRow) && serializeTransmutationRow(row) !== serializeTransmutationRow(matchedOtherRow!);
+                                const rModified
+                                    = isComparing && Boolean(matchedOtherRow) && serializeTransmutationRow(row) !== serializeTransmutationRow(matchedOtherRow!);
 
                                 return (
                                     <div
-                                        key={row.id || index}
                                         className={`p-4 rounded-xl border transition-all space-y-3 w-full ${
                                             rAddedOrRemoved || rModified
                                                 ? 'border-amber-300 dark:border-amber-700/70 bg-amber-50/20 dark:bg-amber-950/10'
                                                 : isCond
-                                                  ? 'border-slate-200 dark:border-zinc-700/70 bg-slate-50/60 dark:bg-zinc-800/50'
-                                                  : 'border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800'
+                                                    ? 'border-slate-200 dark:border-zinc-700/70 bg-slate-50/60 dark:bg-zinc-800/50'
+                                                    : 'border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800'
                                         }`}
+                                        key={row.id || index}
                                     >
                                         {/* Row 1: Rung Badge + Collapse */}
                                         <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-zinc-700/60">
@@ -2174,15 +2464,17 @@ function StepBaseContent({
                                                             : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
                                                     }`}
                                                 >
-                                                    {row.is_passing ? (
-                                                        <>
-                                                            <CheckCircleIcon className="w-3.5 h-3.5" /> Passing
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <XCircleIcon className="w-3.5 h-3.5" /> Failing
-                                                        </>
-                                                    )}
+                                                    {row.is_passing
+                                                        ? (
+                                                            <>
+                                                                <CheckCircleIcon className="w-3.5 h-3.5" /> Passing
+                                                            </>
+                                                        )
+                                                        : (
+                                                            <>
+                                                                <XCircleIcon className="w-3.5 h-3.5" /> Failing
+                                                            </>
+                                                        )}
                                                 </span>
                                                 {(rAddedOrRemoved || rModified) && (
                                                     <span className="px-2 py-0.5 rounded-full bg-amber-200/80 dark:bg-amber-900/70 text-amber-900 dark:text-amber-200 text-[10px] font-bold">
@@ -2196,25 +2488,37 @@ function StepBaseContent({
                                             </div>
 
                                             <button
-                                                aria-label={collapsedRungsStep5[index] ? 'Expand grade rung' : 'Collapse grade rung'}
+                                                aria-label={collapsedRungsStep5[index]
+                                                    ? 'Expand grade rung'
+                                                    : 'Collapse grade rung'}
                                                 className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer shrink-0"
-                                                title={collapsedRungsStep5[index] ? 'Expand grade rung' : 'Collapse grade rung'}
+                                                title={collapsedRungsStep5[index]
+                                                    ? 'Expand grade rung'
+                                                    : 'Collapse grade rung'}
                                                 type="button"
                                                 onClick={() =>
                                                     setCollapsedRungsStep5((prev) => ({ ...prev, [index]: !prev[index] }))
                                                 }
                                             >
                                                 <CaretDownIcon
-                                                    className={`w-4 h-4 transition-transform duration-200 ${collapsedRungsStep5[index] ? '-rotate-90' : 'rotate-0'}`}
+                                                    className={`w-4 h-4 transition-transform duration-200 ${collapsedRungsStep5[index]
+                                                        ? '-rotate-90'
+                                                        : 'rotate-0'}`}
                                                     weight="bold"
                                                 />
                                                 <span className="text-xs hidden sm:inline">
-                                                    {collapsedRungsStep5[index] ? 'Expand' : 'Collapse'}
+                                                    {collapsedRungsStep5[index]
+                                                        ? 'Expand'
+                                                        : 'Collapse'}
                                                 </span>
                                             </button>
                                         </div>
 
-                                        <div className={collapsedRungsStep5[index] ? 'hidden' : 'space-y-4'}>
+                                        <div
+                                            className={collapsedRungsStep5[index]
+                                                ? 'hidden'
+                                                : 'space-y-4'}
+                                        >
                                             {/* Row 2: Grade Type, Description, Status */}
                                             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
                                                 <div className="sm:col-span-4 md:col-span-3">
@@ -2228,7 +2532,9 @@ function StepBaseContent({
                                                             { label: 'Conditional', value: 'conditional' }
                                                         ]}
                                                         size="small"
-                                                        value={isCond ? 'conditional' : 'fixed'}
+                                                        value={isCond
+                                                            ? 'conditional'
+                                                            : 'fixed'}
                                                     />
                                                 </div>
 
@@ -2259,75 +2565,79 @@ function StepBaseContent({
                                                         disabled
                                                         type="button"
                                                     >
-                                                        {row.is_passing ? '✓ Passing' : '✕ Failing'}
+                                                        {row.is_passing
+                                                            ? '✓ Passing'
+                                                            : '✕ Failing'}
                                                     </button>
                                                 </div>
                                             </div>
 
                                             {/* Row 3: Mark, Min %, Max % */}
-                                            {isCond ? (
-                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                                    <div>
-                                                        <CommonInput
-                                                            description="Status grade code (e.g. INC, DRP, W, NFE)."
-                                                            disabled
-                                                            fullWidth
-                                                            isRequired
-                                                            label="Mark / Grade"
-                                                            placeholder="e.g. INC, DRP"
-                                                            size="small"
-                                                            value={row.label || ''}
-                                                        />
+                                            {isCond
+                                                ? (
+                                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                        <div>
+                                                            <CommonInput
+                                                                description="Status grade code (e.g. INC, DRP, W, NFE)."
+                                                                disabled
+                                                                fullWidth
+                                                                isRequired
+                                                                label="Mark / Grade"
+                                                                placeholder="e.g. INC, DRP"
+                                                                size="small"
+                                                                value={row.label || ''}
+                                                            />
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ) : (
-                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                                    <div>
-                                                        <CommonInput
-                                                            description="Transmuted numeric mark (e.g. 1.00, 1.25, 3.00, 5.00)."
-                                                            disabled
-                                                            fullWidth
-                                                            isRequired
-                                                            label="Mark / Grade"
-                                                            placeholder="e.g. 1.25, 3.00"
-                                                            size="small"
-                                                            value={row.label || ''}
-                                                        />
-                                                    </div>
+                                                )
+                                                : (
+                                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                        <div>
+                                                            <CommonInput
+                                                                description="Transmuted numeric mark (e.g. 1.00, 1.25, 3.00, 5.00)."
+                                                                disabled
+                                                                fullWidth
+                                                                isRequired
+                                                                label="Mark / Grade"
+                                                                placeholder="e.g. 1.25, 3.00"
+                                                                size="small"
+                                                                value={row.label || ''}
+                                                            />
+                                                        </div>
 
-                                                    <div>
-                                                        <CommonNumberInput
-                                                            description="Minimum raw percentage required for this fixed grade mark."
-                                                            disabled
-                                                            fullWidth
-                                                            isRequired
-                                                            label="Min %"
-                                                            max={100}
-                                                            min={0}
-                                                            size="small"
-                                                            step={0.5}
-                                                            suffixText="%"
-                                                            value={row.min_percentage ?? ''}
-                                                        />
-                                                    </div>
+                                                        <div>
+                                                            <CommonNumberInput
+                                                                description="Minimum raw percentage required for this fixed grade mark."
+                                                                disabled
+                                                                fullWidth
+                                                                isRequired
+                                                                label="Min %"
+                                                                max={100}
+                                                                min={0}
+                                                                size="small"
+                                                                step={0.5}
+                                                                suffixText="%"
+                                                                value={row.min_percentage ?? ''}
+                                                            />
+                                                        </div>
 
-                                                    <div>
-                                                        <CommonNumberInput
-                                                            description="Maximum raw percentage allocated to this fixed grade mark."
-                                                            disabled
-                                                            fullWidth
-                                                            isRequired
-                                                            label="Max %"
-                                                            max={100}
-                                                            min={0}
-                                                            size="small"
-                                                            step={0.5}
-                                                            suffixText="%"
-                                                            value={row.max_percentage ?? ''}
-                                                        />
+                                                        <div>
+                                                            <CommonNumberInput
+                                                                description="Maximum raw percentage allocated to this fixed grade mark."
+                                                                disabled
+                                                                fullWidth
+                                                                isRequired
+                                                                label="Max %"
+                                                                max={100}
+                                                                min={0}
+                                                                size="small"
+                                                                step={0.5}
+                                                                suffixText="%"
+                                                                value={row.max_percentage ?? ''}
+                                                            />
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            )}
+                                                )}
                                         </div>
                                     </div>
                                 );
@@ -2349,26 +2659,32 @@ function StepBaseContent({
                     ) : (
                         <div className="space-y-3">
                             {thresholds.map((item, idx) => {
-                                const thKey = buildCompositeKey([normalizeStr(item.category).toLowerCase(), normalizeStr(item.label).toLowerCase()], `th_${idx}`);
+                                const thKey = buildCompositeKey([normalizeStr(item.category)
+                                    .toLowerCase(), normalizeStr(item.label)
+                                    .toLowerCase()], `th_${idx}`);
                                 const matchedOtherTh = isComparing
                                     ? otherThresholds.find(
-                                          (oth, oIdx) =>
-                                              (buildCompositeKey([normalizeStr(oth.category).toLowerCase(), normalizeStr(oth.label).toLowerCase()], `th_${oIdx}`)) === thKey
-                                      )
+                                        (oth, oIdx) =>
+                                            (buildCompositeKey([normalizeStr(oth.category)
+                                                .toLowerCase(), normalizeStr(oth.label)
+                                                .toLowerCase()], `th_${oIdx}`)) === thKey
+                                    )
                                     : undefined;
                                 const thAddedOrRemoved = isComparing && !matchedOtherTh;
-                                const thModified =
-                                    isComparing && Boolean(matchedOtherTh) && serializeThreshold(item) !== serializeThreshold(matchedOtherTh!);
-                                const isActive = item.is_active !== undefined ? Boolean(item.is_active) : true;
+                                const thModified
+                                    = isComparing && Boolean(matchedOtherTh) && serializeThreshold(item) !== serializeThreshold(matchedOtherTh!);
+                                const isActive = item.is_active !== undefined
+                                    ? Boolean(item.is_active)
+                                    : true;
 
                                 return (
                                     <div
-                                        key={item.id || idx}
                                         className={`p-4 rounded-xl border transition-all space-y-3 w-full ${
                                             thAddedOrRemoved || thModified
                                                 ? 'border-amber-300 dark:border-amber-700/70 bg-amber-50/20 dark:bg-amber-950/10'
                                                 : 'border-slate-200 dark:border-zinc-700/70 bg-white dark:bg-zinc-800/80 shadow-xs'
                                         }`}
+                                        key={item.id || idx}
                                     >
                                         {/* Row 1: Entry number & collapse */}
                                         <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-zinc-700/60">
@@ -2399,25 +2715,37 @@ function StepBaseContent({
                                             </div>
 
                                             <button
-                                                aria-label={collapsedThresholdsStep6[idx] ? 'Expand threshold' : 'Collapse threshold'}
+                                                aria-label={collapsedThresholdsStep6[idx]
+                                                    ? 'Expand threshold'
+                                                    : 'Collapse threshold'}
                                                 className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer shrink-0"
-                                                title={collapsedThresholdsStep6[idx] ? 'Expand threshold' : 'Collapse threshold'}
+                                                title={collapsedThresholdsStep6[idx]
+                                                    ? 'Expand threshold'
+                                                    : 'Collapse threshold'}
                                                 type="button"
                                                 onClick={() =>
                                                     setCollapsedThresholdsStep6((prev) => ({ ...prev, [idx]: !prev[idx] }))
                                                 }
                                             >
                                                 <CaretDownIcon
-                                                    className={`w-4 h-4 transition-transform duration-200 ${collapsedThresholdsStep6[idx] ? '-rotate-90' : 'rotate-0'}`}
+                                                    className={`w-4 h-4 transition-transform duration-200 ${collapsedThresholdsStep6[idx]
+                                                        ? '-rotate-90'
+                                                        : 'rotate-0'}`}
                                                     weight="bold"
                                                 />
                                                 <span className="text-xs hidden sm:inline">
-                                                    {collapsedThresholdsStep6[idx] ? 'Expand' : 'Collapse'}
+                                                    {collapsedThresholdsStep6[idx]
+                                                        ? 'Expand'
+                                                        : 'Collapse'}
                                                 </span>
                                             </button>
                                         </div>
 
-                                        <div className={collapsedThresholdsStep6[idx] ? 'hidden' : 'flex flex-col gap-4'}>
+                                        <div
+                                            className={collapsedThresholdsStep6[idx]
+                                                ? 'hidden'
+                                                : 'flex flex-col gap-4'}
+                                        >
                                             {/* Row 2: Category, Threshold Name, Status */}
                                             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
                                                 <div className="sm:col-span-4 md:col-span-3">
@@ -2461,7 +2789,9 @@ function StepBaseContent({
                                                         disabled
                                                         type="button"
                                                     >
-                                                        {isActive ? '✓ Active Threshold' : '✕ Inactive'}
+                                                        {isActive
+                                                            ? '✓ Active Threshold'
+                                                            : '✕ Inactive'}
                                                     </button>
                                                 </div>
                                             </div>

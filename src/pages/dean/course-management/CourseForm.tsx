@@ -10,8 +10,6 @@ import { useDepartmentOptions } from '@pages/admin/department-management/useDepa
 import { useCourseTypeOptions } from '@pages/dean/course-management/type/useCourseTypeOptions';
 import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
 import { useMinimumGradeOptions } from '@pages/dean/course-management/useMinimumGradeOptions';
-import { getDepartmentCourseCodes } from '@services/course/course.service';
-import { generateCourseCode } from '@utils/course.util';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -25,13 +23,15 @@ import {
     PlusIcon,
     TrashIcon
 } from '@phosphor-icons/react';
+import { getDepartmentCourseCodes } from '@services/course/course.service';
 import { ComponentPropsForm } from '@type/common.type';
 import { CourseFormValues, CourseTypeRow } from '@type/course/course.type';
+import { generateCourseCode } from '@utils/course.util';
+import { checkForMessage, getFieldErrorMessage } from '@utils/form.util';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     Control, FieldPath, useController, useFieldArray, useFormState, UseFormSetValue, useWatch
 } from 'react-hook-form';
-import { checkForMessage, getFieldErrorMessage } from '@utils/form.util';
 
 type PrerequisiteField =
     | 'prerequisite_kind'
@@ -108,7 +108,8 @@ function PrerequisiteTargetCell({
                 rules={{
                     validate: function(value, formValues) {
                         return formValues.prerequisites?.[rowIndex]?.prerequisite_kind !== 'standing'
-                            || Boolean(value && String(value).trim())
+                            || Boolean(value && String(value)
+                                .trim())
                             || 'Please select a year level standing or remove the row.';
                     }
                 }}
@@ -139,7 +140,8 @@ function PrerequisiteTargetCell({
             rules={{
                 validate: function(value, formValues) {
                     return formValues.prerequisites?.[rowIndex]?.prerequisite_kind !== 'course'
-                        || Boolean(value && String(value).trim())
+                        || Boolean(value && String(value)
+                            .trim())
                         || 'Please select a prerequisite course or remove the row.';
                 }
             }}
@@ -364,7 +366,9 @@ export default function CourseForm({
                     changed = true;
                 }
             });
-            return changed ? next : prev;
+            return changed
+                ? next
+                : prev;
         });
     }, [errors.prerequisites, prerequisites]);
 
@@ -380,7 +384,9 @@ export default function CourseForm({
                     changed = true;
                 }
             });
-            return changed ? next : prev;
+            return changed
+                ? next
+                : prev;
         });
     }, [errors.course_types, courseTypes]);
 
@@ -398,7 +404,6 @@ export default function CourseForm({
         codes: []
     });
 
-
     useEffect(() => {
         let isMounted = true;
         if (!watchedDepartmentId) {
@@ -406,11 +411,12 @@ export default function CourseForm({
             return;
         }
 
-        getDepartmentCourseCodes(watchedDepartmentId).then((res) => {
-            if (isMounted && res.data) {
-                setDeptCoursesInfo(res.data);
-            }
-        });
+        getDepartmentCourseCodes(watchedDepartmentId)
+            .then((res) => {
+                if (isMounted && res.data) {
+                    setDeptCoursesInfo(res.data);
+                }
+            });
 
         return () => {
             isMounted = false;
@@ -457,7 +463,8 @@ export default function CourseForm({
             if (generatedCode) {
                 setValue('code', generatedCode, { shouldValidate: true, shouldDirty: true });
             }
-        } else {
+        }
+        else {
             if (watchedTitle !== initialTitleRef.current) {
                 if (!watchedTitle?.trim()) {
                     setValue('code', '', { shouldValidate: false, shouldDirty: true });
@@ -480,7 +487,8 @@ export default function CourseForm({
                 if (generatedCode) {
                     setValue('code', generatedCode, { shouldValidate: true, shouldDirty: true });
                 }
-            } else if (initialCodeRef.current !== null && watchedCode !== initialCodeRef.current) {
+            }
+            else if (initialCodeRef.current !== null && watchedCode !== initialCodeRef.current) {
                 setValue('code', initialCodeRef.current, { shouldValidate: true, shouldDirty: false });
             }
         }
@@ -509,9 +517,11 @@ export default function CourseForm({
         if (Object.keys(errors).length > 0) {
             if (errors.title || errors.code || errors.department_id || errors.description || errors.is_active) {
                 setInternalActiveStep(1);
-            } else if (errors.course_types) {
+            }
+            else if (errors.course_types) {
                 setInternalActiveStep(2);
-            } else if (errors.prerequisites) {
+            }
+            else if (errors.prerequisites) {
                 setInternalActiveStep(3);
             }
         }
@@ -596,7 +606,8 @@ export default function CourseForm({
                 ? undefined
                 : {
                     required: 'Course title is required',
-                    validate: (val: any) => Boolean(val && String(val).trim()) || 'Course title cannot be empty or whitespace only'
+                    validate: (val: any) => Boolean(val && String(val)
+                        .trim()) || 'Course title cannot be empty or whitespace only'
                 },
             type: 'text',
             gridCols: 3
@@ -690,12 +701,12 @@ export default function CourseForm({
 
                             return (
                                 <button
-                                    key={s.step}
                                     className={`flex items-center gap-2.5 p-2 rounded-xl text-left transition-all ${
                                         isActive
                                             ? 'bg-white dark:bg-zinc-800 shadow-sm border border-brand-300 dark:border-brand-700/60'
                                             : 'hover:bg-white/60 dark:hover:bg-zinc-800/40 opacity-80'
                                     }`}
+                                    key={s.step}
                                     type="button"
                                     onClick={() => setInternalActiveStep(s.step)}
                                 >
@@ -704,11 +715,13 @@ export default function CourseForm({
                                             isActive
                                                 ? 'bg-brand-600 text-white'
                                                 : isDone
-                                                ? 'bg-emerald-500 text-white'
-                                                : 'bg-slate-200 dark:bg-zinc-700 text-slate-600 dark:text-slate-300'
+                                                    ? 'bg-emerald-500 text-white'
+                                                    : 'bg-slate-200 dark:bg-zinc-700 text-slate-600 dark:text-slate-300'
                                         }`}
                                     >
-                                        {isDone ? <CheckCircleIcon className="w-4 h-4" /> : s.step}
+                                        {isDone
+                                            ? <CheckCircleIcon className="w-4 h-4" />
+                                            : s.step}
                                     </span>
                                     <div className="flex items-center gap-1.5 min-w-0">
                                         <span
@@ -721,7 +734,10 @@ export default function CourseForm({
                                             {s.title}
                                         </span>
                                         <span onClick={(e) => e.stopPropagation()}>
-                                            <CommonInfoTooltip content={s.subtitle} size={14} />
+                                            <CommonInfoTooltip
+                                                content={s.subtitle}
+                                                size={14}
+                                            />
                                         </span>
                                     </div>
                                 </button>
@@ -735,7 +751,10 @@ export default function CourseForm({
                             <span className="text-xs font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wide flex items-center gap-1.5">
                                 <span>Step {activeStep} of 3: {currentStepConfig?.title}</span>
                                 {currentStepConfig?.subtitle && (
-                                    <CommonInfoTooltip content={currentStepConfig.subtitle} size={14} />
+                                    <CommonInfoTooltip
+                                        content={currentStepConfig.subtitle}
+                                        size={14}
+                                    />
                                 )}
                             </span>
                             <span className="text-xs text-slate-400 font-medium">
@@ -754,7 +773,11 @@ export default function CourseForm({
             )}
 
             {/* Step 1: Overview Data */}
-            <div className={activeStep === 1 ? 'flex flex-col gap-4' : 'hidden'}>
+            <div
+                className={activeStep === 1
+                    ? 'flex flex-col gap-4'
+                    : 'hidden'}
+            >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
                     <div>
                         <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
@@ -773,7 +796,11 @@ export default function CourseForm({
             </div>
 
             {/* Step 2: Course Type */}
-            <div className={activeStep === 2 ? 'flex flex-col gap-4' : 'hidden'}>
+            <div
+                className={activeStep === 2
+                    ? 'flex flex-col gap-4'
+                    : 'hidden'}
+            >
                 <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
                         <div className="flex items-center gap-1.5">
@@ -785,8 +812,8 @@ export default function CourseForm({
                                 <CommonInfoTooltip
                                     content={courseTypesTopError}
                                     defaultOpen={firstErrorKey === 'course_types'}
-                                    variant="error"
                                     size={16}
+                                    variant="error"
                                 />
                             )}
                         </div>
@@ -798,115 +825,14 @@ export default function CourseForm({
                     </div>
 
                     {/* Course Types Card List */}
-                    {courseTypeFields.length === 0 ? (
-                        <div className="text-center py-8 px-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 flex flex-col items-center gap-2">
-                            <BookOpenIcon className="w-8 h-8 text-slate-400" />
-                            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                    {courseTypeFields.length === 0
+                        ? (
+                            <div className="text-center py-8 px-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 flex flex-col items-center gap-2">
+                                <BookOpenIcon className="w-8 h-8 text-slate-400" />
+                                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
                                 No course types added yet.
-                            </p>
-                            {!disabled && (
-                                <CommonButton
-                                    color="primary"
-                                    size="small"
-                                    startIcon={<PlusIcon className="w-4 h-4" />}
-                                    variant="outlined"
-                                    onClick={handleAddCourseType}
-                                >
-                                    Add Course Type
-                                </CommonButton>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="flex flex-col gap-3">
-                            {courseTypeFields.map((field, index) => {
-                                const currentCt = courseTypes[index];
-                                const typeOption = courseTypeOptions.find((opt) => opt.value === currentCt?.course_type_id);
-                                const isCtFirstError = firstErrorKey === courseTypeName(index, 'course_type_id');
-                                const isUnitsFirstError = firstErrorKey === courseTypeName(index, 'units');
-                                const isCreditHoursFirstError = firstErrorKey === courseTypeName(index, 'credit_hours');
-
-                                return (
-                                <div
-                                    key={field.id}
-                                    className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-xs flex flex-col gap-3"
-                                >
-                                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                                            <span className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300 flex items-center justify-center text-xs font-bold shrink-0">
-                                                {index + 1}
-                                            </span>
-                                            <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
-                                                {typeOption?.label || `Course Type #${index + 1}`}
-                                            </span>
-                                            {currentCt && (Number(currentCt.units) > 0 || Number(currentCt.credit_hours) > 0) && (
-                                                <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 shrink-0">
-                                                    {currentCt.units ?? 0} Units • {currentCt.credit_hours ?? 0} hrs
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center gap-1.5 shrink-0">
-                                            {!disabled && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleRemoveCourseType(index)}
-                                                    className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
-                                                    title="Remove Course Type"
-                                                >
-                                                    <TrashIcon className="w-4 h-4" />
-                                                    <span className="hidden sm:inline">Remove</span>
-                                                </button>
-                                            )}
-                                            <button
-                                                className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                                                title={collapsedCourseTypes[index] ? 'Expand course type' : 'Collapse course type'}
-                                                type="button"
-                                                aria-label={collapsedCourseTypes[index] ? 'Expand course type' : 'Collapse course type'}
-                                                onClick={() => toggleCourseTypeCollapse(index)}
-                                            >
-                                                <CaretDownIcon
-                                                    className={`w-4 h-4 transition-transform duration-200 ${collapsedCourseTypes[index] ? '-rotate-90' : 'rotate-0'}`}
-                                                    weight="bold"
-                                                />
-                                                <span className="text-xs hidden sm:inline">{collapsedCourseTypes[index] ? 'Expand' : 'Collapse'}</span>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div className={collapsedCourseTypes[index] ? 'hidden' : 'grid grid-cols-1 sm:grid-cols-3 gap-3 w-full'}>
-                                        <div className="w-full">
-                                            <CourseTypeSelectionCell
-                                                control={control}
-                                                courseTypeOptions={courseTypeOptions}
-                                                defaultOpenErrorTooltip={isCtFirstError}
-                                                disabled={disabled}
-                                                rowIndex={index}
-                                            />
-                                        </div>
-                                        <div className="w-full">
-                                            <CourseTypeNumberCell
-                                                control={control}
-                                                defaultOpenErrorTooltip={isUnitsFirstError}
-                                                disabled={disabled}
-                                                field="units"
-                                                rowIndex={index}
-                                            />
-                                        </div>
-                                        <div className="w-full">
-                                            <CourseTypeNumberCell
-                                                control={control}
-                                                defaultOpenErrorTooltip={isCreditHoursFirstError}
-                                                disabled={disabled}
-                                                field="credit_hours"
-                                                rowIndex={index}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                );
-                            })}
-
-                            {!disabled && courseTypes.length < courseTypeOptions.length && (
-                                <div className="flex justify-end pt-1">
+                                </p>
+                                {!disabled && (
                                     <CommonButton
                                         color="primary"
                                         size="small"
@@ -914,17 +840,136 @@ export default function CourseForm({
                                         variant="outlined"
                                         onClick={handleAddCourseType}
                                     >
-                                        Add Course Type
+                                    Add Course Type
                                     </CommonButton>
-                                </div>
-                            )}
-                        </div>
-                    )}
+                                )}
+                            </div>
+                        )
+                        : (
+                            <div className="flex flex-col gap-3">
+                                {courseTypeFields.map((field, index) => {
+                                    const currentCt = courseTypes[index];
+                                    const typeOption = courseTypeOptions.find((opt) => opt.value === currentCt?.course_type_id);
+                                    const isCtFirstError = firstErrorKey === courseTypeName(index, 'course_type_id');
+                                    const isUnitsFirstError = firstErrorKey === courseTypeName(index, 'units');
+                                    const isCreditHoursFirstError = firstErrorKey === courseTypeName(index, 'credit_hours');
+
+                                    return (
+                                        <div
+                                            className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-xs flex flex-col gap-3"
+                                            key={field.id}
+                                        >
+                                            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                    <span className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300 flex items-center justify-center text-xs font-bold shrink-0">
+                                                        {index + 1}
+                                                    </span>
+                                                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                                        {typeOption?.label || `Course Type #${index + 1}`}
+                                                    </span>
+                                                    {currentCt && (Number(currentCt.units) > 0 || Number(currentCt.credit_hours) > 0) && (
+                                                        <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 shrink-0">
+                                                            {currentCt.units ?? 0} Units • {currentCt.credit_hours ?? 0} hrs
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-1.5 shrink-0">
+                                                    {!disabled && (
+                                                        <button
+                                                            className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
+                                                            title="Remove Course Type"
+                                                            type="button"
+                                                            onClick={() => handleRemoveCourseType(index)}
+                                                        >
+                                                            <TrashIcon className="w-4 h-4" />
+                                                            <span className="hidden sm:inline">Remove</span>
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        aria-label={collapsedCourseTypes[index]
+                                                            ? 'Expand course type'
+                                                            : 'Collapse course type'}
+                                                        className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                                                        title={collapsedCourseTypes[index]
+                                                            ? 'Expand course type'
+                                                            : 'Collapse course type'}
+                                                        type="button"
+                                                        onClick={() => toggleCourseTypeCollapse(index)}
+                                                    >
+                                                        <CaretDownIcon
+                                                            className={`w-4 h-4 transition-transform duration-200 ${collapsedCourseTypes[index]
+                                                                ? '-rotate-90'
+                                                                : 'rotate-0'}`}
+                                                            weight="bold"
+                                                        />
+                                                        <span className="text-xs hidden sm:inline">{collapsedCourseTypes[index]
+                                                            ? 'Expand'
+                                                            : 'Collapse'}</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                className={collapsedCourseTypes[index]
+                                                    ? 'hidden'
+                                                    : 'grid grid-cols-1 sm:grid-cols-3 gap-3 w-full'}
+                                            >
+                                                <div className="w-full">
+                                                    <CourseTypeSelectionCell
+                                                        control={control}
+                                                        courseTypeOptions={courseTypeOptions}
+                                                        defaultOpenErrorTooltip={isCtFirstError}
+                                                        disabled={disabled}
+                                                        rowIndex={index}
+                                                    />
+                                                </div>
+                                                <div className="w-full">
+                                                    <CourseTypeNumberCell
+                                                        control={control}
+                                                        defaultOpenErrorTooltip={isUnitsFirstError}
+                                                        disabled={disabled}
+                                                        field="units"
+                                                        rowIndex={index}
+                                                    />
+                                                </div>
+                                                <div className="w-full">
+                                                    <CourseTypeNumberCell
+                                                        control={control}
+                                                        defaultOpenErrorTooltip={isCreditHoursFirstError}
+                                                        disabled={disabled}
+                                                        field="credit_hours"
+                                                        rowIndex={index}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
+                                {!disabled && courseTypes.length < courseTypeOptions.length && (
+                                    <div className="flex justify-end pt-1">
+                                        <CommonButton
+                                            color="primary"
+                                            size="small"
+                                            startIcon={<PlusIcon className="w-4 h-4" />}
+                                            variant="outlined"
+                                            onClick={handleAddCourseType}
+                                        >
+                                        Add Course Type
+                                        </CommonButton>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                 </div>
             </div>
 
             {/* Step 3: Prerequisite */}
-            <div className={activeStep === 3 ? 'flex flex-col gap-4' : 'hidden'}>
+            <div
+                className={activeStep === 3
+                    ? 'flex flex-col gap-4'
+                    : 'hidden'}
+            >
                 <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
                         <div>
@@ -974,9 +1019,9 @@ export default function CourseForm({
                             {prereqFields.map((field, index) => {
                                 const currentKind = prerequisites?.[index]?.prerequisite_kind ?? 'course';
                                 const isCourseKind = currentKind === 'course';
-                                const isPrereqTargetFirstError =
-                                    firstErrorKey === prerequisiteName(index, 'course_id') ||
-                                    firstErrorKey === prerequisiteName(index, 'year_level_required');
+                                const isPrereqTargetFirstError
+                                    = firstErrorKey === prerequisiteName(index, 'course_id')
+                                    || firstErrorKey === prerequisiteName(index, 'year_level_required');
 
                                 return (
                                     <div
@@ -991,10 +1036,14 @@ export default function CourseForm({
                                                 <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
                                                     {isCourseKind
                                                         ? (allCourseOptions.find((opt) => opt.value === prerequisites?.[index]?.course_id)?.label || `Prerequisite #${index + 1}`)
-                                                        : (prerequisites?.[index]?.year_level_required ? `Year Standing: ${prerequisites?.[index]?.year_level_required}` : `Prerequisite #${index + 1}`)}
+                                                        : (prerequisites?.[index]?.year_level_required
+                                                            ? `Year Standing: ${prerequisites?.[index]?.year_level_required}`
+                                                            : `Prerequisite #${index + 1}`)}
                                                 </span>
                                                 <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 shrink-0">
-                                                    {currentKind === 'course' ? 'Course' : 'Standing'} • {prerequisites?.[index]?.prerequisite_type || 'Required'}
+                                                    {currentKind === 'course'
+                                                        ? 'Course'
+                                                        : 'Standing'} • {prerequisites?.[index]?.prerequisite_type || 'Required'}
                                                 </span>
                                             </div>
                                             <div className="flex items-center gap-1.5 shrink-0">
@@ -1010,22 +1059,34 @@ export default function CourseForm({
                                                     </button>
                                                 )}
                                                 <button
+                                                    aria-label={collapsedPrereqs[index]
+                                                        ? 'Expand prerequisite'
+                                                        : 'Collapse prerequisite'}
                                                     className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                                                    title={collapsedPrereqs[index] ? 'Expand prerequisite' : 'Collapse prerequisite'}
+                                                    title={collapsedPrereqs[index]
+                                                        ? 'Expand prerequisite'
+                                                        : 'Collapse prerequisite'}
                                                     type="button"
-                                                    aria-label={collapsedPrereqs[index] ? 'Expand prerequisite' : 'Collapse prerequisite'}
                                                     onClick={() => togglePrereqCollapse(index)}
                                                 >
                                                     <CaretDownIcon
-                                                        className={`w-4 h-4 transition-transform duration-200 ${collapsedPrereqs[index] ? '-rotate-90' : 'rotate-0'}`}
+                                                        className={`w-4 h-4 transition-transform duration-200 ${collapsedPrereqs[index]
+                                                            ? '-rotate-90'
+                                                            : 'rotate-0'}`}
                                                         weight="bold"
                                                     />
-                                                    <span className="text-xs hidden sm:inline">{collapsedPrereqs[index] ? 'Expand' : 'Collapse'}</span>
+                                                    <span className="text-xs hidden sm:inline">{collapsedPrereqs[index]
+                                                        ? 'Expand'
+                                                        : 'Collapse'}</span>
                                                 </button>
                                             </div>
                                         </div>
 
-                                        <div className={collapsedPrereqs[index] ? 'hidden' : 'space-y-3'}>
+                                        <div
+                                            className={collapsedPrereqs[index]
+                                                ? 'hidden'
+                                                : 'space-y-3'}
+                                        >
                                             {/* Row 1: Kind & Course / Year Level */}
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
                                                 <div className="w-full">
@@ -1094,42 +1155,50 @@ export default function CourseForm({
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {activeStep < 3 ? (
-                            <CommonButton
-                                color="primary"
-                                endIcon={<ArrowRightIcon className="w-4 h-4" />}
-                                size="medium"
-                                variant="contained"
-                                onClick={() => setInternalActiveStep((prev) => prev + 1)}
-                            >
-                                Next Step
-                            </CommonButton>
-                        ) : disabled ? (
-                            onSwitchToEdit ? (
+                        {activeStep < 3
+                            ? (
                                 <CommonButton
                                     color="primary"
+                                    endIcon={<ArrowRightIcon className="w-4 h-4" />}
                                     size="medium"
-                                    startIcon={<PencilSimpleIcon className="w-4 h-4" />}
                                     variant="contained"
-                                    onClick={() => onSwitchToEdit(activeStep)}
+                                    onClick={() => setInternalActiveStep((prev) => prev + 1)}
                                 >
-                                    Edit Course
+                                Next Step
                                 </CommonButton>
-                            ) : null
-                        ) : (
-                            <CommonButton
-                                color="primary"
-                                disabled={isSubmitting}
-                                loading={isSubmitting}
-                                form={formProps.id}
-                                size="medium"
-                                startIcon={<FloppyDiskIcon className="w-4 h-4" />}
-                                type="submit"
-                                variant="contained"
-                            >
-                                {isCodeDisabled ? 'Save Changes' : 'Save Course'}
-                            </CommonButton>
-                        )}
+                            )
+                            : disabled
+                                ? (
+                                    onSwitchToEdit
+                                        ? (
+                                            <CommonButton
+                                                color="primary"
+                                                size="medium"
+                                                startIcon={<PencilSimpleIcon className="w-4 h-4" />}
+                                                variant="contained"
+                                                onClick={() => onSwitchToEdit(activeStep)}
+                                            >
+                                    Edit Course
+                                            </CommonButton>
+                                        )
+                                        : null
+                                )
+                                : (
+                                    <CommonButton
+                                        color="primary"
+                                        disabled={isSubmitting}
+                                        form={formProps.id}
+                                        loading={isSubmitting}
+                                        size="medium"
+                                        startIcon={<FloppyDiskIcon className="w-4 h-4" />}
+                                        type="submit"
+                                        variant="contained"
+                                    >
+                                        {isCodeDisabled
+                                            ? 'Save Changes'
+                                            : 'Save Course'}
+                                    </CommonButton>
+                                )}
                     </div>
                 </div>
             )}

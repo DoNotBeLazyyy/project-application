@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
+import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import PageLoadingFallback from '@components/loading/PageLoadingFallback';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
@@ -13,23 +14,23 @@ import {
     ListBulletsIcon,
     PlusIcon
 } from '@phosphor-icons/react';
-import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import { changeMonthUtil } from '@utils/calendar.util';
 import { DateTime } from 'luxon';
 import { useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import CalendarActionMenu from './CalendarActionMenu';
-import { CalendarAgendaView } from './CalendarAgendaView';
-import { CalendarDayView } from './CalendarDayView';
-import { CalendarEventDetailModal } from './CalendarEventDetailModal';
-import { CalendarMonthView } from './CalendarMonthView';
-import { CalendarWeekView } from './CalendarWeekView';
+
 import {
     CALENDAR_CATEGORIES,
     CalendarEventCategory,
     CalendarViewMode,
     UnifiedCalendarEvent
 } from './calendar.types';
+import CalendarActionMenu from './CalendarActionMenu';
+import { CalendarAgendaView } from './CalendarAgendaView';
+import { CalendarDayView } from './CalendarDayView';
+import { CalendarEventDetailModal } from './CalendarEventDetailModal';
+import { CalendarMonthView } from './CalendarMonthView';
+import { CalendarWeekView } from './CalendarWeekView';
 import { useCalendarData } from './useCalendarData';
 
 export default function CalendarPage() {
@@ -56,16 +57,16 @@ export default function CalendarPage() {
     // Role-specific subtitle
     const roleSubtitle = useMemo(() => {
         switch (currentRole) {
-            case 'Student':
-                return 'Track your class timetable, assessment due dates, and campus events in one place.';
-            case 'Faculty':
-                return 'Manage your instruction schedule, grading deadlines, and institutional activities.';
-            case 'Dean':
-                return 'Oversee college milestones, loading periods, and campus-wide events.';
-            case 'Registrar':
-                return 'Monitor enrollment windows, grade submission deadlines, and academic calendar dates.';
-            default:
-                return 'Centralized institutional calendar, academic terms, and campus events.';
+        case 'Student':
+            return 'Track your class timetable, assessment due dates, and campus events in one place.';
+        case 'Faculty':
+            return 'Manage your instruction schedule, grading deadlines, and institutional activities.';
+        case 'Dean':
+            return 'Oversee college milestones, loading periods, and campus-wide events.';
+        case 'Registrar':
+            return 'Monitor enrollment windows, grade submission deadlines, and academic calendar dates.';
+        default:
+            return 'Centralized institutional calendar, academic terms, and campus events.';
         }
     }, [currentRole]);
 
@@ -76,12 +77,14 @@ export default function CalendarPage() {
             next.setDate(next.getDate() - 1);
             setSelectedDate(next);
             setCurrentDate(next);
-        } else if (viewMode === 'week') {
+        }
+        else if (viewMode === 'week') {
             const next = new Date(currentDate);
             next.setDate(next.getDate() - 7);
             setCurrentDate(next);
             setSelectedDate(next);
-        } else {
+        }
+        else {
             setCurrentDate((prev) => changeMonthUtil(prev, -1));
         }
     };
@@ -92,12 +95,14 @@ export default function CalendarPage() {
             next.setDate(next.getDate() + 1);
             setSelectedDate(next);
             setCurrentDate(next);
-        } else if (viewMode === 'week') {
+        }
+        else if (viewMode === 'week') {
             const next = new Date(currentDate);
             next.setDate(next.getDate() + 7);
             setCurrentDate(next);
             setSelectedDate(next);
-        } else {
+        }
+        else {
             setCurrentDate((prev) => changeMonthUtil(prev, 1));
         }
     };
@@ -110,7 +115,8 @@ export default function CalendarPage() {
                 if (next.size > 1) {
                     next.delete(catId);
                 }
-            } else {
+            }
+            else {
                 next.add(catId);
             }
             return next;
@@ -148,24 +154,43 @@ export default function CalendarPage() {
     const VIEW_MODE_LABELS: Record<CalendarViewMode, { label: string; icon: React.ReactNode }> = {
         month: {
             label: 'Month View',
-            icon: <GridFourIcon className="text-blue-600" size={14} weight="bold" />
+            icon: <GridFourIcon
+                className="text-blue-600"
+                size={14}
+                weight="bold"
+            />
         },
         week: {
             label: 'Week View',
-            icon: <CalendarDotsIcon className="text-blue-600" size={14} weight="bold" />
+            icon: <CalendarDotsIcon
+                className="text-blue-600"
+                size={14}
+                weight="bold"
+            />
         },
         day: {
             label: 'Day View',
-            icon: <ClockIcon className="text-blue-600" size={14} weight="bold" />
+            icon: <ClockIcon
+                className="text-blue-600"
+                size={14}
+                weight="bold"
+            />
         },
         agenda: {
             label: 'Agenda View',
-            icon: <ListBulletsIcon className="text-blue-600" size={14} weight="bold" />
+            icon: <ListBulletsIcon
+                className="text-blue-600"
+                size={14}
+                weight="bold"
+            />
         }
     };
 
     const pickerDateValue = useMemo(() => {
-        return DateTime.fromJSDate(viewMode === 'day' ? selectedDate : currentDate).toISODate() || '';
+        return DateTime.fromJSDate(viewMode === 'day'
+            ? selectedDate
+            : currentDate)
+            .toISODate() || '';
     }, [viewMode, selectedDate, currentDate]);
 
     const handlePickerChange = (dateStr: string) => {
@@ -188,13 +213,20 @@ export default function CalendarPage() {
 
     return (
         <CommonCard
-            className="flex flex-col h-full w-full overflow-hidden"
             cardHeaderProps={{
                 title: (
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                         <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs shrink-0">
-                            <CalendarBlankIcon className="sm:hidden" size={18} weight="duotone" />
-                            <CalendarBlankIcon className="hidden sm:inline" size={22} weight="duotone" />
+                            <CalendarBlankIcon
+                                className="sm:hidden"
+                                size={18}
+                                weight="duotone"
+                            />
+                            <CalendarBlankIcon
+                                className="hidden sm:inline"
+                                size={22}
+                                weight="duotone"
+                            />
                         </div>
                         <h1 className="text-xs sm:text-base md:text-xl font-bold text-(--mui-palette-text-primary) tracking-tight m-0 inline-flex items-center gap-1.5 flex-wrap min-w-0">
                             <span>Academic & Campus Calendar</span>
@@ -210,7 +242,12 @@ export default function CalendarPage() {
                                 className="h-9 px-3 text-xs font-semibold shadow-xs"
                                 color="primary"
                                 size="small"
-                                startIcon={<PlusIcon size={16} weight="bold" />}
+                                startIcon={(
+                                    <PlusIcon
+                                        size={16}
+                                        weight="bold"
+                                    />
+                                )}
                                 variant="contained"
                                 onClick={() => handleCreateEvent()}
                             >
@@ -232,8 +269,11 @@ export default function CalendarPage() {
                     </div>
                 )
             }}
+            className="flex flex-col h-full w-full overflow-hidden"
             sx={{
-                p: { xs: '12px !important', sm: '16px !important', md: '24px !important' }
+                p: {
+                    xs: '12px !important', sm: '16px !important', md: '24px !important'
+                }
             }}
         >
             {/* Navigation & View Toggle Toolbar + Filter Row */}
@@ -256,7 +296,9 @@ export default function CalendarPage() {
                             <div className="flex-1 min-w-0 sm:w-[165px] sm:flex-initial">
                                 <CommonDatePicker
                                     containerClassName="w-full"
-                                    format={viewMode === 'month' || viewMode === 'agenda' ? 'MMMM yyyy' : 'MMM d, yyyy'}
+                                    format={viewMode === 'month' || viewMode === 'agenda'
+                                        ? 'MMMM yyyy'
+                                        : 'MMM d, yyyy'}
                                     fullWidth
                                     hasToday
                                     size="small"
@@ -373,16 +415,20 @@ export default function CalendarPage() {
                         const isChecked = activeCategories.has(cat.id);
                         return (
                             <button
-                                key={cat.id}
                                 className={`px-2.5 py-1 rounded-full font-semibold border flex items-center gap-1.5 transition-all cursor-pointer ${
                                     isChecked
                                         ? cat.bgClass
                                         : 'bg-white/50 dark:bg-neutral-800/50 text-neutral-400 border-(--mui-palette-divider) opacity-60 hover:opacity-90'
                                 }`}
+                                key={cat.id}
                                 type="button"
                                 onClick={() => toggleCategory(cat.id)}
                             >
-                                <span className={`w-2 h-2 rounded-full ${isChecked ? cat.dotClass : 'bg-neutral-300 dark:bg-neutral-600'}`} />
+                                <span
+                                    className={`w-2 h-2 rounded-full ${isChecked
+                                        ? cat.dotClass
+                                        : 'bg-neutral-300 dark:bg-neutral-600'}`}
+                                />
                                 {cat.label}
                             </button>
                         );
@@ -392,48 +438,50 @@ export default function CalendarPage() {
 
             {/* Main Calendar View Area - Full Width */}
             <div className="flex-1 min-h-0 flex flex-col overflow-hidden p-1 sm:p-3 md:p-4">
-                {isLoading && events.length === 0 ? (
-                    <div className="p-16 flex justify-center">
-                        <PageLoadingFallback />
-                    </div>
-                ) : (
-                    <>
-                        {viewMode === 'month' && (
-                            <CalendarMonthView
-                                canCreateEvent={canCreateEvents}
-                                currentDate={currentDate}
-                                events={filteredEvents}
-                                selectedDate={selectedDate}
-                                onCreateEvent={handleCreateEvent}
-                                onSelectDate={setSelectedDate}
-                                onSelectEvent={handleOpenEventModal}
-                                onViewDay={handleDayViewJump}
-                            />
-                        )}
-                        {viewMode === 'week' && (
-                            <CalendarWeekView
-                                currentDate={currentDate}
-                                events={filteredEvents}
-                                selectedDate={selectedDate}
-                                onSelectDate={setSelectedDate}
-                                onSelectEvent={handleOpenEventModal}
-                            />
-                        )}
-                        {viewMode === 'day' && (
-                            <CalendarDayView
-                                date={selectedDate}
-                                events={filteredEvents}
-                                onSelectEvent={handleOpenEventModal}
-                            />
-                        )}
-                        {viewMode === 'agenda' && (
-                            <CalendarAgendaView
-                                events={filteredEvents}
-                                onSelectEvent={handleOpenEventModal}
-                            />
-                        )}
-                    </>
-                )}
+                {isLoading && events.length === 0
+                    ? (
+                        <div className="p-16 flex justify-center">
+                            <PageLoadingFallback />
+                        </div>
+                    )
+                    : (
+                        <>
+                            {viewMode === 'month' && (
+                                <CalendarMonthView
+                                    canCreateEvent={canCreateEvents}
+                                    currentDate={currentDate}
+                                    events={filteredEvents}
+                                    selectedDate={selectedDate}
+                                    onCreateEvent={handleCreateEvent}
+                                    onSelectDate={setSelectedDate}
+                                    onSelectEvent={handleOpenEventModal}
+                                    onViewDay={handleDayViewJump}
+                                />
+                            )}
+                            {viewMode === 'week' && (
+                                <CalendarWeekView
+                                    currentDate={currentDate}
+                                    events={filteredEvents}
+                                    selectedDate={selectedDate}
+                                    onSelectDate={setSelectedDate}
+                                    onSelectEvent={handleOpenEventModal}
+                                />
+                            )}
+                            {viewMode === 'day' && (
+                                <CalendarDayView
+                                    date={selectedDate}
+                                    events={filteredEvents}
+                                    onSelectEvent={handleOpenEventModal}
+                                />
+                            )}
+                            {viewMode === 'agenda' && (
+                                <CalendarAgendaView
+                                    events={filteredEvents}
+                                    onSelectEvent={handleOpenEventModal}
+                                />
+                            )}
+                        </>
+                    )}
             </div>
 
             {/* Event Detail Modal */}

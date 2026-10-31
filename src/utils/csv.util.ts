@@ -151,7 +151,8 @@ const COMMON_SYNONYMS: Record<string, string[]> = {
 };
 
 export function normalizeHeader(str: string): string {
-    return (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    return (str || '').toLowerCase()
+        .replace(/[^a-z0-9]/g, '');
 }
 
 export function detectDelimiter(text: string): string {
@@ -244,7 +245,8 @@ export function splitCsvRecords(rawText: string): string[][] {
         if (char === '\r') {
             if (text[index + 1] === '\n') {
                 index += 2;
-            } else {
+            }
+            else {
                 index += 1;
             }
             pushRecord();
@@ -271,12 +273,15 @@ export function splitCsvRecords(rawText: string): string[][] {
 }
 
 export function matchColumnHeader(header: string, col: CsvTemplateColumn): boolean {
-    const hRaw = (header || '').trim().toLowerCase();
+    const hRaw = (header || '').trim()
+        .toLowerCase();
     const hNorm = normalizeHeader(header);
     if (!hNorm) return false;
 
     // 1. Exact match on key or label
-    if (hRaw === col.key.trim().toLowerCase() || hRaw === col.label.trim().toLowerCase()) {
+    if (hRaw === col.key.trim()
+        .toLowerCase() || hRaw === col.label.trim()
+        .toLowerCase()) {
         return true;
     }
 
@@ -288,7 +293,8 @@ export function matchColumnHeader(header: string, col: CsvTemplateColumn): boole
     // 3. Explicit aliases on the column definition
     if (col.aliases && col.aliases.length > 0) {
         for (const alias of col.aliases) {
-            if (hRaw === alias.trim().toLowerCase() || hNorm === normalizeHeader(alias)) {
+            if (hRaw === alias.trim()
+                .toLowerCase() || hNorm === normalizeHeader(alias)) {
                 return true;
             }
         }
@@ -359,7 +365,9 @@ export function matchHeadersToColumns(headers: string[], columns: CsvTemplateCol
 export function parseCsvWithColumns(text: string, columns: CsvTemplateColumn[]): CsvParseResult {
     const records = splitCsvRecords(text);
     if (!records.length) {
-        return { missingHeaders: [], missingValues: [], rows: [], unknownHeaders: [] };
+        return {
+            missingHeaders: [], missingValues: [], rows: [], unknownHeaders: []
+        };
     }
 
     const headers = records[0];
@@ -393,7 +401,9 @@ export function parseCsvWithColumns(text: string, columns: CsvTemplateColumn[]):
         });
     });
 
-    return { missingHeaders, missingValues, rows, unknownHeaders };
+    return {
+        missingHeaders, missingValues, rows, unknownHeaders
+    };
 }
 
 export function isHintRecord(values: string[], matchedColumns: (CsvTemplateColumn | null)[]): boolean {
@@ -412,13 +422,17 @@ export function isHintRecord(values: string[], matchedColumns: (CsvTemplateColum
     // The downloaded template's example row is each column's sample (or cleaned hint) verbatim
     return matchedColumns.every((col, index) => {
         if (!col?.hint && col?.sample === undefined) return true;
-        const val = (values[index] ?? '').trim().toLowerCase();
+        const val = (values[index] ?? '').trim()
+            .toLowerCase();
         const candidates = [col.sample, col.hint, cleanSampleFromHint(col.hint)]
             .filter((candidate): candidate is string => candidate !== undefined)
-            .map((candidate) => candidate.trim().toLowerCase());
+            .map((candidate) => candidate.trim()
+                .toLowerCase());
 
         if (col.hint) {
-            candidates.push(col.hint.trim().toLowerCase().replace(/^e\.g\.?\s*/i, ''));
+            candidates.push(col.hint.trim()
+                .toLowerCase()
+                .replace(/^e\.g\.?\s*/i, ''));
         }
 
         return candidates.includes(val);
@@ -427,13 +441,18 @@ export function isHintRecord(values: string[], matchedColumns: (CsvTemplateColum
 
 export function cleanSampleFromHint(hint?: string): string {
     if (!hint) return '';
-    let val = hint.replace(/^e\.g\.?\s*/i, '').trim();
+    let val = hint.replace(/^e\.g\.?\s*/i, '')
+        .trim();
     if (val.includes('|')) {
-        val = val.split('|')[0].trim().replace(/\*$/, '');
-    } else if (val.includes(',') && !val.toLowerCase().includes('optional')) {
+        val = val.split('|')[0].trim()
+            .replace(/\*$/, '');
+    }
+    else if (val.includes(',') && !val.toLowerCase()
+        .includes('optional')) {
         val = val.split(',')[0].trim();
     }
-    val = val.replace(/\s*\(optional.*?\)$/i, '').trim();
+    val = val.replace(/\s*\(optional.*?\)$/i, '')
+        .trim();
     return val;
 }
 

@@ -8,10 +8,10 @@ interface QuestionListProps {
     configuredTotalPoints?: number;
     expandedQuestionId: string;
     questions: AssessmentQuestion[];
-    onAddQuestion: () => void;
+    onAddQuestion: VoidFunction;
     onDeleteQuestion: (id: string) => Promise<void>;
     onEditQuestion: (question: AssessmentQuestion) => void;
-    onImportQuestions: () => void;
+    onImportQuestions: VoidFunction;
     onSyncTotalPoints?: (newTotal: number) => void;
     onToggleExpand: (id: string) => void;
 }
@@ -61,7 +61,12 @@ export default function QuestionList({
                         color="inherit"
                         disabled={!assessmentDbId}
                         size="small"
-                        startIcon={<ArrowLineUpIcon size={14} weight="bold" />}
+                        startIcon={(
+                            <ArrowLineUpIcon
+                                size={14}
+                                weight="bold"
+                            />
+                        )}
                         variant="outlined"
                         onClick={onImportQuestions}
                     >
@@ -70,7 +75,12 @@ export default function QuestionList({
                     <CommonButton
                         disabled={!assessmentDbId}
                         size="small"
-                        startIcon={<PlusIcon size={14} weight="bold" />}
+                        startIcon={(
+                            <PlusIcon
+                                size={14}
+                                weight="bold"
+                            />
+                        )}
                         variant="contained"
                         onClick={onAddQuestion}
                     >
@@ -82,7 +92,11 @@ export default function QuestionList({
             {hasDiscrepancy && (
                 <div className="bg-(--mui-palette-warning-main)/10 border border-(--mui-palette-warning-main)/30 flex flex-wrap gap-2 items-center justify-between p-2.5 rounded-lg">
                     <div className="flex gap-1.5 items-center text-(--mui-palette-warning-main) text-xs">
-                        <WarningCircleIcon className="shrink-0" size={16} weight="fill" />
+                        <WarningCircleIcon
+                            className="shrink-0"
+                            size={16}
+                            weight="fill"
+                        />
                         <span>
                             Question points sum to <strong>{totalPoints} pts</strong>, but assessment settings specify <strong>{configuredTotalPoints} pts</strong>.
                         </span>
@@ -91,7 +105,12 @@ export default function QuestionList({
                         <CommonButton
                             color="inherit"
                             size="small"
-                            startIcon={<ArrowsClockwiseIcon size={13} weight="bold" />}
+                            startIcon={(
+                                <ArrowsClockwiseIcon
+                                    size={13}
+                                    weight="bold"
+                                />
+                            )}
                             variant="outlined"
                             onClick={() => onSyncTotalPoints(totalPoints)}
                         >

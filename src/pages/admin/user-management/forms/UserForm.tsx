@@ -26,7 +26,8 @@ export default function UserForm({
                 ? undefined
                 : {
                     required: 'First name is required',
-                    validate: (v: any) => Boolean(v && String(v).trim()) || 'First name cannot be empty or whitespace only'
+                    validate: (v: any) => Boolean(v && String(v)
+                        .trim()) || 'First name cannot be empty or whitespace only'
                 },
             type: 'text'
         },
@@ -38,7 +39,8 @@ export default function UserForm({
                 ? undefined
                 : {
                     required: 'Last name is required',
-                    validate: (v: any) => Boolean(v && String(v).trim()) || 'Last name cannot be empty or whitespace only'
+                    validate: (v: any) => Boolean(v && String(v)
+                        .trim()) || 'Last name cannot be empty or whitespace only'
                 },
             type: 'text'
         },
@@ -76,10 +78,12 @@ export default function UserForm({
         }
     ];
 
-    return <CommonForm
-        control={control}
-        fields={fields}
-        formProps={formProps}
-        hasHelper
-    />;
+    return (
+        <CommonForm
+            control={control}
+            fields={fields}
+            formProps={formProps}
+            hasHelper
+        />
+    );
 }

@@ -27,7 +27,10 @@ export default function AiAssistantButton() {
                 }}
                 onClick={toggleOpen}
             >
-                <SparkleIcon size={20} weight="fill" />
+                <SparkleIcon
+                    size={20}
+                    weight="fill"
+                />
             </IconButton>
         </Tooltip>
     );

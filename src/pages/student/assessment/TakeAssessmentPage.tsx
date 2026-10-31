@@ -158,8 +158,12 @@ export default function TakeAssessmentPage() {
 
             const result = await saveStudentAnswer(submissionId, {
                 question_id: questionId,
-                answer_text: isChoice ? '' : value,
-                choice_id: isChoice ? value : ''
+                answer_text: isChoice
+                    ? ''
+                    : value,
+                choice_id: isChoice
+                    ? value
+                    : ''
             });
 
             return result.error?.message ?? null;
@@ -262,7 +266,12 @@ export default function TakeAssessmentPage() {
                     <CommonButton
                         color="inherit"
                         size="small"
-                        startIcon={<ArrowLeftIcon size={16} weight="bold" />}
+                        startIcon={(
+                            <ArrowLeftIcon
+                                size={16}
+                                weight="bold"
+                            />
+                        )}
                         variant="outlined"
                         onClick={function() {
                             navigate(`/student/subjects/${assessment?.enrollment_id || enrollmentId}?tab=assessments`);
@@ -271,35 +280,47 @@ export default function TakeAssessmentPage() {
                         Back to Subject
                     </CommonButton>
                     <CommonBadgeStatus
-                        label={assessment.has_active_submission ? 'In Progress' : 'Ready to Take'}
-                        variant={assessment.has_active_submission ? 'warning' : 'info'}
+                        label={assessment.has_active_submission
+                            ? 'In Progress'
+                            : 'Ready to Take'}
+                        variant={assessment.has_active_submission
+                            ? 'warning'
+                            : 'info'}
                     />
                 </div>
 
                 <div className="flex flex-col items-center text-center gap-6 py-4">
                     <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-3xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60 shadow-xs">
-                        <ExamIcon size={36} weight="duotone" />
+                        <ExamIcon
+                            size={36}
+                            weight="duotone"
+                        />
                     </div>
 
                     <div className="flex flex-col gap-2 max-w-xl">
                         <h1 className="font-bold text-slate-900 dark:text-slate-100 text-2xl sm:text-3xl tracking-tight">
                             {assessment.title}
                         </h1>
-                        {assessment.description ? (
-                            <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
-                                {assessment.description}
-                            </p>
-                        ) : (
-                            <p className="text-slate-400 text-xs italic">
+                        {assessment.description
+                            ? (
+                                <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                                    {assessment.description}
+                                </p>
+                            )
+                            : (
+                                <p className="text-slate-400 text-xs italic">
                                 Please review the assessment guidelines below before starting.
-                            </p>
-                        )}
+                                </p>
+                            )}
                     </div>
 
                     {/* Metric Badges Grid */}
                     <div className="gap-3 sm:gap-4 grid grid-cols-2 sm:grid-cols-4 w-full">
                         <div className="bg-slate-50/80 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 p-3.5 rounded-2xl flex flex-col items-center gap-1 shadow-2xs">
-                            <TrophyIcon size={20} className="text-amber-500" />
+                            <TrophyIcon
+                                className="text-amber-500"
+                                size={20}
+                            />
                             <span className="font-bold text-slate-900 dark:text-slate-100 text-lg">
                                 {assessment.total_points} pts
                             </span>
@@ -307,15 +328,23 @@ export default function TakeAssessmentPage() {
                         </div>
 
                         <div className="bg-slate-50/80 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 p-3.5 rounded-2xl flex flex-col items-center gap-1 shadow-2xs">
-                            <ClockIcon size={20} className="text-blue-500" />
+                            <ClockIcon
+                                className="text-blue-500"
+                                size={20}
+                            />
                             <span className="font-bold text-slate-900 dark:text-slate-100 text-lg">
-                                {assessment.time_limit_minutes ? `${assessment.time_limit_minutes} min` : 'Untimed'}
+                                {assessment.time_limit_minutes
+                                    ? `${assessment.time_limit_minutes} min`
+                                    : 'Untimed'}
                             </span>
                             <span className="text-xs text-slate-500 dark:text-slate-400">Time Limit</span>
                         </div>
 
                         <div className="bg-slate-50/80 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 p-3.5 rounded-2xl flex flex-col items-center gap-1 shadow-2xs">
-                            <ShieldCheckIcon size={20} className="text-purple-500" />
+                            <ShieldCheckIcon
+                                className="text-purple-500"
+                                size={20}
+                            />
                             <span className="font-bold text-slate-900 dark:text-slate-100 text-lg">
                                 {attemptsUsed} / {maxAttempts}
                             </span>
@@ -323,9 +352,15 @@ export default function TakeAssessmentPage() {
                         </div>
 
                         <div className="bg-slate-50/80 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 p-3.5 rounded-2xl flex flex-col items-center gap-1 shadow-2xs">
-                            <CalendarDotsIcon size={20} className="text-emerald-500" />
+                            <CalendarDotsIcon
+                                className="text-emerald-500"
+                                size={20}
+                            />
                             <span className="font-bold text-slate-900 dark:text-slate-100 text-xs sm:text-sm mt-0.5 truncate">
-                                {assessment.due_at ? new Date(assessment.due_at).toLocaleDateString() : 'No Deadline'}
+                                {assessment.due_at
+                                    ? new Date(assessment.due_at)
+                                        .toLocaleDateString()
+                                    : 'No Deadline'}
                             </span>
                             <span className="text-xs text-slate-500 dark:text-slate-400">Due Date</span>
                         </div>
@@ -333,7 +368,10 @@ export default function TakeAssessmentPage() {
 
                     {/* Proctoring Integrity Notice */}
                     <div className="bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/80 p-4 rounded-xl flex items-start gap-3 text-left w-full max-w-xl">
-                        <EyeIcon size={22} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                        <EyeIcon
+                            className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"
+                            size={22}
+                        />
                         <div className="flex flex-col gap-0.5 text-xs text-amber-900 dark:text-amber-200">
                             <span className="font-bold">Focus Tracking Enabled</span>
                             <span>
@@ -343,33 +381,42 @@ export default function TakeAssessmentPage() {
                     </div>
 
                     {/* Action CTA */}
-                    {isMaxedOut ? (
-                        <div className="flex flex-col items-center gap-3">
-                            <span className="text-sm font-semibold text-rose-600 dark:text-rose-400">
+                    {isMaxedOut
+                        ? (
+                            <div className="flex flex-col items-center gap-3">
+                                <span className="text-sm font-semibold text-rose-600 dark:text-rose-400">
                                 You have used all available attempts ({attemptsUsed} of {maxAttempts}).
-                            </span>
-                            <CommonButton
-                                size="medium"
-                                variant="contained"
-                                onClick={function() {
-                                    navigate(`/student/subjects/${assessment?.enrollment_id || enrollmentId}/assessments/${assessmentId}/result`);
-                                }}
-                            >
+                                </span>
+                                <CommonButton
+                                    size="medium"
+                                    variant="contained"
+                                    onClick={function() {
+                                        navigate(`/student/subjects/${assessment?.enrollment_id || enrollmentId}/assessments/${assessmentId}/result`);
+                                    }}
+                                >
                                 View Assessment Results
+                                </CommonButton>
+                            </div>
+                        )
+                        : (
+                            <CommonButton
+                                className="px-8 py-2.5 text-base font-semibold shadow-md"
+                                color="primary"
+                                size="medium"
+                                startIcon={(
+                                    <PlayIcon
+                                        size={18}
+                                        weight="bold"
+                                    />
+                                )}
+                                variant="contained"
+                                onClick={handleStart}
+                            >
+                                {assessment.has_active_submission
+                                    ? 'Resume Assessment'
+                                    : 'Start Assessment Now'}
                             </CommonButton>
-                        </div>
-                    ) : (
-                        <CommonButton
-                            className="px-8 py-2.5 text-base font-semibold shadow-md"
-                            color="primary"
-                            size="medium"
-                            startIcon={<PlayIcon size={18} weight="bold" />}
-                            variant="contained"
-                            onClick={handleStart}
-                        >
-                            {assessment.has_active_submission ? 'Resume Assessment' : 'Start Assessment Now'}
-                        </CommonButton>
-                    )}
+                        )}
                 </div>
             </CommonCard>
         );
@@ -420,7 +467,12 @@ export default function TakeAssessmentPage() {
                         color="inherit"
                         disabled={currentPage === 0 || isSubmitting}
                         size="small"
-                        startIcon={<ArrowLeftIcon size={14} weight="bold" />}
+                        startIcon={(
+                            <ArrowLeftIcon
+                                size={14}
+                                weight="bold"
+                            />
+                        )}
                         variant="outlined"
                         onClick={async function() {
                             await saveAnswers(visibleQuestions);
@@ -434,7 +486,12 @@ export default function TakeAssessmentPage() {
                     {!assessment.show_all_questions && !isLastPage && (
                         <CommonButton
                             disabled={isSubmitting}
-                            endIcon={<ArrowRightIcon size={14} weight="bold" />}
+                            endIcon={(
+                                <ArrowRightIcon
+                                    size={14}
+                                    weight="bold"
+                                />
+                            )}
                             size="small"
                             variant="outlined"
                             onClick={async function() {
@@ -462,7 +519,9 @@ export default function TakeAssessmentPage() {
                                 if (validateRequiredAnswers()) setIsConfirmSubmitOpen(true);
                             }}
                         >
-                            {isSubmitting ? 'Submitting Responses...' : 'Finish & Submit Assessment'}
+                            {isSubmitting
+                                ? 'Submitting Responses...'
+                                : 'Finish & Submit Assessment'}
                         </CommonButton>
                     )}
                 </div>
@@ -476,7 +535,9 @@ export default function TakeAssessmentPage() {
                         onClick: () => setIsConfirmSubmitOpen(false)
                     },
                     confirmProps: {
-                        children: isSubmitting ? 'Submitting...' : 'Submit Assessment',
+                        children: isSubmitting
+                            ? 'Submitting...'
+                            : 'Submit Assessment',
                         disabled: isSubmitting,
                         loading: isSubmitting,
                         onClick: async function() {

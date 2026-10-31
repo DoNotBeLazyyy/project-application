@@ -48,7 +48,9 @@ export function applyThemeMode(mode: ThemeMode): void {
         metaEl.name = 'color-scheme';
         document.head.appendChild(metaEl);
     }
-    metaEl.content = mode === 'system' ? 'light dark' : resolved;
+    metaEl.content = mode === 'system'
+        ? 'light dark'
+        : resolved;
 
     // 4. Synchronize localStorage
     localStorage.setItem(THEME_MODE_STORAGE_KEY, mode);
@@ -62,7 +64,7 @@ export function applyThemeMode(mode: ThemeMode): void {
     );
 }
 
-export function initThemeMode(): () => void {
+export function initThemeMode(): VoidFunction {
     if (typeof window === 'undefined') {
         return () => {};
     }

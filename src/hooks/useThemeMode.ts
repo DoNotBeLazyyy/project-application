@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 export function useThemeMode() {
     const [mode, setModeState] = useState<ThemeMode>(getStoredThemeMode);
     const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(() =>
-        getResolvedTheme(getStoredThemeMode())
-    );
+        getResolvedTheme(getStoredThemeMode()));
 
     useEffect(() => {
         function handleThemeChange(event: Event) {
@@ -16,7 +15,8 @@ export function useThemeMode() {
             if (customEvent.detail) {
                 setModeState(customEvent.detail.mode);
                 setResolvedTheme(customEvent.detail.resolved);
-            } else {
+            }
+            else {
                 const current = getStoredThemeMode();
                 setModeState(current);
                 setResolvedTheme(getResolvedTheme(current));

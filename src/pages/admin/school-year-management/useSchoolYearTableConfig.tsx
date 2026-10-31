@@ -93,7 +93,10 @@ export function useSchoolYearTableConfig({
                             {
                                 children: (
                                     <div className="flex gap-2 items-center">
-                                        <CopySimpleIcon size={18} weight="bold" />
+                                        <CopySimpleIcon
+                                            size={18}
+                                            weight="bold"
+                                        />
                                         <span>Duplicate</span>
                                     </div>
                                 ),
@@ -107,7 +110,10 @@ export function useSchoolYearTableConfig({
                             {
                                 children: (
                                     <div className="flex gap-2 items-center">
-                                        <ClockCounterClockwiseIcon size={18} weight="bold" />
+                                        <ClockCounterClockwiseIcon
+                                            size={18}
+                                            weight="bold"
+                                        />
                                         <span>History</span>
                                     </div>
                                 ),

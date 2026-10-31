@@ -92,8 +92,12 @@ export default function TranscriptView({ studentId }: TranscriptViewProps) {
                                 : 'Grade Report'}
                         </h1>
                         <CommonBadgeStatus
-                            label={transcript.is_official ? 'Official' : 'Unofficial'}
-                            variant={transcript.is_official ? 'success' : 'info'}
+                            label={transcript.is_official
+                                ? 'Official'
+                                : 'Unofficial'}
+                            variant={transcript.is_official
+                                ? 'success'
+                                : 'info'}
                         />
                     </div>
                     <span className="text-slate-500 dark:text-slate-400 text-sm">
@@ -114,7 +118,10 @@ export default function TranscriptView({ studentId }: TranscriptViewProps) {
                 {/* Academic Header Banner */}
                 <div className="bg-slate-50/90 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 flex flex-col items-center p-5 rounded-2xl text-center shadow-2xs gap-1.5">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 mb-1">
-                        <CertificateIcon size={26} weight="bold" />
+                        <CertificateIcon
+                            size={26}
+                            weight="bold"
+                        />
                     </div>
                     <span className="font-bold text-slate-900 dark:text-slate-100 text-base sm:text-lg uppercase tracking-wide">
                         {transcript.institution.name ?? 'Arellano University'}
@@ -184,7 +191,10 @@ export default function TranscriptView({ studentId }: TranscriptViewProps) {
                             >
                                 <div className="bg-slate-50 dark:bg-zinc-800/60 flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-slate-200/80 dark:border-zinc-800">
                                     <div className="flex items-center gap-2">
-                                        <CalendarDotsIcon size={16} className="text-blue-600 dark:text-blue-400" />
+                                        <CalendarDotsIcon
+                                            className="text-blue-600 dark:text-blue-400"
+                                            size={16}
+                                        />
                                         <span className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base">
                                             {term.term_label}
                                         </span>
@@ -231,14 +241,20 @@ export default function TranscriptView({ studentId }: TranscriptViewProps) {
                                                             {formatGrade(course)}
                                                         </td>
                                                         <td className="px-4 py-3">
-                                                            {course.is_passing !== null ? (
-                                                                <CommonBadgeStatus
-                                                                    label={isPassed ? 'Passed' : 'Failed'}
-                                                                    variant={isPassed ? 'success' : 'error'}
-                                                                />
-                                                            ) : (
-                                                                <span className="text-slate-400">—</span>
-                                                            )}
+                                                            {course.is_passing !== null
+                                                                ? (
+                                                                    <CommonBadgeStatus
+                                                                        label={isPassed
+                                                                            ? 'Passed'
+                                                                            : 'Failed'}
+                                                                        variant={isPassed
+                                                                            ? 'success'
+                                                                            : 'error'}
+                                                                    />
+                                                                )
+                                                                : (
+                                                                    <span className="text-slate-400">—</span>
+                                                                )}
                                                         </td>
                                                     </tr>
                                                 );

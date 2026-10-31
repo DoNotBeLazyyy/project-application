@@ -1,8 +1,8 @@
 import { callRpc } from '@services/supabase.wrapper';
-import { ServiceResult } from '@type/service.type';
 import {
     AssessmentRubricState, RubricCriterionInput, RubricDetail, RubricEvaluationInput, RubricListRow, SubmissionRubric
 } from '@type/rubric.type';
+import { ServiceResult } from '@type/service.type';
 
 export async function listRubrics(
     sectionId: string

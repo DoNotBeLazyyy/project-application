@@ -14,9 +14,9 @@ import {
     XIcon
 } from '@phosphor-icons/react';
 import { CourseFormValues } from '@type/course/course.type';
+import { formErrors } from '@utils/form.util';
 import { useEffect, useState } from 'react';
 import { FieldErrors, UseFormReturn, useWatch } from 'react-hook-form';
-import { formErrors } from '@utils/form.util';
 
 interface CourseWizardModalProps {
     open: boolean;
@@ -26,7 +26,7 @@ interface CourseWizardModalProps {
     isCodeDisabled?: boolean;
     isSaving?: boolean;
     methods: UseFormReturn<CourseFormValues>;
-    onClose: () => void;
+    onClose: VoidFunction;
     onSubmit: (values: CourseFormValues) => void;
     onSwitchToEdit?: (step?: number) => void;
 }
@@ -87,7 +87,8 @@ export default function CourseWizardModal({
         let hasError = false;
         for (let i = 0; i < courseTypes.length; i++) {
             const ct = courseTypes[i];
-            if (!ct.course_type_id || !String(ct.course_type_id).trim()) {
+            if (!ct.course_type_id || !String(ct.course_type_id)
+                .trim()) {
                 methods.setError(`course_types.${i}.course_type_id` as any, {
                     type: 'manual',
                     message: 'Please select a course type.'
@@ -100,7 +101,8 @@ export default function CourseWizardModal({
                     message: 'Units is required.'
                 });
                 hasError = true;
-            } else {
+            }
+            else {
                 const u = Number(ct.units);
                 if (isNaN(u)) {
                     methods.setError(`course_types.${i}.units` as any, {
@@ -108,13 +110,15 @@ export default function CourseWizardModal({
                         message: 'Units must be a valid number.'
                     });
                     hasError = true;
-                } else if (u < 0) {
+                }
+                else if (u < 0) {
                     methods.setError(`course_types.${i}.units` as any, {
                         type: 'manual',
                         message: 'Units cannot be less than 0.'
                     });
                     hasError = true;
-                } else if (u > 10) {
+                }
+                else if (u > 10) {
                     methods.setError(`course_types.${i}.units` as any, {
                         type: 'manual',
                         message: 'Units cannot exceed 10.'
@@ -129,7 +133,8 @@ export default function CourseWizardModal({
                     message: 'Credit hours is required.'
                 });
                 hasError = true;
-            } else {
+            }
+            else {
                 const ch = Number(ct.credit_hours);
                 if (isNaN(ch)) {
                     methods.setError(`course_types.${i}.credit_hours` as any, {
@@ -137,13 +142,15 @@ export default function CourseWizardModal({
                         message: 'Credit hours must be a valid number.'
                     });
                     hasError = true;
-                } else if (ch < 0) {
+                }
+                else if (ch < 0) {
                     methods.setError(`course_types.${i}.credit_hours` as any, {
                         type: 'manual',
                         message: 'Credit hours cannot be less than 0.'
                     });
                     hasError = true;
-                } else if (ch > 20) {
+                }
+                else if (ch > 20) {
                     methods.setError(`course_types.${i}.credit_hours` as any, {
                         type: 'manual',
                         message: 'Credit hours cannot exceed 20.'
@@ -169,7 +176,8 @@ export default function CourseWizardModal({
                 return;
             }
             setCurrentStep(2);
-        } else if (currentStep === 2) {
+        }
+        else if (currentStep === 2) {
             const isValid = await validateStep2();
             if (!isValid) {
                 return;
@@ -207,7 +215,8 @@ export default function CourseWizardModal({
                     return;
                 }
             }
-        } else if (currentStep === 2) {
+        }
+        else if (currentStep === 2) {
             const isValid = await validateStep2();
             if (!isValid) {
                 return;
@@ -223,9 +232,11 @@ export default function CourseWizardModal({
             const step1Keys = ['title', 'code', 'department_id', 'description', 'is_active'];
             if (step1Keys.includes(firstKey)) {
                 setCurrentStep(1);
-            } else if (firstKey.startsWith('types') || firstKey.startsWith('course_types')) {
+            }
+            else if (firstKey.startsWith('types') || firstKey.startsWith('course_types')) {
                 setCurrentStep(2);
-            } else if (firstKey.startsWith('prerequisites')) {
+            }
+            else if (firstKey.startsWith('prerequisites')) {
                 setCurrentStep(3);
             }
         }
@@ -268,7 +279,8 @@ export default function CourseWizardModal({
                     });
                     hasPrereqError = true;
                 }
-                if (prereq.prerequisite_kind === 'standing' && (!prereq.year_level_required || !String(prereq.year_level_required).trim())) {
+                if (prereq.prerequisite_kind === 'standing' && (!prereq.year_level_required || !String(prereq.year_level_required)
+                    .trim())) {
                     methods.setError(`prerequisites.${i}.year_level_required` as any, {
                         type: 'manual',
                         message: 'Please select a year level standing or remove the row.'
@@ -308,8 +320,8 @@ export default function CourseWizardModal({
                                 {readOnly
                                     ? 'View Course Details'
                                     : courseId
-                                    ? 'Edit Course Details'
-                                    : 'Create New Course'}
+                                        ? 'Edit Course Details'
+                                        : 'Create New Course'}
                             </h2>
                             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                                 {readOnly
@@ -364,14 +376,14 @@ export default function CourseWizardModal({
 
             {/* Stepper Progress Bar Header */}
             <ModalStepperHeader
+                currentStep={currentStep}
+                readOnly={readOnly}
                 steps={COURSE_FORM_STEPS.map((s) => ({
                     step: s.step,
                     title: s.title,
                     subtitle: s.subtitle
                 }))}
-                currentStep={currentStep}
                 onStepClick={handleStepClick}
-                readOnly={readOnly}
             />
 
             {/* Stepper Step Body */}
@@ -383,7 +395,9 @@ export default function CourseWizardModal({
                     excludeCourseId={courseId ?? undefined}
                     isCodeDisabled={isCodeDisabled}
                     setValue={setValue}
-                    onSwitchToEdit={onSwitchToEdit ? () => onSwitchToEdit(currentStep) : undefined}
+                    onSwitchToEdit={onSwitchToEdit
+                        ? () => onSwitchToEdit(currentStep)
+                        : undefined}
                 />
             </div>
 
@@ -408,51 +422,61 @@ export default function CourseWizardModal({
 
                 {/* Next / Save Action */}
                 <div className="flex items-center gap-2">
-                    {currentStep < 3 ? (
-                        <CommonButton
-                            color="primary"
-                            disabled={isSaving}
-                            endIcon={<ArrowRightIcon className="w-4 h-4" />}
-                            size="medium"
-                            variant="contained"
-                            onClick={handleNext}
-                        >
+                    {currentStep < 3
+                        ? (
+                            <CommonButton
+                                color="primary"
+                                disabled={isSaving}
+                                endIcon={<ArrowRightIcon className="w-4 h-4" />}
+                                size="medium"
+                                variant="contained"
+                                onClick={handleNext}
+                            >
                             Next Step
-                        </CommonButton>
-                    ) : readOnly ? (
-                        onSwitchToEdit ? (
-                            <CommonButton
-                                color="primary"
-                                size="medium"
-                                startIcon={<PencilSimpleIcon className="w-4 h-4" />}
-                                variant="contained"
-                                onClick={() => onSwitchToEdit(currentStep)}
-                            >
-                                Edit Course
-                            </CommonButton>
-                        ) : (
-                            <CommonButton
-                                color="primary"
-                                size="medium"
-                                variant="contained"
-                                onClick={handleCloseModal}
-                            >
-                                Close
                             </CommonButton>
                         )
-                    ) : (
-                        <CommonButton
-                            color="primary"
-                            disabled={isSaving || (Boolean(courseId || isCodeDisabled) && !draftGuard.hasRealChanges)}
-                            loading={isSaving}
-                            size="medium"
-                            startIcon={<FloppyDiskIcon className="w-4 h-4" />}
-                            variant="contained"
-                            onClick={handleSubmit(handleFormSubmit, handleCourseFormErrors)}
-                        >
-                            {isSaving ? 'Saving Course...' : courseId ? 'Save Changes' : 'Save Course'}
-                        </CommonButton>
-                    )}
+                        : readOnly
+                            ? (
+                                onSwitchToEdit
+                                    ? (
+                                        <CommonButton
+                                            color="primary"
+                                            size="medium"
+                                            startIcon={<PencilSimpleIcon className="w-4 h-4" />}
+                                            variant="contained"
+                                            onClick={() => onSwitchToEdit(currentStep)}
+                                        >
+                                Edit Course
+                                        </CommonButton>
+                                    )
+                                    : (
+                                        <CommonButton
+                                            color="primary"
+                                            size="medium"
+                                            variant="contained"
+                                            onClick={handleCloseModal}
+                                        >
+                                Close
+                                        </CommonButton>
+                                    )
+                            )
+                            : (
+                                <CommonButton
+                                    color="primary"
+                                    disabled={isSaving || (Boolean(courseId || isCodeDisabled) && !draftGuard.hasRealChanges)}
+                                    loading={isSaving}
+                                    size="medium"
+                                    startIcon={<FloppyDiskIcon className="w-4 h-4" />}
+                                    variant="contained"
+                                    onClick={handleSubmit(handleFormSubmit, handleCourseFormErrors)}
+                                >
+                                    {isSaving
+                                        ? 'Saving Course...'
+                                        : courseId
+                                            ? 'Save Changes'
+                                            : 'Save Course'}
+                                </CommonButton>
+                            )}
                 </div>
             </div>
             <DraftRecoveryPromptModal

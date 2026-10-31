@@ -35,7 +35,8 @@ export function resolveNotificationPath(
         // Deep link into assessment submissions page if hitting specific assessment without subpath
         if (/^\/faculty\/sections\/[^/]+\/assessments\/[^/?]+$/.test(cleanUrl)) {
             cleanUrl = `${cleanUrl}/submissions`;
-        } else if (/^\/faculty\/sections\/[^/?]+$/.test(cleanUrl) && notificationType === 'Assessment') {
+        }
+        else if (/^\/faculty\/sections\/[^/?]+$/.test(cleanUrl) && notificationType === 'Assessment') {
             cleanUrl = `${cleanUrl}?tab=assessments`;
         }
     }
@@ -62,20 +63,22 @@ export function resolveNotificationPath(
 
     if (segments[0] === 'announcements' || segments[0] === 'announcement-management') {
         announcementId = segments[1] || null;
-    } else if (
-        segments.length >= 3 &&
-        isRoleHomeSegment(segments[0]) &&
-        (segments[1] === 'announcements' || segments[1] === 'announcement-management')
+    }
+    else if (
+        segments.length >= 3
+        && isRoleHomeSegment(segments[0])
+        && (segments[1] === 'announcements' || segments[1] === 'announcement-management')
     ) {
         announcementId = segments[2] || null;
     }
 
     if (segments[0] === 'events' || segments[0] === 'event-management') {
         eventId = segments[1] || null;
-    } else if (
-        segments.length >= 3 &&
-        isRoleHomeSegment(segments[0]) &&
-        (segments[1] === 'events' || segments[1] === 'event-management')
+    }
+    else if (
+        segments.length >= 3
+        && isRoleHomeSegment(segments[0])
+        && (segments[1] === 'events' || segments[1] === 'event-management')
     ) {
         eventId = segments[2] || null;
     }

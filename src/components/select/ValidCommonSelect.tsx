@@ -28,7 +28,9 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
         field: { ref, value, onChange },
         fieldState,
         formState
-    } = useController({ control, name, rules });
+    } = useController({
+        control, name, rules
+    });
     const [isOpen, setIsOpen] = useState(false);
     const isClosing = useRef(false);
 

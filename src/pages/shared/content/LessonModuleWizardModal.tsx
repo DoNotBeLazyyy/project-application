@@ -28,12 +28,14 @@ import {
     setModulePublished,
     updateModule
 } from '@services/content.service';
-import { uploadFile } from '@services/storage.service';
 import { listGradingPeriodsBySection } from '@services/faculty.service';
+import { uploadFile } from '@services/storage.service';
 import { useToastStore } from '@stores/toast.store';
 import { ContentModule, MaterialType } from '@type/content.type';
 import { generateId } from '@utils/uuid.util';
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    ChangeEvent, useEffect, useMemo, useRef, useState
+} from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
 export const LESSON_MODULE_WIZARD_STEPS: ModalStepItem[] = [
@@ -97,8 +99,8 @@ interface LessonModuleWizardModalProps {
     sectionId: string;
     module?: ContentModule | null;
     readOnly?: boolean;
-    onClose: () => void;
-    onSuccess: () => void;
+    onClose: VoidFunction;
+    onSuccess: VoidFunction;
 }
 
 export default function LessonModuleWizardModal({
@@ -237,7 +239,9 @@ export default function LessonModuleWizardModal({
         if (!open) {
             setIsDiscardOpen(false);
             setCurrentStep(1);
-            resetModuleForm({ description: '', period: 'General', title: '' });
+            resetModuleForm({
+                description: '', period: 'General', title: ''
+            });
             setIsPublished(true);
             setStagedMaterials([]);
             setIsAddingMaterial(false);
@@ -262,8 +266,11 @@ export default function LessonModuleWizardModal({
                     isExisting: true
                 }))
             );
-        } else {
-            resetModuleForm({ description: '', period: 'General', title: '' });
+        }
+        else {
+            resetModuleForm({
+                description: '', period: 'General', title: ''
+            });
             setIsPublished(true);
             setStagedMaterials([]);
         }
@@ -393,14 +400,19 @@ export default function LessonModuleWizardModal({
             title: values.title.trim(),
             description: values.description.trim(),
             material_type: values.materialType,
-            external_url: needsFile ? undefined : values.externalUrl.trim(),
-            file: needsFile ? selectedFile || undefined : undefined,
+            external_url: needsFile
+                ? undefined
+                : values.externalUrl.trim(),
+            file: needsFile
+                ? selectedFile || undefined
+                : undefined,
             isExisting: false
         };
 
         setStagedMaterials((prev) => [...prev, newStaged]);
         handleResetMaterialForm();
-        useToastStore.getState().showToast(`Added "${newStaged.title}" to module.`, 'success');
+        useToastStore.getState()
+            .showToast(`Added "${newStaged.title}" to module.`, 'success');
         return true;
     }
 
@@ -443,7 +455,8 @@ export default function LessonModuleWizardModal({
         if (currentStep === 1) {
             if (!(await validateStep1())) return;
             setCurrentStep(2);
-        } else if (currentStep === 2) {
+        }
+        else if (currentStep === 2) {
             if (!(await commitPendingMaterialIfValid())) return;
             setCurrentStep(3);
         }
@@ -480,7 +493,8 @@ export default function LessonModuleWizardModal({
 
             // Compute final title with period tag if not already included
             let finalTitle = title.trim();
-            if (period !== 'General' && !finalTitle.toLowerCase().includes(period.toLowerCase())) {
+            if (period !== 'General' && !finalTitle.toLowerCase()
+                .includes(period.toLowerCase())) {
                 finalTitle = `[${period}] ${finalTitle}`;
             }
 
@@ -490,7 +504,8 @@ export default function LessonModuleWizardModal({
                 if (initialModule && initialModule.is_published !== isPublished) {
                     await setModulePublished(moduleId, isPublished);
                 }
-            } else {
+            }
+            else {
                 const res = await createModule(sectionId, finalTitle, description.trim() || null);
                 if (res.error || !res.data) return;
                 const created = res.data as unknown as { id?: string; module_id?: string };
@@ -525,11 +540,15 @@ export default function LessonModuleWizardModal({
                             externalUrl: item.external_url || ''
                         });
                         if (matRes.error) {
-                            useToastStore.getState().showToast(`Failed to add resource "${item.title}": ${matRes.error.message}`, 'error');
+                            useToastStore.getState()
+                                .showToast(`Failed to add resource "${item.title}": ${matRes.error.message}`, 'error');
                         }
-                    } else if (item.file) {
+                    }
+                    else if (item.file) {
                         const path = `${sectionId}/${moduleId}/${generateId()}-${item.file.name}`;
-                        const uploadRes = await uploadFile({ bucket: 'materials', file: item.file, path });
+                        const uploadRes = await uploadFile({
+                            bucket: 'materials', file: item.file, path
+                        });
                         if (!uploadRes.error) {
                             const matRes = await createMaterial({
                                 moduleId,
@@ -542,413 +561,450 @@ export default function LessonModuleWizardModal({
                                 mimeType: item.file.type || null
                             });
                             if (matRes.error) {
-                                useToastStore.getState().showToast(`Failed to add resource "${item.title}": ${matRes.error.message}`, 'error');
+                                useToastStore.getState()
+                                    .showToast(`Failed to add resource "${item.title}": ${matRes.error.message}`, 'error');
                             }
-                        } else {
-                            useToastStore.getState().showToast(`Failed to upload file for "${item.title}": ${uploadRes.error.message}`, 'error');
+                        }
+                        else {
+                            useToastStore.getState()
+                                .showToast(`Failed to upload file for "${item.title}": ${uploadRes.error.message}`, 'error');
                         }
                     }
                 }
             }
 
             draftGuard.clearDraft();
-            useToastStore.getState().showToast('Lesson & syllabus module saved successfully.', 'success');
+            useToastStore.getState()
+                .showToast('Lesson & syllabus module saved successfully.', 'success');
             onSuccess();
             onClose();
-        } finally {
+        }
+        finally {
             setIsSaving(false);
         }
     }
 
     const currentStepConfig = LESSON_MODULE_WIZARD_STEPS.find((s) => s.step === currentStep);
     const hasSyllabus = stagedMaterials.some((m) =>
-        m.title.toLowerCase().includes('syllabus') || m.description.toLowerCase().includes('syllabus')
-    );
+        m.title.toLowerCase()
+            .includes('syllabus') || m.description.toLowerCase()
+            .includes('syllabus'));
 
     return (
         <>
-        <CommonModal
-            cardProps={{
-                className: 'w-full max-w-4xl p-0 overflow-hidden flex flex-col max-h-[92vh]'
-            }}
-            fullWidth
-            maxWidth="lg"
-            open={open}
-            onClose={handleRequestClose}
-        >
-            {/* Modal Top Header */}
-            <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
-                <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3 min-w-0 flex-1">
-                        <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 flex items-center justify-center shrink-0 mt-0.5">
-                            <BookOpenIcon className="w-5 h-5" />
-                        </div>
-                        <div className="min-w-0 flex-1 sm:min-w-[260px]">
-                            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug">
-                                {readOnly
-                                    ? 'View Lesson & Syllabus Module'
-                                    : isEdit
-                                    ? `Edit Module: ${initialModule?.title}`
-                                    : 'Create Lesson & Syllabus Module'}
-                            </h2>
-                            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+            <CommonModal
+                cardProps={{
+                    className: 'w-full max-w-4xl p-0 overflow-hidden flex flex-col max-h-[92vh]'
+                }}
+                fullWidth
+                maxWidth="lg"
+                open={open}
+                onClose={handleRequestClose}
+            >
+                {/* Modal Top Header */}
+                <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3 min-w-0 flex-1">
+                            <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <BookOpenIcon className="w-5 h-5" />
+                            </div>
+                            <div className="min-w-0 flex-1 sm:min-w-[260px]">
+                                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug">
+                                    {readOnly
+                                        ? 'View Lesson & Syllabus Module'
+                                        : isEdit
+                                            ? `Edit Module: ${initialModule?.title}`
+                                            : 'Create Lesson & Syllabus Module'}
+                                </h2>
+                                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                                 Unified setup for module overview, learning materials, syllabus documents, and publication rules.
-                            </p>
+                                </p>
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
-                        <button
-                            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                            title="Close"
-                            type="button"
-                            onClick={handleRequestClose}
-                        >
-                            <XIcon className="w-5 h-5" />
-                        </button>
+                        <div className="flex items-center gap-2 shrink-0">
+                            <button
+                                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                                title="Close"
+                                type="button"
+                                onClick={handleRequestClose}
+                            >
+                                <XIcon className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Stepper Progress Bar Header */}
-            <ModalStepperHeader
-                currentStep={currentStep}
-                readOnly={readOnly}
-                steps={LESSON_MODULE_WIZARD_STEPS}
-                onStepClick={handleStepClick}
-            />
+                {/* Stepper Progress Bar Header */}
+                <ModalStepperHeader
+                    currentStep={currentStep}
+                    readOnly={readOnly}
+                    steps={LESSON_MODULE_WIZARD_STEPS}
+                    onStepClick={handleStepClick}
+                />
 
-            {/* Wizard Step Body */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/50 dark:bg-zinc-900/40">
-                {/* Step 1: Module Identity */}
-                {currentStep === 1 && (
-                    <div className="flex flex-col gap-4">
-                        <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs flex flex-col gap-4">
-                            <CommonForm
-                                component="div"
-                                containerClassName="grid grid-cols-1 md:grid-cols-2 gap-4"
-                                control={moduleForm.control}
-                                enableDraftRecovery={false}
-                                fields={moduleFields}
-                            />
+                {/* Wizard Step Body */}
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/50 dark:bg-zinc-900/40">
+                    {/* Step 1: Module Identity */}
+                    {currentStep === 1 && (
+                        <div className="flex flex-col gap-4">
+                            <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs flex flex-col gap-4">
+                                <CommonForm
+                                    component="div"
+                                    containerClassName="grid grid-cols-1 md:grid-cols-2 gap-4"
+                                    control={moduleForm.control}
+                                    enableDraftRecovery={false}
+                                    fields={moduleFields}
+                                />
 
-                            <div>
                                 <div>
-                                    <FormLabel label="Publication Status" />
-                                    <div className="flex items-center gap-3 mt-2">
-                                        <button
-                                            disabled={readOnly}
-                                            type="button"
-                                            onClick={() => setIsPublished(true)}
-                                            className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-                                                isPublished
-                                                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
-                                                    : 'bg-white dark:bg-zinc-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-zinc-700'
-                                            }`}
-                                        >
+                                    <div>
+                                        <FormLabel label="Publication Status" />
+                                        <div className="flex items-center gap-3 mt-2">
+                                            <button
+                                                className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                                                    isPublished
+                                                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                                                        : 'bg-white dark:bg-zinc-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-zinc-700'
+                                                }`}
+                                                disabled={readOnly}
+                                                type="button"
+                                                onClick={() => setIsPublished(true)}
+                                            >
                                             Published (Visible to Students)
-                                        </button>
-                                        <button
-                                            disabled={readOnly}
-                                            type="button"
-                                            onClick={() => setIsPublished(false)}
-                                            className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-                                                !isPublished
-                                                    ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800'
-                                                    : 'bg-white dark:bg-zinc-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-zinc-700'
-                                            }`}
-                                        >
+                                            </button>
+                                            <button
+                                                className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                                                    !isPublished
+                                                        ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800'
+                                                        : 'bg-white dark:bg-zinc-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-zinc-700'
+                                                }`}
+                                                disabled={readOnly}
+                                                type="button"
+                                                onClick={() => setIsPublished(false)}
+                                            >
                                             Draft (Hidden)
-                                        </button>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {/* Step 2: Syllabus & Materials */}
-                {currentStep === 2 && (
-                    <div className="flex flex-col gap-4">
-                        {/* Material Creator Accordion */}
-                        <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs">
-                            <div className="flex items-center justify-between mb-3">
-                                <div>
-                                    <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    {/* Step 2: Syllabus & Materials */}
+                    {currentStep === 2 && (
+                        <div className="flex flex-col gap-4">
+                            {/* Material Creator Accordion */}
+                            <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                                         Add Resource or Syllabus Document
-                                    </h3>
-                                </div>
-                                {!isAddingMaterial && (
-                                    <CommonButton
-                                        size="small"
-                                        startIcon={<PlusIcon size={14} weight="bold" />}
-                                        variant="outlined"
-                                        onClick={() => setIsAddingMaterial(true)}
-                                    >
-                                        Add Resource
-                                    </CommonButton>
-                                )}
-                            </div>
-
-                            {isAddingMaterial ? (
-                                <div className="border border-slate-200 dark:border-zinc-700 bg-slate-50/60 dark:bg-zinc-800/50 p-4 rounded-xl flex flex-col gap-3">
-                                    <CommonForm
-                                        component="div"
-                                        containerClassName="grid grid-cols-1 md:grid-cols-2 gap-3"
-                                        control={resourceForm.control}
-                                        enableDraftRecovery={false}
-                                        fields={resourceFields}
-                                    />
-
-                                    {newMaterialType !== 'Link' && (
-                                        <div className="flex flex-col gap-1">
-                                            <FormLabel
-                                                errorMessage={fileError ?? undefined}
-                                                isRequired
-                                                label="File Attachment"
-                                            />
-                                            <input
-                                                className="hidden"
-                                                ref={fileInputRef}
-                                                type="file"
-                                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                                    const file = e.target.files?.[0] ?? null;
-                                                    setSelectedFile(file);
-                                                    if (file) setFileError(null);
-                                                }}
-                                            />
-                                            <CommonButton
-                                                color={fileError ? 'error' : 'inherit'}
-                                                startIcon={<UploadSimpleIcon size={16} />}
-                                                variant="outlined"
-                                                onClick={() => fileInputRef.current?.click()}
-                                            >
-                                                {selectedFile ? selectedFile.name : 'Choose Document or Slide'}
-                                            </CommonButton>
-                                            {fileError && (
-                                                <span className="text-(--mui-palette-error-main) text-xs" role="alert">
-                                                    {fileError}
-                                                </span>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    <div className="flex gap-2 justify-end pt-1">
-                                        <CommonButton
-                                            color="inherit"
-                                            size="small"
-                                            variant="outlined"
-                                            onClick={handleResetMaterialForm}
-                                        >
-                                            Cancel
-                                        </CommonButton>
-                                        <CommonButton
-                                            size="small"
-                                            variant="contained"
-                                            onClick={handleAddStagedMaterial}
-                                        >
-                                            Add Resource to Module
-                                        </CommonButton>
+                                        </h3>
                                     </div>
+                                    {!isAddingMaterial && (
+                                        <CommonButton
+                                            size="small"
+                                            startIcon={(
+                                                <PlusIcon
+                                                    size={14}
+                                                    weight="bold"
+                                                />
+                                            )}
+                                            variant="outlined"
+                                            onClick={() => setIsAddingMaterial(true)}
+                                        >
+                                        Add Resource
+                                        </CommonButton>
+                                    )}
                                 </div>
-                            ) : null}
 
-                            {/* Staged Materials Bento List */}
-                            <div className="mt-4 flex flex-col gap-2">
-                                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                {isAddingMaterial
+                                    ? (
+                                        <div className="border border-slate-200 dark:border-zinc-700 bg-slate-50/60 dark:bg-zinc-800/50 p-4 rounded-xl flex flex-col gap-3">
+                                            <CommonForm
+                                                component="div"
+                                                containerClassName="grid grid-cols-1 md:grid-cols-2 gap-3"
+                                                control={resourceForm.control}
+                                                enableDraftRecovery={false}
+                                                fields={resourceFields}
+                                            />
+
+                                            {newMaterialType !== 'Link' && (
+                                                <div className="flex flex-col gap-1">
+                                                    <FormLabel
+                                                        errorMessage={fileError ?? undefined}
+                                                        isRequired
+                                                        label="File Attachment"
+                                                    />
+                                                    <input
+                                                        className="hidden"
+                                                        ref={fileInputRef}
+                                                        type="file"
+                                                        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                                            const file = e.target.files?.[0] ?? null;
+                                                            setSelectedFile(file);
+                                                            if (file) setFileError(null);
+                                                        }}
+                                                    />
+                                                    <CommonButton
+                                                        color={fileError
+                                                            ? 'error'
+                                                            : 'inherit'}
+                                                        startIcon={<UploadSimpleIcon size={16} />}
+                                                        variant="outlined"
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                    >
+                                                        {selectedFile
+                                                            ? selectedFile.name
+                                                            : 'Choose Document or Slide'}
+                                                    </CommonButton>
+                                                    {fileError && (
+                                                        <span
+                                                            className="text-(--mui-palette-error-main) text-xs"
+                                                            role="alert"
+                                                        >
+                                                            {fileError}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            <div className="flex gap-2 justify-end pt-1">
+                                                <CommonButton
+                                                    color="inherit"
+                                                    size="small"
+                                                    variant="outlined"
+                                                    onClick={handleResetMaterialForm}
+                                                >
+                                            Cancel
+                                                </CommonButton>
+                                                <CommonButton
+                                                    size="small"
+                                                    variant="contained"
+                                                    onClick={handleAddStagedMaterial}
+                                                >
+                                            Add Resource to Module
+                                                </CommonButton>
+                                            </div>
+                                        </div>
+                                    )
+                                    : null}
+
+                                {/* Staged Materials Bento List */}
+                                <div className="mt-4 flex flex-col gap-2">
+                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                                     Configured Resources ({stagedMaterials.length})
-                                </span>
-                                {stagedMaterials.length === 0 ? (
-                                    <div className="p-6 text-center border border-dashed border-slate-200 dark:border-zinc-700 rounded-xl">
-                                        <FileTextIcon className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                                        <p className="text-xs text-slate-500">
+                                    </span>
+                                    {stagedMaterials.length === 0
+                                        ? (
+                                            <div className="p-6 text-center border border-dashed border-slate-200 dark:border-zinc-700 rounded-xl">
+                                                <FileTextIcon className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                                                <p className="text-xs text-slate-500">
                                             No materials added to this module yet. You can attach a syllabus, PDF handouts, or lecture slides now, or add them later.
+                                                </p>
+                                            </div>
+                                        )
+                                        : (
+                                            <div className="grid grid-cols-1 gap-2">
+                                                {stagedMaterials.map((mat) => {
+                                                    const isSyl = mat.title.toLowerCase()
+                                                        .includes('syllabus');
+                                                    return (
+                                                        <div
+                                                            className={`p-3 rounded-xl border flex items-center justify-between gap-3 ${
+                                                                isSyl
+                                                                    ? 'border-blue-300 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-800'
+                                                                    : 'border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-800/40'
+                                                            }`}
+                                                            key={mat.id}
+                                                        >
+                                                            <div className="flex items-center gap-3 min-w-0">
+                                                                <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-600 shrink-0">
+                                                                    {mat.material_type === 'Link'
+                                                                        ? (
+                                                                            <LinkSimpleIcon size={18} />
+                                                                        )
+                                                                        : (
+                                                                            <FileTextIcon size={18} />
+                                                                        )}
+                                                                </div>
+                                                                <div className="flex flex-col min-w-0">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">
+                                                                            {mat.title}
+                                                                        </span>
+                                                                        {isSyl && (
+                                                                            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 shrink-0">
+                                                                        Official Syllabus
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    <span className="text-xs text-slate-500 truncate">
+                                                                        {mat.description || (mat.material_type === 'Link'
+                                                                            ? mat.external_url
+                                                                            : mat.file
+                                                                                ? mat.file.name
+                                                                                : mat.material_type)}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700 transition-colors"
+                                                                title="Remove"
+                                                                type="button"
+                                                                onClick={() => handleRemoveMaterial(mat.id)}
+                                                            >
+                                                                <TrashIcon size={16} />
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 3: Review & Publish */}
+                    {currentStep === 3 && (
+                        <div className="flex flex-col gap-4">
+                            <div className="bg-white dark:bg-zinc-900 p-5 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs flex flex-col gap-4">
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+                                        Module Summary
+                                        </span>
+                                        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mt-1">
+                                            {title}
+                                        </h3>
+                                        <p className="text-xs text-slate-500 mt-1">
+                                            {description || 'No description provided.'}
                                         </p>
                                     </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 gap-2">
-                                        {stagedMaterials.map((mat) => {
-                                            const isSyl = mat.title.toLowerCase().includes('syllabus');
-                                            return (
-                                                <div
-                                                    key={mat.id}
-                                                    className={`p-3 rounded-xl border flex items-center justify-between gap-3 ${
-                                                        isSyl
-                                                            ? 'border-blue-300 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-800'
-                                                            : 'border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-800/40'
-                                                    }`}
-                                                >
-                                                    <div className="flex items-center gap-3 min-w-0">
-                                                        <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-600 shrink-0">
-                                                            {mat.material_type === 'Link' ? (
-                                                                <LinkSimpleIcon size={18} />
-                                                            ) : (
-                                                                <FileTextIcon size={18} />
-                                                            )}
-                                                        </div>
-                                                        <div className="flex flex-col min-w-0">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">
-                                                                    {mat.title}
-                                                                </span>
-                                                                {isSyl && (
-                                                                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 shrink-0">
-                                                                        Official Syllabus
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <span className="text-xs text-slate-500 truncate">
-                                                                {mat.description || (mat.material_type === 'Link' ? mat.external_url : mat.file ? mat.file.name : mat.material_type)}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveMaterial(mat.id)}
-                                                        className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700 transition-colors"
-                                                        title="Remove"
-                                                    >
-                                                        <TrashIcon size={16} />
-                                                    </button>
-                                                </div>
-                                            );
-                                        })}
+                                    <span
+                                        className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 border ${
+                                            isPublished
+                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                                : 'bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-300'
+                                        }`}
+                                    >
+                                        {isPublished
+                                            ? 'Ready to Publish'
+                                            : 'Draft / Hidden'}
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-zinc-800">
+                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-zinc-800/40 border border-slate-100 dark:border-zinc-800">
+                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                                        Target Period
+                                        </span>
+                                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
+                                            {period}
+                                        </p>
+                                    </div>
+                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-zinc-800/40 border border-slate-100 dark:border-zinc-800">
+                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                                        Resources Attached
+                                        </span>
+                                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
+                                            {stagedMaterials.length} item{stagedMaterials.length === 1
+                                                ? ''
+                                                : 's'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {hasSyllabus && (
+                                    <div className="p-3.5 rounded-xl border border-blue-200 bg-blue-50/70 dark:bg-blue-950/30 dark:border-blue-900/60 flex items-center gap-3">
+                                        <BookOpenIcon className="w-5 h-5 text-blue-600 shrink-0" />
+                                        <p className="text-xs text-blue-800 dark:text-blue-300">
+                                        This module includes a designated <strong>Official Syllabus</strong> document, which will be pinned at the top of the course for all enrolled students.
+                                        </p>
                                     </div>
                                 )}
                             </div>
                         </div>
-                    </div>
-                )}
-
-                {/* Step 3: Review & Publish */}
-                {currentStep === 3 && (
-                    <div className="flex flex-col gap-4">
-                        <div className="bg-white dark:bg-zinc-900 p-5 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs flex flex-col gap-4">
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="flex flex-col">
-                                    <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
-                                        Module Summary
-                                    </span>
-                                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mt-1">
-                                        {title}
-                                    </h3>
-                                    <p className="text-xs text-slate-500 mt-1">
-                                        {description || 'No description provided.'}
-                                    </p>
-                                </div>
-                                <span
-                                    className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 border ${
-                                        isPublished
-                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-300'
-                                            : 'bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-300'
-                                    }`}
-                                >
-                                    {isPublished ? 'Ready to Publish' : 'Draft / Hidden'}
-                                </span>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-zinc-800">
-                                <div className="p-3 rounded-lg bg-slate-50 dark:bg-zinc-800/40 border border-slate-100 dark:border-zinc-800">
-                                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                                        Target Period
-                                    </span>
-                                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
-                                        {period}
-                                    </p>
-                                </div>
-                                <div className="p-3 rounded-lg bg-slate-50 dark:bg-zinc-800/40 border border-slate-100 dark:border-zinc-800">
-                                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                                        Resources Attached
-                                    </span>
-                                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
-                                        {stagedMaterials.length} item{stagedMaterials.length === 1 ? '' : 's'}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {hasSyllabus && (
-                                <div className="p-3.5 rounded-xl border border-blue-200 bg-blue-50/70 dark:bg-blue-950/30 dark:border-blue-900/60 flex items-center gap-3">
-                                    <BookOpenIcon className="w-5 h-5 text-blue-600 shrink-0" />
-                                    <p className="text-xs text-blue-800 dark:text-blue-300">
-                                        This module includes a designated <strong>Official Syllabus</strong> document, which will be pinned at the top of the course for all enrolled students.
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Sticky Bottom Action Bar */}
-            <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur shrink-0 flex items-center justify-between gap-3 safe-bottom z-10">
-                <CommonButton
-                    color="inherit"
-                    disabled={currentStep === 1 || isSaving}
-                    size="medium"
-                    startIcon={<ArrowLeftIcon className="w-4 h-4" />}
-                    variant="outlined"
-                    onClick={handleBack}
-                >
-                    Back
-                </CommonButton>
-
-                <div className="hidden sm:block text-xs font-medium text-slate-500">
-                    Step {currentStep} of 3 — {currentStepConfig?.title}
-                </div>
-
-                <div className="flex items-center gap-2">
-                    {currentStep < 3 ? (
-                        <CommonButton
-                            color="primary"
-                            disabled={isSaving}
-                            endIcon={<ArrowRightIcon className="w-4 h-4" />}
-                            size="medium"
-                            variant="contained"
-                            onClick={handleNext}
-                        >
-                            Next Step
-                        </CommonButton>
-                    ) : readOnly ? (
-                        <CommonButton
-                            color="primary"
-                            size="medium"
-                            variant="contained"
-                            onClick={handleRequestClose}
-                        >
-                            Close
-                        </CommonButton>
-                    ) : (
-                        <CommonButton
-                            color="primary"
-                            disabled={isSaving || (Boolean(initialModule) && !hasRealChanges)}
-                            loading={isSaving}
-                            size="medium"
-                            startIcon={<FloppyDiskIcon className="w-4 h-4" />}
-                            variant="contained"
-                            onClick={handleSaveModule}
-                        >
-                            {isSaving
-                                ? 'Saving Module...'
-                                : isEdit
-                                    ? 'Save Changes'
-                                    : 'Save Module'}
-                        </CommonButton>
                     )}
                 </div>
-            </div>
-        </CommonModal>
 
-        <DiscardChangesPromptModal
-            open={isDiscardOpen}
-            onContinueEditing={() => setIsDiscardOpen(false)}
-            onDiscard={handleConfirmDiscard}
-        />
+                {/* Sticky Bottom Action Bar */}
+                <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur shrink-0 flex items-center justify-between gap-3 safe-bottom z-10">
+                    <CommonButton
+                        color="inherit"
+                        disabled={currentStep === 1 || isSaving}
+                        size="medium"
+                        startIcon={<ArrowLeftIcon className="w-4 h-4" />}
+                        variant="outlined"
+                        onClick={handleBack}
+                    >
+                    Back
+                    </CommonButton>
 
-        <DraftRecoveryPromptModal
-            open={draftGuard.isPromptOpen}
-            onContinue={draftGuard.handleContinue}
-            onDiscard={draftGuard.handleDiscard}
-        />
+                    <div className="hidden sm:block text-xs font-medium text-slate-500">
+                    Step {currentStep} of 3 — {currentStepConfig?.title}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {currentStep < 3
+                            ? (
+                                <CommonButton
+                                    color="primary"
+                                    disabled={isSaving}
+                                    endIcon={<ArrowRightIcon className="w-4 h-4" />}
+                                    size="medium"
+                                    variant="contained"
+                                    onClick={handleNext}
+                                >
+                            Next Step
+                                </CommonButton>
+                            )
+                            : readOnly
+                                ? (
+                                    <CommonButton
+                                        color="primary"
+                                        size="medium"
+                                        variant="contained"
+                                        onClick={handleRequestClose}
+                                    >
+                            Close
+                                    </CommonButton>
+                                )
+                                : (
+                                    <CommonButton
+                                        color="primary"
+                                        disabled={isSaving || (Boolean(initialModule) && !hasRealChanges)}
+                                        loading={isSaving}
+                                        size="medium"
+                                        startIcon={<FloppyDiskIcon className="w-4 h-4" />}
+                                        variant="contained"
+                                        onClick={handleSaveModule}
+                                    >
+                                        {isSaving
+                                            ? 'Saving Module...'
+                                            : isEdit
+                                                ? 'Save Changes'
+                                                : 'Save Module'}
+                                    </CommonButton>
+                                )}
+                    </div>
+                </div>
+            </CommonModal>
+
+            <DiscardChangesPromptModal
+                open={isDiscardOpen}
+                onContinueEditing={() => setIsDiscardOpen(false)}
+                onDiscard={handleConfirmDiscard}
+            />
+
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
+            />
         </>
     );
 }

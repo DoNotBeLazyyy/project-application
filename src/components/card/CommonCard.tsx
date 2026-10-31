@@ -41,32 +41,36 @@ const CommonCard = forwardRef<HTMLDivElement, CommonCardProps>(({
     infoContent,
     ...props
 }, ref) => {
-    return <Card
-        {...props}
-        ref={ref}
-    >
-        {cardHeaderProps && <CardHeader
-            {...cardHeaderProps}
-            action={
-                defaultActionProps
-                    ? <ModalCloseIcon {...defaultActionProps} />
-                    : cardHeaderProps?.action
-            }
-            title={
-                infoContent
-                    ? (
-                        <span>
-                            {cardHeaderProps.title}
-                            <span className="inline-flex align-middle ml-1.5 whitespace-nowrap">
-                                <CommonInfoTooltip content={infoContent} />
-                            </span>
-                        </span>
-                    )
-                    : cardHeaderProps.title
-            }
-        />}
-        {children}
-    </Card>;
+    return (
+        <Card
+            {...props}
+            ref={ref}
+        >
+            {cardHeaderProps && (
+                <CardHeader
+                    {...cardHeaderProps}
+                    action={
+                        defaultActionProps
+                            ? <ModalCloseIcon {...defaultActionProps} />
+                            : cardHeaderProps?.action
+                    }
+                    title={
+                        infoContent
+                            ? (
+                                <span>
+                                    {cardHeaderProps.title}
+                                    <span className="inline-flex align-middle ml-1.5 whitespace-nowrap">
+                                        <CommonInfoTooltip content={infoContent} />
+                                    </span>
+                                </span>
+                            )
+                            : cardHeaderProps.title
+                    }
+                />
+            )}
+            {children}
+        </Card>
+    );
 });
 CommonCard.displayName = 'CommonCard';
 

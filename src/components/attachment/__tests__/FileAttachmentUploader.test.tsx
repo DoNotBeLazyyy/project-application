@@ -1,18 +1,20 @@
 import FileAttachmentList from '@components/attachment/FileAttachmentList';
 import FileAttachmentUploader from '@components/attachment/FileAttachmentUploader';
-import { AttachmentInputDto } from '@type/announcement.type';
 import { fireEvent, render, screen } from '@testing-library/react';
+import { AttachmentInputDto } from '@type/announcement.type';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@services/storage.service', () => ({
-    getFileUrl: vi.fn().mockResolvedValue({
-        data: { url: 'https://example.com/resolved-file.png' },
-        error: null
-    }),
-    uploadFile: vi.fn().mockResolvedValue({
-        data: { url: 'https://example.com/uploaded.png' },
-        error: null
-    })
+    getFileUrl: vi.fn()
+        .mockResolvedValue({
+            data: { url: 'https://example.com/resolved-file.png' },
+            error: null
+        }),
+    uploadFile: vi.fn()
+        .mockResolvedValue({
+            data: { url: 'https://example.com/uploaded.png' },
+            error: null
+        })
 }));
 
 const mockAttachments: AttachmentInputDto[] = [
@@ -41,13 +43,17 @@ describe('FileAttachmentUploader with Image Previews', () => {
         );
 
         // Image attachment is displayed with its preview
-        expect(screen.getByText('event-flyer.png')).toBeInTheDocument();
+        expect(screen.getByText('event-flyer.png'))
+            .toBeInTheDocument();
         const img = screen.getByRole('img', { name: 'event-flyer.png' });
-        expect(img).toBeInTheDocument();
-        expect(img).toHaveAttribute('src', 'https://example.com/event-flyer.png');
+        expect(img)
+            .toBeInTheDocument();
+        expect(img)
+            .toHaveAttribute('src', 'https://example.com/event-flyer.png');
 
         // Document attachment is also displayed
-        expect(screen.getByText('meeting-agenda.pdf')).toBeInTheDocument();
+        expect(screen.getByText('meeting-agenda.pdf'))
+            .toBeInTheDocument();
     });
 
     it('opens zoomable and closable preview modal when clicking the image preview', () => {
@@ -63,13 +69,16 @@ describe('FileAttachmentUploader with Image Previews', () => {
         fireEvent.click(previewTrigger);
 
         // Modal should open
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-        expect(screen.getByText('100%')).toBeInTheDocument();
+        expect(screen.getByRole('dialog'))
+            .toBeInTheDocument();
+        expect(screen.getByText('100%'))
+            .toBeInTheDocument();
 
         // Check zoomable controls
         const zoomInBtn = screen.getByRole('button', { name: /zoom in/i });
         fireEvent.click(zoomInBtn);
-        expect(screen.getByText('125%')).toBeInTheDocument();
+        expect(screen.getByText('125%'))
+            .toBeInTheDocument();
 
         // Check closable
         const closeBtn = screen.getByRole('button', { name: /close preview/i });
@@ -89,7 +98,8 @@ describe('FileAttachmentUploader with Image Previews', () => {
         const removeBtn = screen.getByRole('button', { name: /remove event-flyer.png/i });
         fireEvent.click(removeBtn);
 
-        expect(handleChange).toHaveBeenCalledWith([mockAttachments[1]]);
+        expect(handleChange)
+            .toHaveBeenCalledWith([mockAttachments[1]]);
     });
 });
 
@@ -98,16 +108,21 @@ describe('FileAttachmentList with Image Previews', () => {
         render(<FileAttachmentList attachments={mockAttachments} />);
 
         // Image is displayed with preview thumbnail
-        expect(screen.getByText('event-flyer.png')).toBeInTheDocument();
+        expect(screen.getByText('event-flyer.png'))
+            .toBeInTheDocument();
         const img = screen.getByRole('img', { name: 'event-flyer.png' });
-        expect(img).toBeInTheDocument();
+        expect(img)
+            .toBeInTheDocument();
 
         // Clicking preview opens modal
         const previewTrigger = screen.getByLabelText(/Click to enlarge preview of event-flyer.png/i);
         fireEvent.click(previewTrigger);
 
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /download image/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /close preview/i })).toBeInTheDocument();
+        expect(screen.getByRole('dialog'))
+            .toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /download image/i }))
+            .toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /close preview/i }))
+            .toBeInTheDocument();
     });
 });

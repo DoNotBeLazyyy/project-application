@@ -14,7 +14,7 @@ type SubmissionTab = 'overview' | 'answers';
 
 interface SubmissionDetailModalProps {
     assessment: StudentEvaluationAssessment | null;
-    onClose: () => void;
+    onClose: VoidFunction;
 }
 
 interface DetailFieldProps {
@@ -159,9 +159,15 @@ export default function SubmissionDetailModal({ assessment, onClose }: Submissio
             <div className="flex items-start justify-between">
                 <div className="flex flex-col gap-2">
                     <div className="flex flex-wrap gap-2 items-center">
-                        <CommonBadgeStatus label={assessment.assessment_type} variant="info" />
+                        <CommonBadgeStatus
+                            label={assessment.assessment_type}
+                            variant="info"
+                        />
                         {assessment.grading_period_name && (
-                            <CommonBadgeStatus label={assessment.grading_period_name} variant="info" />
+                            <CommonBadgeStatus
+                                label={assessment.grading_period_name}
+                                variant="info"
+                            />
                         )}
                         <CommonBadgeStatus
                             label={assessment.submission_status ?? 'Not Started'}
@@ -187,7 +193,10 @@ export default function SubmissionDetailModal({ assessment, onClose }: Submissio
                     title="Close"
                     onClick={onClose}
                 >
-                    <XIcon size={18} weight="bold" />
+                    <XIcon
+                        size={18}
+                        weight="bold"
+                    />
                 </button>
             </div>
 
@@ -195,8 +204,12 @@ export default function SubmissionDetailModal({ assessment, onClose }: Submissio
                 menuStyle="outline"
                 size="small"
                 tabs={[
-                    { icon: <InfoIcon />, label: 'Overview', value: 'overview' },
-                    { icon: <ListChecksIcon />, label: 'Answers', value: 'answers' }
+                    {
+                        icon: <InfoIcon />, label: 'Overview', value: 'overview'
+                    },
+                    {
+                        icon: <ListChecksIcon />, label: 'Answers', value: 'answers'
+                    }
                 ]}
                 value={activeTab}
                 onChange={handleTabChange}
@@ -268,7 +281,10 @@ export default function SubmissionDetailModal({ assessment, onClose }: Submissio
                         </p>
                     )}
                     {submission?.answers.map((answer) => (
-                        <AnswerRow answer={answer} key={answer.id} />
+                        <AnswerRow
+                            answer={answer}
+                            key={answer.id}
+                        />
                     ))}
                     {submission && submission.answers.length === 0 && (
                         <p className="italic py-6 text-(--mui-palette-text-secondary) text-center text-sm">

@@ -64,4 +64,3 @@ export function termTotal(periods: GradingPeriodDraft[]): number {
 export function componentTotal(period: GradingPeriodDraft): number {
     return sumWeights(period.components);
 }
-

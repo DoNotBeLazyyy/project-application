@@ -7,7 +7,7 @@ import { MouseEvent } from 'react';
 export type TableCardInputProps = CommonInputProps & {
     // Fields the backing list RPC matches the search term against
     searchHints?: readonly string[];
-    onSearch?: () => void;
+    onSearch?: VoidFunction;
 };
 
 /**
@@ -103,7 +103,7 @@ export default function TableCardInput({
                                 <Tooltip
                                     arrow
                                     placement="top"
-                                    title={
+                                    title={(
                                         <div className="flex flex-col gap-1 py-1">
                                             <span className="font-semibold">
                                                 Search matches any of:
@@ -117,7 +117,7 @@ export default function TableCardInput({
                                                 Press Enter or click search to search
                                             </span>
                                         </div>
-                                    }
+                                    )}
                                 >
                                     <span
                                         aria-label="Searchable fields"

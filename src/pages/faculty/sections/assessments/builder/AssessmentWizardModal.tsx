@@ -1,14 +1,14 @@
 import CommonButton from '@components/button/CommonButton';
+import CommonForm from '@components/form/CommonForm';
+import { FormFieldConfig } from '@components/form/FormField';
+import BulkImportModal from '@components/modal/BulkImportModal';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
-import { useFormDraft } from '@hooks/useFormDraft';
-import BulkImportModal from '@components/modal/BulkImportModal';
-import CommonForm from '@components/form/CommonForm';
-import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { DEFAULT_ASSSESSMENT_VALUES, DEFAULT_QUESTION_VALUES } from '@constants/faculty.constant';
+import { useFormDraft } from '@hooks/useFormDraft';
 import AssessmentAttachmentPanel from '@pages/faculty/sections/assessments/builder/AssessmentAttachmentPanel';
 import QuestionList from '@pages/faculty/sections/assessments/builder/QuestionList';
 import QuestionModal from '@pages/faculty/sections/assessments/builder/QuestionModal';
@@ -73,12 +73,24 @@ export const ASSESSMENT_WIZARD_STEPS: ModalStepItem[] = [
 // points defaults to 1, is_required is FALSE only for FALSE/NO/0/N, and choices are only stored for
 // Multiple Choice / True or False / Matching (each needs at least one choice marked with *).
 const QUESTION_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'question_text', label: 'Question Text', hint: 'Required. The question as students will see it', sample: 'What is the primary role of an operating system kernel?', aliases: ['question', 'prompt', 'item'] },
-    { key: 'question_type', label: 'Question Type', hint: 'Required. One of: Multiple Choice | True or False | Short Answer | Essay | Fill in the Blank | Matching | File Upload (exact spelling)', sample: 'Multiple Choice', aliases: ['type', 'item_type'] },
-    { key: 'points', label: 'Points', hint: 'Number greater than 0 (blank defaults to 1)', sample: '2', required: false, aliases: ['point', 'score', 'weight'] },
-    { key: 'is_required', label: 'Required', hint: 'TRUE or FALSE (blank defaults to TRUE)', sample: 'TRUE', required: false, aliases: ['required'] },
-    { key: 'explanation', label: 'Explanation', hint: 'Optional explanation shown after grading', sample: 'The kernel manages core hardware and resource allocation.', required: false },
-    { key: 'choices', label: 'Choices', hint: 'Required for Multiple Choice, True or False and Matching: separate with | and mark each correct choice with * (e.g. True*|False). Leave blank for Short Answer, Essay, Fill in the Blank and File Upload', sample: 'Resource Management*|Web Browsing|Word Processing|Photo Editing', required: false, aliases: ['options', 'answers'] }
+    {
+        key: 'question_text', label: 'Question Text', hint: 'Required. The question as students will see it', sample: 'What is the primary role of an operating system kernel?', aliases: ['question', 'prompt', 'item']
+    },
+    {
+        key: 'question_type', label: 'Question Type', hint: 'Required. One of: Multiple Choice | True or False | Short Answer | Essay | Fill in the Blank | Matching | File Upload (exact spelling)', sample: 'Multiple Choice', aliases: ['type', 'item_type']
+    },
+    {
+        key: 'points', label: 'Points', hint: 'Number greater than 0 (blank defaults to 1)', sample: '2', required: false, aliases: ['point', 'score', 'weight']
+    },
+    {
+        key: 'is_required', label: 'Required', hint: 'TRUE or FALSE (blank defaults to TRUE)', sample: 'TRUE', required: false, aliases: ['required']
+    },
+    {
+        key: 'explanation', label: 'Explanation', hint: 'Optional explanation shown after grading', sample: 'The kernel manages core hardware and resource allocation.', required: false
+    },
+    {
+        key: 'choices', label: 'Choices', hint: 'Required for Multiple Choice, True or False and Matching: separate with | and mark each correct choice with * (e.g. True*|False). Leave blank for Short Answer, Essay, Fill in the Blank and File Upload', sample: 'Resource Management*|Web Browsing|Word Processing|Photo Editing', required: false, aliases: ['options', 'answers']
+    }
 ];
 
 const ASSESSMENT_TYPE_OPTIONS: { label: string; value: AssessmentType }[] = [
@@ -95,8 +107,8 @@ interface AssessmentWizardModalProps {
     sectionId: string;
     assessmentId?: string | null;
     readOnly?: boolean;
-    onClose: () => void;
-    onSuccess: () => void;
+    onClose: VoidFunction;
+    onSuccess: VoidFunction;
 }
 
 export default function AssessmentWizardModal({
@@ -109,7 +121,9 @@ export default function AssessmentWizardModal({
 }: AssessmentWizardModalProps) {
     const isNew = !assessmentId || assessmentId === 'new';
     const [currentStep, setCurrentStep] = useState(1);
-    const [activeAssessmentId, setActiveAssessmentId] = useState<string>(isNew ? '' : assessmentId);
+    const [activeAssessmentId, setActiveAssessmentId] = useState<string>(isNew
+        ? ''
+        : assessmentId);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
@@ -157,8 +171,7 @@ export default function AssessmentWizardModal({
                 (componentResults[index].data ?? []).map((c) => ({
                     label: `${period.name} — ${c.name} (${c.weight}%)`,
                     value: c.id
-                }))
-            );
+                })));
 
             setComponentOptions(options);
         }
@@ -170,14 +183,18 @@ export default function AssessmentWizardModal({
     useEffect(() => {
         if (!open) {
             setCurrentStep(1);
-            setActiveAssessmentId(isNew ? '' : assessmentId || '');
+            setActiveAssessmentId(isNew
+                ? ''
+                : assessmentId || '');
             settingsMethods.reset(DEFAULT_ASSSESSMENT_VALUES);
             setQuestions([]);
             setAttachments([]);
             return;
         }
 
-        const targetId = isNew ? '' : assessmentId || '';
+        const targetId = isNew
+            ? ''
+            : assessmentId || '';
         setActiveAssessmentId(targetId);
 
         if (targetId) {
@@ -199,7 +216,9 @@ export default function AssessmentWizardModal({
                             passing_points: d.passing_points !== null && d.passing_points !== undefined && String(d.passing_points) !== ''
                                 ? String(d.passing_points)
                                 : '',
-                            time_limit_minutes: d.time_limit_minutes ? String(d.time_limit_minutes) : '',
+                            time_limit_minutes: d.time_limit_minutes
+                                ? String(d.time_limit_minutes)
+                                : '',
                             max_attempts: String(d.max_attempts ?? 1),
                             opens_at: d.opens_at ?? '',
                             due_at: d.due_at ?? '',
@@ -209,11 +228,12 @@ export default function AssessmentWizardModal({
                             shuffle_questions: d.shuffle_questions ?? false,
                             shuffle_choices: d.shuffle_choices ?? false,
                             show_all_questions: d.show_all_questions ?? true,
-                            questions_per_page: d.questions_per_page ? String(d.questions_per_page) : '',
+                            questions_per_page: d.questions_per_page
+                                ? String(d.questions_per_page)
+                                : '',
                             allow_student_review: d.allow_student_review ?? true,
                             allow_past_dates: [d.due_at, d.closes_at, d.show_results_at].some((date) =>
-                                isPastDateTime(date ?? '')
-                            )
+                                isPastDateTime(date ?? ''))
                         });
                     }
 
@@ -229,7 +249,8 @@ export default function AssessmentWizardModal({
                 .finally(() => {
                     setIsLoading(false);
                 });
-        } else {
+        }
+        else {
             settingsMethods.reset(DEFAULT_ASSSESSMENT_VALUES);
             setQuestions([]);
             setAttachments([]);
@@ -266,10 +287,14 @@ export default function AssessmentWizardModal({
         return function(value: string | boolean) {
             const other = settingsMethods.getValues(otherName);
             if (typeof value !== 'string' || !value || !other) return true;
-            const current = new Date(value).getTime();
-            const target = new Date(other).getTime();
+            const current = new Date(value)
+                .getTime();
+            const target = new Date(other)
+                .getTime();
             if (Number.isNaN(current) || Number.isNaN(target)) return true;
-            return (allowEqual ? current <= target : current < target) || message;
+            return (allowEqual
+                ? current <= target
+                : current < target) || message;
         };
     }
 
@@ -340,11 +365,13 @@ export default function AssessmentWizardModal({
                 if (!newId) return;
             }
             setCurrentStep(2);
-        } else if (currentStep === 2) {
+        }
+        else if (currentStep === 2) {
             const valid = await validateStep2();
             if (!valid) return;
             setCurrentStep(3);
-        } else if (currentStep === 3) {
+        }
+        else if (currentStep === 3) {
             setCurrentStep(4);
         }
     }
@@ -407,20 +434,24 @@ export default function AssessmentWizardModal({
                 const res = await createAssessment(sectionId, values);
                 if (!res.error) {
                     draftGuard.clearDraft();
-                    useToastStore.getState().showToast('Assessment created successfully.', 'success');
-                    onSuccess();
-                    onClose();
-                }
-            } else {
-                const res = await updateAssessment(activeAssessmentId, values);
-                if (!res.error) {
-                    draftGuard.clearDraft();
-                    useToastStore.getState().showToast('Assessment saved successfully.', 'success');
+                    useToastStore.getState()
+                        .showToast('Assessment created successfully.', 'success');
                     onSuccess();
                     onClose();
                 }
             }
-        } finally {
+            else {
+                const res = await updateAssessment(activeAssessmentId, values);
+                if (!res.error) {
+                    draftGuard.clearDraft();
+                    useToastStore.getState()
+                        .showToast('Assessment saved successfully.', 'success');
+                    onSuccess();
+                    onClose();
+                }
+            }
+        }
+        finally {
             setIsSaving(false);
         }
     }
@@ -431,8 +462,8 @@ export default function AssessmentWizardModal({
         const suggestedPoints = remaining > 0
             ? remaining
             : questions.length === 0 && configuredTotalPoints > 0
-            ? configuredTotalPoints
-            : 1;
+                ? configuredTotalPoints
+                : 1;
 
         questionMethods.reset({
             ...DEFAULT_QUESTION_VALUES,
@@ -446,7 +477,8 @@ export default function AssessmentWizardModal({
         if (activeAssessmentId) {
             const currentValues = settingsMethods.getValues();
             await updateAssessment(activeAssessmentId, { ...currentValues, total_points: String(newTotal) });
-            useToastStore.getState().showToast(`Assessment total points updated to ${newTotal} pts.`, 'success');
+            useToastStore.getState()
+                .showToast(`Assessment total points updated to ${newTotal} pts.`, 'success');
         }
     }
 
@@ -459,8 +491,12 @@ export default function AssessmentWizardModal({
             explanation: question.explanation ?? '',
             is_required: question.is_required,
             allowed_file_types: question.allowed_file_types?.join(', ') ?? '',
-            max_file_size_mb: question.max_file_size_mb ? String(question.max_file_size_mb) : '',
-            max_file_count: question.max_file_count ? String(question.max_file_count) : '',
+            max_file_size_mb: question.max_file_size_mb
+                ? String(question.max_file_size_mb)
+                : '',
+            max_file_count: question.max_file_count
+                ? String(question.max_file_count)
+                : '',
             choices: question.choices.length > 0
                 ? question.choices.map((c) => ({ choice_text: c.choice_text, is_correct: c.is_correct }))
                 : [
@@ -494,7 +530,9 @@ export default function AssessmentWizardModal({
     }
 
     function handleToggleExpand(questionId: string) {
-        setExpandedQuestionId((prev) => (prev === questionId ? '' : questionId));
+        setExpandedQuestionId((prev) => (prev === questionId
+            ? ''
+            : questionId));
     }
 
     const currentStepConfig = ASSESSMENT_WIZARD_STEPS.find((s) => s.step === currentStep);
@@ -611,7 +649,9 @@ export default function AssessmentWizardModal({
                     afterDue: function(value) {
                         const due = settingsMethods.getValues('due_at');
                         if (typeof value !== 'string' || !value || !due) return true;
-                        return new Date(value).getTime() >= new Date(due).getTime() || 'Closing date must be on or after the due date.';
+                        return new Date(value)
+                            .getTime() >= new Date(due)
+                            .getTime() || 'Closing date must be on or after the due date.';
                     }
                 }
             },
@@ -709,8 +749,8 @@ export default function AssessmentWizardModal({
                                 {readOnly
                                     ? 'View Assessment Details'
                                     : activeAssessmentId && !isNew
-                                    ? `Edit Assessment: ${settingsMethods.watch('title') || 'Untitled'}`
-                                    : 'Create Assessment Builder'}
+                                        ? `Edit Assessment: ${settingsMethods.watch('title') || 'Untitled'}`
+                                        : 'Create Assessment Builder'}
                             </h2>
                             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                                 Unified setup for assessment identity, schedule, grading component, questions, and display rules.
@@ -812,28 +852,30 @@ export default function AssessmentWizardModal({
                         {/* Step 3: Questions & Content */}
                         {currentStep === 3 && (
                             <div className="flex flex-col gap-4">
-                                {activeAssessmentId ? (
-                                    <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs">
-                                        <QuestionList
-                                            assessmentDbId={activeAssessmentId}
-                                            configuredTotalPoints={configuredTotalPoints}
-                                            expandedQuestionId={expandedQuestionId}
-                                            questions={questions}
-                                            onAddQuestion={handleOpenAddQuestion}
-                                            onDeleteQuestion={handleDeleteQuestion}
-                                            onEditQuestion={handleOpenEditQuestion}
-                                            onImportQuestions={() => setIsImportOpen(true)}
-                                            onSyncTotalPoints={handleSyncTotalPoints}
-                                            onToggleExpand={handleToggleExpand}
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="p-8 text-center bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800">
-                                        <p className="text-slate-500 text-sm">
+                                {activeAssessmentId
+                                    ? (
+                                        <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs">
+                                            <QuestionList
+                                                assessmentDbId={activeAssessmentId}
+                                                configuredTotalPoints={configuredTotalPoints}
+                                                expandedQuestionId={expandedQuestionId}
+                                                questions={questions}
+                                                onAddQuestion={handleOpenAddQuestion}
+                                                onDeleteQuestion={handleDeleteQuestion}
+                                                onEditQuestion={handleOpenEditQuestion}
+                                                onImportQuestions={() => setIsImportOpen(true)}
+                                                onSyncTotalPoints={handleSyncTotalPoints}
+                                                onToggleExpand={handleToggleExpand}
+                                            />
+                                        </div>
+                                    )
+                                    : (
+                                        <div className="p-8 text-center bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800">
+                                            <p className="text-slate-500 text-sm">
                                             Please complete Step 1 to initialize the assessment before adding questions.
-                                        </p>
-                                    </div>
-                                )}
+                                            </p>
+                                        </div>
+                                    )}
                             </div>
                         )}
 
@@ -873,7 +915,9 @@ export default function AssessmentWizardModal({
                                             Points Summary
                                         </span>
                                         <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">
-                                            Configured Total: <strong>{configuredTotalPoints} pts</strong> | Questions Sum: <strong>{questionSumPoints} pts</strong> ({questions.length} question{questions.length === 1 ? '' : 's'})
+                                            Configured Total: <strong>{configuredTotalPoints} pts</strong> | Questions Sum: <strong>{questionSumPoints} pts</strong> ({questions.length} question{questions.length === 1
+                                                ? ''
+                                                : 's'})
                                         </p>
                                     </div>
                                     {questionSumPoints !== configuredTotalPoints && (
@@ -914,43 +958,47 @@ export default function AssessmentWizardModal({
 
                 {/* Next / Save Action */}
                 <div className="flex items-center gap-2">
-                    {currentStep < 4 ? (
-                        <CommonButton
-                            color="primary"
-                            disabled={isLoading || isSaving}
-                            endIcon={<ArrowRightIcon className="w-4 h-4" />}
-                            size="medium"
-                            variant="contained"
-                            onClick={handleNext}
-                        >
+                    {currentStep < 4
+                        ? (
+                            <CommonButton
+                                color="primary"
+                                disabled={isLoading || isSaving}
+                                endIcon={<ArrowRightIcon className="w-4 h-4" />}
+                                size="medium"
+                                variant="contained"
+                                onClick={handleNext}
+                            >
                             Next Step
-                        </CommonButton>
-                    ) : readOnly ? (
-                        <CommonButton
-                            color="primary"
-                            size="medium"
-                            variant="contained"
-                            onClick={handleCloseModal}
-                        >
+                            </CommonButton>
+                        )
+                        : readOnly
+                            ? (
+                                <CommonButton
+                                    color="primary"
+                                    size="medium"
+                                    variant="contained"
+                                    onClick={handleCloseModal}
+                                >
                             Close
-                        </CommonButton>
-                    ) : (
-                        <CommonButton
-                            color="primary"
-                            disabled={isLoading || isSaving}
-                            loading={isSaving}
-                            size="medium"
-                            startIcon={<FloppyDiskIcon className="w-4 h-4" />}
-                            variant="contained"
-                            onClick={handleSaveAssessment}
-                        >
-                            {isSaving
-                                ? 'Saving Assessment...'
-                                : isNew
-                                    ? 'Save Assessment'
-                                    : 'Save Changes'}
-                        </CommonButton>
-                    )}
+                                </CommonButton>
+                            )
+                            : (
+                                <CommonButton
+                                    color="primary"
+                                    disabled={isLoading || isSaving}
+                                    loading={isSaving}
+                                    size="medium"
+                                    startIcon={<FloppyDiskIcon className="w-4 h-4" />}
+                                    variant="contained"
+                                    onClick={handleSaveAssessment}
+                                >
+                                    {isSaving
+                                        ? 'Saving Assessment...'
+                                        : isNew
+                                            ? 'Save Assessment'
+                                            : 'Save Changes'}
+                                </CommonButton>
+                            )}
                 </div>
             </div>
 

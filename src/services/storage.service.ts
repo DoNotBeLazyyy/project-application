@@ -68,7 +68,6 @@ export function getPublicStorageUrl(bucket: StorageBucket, path: string): string
     return data.publicUrl;
 }
 
-
 export async function getFileUrl(
     bucket: StorageBucket,
     path: string,

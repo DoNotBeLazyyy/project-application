@@ -36,7 +36,8 @@ export default function RichContentReader({
         if (instanceRef.current) {
             try {
                 instanceRef.current.destroy();
-            } catch {
+            }
+            catch {
                 // Ignore destroy errors during unmount/remount
             }
             instanceRef.current = null;
@@ -63,7 +64,8 @@ export default function RichContentReader({
                 viewer: true
             });
             instanceRef.current = viewer;
-        } catch {
+        }
+        catch {
             // Fallback to simple text display if editor factory encounters unexpected format
             if (containerRef.current) {
                 containerRef.current.textContent = trimmed;
@@ -74,7 +76,8 @@ export default function RichContentReader({
             if (instanceRef.current) {
                 try {
                     instanceRef.current.destroy();
-                } catch {
+                }
+                catch {
                     // Ignore destroy errors during unmount
                 }
                 instanceRef.current = null;
@@ -96,20 +99,27 @@ export default function RichContentReader({
                 const clickedImg = target as HTMLImageElement;
                 if (!clickedImg.src) return;
 
-                const allImgs = Array.from(container?.querySelectorAll('img') || []).filter(
-                    (el) => Boolean(el.src)
-                );
+                const allImgs = Array.from(container?.querySelectorAll('img') || [])
+                    .filter(
+                        (el) => Boolean(el.src)
+                    );
                 const allItems: ImagePreviewItem[] = allImgs.map((el) => ({
-                    fileName: el.alt || el.src.split('/').pop()?.split('?')[0] || 'Image',
+                    fileName: el.alt || el.src.split('/')
+                        .pop()
+                        ?.split('?')[0] || 'Image',
                     url: el.src
                 }));
 
                 const clickedIdx = allImgs.indexOf(clickedImg);
-                setPreviewImages(allItems.length > 0 ? allItems : [{
-                    fileName: clickedImg.alt || 'Image',
-                    url: clickedImg.src
-                }]);
-                setPreviewIndex(clickedIdx >= 0 ? clickedIdx : 0);
+                setPreviewImages(allItems.length > 0
+                    ? allItems
+                    : [{
+                        fileName: clickedImg.alt || 'Image',
+                        url: clickedImg.src
+                    }]);
+                setPreviewIndex(clickedIdx >= 0
+                    ? clickedIdx
+                    : 0);
             }
         }
 
@@ -121,7 +131,10 @@ export default function RichContentReader({
 
     return (
         <>
-            <div className={`${className} [&_img]:cursor-pointer [&_img]:rounded-lg [&_img]:transition-opacity hover:[&_img]:opacity-95`} ref={containerRef} />
+            <div
+                className={`${className} [&_img]:cursor-pointer [&_img]:rounded-lg [&_img]:transition-opacity hover:[&_img]:opacity-95`}
+                ref={containerRef}
+            />
             <ImagePreviewModal
                 images={previewImages}
                 initialIndex={previewIndex ?? 0}

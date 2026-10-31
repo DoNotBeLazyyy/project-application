@@ -94,7 +94,9 @@ export default function DepartmentManagement() {
                 deans: result.data.deans ?? [],
                 description: result.data.description ?? '',
                 faculties: result.data.faculties ?? [],
-                faculty_ids: Array.isArray(result.data.faculty_ids) ? result.data.faculty_ids : [],
+                faculty_ids: Array.isArray(result.data.faculty_ids)
+                    ? result.data.faculty_ids
+                    : [],
                 name: result.data.name
             });
         }
@@ -161,7 +163,8 @@ export default function DepartmentManagement() {
             });
 
             if (!result.error) {
-                useToastStore.getState().showToast('Department created successfully.', 'success');
+                useToastStore.getState()
+                    .showToast('Department created successfully.', 'success');
                 createMethods.reset(DEFAULT_FORM_VALUES);
                 setIsCreateOpen(false);
                 refreshList();
@@ -186,7 +189,8 @@ export default function DepartmentManagement() {
             });
 
             if (!result.error) {
-                useToastStore.getState().showToast('Department and assignments updated successfully.', 'success');
+                useToastStore.getState()
+                    .showToast('Department and assignments updated successfully.', 'success');
                 setIsUpdateOpen(false);
                 setSelectedId(null);
                 setWizardStep(1);

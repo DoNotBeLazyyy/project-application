@@ -6,6 +6,10 @@ import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptMod
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
 import { useFormDraft } from '@hooks/useFormDraft';
+import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
+import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSchoolYearOptions';
+import CurriculumMapManagement from '@pages/dean/curriculum-map-management';
+import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -14,12 +18,8 @@ import {
     PencilSimpleIcon,
     XIcon
 } from '@phosphor-icons/react';
-import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSchoolYearOptions';
-import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
-import CurriculumMapManagement from '@pages/dean/curriculum-map-management';
-import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
-import { ProgramFormValues } from '@type/program/program.type';
 import { CurriculumMapEntry } from '@type/curriculum-map.type';
+import { ProgramFormValues } from '@type/program/program.type';
 import { generateProgramCode } from '@utils/entity-code.util';
 import { formErrors } from '@utils/form.util';
 import { useEffect, useRef, useState } from 'react';
@@ -33,14 +33,18 @@ interface ProgramWizardModalProps {
     isSaving?: boolean;
     programId?: string;
     methods: UseFormReturn<ProgramFormValues>;
-    onClose: () => void;
+    onClose: VoidFunction;
     onSubmit: (values: ProgramFormValues) => void;
     onSwitchToEdit?: (step?: number) => void;
 }
 
 export const PROGRAM_WIZARD_STEPS = [
-    { step: 1, title: 'Program Details', subtitle: 'Basic identity & academic duration' },
-    { step: 2, title: 'Curriculum Map', subtitle: 'Course subjects mapped by year level & term' }
+    {
+        step: 1, title: 'Program Details', subtitle: 'Basic identity & academic duration'
+    },
+    {
+        step: 2, title: 'Curriculum Map', subtitle: 'Course subjects mapped by year level & term'
+    }
 ];
 
 export default function ProgramWizardModal({
@@ -92,18 +96,22 @@ export default function ProgramWizardModal({
                 if (generated && (!currentCode || currentCode !== generated)) {
                     setValue('code', generated, { shouldValidate: true, shouldDirty: true });
                 }
-            } else {
+            }
+            else {
                 setValue('code', '', { shouldValidate: false, shouldDirty: false });
             }
-        } else {
+        }
+        else {
             if (selectedName !== initialNameRef.current) {
                 const generated = generateProgramCode(selectedName || '');
                 if (generated) {
                     setValue('code', generated, { shouldValidate: true, shouldDirty: true });
-                } else if (!selectedName?.trim()) {
+                }
+                else if (!selectedName?.trim()) {
                     setValue('code', '', { shouldValidate: false, shouldDirty: true });
                 }
-            } else if (initialCodeRef.current !== null && watchedCode !== initialCodeRef.current) {
+            }
+            else if (initialCodeRef.current !== null && watchedCode !== initialCodeRef.current) {
                 setValue('code', initialCodeRef.current, { shouldValidate: true, shouldDirty: false });
             }
         }
@@ -138,7 +146,8 @@ export default function ProgramWizardModal({
                 ? undefined
                 : {
                     required: 'Program name is required',
-                    validate: (val: any) => Boolean(val && String(val).trim()) || 'Program name cannot be empty or whitespace only'
+                    validate: (val: any) => Boolean(val && String(val)
+                        .trim()) || 'Program name cannot be empty or whitespace only'
                 },
             type: 'text',
             gridCols: 1
@@ -383,9 +392,12 @@ export default function ProgramWizardModal({
             {/* Stepper Step Body */}
             <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 bg-slate-50/50 dark:bg-zinc-900/40">
                 <div
-                    style={{ display: currentStep === 1
-                        ? 'block'
-                        : 'none' }}>
+                    style={{
+                        display: currentStep === 1
+                            ? 'block'
+                            : 'none'
+                    }}
+                >
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
                             <div>
@@ -406,16 +418,19 @@ export default function ProgramWizardModal({
                 </div>
 
                 <div
-                    style={{ display: currentStep === 2
-                        ? 'block'
-                        : 'none' }}>
+                    style={{
+                        display: currentStep === 2
+                            ? 'block'
+                            : 'none'
+                    }}
+                >
                     <CurriculumMapManagement
                         departmentId={selectedDepartmentId}
                         hideProgramSelect
-                        schoolYearId={activeSchoolYearId}
                         initialEntries={(methods.getValues('curriculum_entries') as unknown as CurriculumMapEntry[]) || []}
                         programId={programId}
                         readOnly={readOnly}
+                        schoolYearId={activeSchoolYearId}
                         onChangeEntries={(newEntries, pendingDeleted) => {
                             setValue('curriculum_entries', newEntries as any, { shouldDirty: true });
                             if (pendingDeleted) {

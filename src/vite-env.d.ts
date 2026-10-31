@@ -14,8 +14,8 @@ declare module '@toast-ui/editor' {
             autofocus?: boolean;
             el: HTMLElement;
             events?: {
-                blur?: () => void;
-                change?: () => void;
+                blur?: VoidFunction;
+                change?: VoidFunction;
             };
             height?: string;
             hideModeSwitch?: boolean;

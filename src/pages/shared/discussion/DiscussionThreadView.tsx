@@ -29,8 +29,8 @@ const REPLY_TEXTAREA_SX = {
 
 interface DiscussionThreadViewProps {
     threadId: string;
-    onBack: () => void;
-    onDeleted: () => void;
+    onBack: VoidFunction;
+    onDeleted: VoidFunction;
 }
 
 export default function DiscussionThreadView({
@@ -214,7 +214,12 @@ export default function DiscussionThreadView({
                 <CommonButton
                     color="inherit"
                     size="small"
-                    startIcon={<ArrowLeftIcon size={16} weight="bold" />}
+                    startIcon={(
+                        <ArrowLeftIcon
+                            size={16}
+                            weight="bold"
+                        />
+                    )}
                     variant="outlined"
                     onClick={onBack}
                 >
@@ -227,11 +232,14 @@ export default function DiscussionThreadView({
                                 ? 'primary'
                                 : 'inherit'}
                             size="small"
-                            startIcon={<PushPinIcon
-                                size={16}
-                                weight={thread.is_pinned
-                                    ? 'fill'
-                                    : 'regular'} />}
+                            startIcon={(
+                                <PushPinIcon
+                                    size={16}
+                                    weight={thread.is_pinned
+                                        ? 'fill'
+                                        : 'regular'}
+                                />
+                            )}
                             variant="outlined"
                             onClick={handleTogglePin}
                         >
@@ -246,11 +254,14 @@ export default function DiscussionThreadView({
                                 ? 'success'
                                 : 'inherit'}
                             size="small"
-                            startIcon={<CheckCircleIcon
-                                size={16}
-                                weight={thread.is_resolved
-                                    ? 'fill'
-                                    : 'regular'} />}
+                            startIcon={(
+                                <CheckCircleIcon
+                                    size={16}
+                                    weight={thread.is_resolved
+                                        ? 'fill'
+                                        : 'regular'}
+                                />
+                            )}
                             variant="outlined"
                             onClick={handleToggleResolved}
                         >

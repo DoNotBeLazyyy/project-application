@@ -56,10 +56,12 @@ export default function ChangePasswordForm({
         }
     ];
 
-    return <CommonForm
-        control={control}
-        fields={fields}
-        formProps={formProps}
-        hasHelper
-    />;
+    return (
+        <CommonForm
+            control={control}
+            fields={fields}
+            formProps={formProps}
+            hasHelper
+        />
+    );
 }

@@ -42,7 +42,8 @@ const LEGACY_EXCEPTION_TYPE_ALIASES: Record<string, CalendarExceptionType> = {
 
 /** Maps a stored or legacy exception type label to the DB enum value, or null when unsupported. */
 export function toCalendarExceptionType(value?: string | null): CalendarExceptionType | null {
-    const clean = (value || '').trim().toLowerCase();
+    const clean = (value || '').trim()
+        .toLowerCase();
     if (!clean) return null;
     const match = CALENDAR_EXCEPTION_TYPES.find((t) => t.toLowerCase() === clean);
     return match ?? LEGACY_EXCEPTION_TYPE_ALIASES[clean] ?? null;
@@ -51,7 +52,9 @@ export function toCalendarExceptionType(value?: string | null): CalendarExceptio
 function toNumberOrNull(value: unknown): number | null {
     if (value === null || value === undefined || value === '') return null;
     const num = Number(value);
-    return isNaN(num) ? null : num;
+    return isNaN(num)
+        ? null
+        : num;
 }
 
 export const DEFAULT_GRADING_COMPONENTS: { name: string; weight: number }[] = [
@@ -66,32 +69,60 @@ export function isSpecialGradeRow(row?: {
 } | null): boolean {
     if (!row) return false;
     if (row.is_conditional) return true;
-    const code = (row.special_code || '').trim().toUpperCase();
+    const code = (row.special_code || '').trim()
+        .toUpperCase();
     // is_conditional is not persisted; the DB only keeps special_code (set solely for conditional rows)
     if (code) return true;
-    const label = (row.label || '').trim().toUpperCase();
+    const label = (row.label || '').trim()
+        .toUpperCase();
     return (
-        label === 'DRP' ||
-        label === 'INC' ||
-        label === 'W' ||
-        label === 'NFE'
+        label === 'DRP'
+        || label === 'INC'
+        || label === 'W'
+        || label === 'NFE'
     );
 }
 
 export const DEFAULT_TRANSMUTATION_ROWS: WizardTransmutationRow[] = [
-    { label: '1.00', min_percentage: 98, max_percentage: 100, transmuted_grade: 1.00, is_passing: true, is_conditional: false, special_code: null, description: 'Excellent' },
-    { label: '1.25', min_percentage: 95, max_percentage: 97, transmuted_grade: 1.25, is_passing: true, is_conditional: false, special_code: null, description: 'Superior' },
-    { label: '1.50', min_percentage: 92, max_percentage: 94, transmuted_grade: 1.50, is_passing: true, is_conditional: false, special_code: null, description: 'Very Good' },
-    { label: '1.75', min_percentage: 89, max_percentage: 91, transmuted_grade: 1.75, is_passing: true, is_conditional: false, special_code: null, description: 'Good' },
-    { label: '2.00', min_percentage: 86, max_percentage: 88, transmuted_grade: 2.00, is_passing: true, is_conditional: false, special_code: null, description: 'Meritorious' },
-    { label: '2.25', min_percentage: 83, max_percentage: 85, transmuted_grade: 2.25, is_passing: true, is_conditional: false, special_code: null, description: 'Very Satisfactory' },
-    { label: '2.50', min_percentage: 80, max_percentage: 82, transmuted_grade: 2.50, is_passing: true, is_conditional: false, special_code: null, description: 'Satisfactory' },
-    { label: '2.75', min_percentage: 77, max_percentage: 79, transmuted_grade: 2.75, is_passing: true, is_conditional: false, special_code: null, description: 'Fairly Satisfactory' },
-    { label: '3.00', min_percentage: 75, max_percentage: 76, transmuted_grade: 3.00, is_passing: true, is_conditional: false, special_code: null, description: 'Passing' },
-    { label: '4.00', min_percentage: 70, max_percentage: 74, transmuted_grade: 4.00, is_passing: false, is_conditional: false, special_code: null, description: 'Conditional' },
-    { label: '5.00', min_percentage: 0, max_percentage: 69, transmuted_grade: 5.00, is_passing: false, is_conditional: false, special_code: null, description: 'Failed' },
-    { label: 'INC', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, is_conditional: true, special_code: 'INC', description: 'Incomplete Requirements' },
-    { label: 'DRP', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, is_conditional: true, special_code: 'DRP', description: 'Officially Dropped' }
+    {
+        label: '1.00', min_percentage: 98, max_percentage: 100, transmuted_grade: 1.00, is_passing: true, is_conditional: false, special_code: null, description: 'Excellent'
+    },
+    {
+        label: '1.25', min_percentage: 95, max_percentage: 97, transmuted_grade: 1.25, is_passing: true, is_conditional: false, special_code: null, description: 'Superior'
+    },
+    {
+        label: '1.50', min_percentage: 92, max_percentage: 94, transmuted_grade: 1.50, is_passing: true, is_conditional: false, special_code: null, description: 'Very Good'
+    },
+    {
+        label: '1.75', min_percentage: 89, max_percentage: 91, transmuted_grade: 1.75, is_passing: true, is_conditional: false, special_code: null, description: 'Good'
+    },
+    {
+        label: '2.00', min_percentage: 86, max_percentage: 88, transmuted_grade: 2.00, is_passing: true, is_conditional: false, special_code: null, description: 'Meritorious'
+    },
+    {
+        label: '2.25', min_percentage: 83, max_percentage: 85, transmuted_grade: 2.25, is_passing: true, is_conditional: false, special_code: null, description: 'Very Satisfactory'
+    },
+    {
+        label: '2.50', min_percentage: 80, max_percentage: 82, transmuted_grade: 2.50, is_passing: true, is_conditional: false, special_code: null, description: 'Satisfactory'
+    },
+    {
+        label: '2.75', min_percentage: 77, max_percentage: 79, transmuted_grade: 2.75, is_passing: true, is_conditional: false, special_code: null, description: 'Fairly Satisfactory'
+    },
+    {
+        label: '3.00', min_percentage: 75, max_percentage: 76, transmuted_grade: 3.00, is_passing: true, is_conditional: false, special_code: null, description: 'Passing'
+    },
+    {
+        label: '4.00', min_percentage: 70, max_percentage: 74, transmuted_grade: 4.00, is_passing: false, is_conditional: false, special_code: null, description: 'Conditional'
+    },
+    {
+        label: '5.00', min_percentage: 0, max_percentage: 69, transmuted_grade: 5.00, is_passing: false, is_conditional: false, special_code: null, description: 'Failed'
+    },
+    {
+        label: 'INC', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, is_conditional: true, special_code: 'INC', description: 'Incomplete Requirements'
+    },
+    {
+        label: 'DRP', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, is_conditional: true, special_code: 'DRP', description: 'Officially Dropped'
+    }
 ];
 export const DEFAULT_ACADEMIC_THRESHOLDS: WizardThresholdItem[] = [
     {
@@ -169,7 +200,7 @@ export const DEFAULT_ACADEMIC_THRESHOLDS: WizardThresholdItem[] = [
     {
         category: 'Standing',
         code: 'deans_list',
-        label: "Dean's List",
+        label: 'Dean\'s List',
         min_gwa: 1.00,
         max_gwa: 1.75,
         min_subject_grade: 2.50,
@@ -222,7 +253,7 @@ export function validateTerms(
     terms: WizardTermItem[],
     syStartDate?: string,
     syEndDate?: string
-): { isValid: boolean; error?: string; fieldPath?: string; termIndex?: number; errors?: Array<{ fieldPath: string; message: string; termIndex?: number }> } {
+): { isValid: boolean; error?: string; fieldPath?: string; termIndex?: number; errors?: { fieldPath: string; message: string; termIndex?: number }[] } {
     if (!terms || terms.length === 0) {
         return {
             error: 'Please declare at least one Term for this academic year.',
@@ -231,7 +262,7 @@ export function validateTerms(
     }
 
     const seenLabels = new Set<string>();
-    const errorsList: Array<{ fieldPath: string; message: string; termIndex?: number }> = [];
+    const errorsList: { fieldPath: string; message: string; termIndex?: number }[] = [];
 
     for (let i = 0; i < terms.length; i++) {
         const t = terms[i];
@@ -243,7 +274,8 @@ export function validateTerms(
                 fieldPath: `terms.${i}.term_type_label`,
                 termIndex: i
             });
-        } else {
+        }
+        else {
             const cleanKey = termName.toLowerCase();
             if (seenLabels.has(cleanKey)) {
                 errorsList.push({
@@ -251,7 +283,8 @@ export function validateTerms(
                     fieldPath: `terms.${i}.term_type_label`,
                     termIndex: i
                 });
-            } else {
+            }
+            else {
                 seenLabels.add(cleanKey);
             }
         }
@@ -279,7 +312,10 @@ export function validateTerms(
                     fieldPath: `terms.${i}.end_date`,
                     termIndex: i
                 });
-            } else if (new Date(t.end_date).getTime() === new Date(t.start_date).getTime()) {
+            }
+            else if (new Date(t.end_date)
+                .getTime() === new Date(t.start_date)
+                .getTime()) {
                 errorsList.push({
                     message: `End Date must be strictly after Start Date in ${termName || `Term #${i + 1}`}.`,
                     fieldPath: `terms.${i}.end_date`,
@@ -347,9 +383,9 @@ export function validateGradingPeriods(terms: WizardTermItem[]): {
     termIndex?: number;
     periodIndex?: number;
     isToastOnly?: boolean;
-    errors?: Array<{ fieldPath: string; message: string; termIndex?: number; periodIndex?: number }>;
+    errors?: { fieldPath: string; message: string; termIndex?: number; periodIndex?: number }[];
 } {
-    const errorsList: Array<{ fieldPath: string; message: string; termIndex?: number; periodIndex?: number }> = [];
+    const errorsList: { fieldPath: string; message: string; termIndex?: number; periodIndex?: number }[] = [];
     let toastError: { error: string; termIndex: number; periodIndex: number } | null = null;
 
     for (let i = 0; i < terms.length; i++) {
@@ -369,7 +405,9 @@ export function validateGradingPeriods(terms: WizardTermItem[]): {
 
         for (let j = 0; j < periods.length; j++) {
             const p = periods[j];
-            const periodLabel = p.name ? `"${p.name}"` : `Period #${p.sequence || j + 1}`;
+            const periodLabel = p.name
+                ? `"${p.name}"`
+                : `Period #${p.sequence || j + 1}`;
 
             if (!p.name || !p.name.trim()) {
                 errorsList.push({
@@ -378,8 +416,10 @@ export function validateGradingPeriods(terms: WizardTermItem[]): {
                     periodIndex: j,
                     termIndex: i
                 });
-            } else {
-                const cleanName = p.name.trim().toLowerCase();
+            }
+            else {
+                const cleanName = p.name.trim()
+                    .toLowerCase();
                 if (seenNames.has(cleanName)) {
                     errorsList.push({
                         message: `Duplicate grading period name "${p.name}" in ${termName}. Each grading period in a term must have a unique name.`,
@@ -387,7 +427,8 @@ export function validateGradingPeriods(terms: WizardTermItem[]): {
                         periodIndex: j,
                         termIndex: i
                     });
-                } else {
+                }
+                else {
                     seenNames.add(cleanName);
                 }
             }
@@ -400,7 +441,8 @@ export function validateGradingPeriods(terms: WizardTermItem[]): {
                     periodIndex: j,
                     termIndex: i
                 });
-            } else if (Number(p.weight) > 100) {
+            }
+            else if (Number(p.weight) > 100) {
                 errorsList.push({
                     message: `Grading period ${periodLabel} in ${termName} cannot have a weight greater than 100%.`,
                     fieldPath: `terms.${i}.grading_periods.${j}.weight`,
@@ -435,7 +477,10 @@ export function validateGradingPeriods(terms: WizardTermItem[]): {
                         periodIndex: j,
                         termIndex: i
                     });
-                } else if (new Date(p.end_date).getTime() === new Date(p.start_date).getTime()) {
+                }
+                else if (new Date(p.end_date)
+                    .getTime() === new Date(p.start_date)
+                    .getTime()) {
                     errorsList.push({
                         message: `End Date must be strictly after Start Date for grading period ${periodLabel} in ${termName}.`,
                         fieldPath: `terms.${i}.grading_periods.${j}.end_date`,
@@ -510,7 +555,8 @@ export function validateGradingPeriods(terms: WizardTermItem[]): {
                         periodIndex: j,
                         termIndex: i
                     };
-                } else if (compTotalWeight !== 100) {
+                }
+                else if (compTotalWeight !== 100) {
                     toastError = {
                         error: `Grading component weights for ${periodLabel} in ${termName} equal ${compTotalWeight}%. The total component weight must sum to 100%.`,
                         periodIndex: j,
@@ -555,7 +601,7 @@ export function validateGradingPeriods(terms: WizardTermItem[]): {
 
 export function validateTransmutationRows(
     rows: WizardTransmutationRow[]
-): { isValid: boolean; error?: string; fieldPath?: string; rowIndex?: number; errors?: Array<{ fieldPath: string; message: string; rowIndex?: number }> } {
+): { isValid: boolean; error?: string; fieldPath?: string; rowIndex?: number; errors?: { fieldPath: string; message: string; rowIndex?: number }[] } {
     if (!rows || rows.length === 0) {
         return {
             error: 'Please define at least one transmutation row / grade ladder.',
@@ -564,8 +610,8 @@ export function validateTransmutationRows(
     }
 
     let prevRow: WizardTransmutationRow | null = null;
-    let prevIndex: number = -1;
-    const errorsList: Array<{ fieldPath: string; message: string; rowIndex?: number }> = [];
+    let prevIndex = -1;
+    const errorsList: { fieldPath: string; message: string; rowIndex?: number }[] = [];
 
     for (let i = 0; i < rows.length; i++) {
         const r = rows[i];
@@ -619,7 +665,9 @@ export function validateTransmutationRows(
             if (minPct < 0 || maxPct > 100) {
                 errorsList.push({
                     message: `Row #${i + 1} (${r.label}) percentages must be between 0% and 100%.`,
-                    fieldPath: minPct < 0 ? `transmutation_rows.${i}.min_percentage` : `transmutation_rows.${i}.max_percentage`,
+                    fieldPath: minPct < 0
+                        ? `transmutation_rows.${i}.min_percentage`
+                        : `transmutation_rows.${i}.max_percentage`,
                     rowIndex: i
                 });
             }
@@ -716,9 +764,15 @@ export function cloneSchoolYearForDuplication(
             id: undefined,
             label: r.label,
             is_conditional: Boolean(r.is_conditional || isSpecial),
-            min_percentage: isSpecial ? null : r.min_percentage,
-            max_percentage: isSpecial ? null : r.max_percentage,
-            transmuted_grade: isSpecial ? null : r.transmuted_grade,
+            min_percentage: isSpecial
+                ? null
+                : r.min_percentage,
+            max_percentage: isSpecial
+                ? null
+                : r.max_percentage,
+            transmuted_grade: isSpecial
+                ? null
+                : r.transmuted_grade,
             is_passing: Boolean(r.is_passing),
             special_code: r.special_code,
             description: r.description
@@ -768,16 +822,21 @@ export function checkSchoolYearCodeConflict(
     currentId?: string | null,
     sourceSchoolYear?: SourceSchoolYearInfo | null
 ): string | null {
-    const cleanCode = code ? code.trim().toLowerCase() : '';
+    const cleanCode = code
+        ? code.trim()
+            .toLowerCase()
+        : '';
     if (!cleanCode) return null;
 
-    if (sourceSchoolYear && cleanCode === sourceSchoolYear.code.trim().toLowerCase()) {
+    if (sourceSchoolYear && cleanCode === sourceSchoolYear.code.trim()
+        .toLowerCase()) {
         return `Academic Year Code must be changed. It cannot match the duplicated year (${sourceSchoolYear.code}).`;
     }
 
     if (existingSchoolYears && existingSchoolYears.length > 0) {
         const match = existingSchoolYears.find(
-            (sy) => sy.id !== currentId && sy.code && sy.code.trim().toLowerCase() === cleanCode
+            (sy) => sy.id !== currentId && sy.code && sy.code.trim()
+                .toLowerCase() === cleanCode
         );
         if (match) {
             return `Academic Year Code "${code.trim()}" is already in use by ${match.label} (${match.code}).`;
@@ -793,16 +852,21 @@ export function checkSchoolYearLabelConflict(
     currentId?: string | null,
     sourceSchoolYear?: SourceSchoolYearInfo | null
 ): string | null {
-    const cleanLabel = label ? label.trim().toLowerCase() : '';
+    const cleanLabel = label
+        ? label.trim()
+            .toLowerCase()
+        : '';
     if (!cleanLabel) return null;
 
-    if (sourceSchoolYear && cleanLabel === sourceSchoolYear.label.trim().toLowerCase()) {
+    if (sourceSchoolYear && cleanLabel === sourceSchoolYear.label.trim()
+        .toLowerCase()) {
         return `Academic Year Label must be changed. It cannot match the duplicated year (${sourceSchoolYear.label}).`;
     }
 
     if (existingSchoolYears && existingSchoolYears.length > 0) {
         const match = existingSchoolYears.find(
-            (sy) => sy.id !== currentId && sy.label && sy.label.trim().toLowerCase() === cleanLabel
+            (sy) => sy.id !== currentId && sy.label && sy.label.trim()
+                .toLowerCase() === cleanLabel
         );
         if (match) {
             return `Academic Year Label "${label.trim()}" is already in use.`;
@@ -822,9 +886,9 @@ export function checkSchoolYearDateConflict(
     if (!startDate || !endDate) return null;
 
     if (
-        sourceSchoolYear &&
-        startDate === sourceSchoolYear.start_date &&
-        endDate === sourceSchoolYear.end_date
+        sourceSchoolYear
+        && startDate === sourceSchoolYear.start_date
+        && endDate === sourceSchoolYear.end_date
     ) {
         return 'Academic Year Start and End Dates must be changed from the duplicated year.';
     }
@@ -867,28 +931,38 @@ export function validateStep1SchoolYear(
     currentId?: string | null
 ): { isValid: boolean; error?: string; field?: 'start_date' | 'end_date' | 'code' | 'label' | 'max_units_per_term' } {
     if (!values.start_date) {
-        return { field: 'start_date', isValid: false, error: 'Please select a Start Date for the school year.' };
+        return {
+            field: 'start_date', isValid: false, error: 'Please select a Start Date for the school year.'
+        };
     }
     if (!values.end_date) {
-        return { field: 'end_date', isValid: false, error: 'Please select an End Date for the school year.' };
+        return {
+            field: 'end_date', isValid: false, error: 'Please select an End Date for the school year.'
+        };
     }
     if (new Date(values.end_date) <= new Date(values.start_date)) {
-        return { field: 'end_date', isValid: false, error: 'End Date must be strictly after Start Date.' };
+        return {
+            field: 'end_date', isValid: false, error: 'End Date must be strictly after Start Date.'
+        };
     }
     if (!values.code || !values.code.trim()) {
-        return { field: 'code', isValid: false, error: 'Academic Year Code is required.' };
+        return {
+            field: 'code', isValid: false, error: 'Academic Year Code is required.'
+        };
     }
     if (!values.label || !values.label.trim()) {
-        return { field: 'label', isValid: false, error: 'Academic Year Label is required.' };
+        return {
+            field: 'label', isValid: false, error: 'Academic Year Label is required.'
+        };
     }
 
     // school_years.max_units_per_term smallint NOT NULL CHECK (1..60)
     const maxUnits = toNumberOrNull(values.max_units_per_term);
     if (
-        maxUnits === null ||
-        !Number.isInteger(maxUnits) ||
-        maxUnits < MAX_UNITS_PER_TERM_MIN ||
-        maxUnits > MAX_UNITS_PER_TERM_MAX
+        maxUnits === null
+        || !Number.isInteger(maxUnits)
+        || maxUnits < MAX_UNITS_PER_TERM_MIN
+        || maxUnits > MAX_UNITS_PER_TERM_MAX
     ) {
         return {
             field: 'max_units_per_term',
@@ -904,7 +978,9 @@ export function validateStep1SchoolYear(
         sourceSchoolYear
     );
     if (codeConflict) {
-        return { field: 'code', isValid: false, error: codeConflict };
+        return {
+            field: 'code', isValid: false, error: codeConflict
+        };
     }
 
     const labelConflict = checkSchoolYearLabelConflict(
@@ -914,7 +990,9 @@ export function validateStep1SchoolYear(
         sourceSchoolYear
     );
     if (labelConflict) {
-        return { field: 'label', isValid: false, error: labelConflict };
+        return {
+            field: 'label', isValid: false, error: labelConflict
+        };
     }
 
     const dateConflict = checkSchoolYearDateConflict(
@@ -925,7 +1003,9 @@ export function validateStep1SchoolYear(
         sourceSchoolYear
     );
     if (dateConflict) {
-        return { field: 'start_date', isValid: false, error: dateConflict };
+        return {
+            field: 'start_date', isValid: false, error: dateConflict
+        };
     }
 
     return { isValid: true };
@@ -934,9 +1014,14 @@ export function validateStep1SchoolYear(
 export function parseYearFromDate(dateStr: string): number | null {
     if (!dateStr) return null;
     const match = dateStr.match(/^(\d{4})/);
-    const year = match ? parseInt(match[1], 10) : new Date(dateStr).getFullYear();
+    const year = match
+        ? parseInt(match[1], 10)
+        : new Date(dateStr)
+            .getFullYear();
     // A year still being typed (e.g. "0002") is not a real year yet
-    return isNaN(year) || year < 1900 ? null : year;
+    return isNaN(year) || year < 1900
+        ? null
+        : year;
 }
 
 export function generateAcademicYearCode(startDate: string, endDate: string): string | null {
@@ -955,9 +1040,9 @@ export function generateAcademicYearLabel(startDate: string, endDate: string): s
 
 export function validateCalendarExceptions(
     holidays: { title?: string; exception_type?: string; start_date?: string; end_date?: string }[]
-): { isValid: boolean; error?: string; fieldPath?: string; holidayIndex?: number; errors?: Array<{ fieldPath: string; message: string; holidayIndex?: number }> } {
+): { isValid: boolean; error?: string; fieldPath?: string; holidayIndex?: number; errors?: { fieldPath: string; message: string; holidayIndex?: number }[] } {
     if (!holidays) return { isValid: true };
-    const errorsList: Array<{ fieldPath: string; message: string; holidayIndex: number }> = [];
+    const errorsList: { fieldPath: string; message: string; holidayIndex: number }[] = [];
     for (let i = 0; i < holidays.length; i++) {
         const h = holidays[i];
         if (!h.title || !h.title.trim()) {
@@ -1011,8 +1096,8 @@ export function validateCalendarExceptions(
 
 export function validateThresholds(
     thresholds: WizardThresholdItem[]
-): { isValid: boolean; error?: string; fieldPath?: string; errors?: Array<{ fieldPath: string; message: string }> } {
-    const errorsList: Array<{ fieldPath: string; message: string }> = [];
+): { isValid: boolean; error?: string; fieldPath?: string; errors?: { fieldPath: string; message: string }[] } {
+    const errorsList: { fieldPath: string; message: string }[] = [];
 
     function checkGwaRange(value: number | null, fieldPath: string, name: string, fieldLabel: string) {
         // academic_thresholds GWA columns are numeric(4,2)
@@ -1051,7 +1136,8 @@ export function validateThresholds(
                 fieldPath: `thresholds.${i}.max_gwa`,
                 message: `Threshold "${name}" must specify a Max GWA cutoff.`
             });
-        } else {
+        }
+        else {
             checkGwaRange(maxGwa, `thresholds.${i}.max_gwa`, name, 'Max GWA');
         }
         if (minGwa !== null && maxGwa !== null && minGwa > maxGwa) {
@@ -1073,4 +1159,3 @@ export function validateThresholds(
     }
     return { isValid: true };
 }
-

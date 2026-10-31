@@ -23,7 +23,8 @@ export default function StudentLayout() {
             setProfile(result.data);
             if (result.data.profile_completed !== false && !result.data.student) {
                 setIsPromptOpen(true);
-            } else {
+            }
+            else {
                 setIsPromptOpen(false);
             }
         }

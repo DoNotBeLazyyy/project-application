@@ -13,7 +13,6 @@ interface UseEnrollmentStudentTableConfigProps {
     onCreditCourses?: (row: EnrollmentStudentRow) => void;
 }
 
-
 const STUDENT_STATUS_VARIANT_MAP: Record<StudentStatus, 'success' | 'error' | 'warning' | 'info'> = {
     Active: 'success',
     Inactive: 'warning',
@@ -112,24 +111,34 @@ export function useEnrollmentStudentTableConfig({
                     preset: 'edit',
                     onClick: () => onManage(row.id)
                 },
-                ...(onAssignProgram ? [{
-                    children: (
-                        <div className="flex gap-2 items-center">
-                            <GraduationCapIcon size={18} weight="bold" />
-                            <span>Assign Program & Year</span>
-                        </div>
-                    ),
-                    onClick: () => onAssignProgram(row)
-                }] : []),
-                ...(onCreditCourses ? [{
-                    children: (
-                        <div className="flex gap-2 items-center">
-                            <CertificateIcon size={18} weight="bold" />
-                            <span>Credit Courses (Transferee)</span>
-                        </div>
-                    ),
-                    onClick: () => onCreditCourses(row)
-                }] : []),
+                ...(onAssignProgram
+                    ? [{
+                        children: (
+                            <div className="flex gap-2 items-center">
+                                <GraduationCapIcon
+                                    size={18}
+                                    weight="bold"
+                                />
+                                <span>Assign Program & Year</span>
+                            </div>
+                        ),
+                        onClick: () => onAssignProgram(row)
+                    }]
+                    : []),
+                ...(onCreditCourses
+                    ? [{
+                        children: (
+                            <div className="flex gap-2 items-center">
+                                <CertificateIcon
+                                    size={18}
+                                    weight="bold"
+                                />
+                                <span>Credit Courses (Transferee)</span>
+                            </div>
+                        ),
+                        onClick: () => onCreditCourses(row)
+                    }]
+                    : []),
                 {
                     preset: 'view',
                     onClick: () => onManage(row.id)
@@ -137,14 +146,18 @@ export function useEnrollmentStudentTableConfig({
                 {
                     children: (
                         <div className="flex gap-2 items-center">
-                            <CopyIcon size={18} weight="bold" />
+                            <CopyIcon
+                                size={18}
+                                weight="bold"
+                            />
                             <span>Copy Student No.</span>
                         </div>
                     ),
                     onClick: () => {
                         if (navigator?.clipboard?.writeText) {
                             navigator.clipboard.writeText(row.student_number);
-                            useToastStore.getState().showToast('Student number copied to clipboard', 'success');
+                            useToastStore.getState()
+                                .showToast('Student number copied to clipboard', 'success');
                         }
                     }
                 },
@@ -153,14 +166,18 @@ export function useEnrollmentStudentTableConfig({
                         {
                             children: (
                                 <div className="flex gap-2 items-center">
-                                    <EnvelopeSimpleIcon size={18} weight="bold" />
+                                    <EnvelopeSimpleIcon
+                                        size={18}
+                                        weight="bold"
+                                    />
                                     <span>Copy Email</span>
                                 </div>
                             ),
                             onClick: () => {
                                 if (navigator?.clipboard?.writeText) {
                                     navigator.clipboard.writeText(row.email);
-                                    useToastStore.getState().showToast('Email copied to clipboard', 'success');
+                                    useToastStore.getState()
+                                        .showToast('Email copied to clipboard', 'success');
                                 }
                             }
                         }

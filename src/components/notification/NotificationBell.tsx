@@ -152,7 +152,9 @@ export default function NotificationBell() {
         setItems(function(current) {
             return current.map(function(row) {
                 return row.id === item.id
-                    ? { ...row, is_read: !item.is_read, read_at: nextReadAt }
+                    ? {
+                        ...row, is_read: !item.is_read, read_at: nextReadAt
+                    }
                     : row;
             });
         });
@@ -173,8 +175,15 @@ export default function NotificationBell() {
                 sx={{ color: 'var(--mui-tokens-color-common-white)' }}
                 onClick={handleOpen}
             >
-                <Badge badgeContent={count} color="error" max={99}>
-                    <BellIcon size={20} weight="fill" />
+                <Badge
+                    badgeContent={count}
+                    color="error"
+                    max={99}
+                >
+                    <BellIcon
+                        size={20}
+                        weight="fill"
+                    />
                 </Badge>
             </IconButton>
             <Menu
@@ -242,7 +251,10 @@ export default function NotificationBell() {
                                             : `${ICON_BASE_CLASS} ${visual.backgroundClass} ${visual.colorClass}`
                                     }
                                 >
-                                    <VisualIcon size={18} weight="fill" />
+                                    <VisualIcon
+                                        size={18}
+                                        weight="fill"
+                                    />
                                 </span>
                                 <span className="flex flex-1 flex-col gap-1 min-w-0">
                                     <span

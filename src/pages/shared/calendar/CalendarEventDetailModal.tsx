@@ -9,12 +9,13 @@ import {
 } from '@phosphor-icons/react';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from './calendar.types';
 
 interface CalendarEventDetailModalProps {
     event: UnifiedCalendarEvent | null;
     open: boolean;
-    onClose: () => void;
+    onClose: VoidFunction;
 }
 
 export function CalendarEventDetailModal({
@@ -137,7 +138,10 @@ export function CalendarEventDetailModal({
                 <div className="p-4 sm:p-6 space-y-4 text-sm text-neutral-600 dark:text-neutral-300 overflow-y-auto max-h-[60vh]">
                     {/* Time & Date */}
                     <div className="flex items-start gap-3 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800">
-                        <ClockIcon className="text-neutral-500 shrink-0 mt-0.5" size={20} />
+                        <ClockIcon
+                            className="text-neutral-500 shrink-0 mt-0.5"
+                            size={20}
+                        />
                         <div>
                             <div className="font-medium text-neutral-900 dark:text-neutral-100">Date & Time</div>
                             <div className="text-neutral-600 dark:text-neutral-400">{formattedDateRange}</div>
@@ -147,7 +151,10 @@ export function CalendarEventDetailModal({
                     {/* Location */}
                     {event.location && (
                         <div className="flex items-start gap-3 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800">
-                            <MapPinIcon className="text-neutral-500 shrink-0 mt-0.5" size={20} />
+                            <MapPinIcon
+                                className="text-neutral-500 shrink-0 mt-0.5"
+                                size={20}
+                            />
                             <div>
                                 <div className="font-medium text-neutral-900 dark:text-neutral-100">Location</div>
                                 <div className="text-neutral-600 dark:text-neutral-400">{event.location}</div>
@@ -158,12 +165,19 @@ export function CalendarEventDetailModal({
                     {/* Section / Course Details */}
                     {(event.metadata?.courseCode || event.metadata?.sectionCode) && (
                         <div className="flex items-start gap-3 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800">
-                            <GraduationCapIcon className="text-neutral-500 shrink-0 mt-0.5" size={20} />
+                            <GraduationCapIcon
+                                className="text-neutral-500 shrink-0 mt-0.5"
+                                size={20}
+                            />
                             <div>
                                 <div className="font-medium text-neutral-900 dark:text-neutral-100">Course & Section</div>
                                 <div className="text-neutral-600 dark:text-neutral-400">
-                                    {event.metadata.courseCode} {event.metadata.sectionCode ? `• Section ${event.metadata.sectionCode}` : ''}
-                                    {event.metadata.authorName ? ` • ${event.metadata.authorName}` : ''}
+                                    {event.metadata.courseCode} {event.metadata.sectionCode
+                                        ? `• Section ${event.metadata.sectionCode}`
+                                        : ''}
+                                    {event.metadata.authorName
+                                        ? ` • ${event.metadata.authorName}`
+                                        : ''}
                                 </div>
                             </div>
                         </div>

@@ -19,13 +19,13 @@ import {
     listEvents,
     listMyEventsFeed
 } from '@services/event.service';
+import { useAppStore } from '@stores/app.store';
 import { AnnouncementFilterValues, CommunicationListRow } from '@type/announcement.type';
 import { EventFeedRow } from '@type/event.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 import { canManageCommunication } from '@utils/communication.util';
 import { getRoleFromPath } from '@utils/role-path.util';
-import { useAppStore } from '@stores/app.store';
 import { useCallback, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
@@ -54,7 +54,9 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
     const modeParam = searchParams.get('mode');
     const mode: 'viewing' | 'management' = !isManagementRole
         ? 'viewing'
-        : (modeParam === 'viewing' ? 'viewing' : 'management');
+        : (modeParam === 'viewing'
+            ? 'viewing'
+            : 'management');
     const isViewingOnly = mode === 'viewing';
 
     const isEvent = pathname.includes('/event-management') || defaultTab === 'events';
@@ -71,7 +73,9 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
         defaultValues: {
             audience: 'All',
             is_pinned: 'All',
-            type: isEvent ? 'Event' : 'All'
+            type: isEvent
+                ? 'Event'
+                : 'All'
         }
     });
 
@@ -89,7 +93,8 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
 
         if (itemType === 'Event') {
             setSelectedEventId(id);
-        } else {
+        }
+        else {
             setSelectedAnnouncementId(id);
         }
     }, []);
@@ -97,7 +102,9 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
     const handleOpenEdit = useCallback(function(id: string) {
         const item = rowMapRef.current.get(id);
         const itemType = item?.item_type;
-        const typeQuery = itemType === 'Event' ? '&type=Event' : '';
+        const typeQuery = itemType === 'Event'
+            ? '&type=Event'
+            : '';
         navigate(`${basePath}/${id}?edit=1${typeQuery}`, {
             state: { from: pathname }
         });
@@ -112,7 +119,9 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
         currentUserId,
         currentUserRole: currentRole,
         isViewingOnly,
-        onEdit: isViewingOnly ? undefined : handleOpenEdit,
+        onEdit: isViewingOnly
+            ? undefined
+            : handleOpenEdit,
         onView: handleOpenDetail
     });
 
@@ -122,7 +131,9 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
         search: string,
         sort: SortStringDto[]
     ): Promise<ServiceResult<CommonListResDto<CommunicationListRow>>> {
-        const filterType = activeFilters?.type ?? (isEvent ? 'Event' : 'All');
+        const filterType = activeFilters?.type ?? (isEvent
+            ? 'Event'
+            : 'All');
         const audience = activeFilters && activeFilters.audience !== 'All'
             ? activeFilters.audience
             : null;
@@ -135,8 +146,12 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
         // --- VIEWING MODE (Audience Feed) ---
         if (isViewingOnly) {
             if (filterType === 'Announcement') {
-                const fetchSize = (audience || isPinned !== null) ? Math.max(page * size, 50) : size;
-                const fetchPage = (audience || isPinned !== null) ? 1 : page;
+                const fetchSize = (audience || isPinned !== null)
+                    ? Math.max(page * size, 50)
+                    : size;
+                const fetchPage = (audience || isPinned !== null)
+                    ? 1
+                    : page;
                 const res = await listMyAnnouncementsFeed(fetchPage, fetchSize, search, currentRole);
                 if (res.error) {
                     return { data: null, error: res.error };
@@ -162,7 +177,9 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                     section_count: a.section_count ?? 0,
                     target_audience: a.target_audience,
                     title: a.title,
-                    total_count: (audience || isPinned !== null) ? items.length : (res.data?.totalElements ?? items.length)
+                    total_count: (audience || isPinned !== null)
+                        ? items.length
+                        : (res.data?.totalElements ?? items.length)
                 }));
 
                 for (const r of rows) {
@@ -170,7 +187,11 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                 }
 
                 const activeSortField = sort[0]?.sortKey || (sort[0] as unknown as Record<string, string>)?.field || 'date';
-                const activeSortOrder = sort[0] ? (sort[0].isAsc ? 'asc' : 'desc') : 'desc';
+                const activeSortOrder = sort[0]
+                    ? (sort[0].isAsc
+                        ? 'asc'
+                        : 'desc')
+                    : 'desc';
 
                 rows.sort((a, b) => {
                     let valA: string | number = '';
@@ -178,20 +199,29 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                     if (activeSortField === 'title') {
                         valA = (a.title || '').toLowerCase();
                         valB = (b.title || '').toLowerCase();
-                    } else {
+                    }
+                    else {
                         if (activeSortOrder === 'desc') {
                             if (a.is_pinned && !b.is_pinned) return -1;
                             if (!a.is_pinned && b.is_pinned) return 1;
                         }
-                        valA = new Date(a.date || a.created_at).getTime() || 0;
-                        valB = new Date(b.date || b.created_at).getTime() || 0;
+                        valA = new Date(a.date || a.created_at)
+                            .getTime() || 0;
+                        valB = new Date(b.date || b.created_at)
+                            .getTime() || 0;
                     }
-                    if (valA < valB) return activeSortOrder === 'asc' ? -1 : 1;
-                    if (valA > valB) return activeSortOrder === 'asc' ? 1 : -1;
+                    if (valA < valB) return activeSortOrder === 'asc'
+                        ? -1
+                        : 1;
+                    if (valA > valB) return activeSortOrder === 'asc'
+                        ? 1
+                        : -1;
                     return 0;
                 });
 
-                const totalCount = (audience || isPinned !== null) ? rows.length : (res.data?.totalElements ?? rows.length);
+                const totalCount = (audience || isPinned !== null)
+                    ? rows.length
+                    : (res.data?.totalElements ?? rows.length);
                 const totalPages = Math.ceil(totalCount / size);
                 const paginatedRows = (audience || isPinned !== null)
                     ? rows.slice((page - 1) * size, (page - 1) * size + size)
@@ -210,11 +240,15 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                             pageNumber: page - 1,
                             pageSize: size,
                             paged: true,
-                            sort: { empty: true, sorted: false, unsorted: true },
+                            sort: {
+                                empty: true, sorted: false, unsorted: true
+                            },
                             unpaged: false
                         },
                         size,
-                        sort: { empty: true, sorted: false, unsorted: true },
+                        sort: {
+                            empty: true, sorted: false, unsorted: true
+                        },
                         totalElements: totalCount,
                         totalPages
                     },
@@ -223,8 +257,10 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
             }
 
             if (filterType === 'Event') {
-                const from = new Date(0).toISOString();
-                const to = new Date(Date.now() + 730 * 24 * 60 * 60 * 1000).toISOString();
+                const from = new Date(0)
+                    .toISOString();
+                const to = new Date(Date.now() + 730 * 24 * 60 * 60 * 1000)
+                    .toISOString();
                 const res = await listMyEventsFeed(from, to, currentRole);
                 if (res.error) {
                     return { data: null, error: res.error };
@@ -234,10 +270,12 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                 if (search) {
                     const s = search.toLowerCase();
                     items = items.filter((e) =>
-                        (e.title || '').toLowerCase().includes(s) ||
-                        (e.description || '').toLowerCase().includes(s) ||
-                        (e.location || '').toLowerCase().includes(s)
-                    );
+                        (e.title || '').toLowerCase()
+                            .includes(s)
+                        || (e.description || '').toLowerCase()
+                            .includes(s)
+                        || (e.location || '').toLowerCase()
+                            .includes(s));
                 }
                 if (audience) {
                     items = items.filter((e) => e.target_audience === audience);
@@ -249,7 +287,9 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                     content: e.description || '',
                     created_at: e.start_at,
                     date: e.start_at,
-                    end_at: e.end_at ? e.end_at : undefined,
+                    end_at: e.end_at
+                        ? e.end_at
+                        : undefined,
                     id: e.id,
                     is_pinned: false,
                     item_type: 'Event',
@@ -266,7 +306,11 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                 }
 
                 const activeSortField = sort[0]?.sortKey || (sort[0] as unknown as Record<string, string>)?.field || 'date';
-                const activeSortOrder = sort[0] ? (sort[0].isAsc ? 'asc' : 'desc') : 'asc';
+                const activeSortOrder = sort[0]
+                    ? (sort[0].isAsc
+                        ? 'asc'
+                        : 'desc')
+                    : 'asc';
 
                 rows.sort((a, b) => {
                     let valA: string | number = '';
@@ -274,12 +318,19 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                     if (activeSortField === 'title') {
                         valA = (a.title || '').toLowerCase();
                         valB = (b.title || '').toLowerCase();
-                    } else {
-                        valA = new Date(a.date || a.created_at).getTime() || 0;
-                        valB = new Date(b.date || b.created_at).getTime() || 0;
                     }
-                    if (valA < valB) return activeSortOrder === 'asc' ? -1 : 1;
-                    if (valA > valB) return activeSortOrder === 'asc' ? 1 : -1;
+                    else {
+                        valA = new Date(a.date || a.created_at)
+                            .getTime() || 0;
+                        valB = new Date(b.date || b.created_at)
+                            .getTime() || 0;
+                    }
+                    if (valA < valB) return activeSortOrder === 'asc'
+                        ? -1
+                        : 1;
+                    if (valA > valB) return activeSortOrder === 'asc'
+                        ? 1
+                        : -1;
                     return 0;
                 });
 
@@ -301,11 +352,15 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                             pageNumber: page - 1,
                             pageSize: size,
                             paged: true,
-                            sort: { empty: true, sorted: false, unsorted: true },
+                            sort: {
+                                empty: true, sorted: false, unsorted: true
+                            },
                             unpaged: false
                         },
                         size,
-                        sort: { empty: true, sorted: false, unsorted: true },
+                        sort: {
+                            empty: true, sorted: false, unsorted: true
+                        },
                         totalElements: totalCount,
                         totalPages
                     },
@@ -315,8 +370,10 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
 
             // filterType === 'All' in Viewing Mode
             const fetchLimit = Math.max(page * size, 50);
-            const from = new Date(0).toISOString();
-            const to = new Date(Date.now() + 730 * 24 * 60 * 60 * 1000).toISOString();
+            const from = new Date(0)
+                .toISOString();
+            const to = new Date(Date.now() + 730 * 24 * 60 * 60 * 1000)
+                .toISOString();
 
             const [annRes, evtRes] = await Promise.all([
                 listMyAnnouncementsFeed(1, fetchLimit, search, currentRole),
@@ -356,10 +413,12 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
             if (search) {
                 const s = search.toLowerCase();
                 evtItems = evtItems.filter((e) =>
-                    (e.title || '').toLowerCase().includes(s) ||
-                    (e.description || '').toLowerCase().includes(s) ||
-                    (e.location || '').toLowerCase().includes(s)
-                );
+                    (e.title || '').toLowerCase()
+                        .includes(s)
+                    || (e.description || '').toLowerCase()
+                        .includes(s)
+                    || (e.location || '').toLowerCase()
+                        .includes(s));
             }
             if (audience) {
                 evtItems = evtItems.filter((e) => e.target_audience === audience);
@@ -371,7 +430,9 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                 content: e.description || '',
                 created_at: e.start_at,
                 date: e.start_at,
-                end_at: e.end_at ? e.end_at : undefined,
+                end_at: e.end_at
+                    ? e.end_at
+                    : undefined,
                 id: e.id,
                 is_pinned: false,
                 item_type: 'Event',
@@ -389,7 +450,11 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
             }
 
             const activeSortField = sort[0]?.sortKey || (sort[0] as unknown as Record<string, string>)?.field || 'date';
-            const activeSortOrder = sort[0] ? (sort[0].isAsc ? 'asc' : 'desc') : 'desc';
+            const activeSortOrder = sort[0]
+                ? (sort[0].isAsc
+                    ? 'asc'
+                    : 'desc')
+                : 'desc';
 
             combined.sort((a, b) => {
                 let valA: string | number = '';
@@ -397,16 +462,23 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                 if (activeSortField === 'title') {
                     valA = (a.title || '').toLowerCase();
                     valB = (b.title || '').toLowerCase();
-                } else {
+                }
+                else {
                     if (activeSortOrder === 'desc') {
                         if (a.is_pinned && !b.is_pinned) return -1;
                         if (!a.is_pinned && b.is_pinned) return 1;
                     }
-                    valA = new Date(a.date || a.created_at).getTime() || 0;
-                    valB = new Date(b.date || b.created_at).getTime() || 0;
+                    valA = new Date(a.date || a.created_at)
+                        .getTime() || 0;
+                    valB = new Date(b.date || b.created_at)
+                        .getTime() || 0;
                 }
-                if (valA < valB) return activeSortOrder === 'asc' ? -1 : 1;
-                if (valA > valB) return activeSortOrder === 'asc' ? 1 : -1;
+                if (valA < valB) return activeSortOrder === 'asc'
+                    ? -1
+                    : 1;
+                if (valA > valB) return activeSortOrder === 'asc'
+                    ? 1
+                    : -1;
                 return 0;
             });
 
@@ -428,11 +500,15 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                         pageNumber: page - 1,
                         pageSize: size,
                         paged: true,
-                        sort: { empty: true, sorted: false, unsorted: true },
+                        sort: {
+                            empty: true, sorted: false, unsorted: true
+                        },
                         unpaged: false
                     },
                     size,
-                    sort: { empty: true, sorted: false, unsorted: true },
+                    sort: {
+                        empty: true, sorted: false, unsorted: true
+                    },
                     totalElements: totalCount,
                     totalPages
                 },
@@ -442,7 +518,9 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
 
         // --- MANAGEMENT MODE (CRUD) ---
         if (filterType === 'Announcement') {
-            const annSort = sort.map((s: any) => ((s.sortKey || s.field) === 'date' ? { sortKey: 'created_at', isAsc: s.isAsc ?? true } : s));
+            const annSort = sort.map((s: any) => ((s.sortKey || s.field) === 'date'
+                ? { sortKey: 'created_at', isAsc: s.isAsc ?? true }
+                : s));
             const res = await listAnnouncements(page, size, search, annSort, audience, isPinned, currentRole);
             if (res.error) {
                 return { data: null, error: res.error };
@@ -485,11 +563,15 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                         pageNumber: page - 1,
                         pageSize: size,
                         paged: true,
-                        sort: { empty: true, sorted: false, unsorted: true },
+                        sort: {
+                            empty: true, sorted: false, unsorted: true
+                        },
                         unpaged: false
                     },
                     size: res.data?.size ?? size,
-                    sort: res.data?.sort ?? { empty: true, sorted: false, unsorted: true },
+                    sort: res.data?.sort ?? {
+                        empty: true, sorted: false, unsorted: true
+                    },
                     totalElements: totalCount,
                     totalPages
                 },
@@ -498,7 +580,9 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
         }
 
         if (filterType === 'Event') {
-            const evtSort = sort.map((s: any) => ((s.sortKey || s.field) === 'date' ? { sortKey: 'start_at', isAsc: s.isAsc ?? true } : s));
+            const evtSort = sort.map((s: any) => ((s.sortKey || s.field) === 'date'
+                ? { sortKey: 'start_at', isAsc: s.isAsc ?? true }
+                : s));
             const res = await listEvents(page, size, search, evtSort, audience, false, currentRole);
             if (res.error) {
                 return { data: null, error: res.error };
@@ -512,7 +596,9 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                 created_by: e.created_by,
                 created_by_role: e.created_by_role,
                 date: e.start_at || e.created_at,
-                end_at: e.end_at ? e.end_at : undefined,
+                end_at: e.end_at
+                    ? e.end_at
+                    : undefined,
                 id: e.id,
                 is_pinned: false,
                 item_type: 'Event',
@@ -544,11 +630,15 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                         pageNumber: page - 1,
                         pageSize: size,
                         paged: true,
-                        sort: { empty: true, sorted: false, unsorted: true },
+                        sort: {
+                            empty: true, sorted: false, unsorted: true
+                        },
                         unpaged: false
                     },
                     size: res.data?.size ?? size,
-                    sort: res.data?.sort ?? { empty: true, sorted: false, unsorted: true },
+                    sort: res.data?.sort ?? {
+                        empty: true, sorted: false, unsorted: true
+                    },
                     totalElements: totalCount,
                     totalPages
                 },
@@ -558,8 +648,12 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
 
         // filterType === 'All' in Management Mode
         const fetchLimit = Math.max(page * size, 50);
-        const annSort = sort.map((s: any) => ((s.sortKey || s.field) === 'date' ? { sortKey: 'created_at', isAsc: s.isAsc ?? true } : s));
-        const evtSort = sort.map((s: any) => ((s.sortKey || s.field) === 'date' ? { sortKey: 'start_at', isAsc: s.isAsc ?? true } : s));
+        const annSort = sort.map((s: any) => ((s.sortKey || s.field) === 'date'
+            ? { sortKey: 'created_at', isAsc: s.isAsc ?? true }
+            : s));
+        const evtSort = sort.map((s: any) => ((s.sortKey || s.field) === 'date'
+            ? { sortKey: 'start_at', isAsc: s.isAsc ?? true }
+            : s));
 
         const [annRes, evtRes] = await Promise.all([
             listAnnouncements(1, fetchLimit, search, annSort, audience, isPinned, currentRole),
@@ -597,7 +691,9 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
             created_by: e.created_by,
             created_by_role: e.created_by_role,
             date: e.start_at || e.created_at,
-            end_at: e.end_at ? e.end_at : undefined,
+            end_at: e.end_at
+                ? e.end_at
+                : undefined,
             id: e.id,
             is_pinned: false,
             item_type: 'Event',
@@ -616,7 +712,11 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
         }
 
         const activeSortField = sort[0]?.sortKey || (sort[0] as unknown as Record<string, string>)?.field || 'date';
-        const activeSortOrder = sort[0] ? (sort[0].isAsc ? 'asc' : 'desc') : 'desc';
+        const activeSortOrder = sort[0]
+            ? (sort[0].isAsc
+                ? 'asc'
+                : 'desc')
+            : 'desc';
 
         combined.sort((a, b) => {
             let valA: string | number = '';
@@ -625,17 +725,24 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
             if (activeSortField === 'title') {
                 valA = (a.title || '').toLowerCase();
                 valB = (b.title || '').toLowerCase();
-            } else {
+            }
+            else {
                 if (activeSortOrder === 'desc') {
                     if (a.is_pinned && !b.is_pinned) return -1;
                     if (!a.is_pinned && b.is_pinned) return 1;
                 }
-                valA = new Date(a.date || a.created_at).getTime() || 0;
-                valB = new Date(b.date || b.created_at).getTime() || 0;
+                valA = new Date(a.date || a.created_at)
+                    .getTime() || 0;
+                valB = new Date(b.date || b.created_at)
+                    .getTime() || 0;
             }
 
-            if (valA < valB) return activeSortOrder === 'asc' ? -1 : 1;
-            if (valA > valB) return activeSortOrder === 'asc' ? 1 : -1;
+            if (valA < valB) return activeSortOrder === 'asc'
+                ? -1
+                : 1;
+            if (valA > valB) return activeSortOrder === 'asc'
+                ? 1
+                : -1;
             return 0;
         });
 
@@ -657,11 +764,15 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                     pageNumber: page - 1,
                     pageSize: size,
                     paged: true,
-                    sort: { empty: true, sorted: false, unsorted: true },
+                    sort: {
+                        empty: true, sorted: false, unsorted: true
+                    },
                     unpaged: false
                 },
                 size,
-                sort: { empty: true, sorted: false, unsorted: true },
+                sort: {
+                    empty: true, sorted: false, unsorted: true
+                },
                 totalElements: totalCount,
                 totalPages
             },
@@ -683,7 +794,9 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
     async function handleBulkDelete(ids: string[]) {
         const allowedIds = ids.filter((id) => {
             const item = rowMapRef.current.get(id);
-            return item ? canManageCommunication(item, currentUserId, currentRole) : false;
+            return item
+                ? canManageCommunication(item, currentUserId, currentRole)
+                : false;
         });
 
         if (allowedIds.length === 0) {
@@ -696,7 +809,8 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
         for (const id of allowedIds) {
             if (rowMapRef.current.get(id)?.item_type === 'Event') {
                 evtIds.push(id);
-            } else {
+            }
+            else {
                 annIds.push(id);
             }
         }
@@ -729,34 +843,40 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                             ? 'Browse, filter, and search campus announcements and events addressed to you.'
                             : 'Publish announcements and schedule campus events for your community.'),
                     title: isEvent
-                        ? (isViewingOnly ? 'Campus Events' : 'Event Management')
-                        : (isViewingOnly ? 'Campus Announcements & Events' : 'Announcements & Events')
+                        ? (isViewingOnly
+                            ? 'Campus Events'
+                            : 'Event Management')
+                        : (isViewingOnly
+                            ? 'Campus Announcements & Events'
+                            : 'Announcements & Events')
                 }}
                 controls={{
-                    tableButtonsProps: isViewingOnly ? undefined : {
-                        createButtonProps: {
-                            children: isEvent ? 'Create Event' : 'Create Post',
-                            onClick: function() {
-                                navigate(`${basePath}/new`);
+                    tableButtonsProps: isViewingOnly
+                        ? undefined
+                        : {
+                            createButtonProps: {
+                                children: isEvent
+                                    ? 'Create Event'
+                                    : 'Create Post',
+                                onClick: function() {
+                                    navigate(`${basePath}/new`);
+                                }
                             }
-                        }
-                    },
+                        },
                     tableInputProps: {
                         searchHints: SEARCH_HINTS.announcements
                     }
                 }}
                 dependencies={[activeFilters, mode]}
-                modeToggle={isManagementRole ? {
-                    mode,
-                    onToggleMode: handleModeChange
-                } : undefined}
                 filterModalProps={{
                     cardProps: {
                         cardHeaderProps: {
                             subheader: isEvent
                                 ? 'Narrow the list by audience or status.'
                                 : 'Narrow the list by type, audience, or pinned status.',
-                            title: isEvent ? 'Filter Events' : 'Filter Announcements & Events'
+                            title: isEvent
+                                ? 'Filter Events'
+                                : 'Filter Announcements & Events'
                         }
                     },
                     confirmText: 'Apply Filters',
@@ -780,6 +900,12 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                     },
                     open: isFilterOpen
                 }}
+                modeToggle={isManagementRole
+                    ? {
+                        mode,
+                        onToggleMode: handleModeChange
+                    }
+                    : undefined}
                 renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
                     return (
                         <CommunicationGridCard
@@ -788,9 +914,15 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                             isSelected={isSelected}
                             isViewingOnly={isViewingOnly}
                             row={item}
-                            onEdit={isViewingOnly ? undefined : handleOpenEdit}
-                            onRequestDelete={isViewingOnly ? undefined : onRequestDeleteRow}
-                            onToggleSelect={isViewingOnly ? undefined : onToggleSelect}
+                            onEdit={isViewingOnly
+                                ? undefined
+                                : handleOpenEdit}
+                            onRequestDelete={isViewingOnly
+                                ? undefined
+                                : onRequestDeleteRow}
+                            onToggleSelect={isViewingOnly
+                                ? undefined
+                                : onToggleSelect}
                             onView={handleOpenDetail}
                         />
                     );
@@ -802,8 +934,12 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                     leadingColumnDefs: columnDefs
                 }}
                 uniqueIdKey="id"
-                onDelete={isViewingOnly ? undefined : handleBulkDelete}
-                onDeleteRow={isViewingOnly ? undefined : handleDeleteRow}
+                onDelete={isViewingOnly
+                    ? undefined
+                    : handleBulkDelete}
+                onDeleteRow={isViewingOnly
+                    ? undefined
+                    : handleDeleteRow}
                 onFetch={fetchCommunications}
                 onFilter={function() {
                     setIsFilterOpen(true);

@@ -70,7 +70,9 @@ export default function SubjectAttendanceList({ attendance }: SubjectAttendanceL
             ? Math.round(((present + late) / total) * 100)
             : 100;
 
-        return { absent, excused, late, present, rate, total };
+        return {
+            absent, excused, late, present, rate, total
+        };
     }, [attendance]);
 
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
@@ -117,10 +119,18 @@ export default function SubjectAttendanceList({ attendance }: SubjectAttendanceL
         ];
     }, []);
 
-    const presentPct = stats.total > 0 ? (stats.present / stats.total) * 100 : 0;
-    const latePct = stats.total > 0 ? (stats.late / stats.total) * 100 : 0;
-    const excusedPct = stats.total > 0 ? (stats.excused / stats.total) * 100 : 0;
-    const absentPct = stats.total > 0 ? (stats.absent / stats.total) * 100 : 0;
+    const presentPct = stats.total > 0
+        ? (stats.present / stats.total) * 100
+        : 0;
+    const latePct = stats.total > 0
+        ? (stats.late / stats.total) * 100
+        : 0;
+    const excusedPct = stats.total > 0
+        ? (stats.excused / stats.total) * 100
+        : 0;
+    const absentPct = stats.total > 0
+        ? (stats.absent / stats.total) * 100
+        : 0;
 
     return (
         <div className="flex flex-1 flex-col gap-4 min-h-0">
@@ -186,29 +196,29 @@ export default function SubjectAttendanceList({ attendance }: SubjectAttendanceL
                     <div className="h-2.5 w-full bg-slate-200 dark:bg-zinc-700 rounded-full overflow-hidden flex">
                         {presentPct > 0 && (
                             <div
-                                style={{ width: `${presentPct}%` }}
                                 className="bg-emerald-500 h-full"
+                                style={{ width: `${presentPct}%` }}
                                 title={`Present: ${stats.present}`}
                             />
                         )}
                         {latePct > 0 && (
                             <div
-                                style={{ width: `${latePct}%` }}
                                 className="bg-amber-500 h-full"
+                                style={{ width: `${latePct}%` }}
                                 title={`Late: ${stats.late}`}
                             />
                         )}
                         {excusedPct > 0 && (
                             <div
-                                style={{ width: `${excusedPct}%` }}
                                 className="bg-blue-500 h-full"
+                                style={{ width: `${excusedPct}%` }}
                                 title={`Excused: ${stats.excused}`}
                             />
                         )}
                         {absentPct > 0 && (
                             <div
-                                style={{ width: `${absentPct}%` }}
                                 className="bg-rose-500 h-full"
+                                style={{ width: `${absentPct}%` }}
                                 title={`Absent: ${stats.absent}`}
                             />
                         )}

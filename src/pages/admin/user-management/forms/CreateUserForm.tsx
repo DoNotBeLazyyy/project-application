@@ -25,7 +25,8 @@ export default function CreateUserForm({
             type: 'text',
             rules: {
                 required: 'First name is required',
-                validate: (v: unknown) => Boolean(v && String(v).trim()) || 'First name cannot be empty or whitespace only'
+                validate: (v: unknown) => Boolean(v && String(v)
+                    .trim()) || 'First name cannot be empty or whitespace only'
             }
         },
         {
@@ -35,7 +36,8 @@ export default function CreateUserForm({
             type: 'text',
             rules: {
                 required: 'Last name is required',
-                validate: (v: unknown) => Boolean(v && String(v).trim()) || 'Last name cannot be empty or whitespace only'
+                validate: (v: unknown) => Boolean(v && String(v)
+                    .trim()) || 'Last name cannot be empty or whitespace only'
             }
         },
         {

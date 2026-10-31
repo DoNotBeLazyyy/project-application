@@ -9,6 +9,7 @@ import {
     XIcon
 } from '@phosphor-icons/react';
 import { useMemo } from 'react';
+
 import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from './calendar.types';
 
 export interface CalendarDayEventsModalProps {
@@ -16,7 +17,7 @@ export interface CalendarDayEventsModalProps {
     date: Date | null;
     events: UnifiedCalendarEvent[];
     open: boolean;
-    onClose: () => void;
+    onClose: VoidFunction;
     onCreateEvent?: (date: Date) => void;
     onSelectEvent: (event: UnifiedCalendarEvent) => void;
     onViewDay?: (date: Date) => void;
@@ -75,7 +76,10 @@ export function CalendarDayEventsModal({
                 <div className="px-4 py-3.5 sm:px-5 sm:py-4 border-b border-neutral-100 dark:border-neutral-800/80 flex items-start justify-between gap-3 bg-neutral-50/60 dark:bg-neutral-800/40">
                     <div className="flex items-start gap-2.5 min-w-0">
                         <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs shrink-0 mt-0.5">
-                            <CalendarDotsIcon size={18} weight="duotone" />
+                            <CalendarDotsIcon
+                                size={18}
+                                weight="duotone"
+                            />
                         </div>
                         <div className="min-w-0">
                             <h2
@@ -85,7 +89,9 @@ export function CalendarDayEventsModal({
                                 {formattedDate}
                             </h2>
                             <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 font-medium">
-                                {events.length} {events.length === 1 ? 'event scheduled' : 'events scheduled'}
+                                {events.length} {events.length === 1
+                                    ? 'event scheduled'
+                                    : 'events scheduled'}
                             </p>
                         </div>
                     </div>
@@ -114,8 +120,8 @@ export function CalendarDayEventsModal({
 
                             return (
                                 <button
-                                    key={ev.id}
                                     className="w-full text-left p-3 rounded-xl border border-neutral-200/80 dark:border-neutral-800 bg-neutral-50/40 dark:bg-neutral-800/40 hover:border-blue-500/70 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 hover:shadow-xs transition-all cursor-pointer group flex flex-col gap-1.5"
+                                    key={ev.id}
                                     type="button"
                                     onClick={() => onSelectEvent(ev)}
                                 >
@@ -148,7 +154,10 @@ export function CalendarDayEventsModal({
                                     {/* Location */}
                                     {ev.location && (
                                         <div className="flex items-center gap-1 text-[11px] text-neutral-500 dark:text-neutral-400">
-                                            <MapPinIcon className="shrink-0" size={12} />
+                                            <MapPinIcon
+                                                className="shrink-0"
+                                                size={12}
+                                            />
                                             <span className="truncate">{ev.location}</span>
                                         </div>
                                     )}
@@ -184,7 +193,12 @@ export function CalendarDayEventsModal({
                             <CommonButton
                                 color="primary"
                                 size="small"
-                                startIcon={<PlusIcon size={14} weight="bold" />}
+                                startIcon={(
+                                    <PlusIcon
+                                        size={14}
+                                        weight="bold"
+                                    />
+                                )}
                                 variant="contained"
                                 onClick={() => {
                                     onClose();

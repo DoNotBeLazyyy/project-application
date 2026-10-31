@@ -20,7 +20,7 @@ interface StudentGradeBreakdownModalProps {
     enrollmentId: string;
     gradingPeriodId: string;
     open: boolean;
-    onClose: () => void;
+    onClose: VoidFunction;
 }
 
 interface AuditStatCardProps {
@@ -96,7 +96,9 @@ export default function StudentGradeBreakdownModal({
                             {data?.status && (
                                 <CommonBadgeStatus
                                     label={data.status}
-                                    variant={data.status === 'Draft' ? 'warning' : 'success'}
+                                    variant={data.status === 'Draft'
+                                        ? 'warning'
+                                        : 'success'}
                                 />
                             )}
                         </div>
@@ -161,7 +163,10 @@ export default function StudentGradeBreakdownModal({
                         <div className="font-mono text-slate-600 dark:text-slate-300 flex flex-wrap gap-1.5 items-center leading-relaxed">
                             <span className="font-bold">Raw Grade = </span>
                             {data.components.map((c, idx) => (
-                                <span key={c.id} className="bg-white dark:bg-zinc-800 px-2 py-0.5 rounded border border-slate-200/60 dark:border-zinc-700">
+                                <span
+                                    className="bg-white dark:bg-zinc-800 px-2 py-0.5 rounded border border-slate-200/60 dark:border-zinc-700"
+                                    key={c.id}
+                                >
                                     {idx > 0 && '+ '}
                                     {c.name}: {(c.percentage ?? 0).toFixed(1)}% × {c.weight}%
                                 </span>
@@ -217,7 +222,10 @@ export default function StudentGradeBreakdownModal({
                                     </div>
                                 </div>
 
-                                <CommonProgressBar percentage={pct} type="bar" />
+                                <CommonProgressBar
+                                    percentage={pct}
+                                    type="bar"
+                                />
 
                                 {comp.items.length > 0 && (
                                     <div className="mt-1 flex flex-col gap-2 border-t border-slate-100 dark:border-zinc-800/80 pt-3">
@@ -232,11 +240,20 @@ export default function StudentGradeBreakdownModal({
                                                         key={item.id}
                                                     >
                                                         <div className="flex gap-2 items-center">
-                                                            {item.is_counted ? (
-                                                                <CheckCircleIcon className="text-emerald-500 shrink-0" size={16} weight="fill" />
-                                                            ) : (
-                                                                <ClockIcon className="text-amber-500 shrink-0" size={16} />
-                                                            )}
+                                                            {item.is_counted
+                                                                ? (
+                                                                    <CheckCircleIcon
+                                                                        className="text-emerald-500 shrink-0"
+                                                                        size={16}
+                                                                        weight="fill"
+                                                                    />
+                                                                )
+                                                                : (
+                                                                    <ClockIcon
+                                                                        className="text-amber-500 shrink-0"
+                                                                        size={16}
+                                                                    />
+                                                                )}
                                                             <div className="flex flex-col">
                                                                 <span className="font-medium text-slate-900 dark:text-slate-100 text-xs">
                                                                     {item.title}

@@ -16,8 +16,8 @@ interface AppActions {
     setActiveRole: (role: UserRole) => void;
     setUserProfile: (profile: UserProfile | null) => void;
     setAvailableRoles: (roles: RoleItem[]) => void;
-    resolveActiveRole: () => void;
-    clearSession: () => void;
+    resolveActiveRole: VoidFunction;
+    clearSession: VoidFunction;
 }
 
 type AppStore = AppState & AppActions;

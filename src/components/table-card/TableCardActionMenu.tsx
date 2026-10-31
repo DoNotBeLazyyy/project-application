@@ -268,14 +268,14 @@ export default function TableCardActionMenu({
                                     ? 'primary'
                                     : 'inherit'}
                                 size="small"
-                                startIcon={
+                                startIcon={(
                                     <EyeIcon
                                         size={16}
                                         weight={modeToggle?.mode === 'viewing'
                                             ? 'bold'
                                             : 'regular'}
                                     />
-                                }
+                                )}
                                 variant={modeToggle?.mode === 'viewing'
                                     ? 'contained'
                                     : 'text'}
@@ -290,14 +290,14 @@ export default function TableCardActionMenu({
                                     ? 'primary'
                                     : 'inherit'}
                                 size="small"
-                                startIcon={
+                                startIcon={(
                                     <PencilSimpleIcon
                                         size={16}
                                         weight={modeToggle?.mode === 'management'
                                             ? 'bold'
                                             : 'regular'}
                                     />
-                                }
+                                )}
                                 variant={modeToggle?.mode === 'management'
                                     ? 'contained'
                                     : 'text'}
@@ -322,14 +322,14 @@ export default function TableCardActionMenu({
                                     ? 'primary'
                                     : 'inherit'}
                                 size="small"
-                                startIcon={
+                                startIcon={(
                                     <SquaresFourIcon
                                         size={16}
                                         weight={viewMode === 'grid'
                                             ? 'bold'
                                             : 'regular'}
                                     />
-                                }
+                                )}
                                 variant={viewMode === 'grid'
                                     ? 'contained'
                                     : 'text'}
@@ -344,14 +344,14 @@ export default function TableCardActionMenu({
                                     ? 'primary'
                                     : 'inherit'}
                                 size="small"
-                                startIcon={
+                                startIcon={(
                                     <ListIcon
                                         size={16}
                                         weight={viewMode === 'table'
                                             ? 'bold'
                                             : 'regular'}
                                     />
-                                }
+                                )}
                                 variant={viewMode === 'table'
                                     ? 'contained'
                                     : 'text'}

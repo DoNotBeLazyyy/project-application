@@ -38,7 +38,9 @@ export default function ValidCommonTextarea<T extends FieldValues = FieldValues>
         field: { value, ref, onChange },
         fieldState,
         formState
-    } = useController({ name, control, rules });
+    } = useController({
+        name, control, rules
+    });
 
     const firstErrorKey = checkForMessage(formState.errors).firstError?.key;
     const isFirstError = Boolean(fieldState.error && firstErrorKey === name);

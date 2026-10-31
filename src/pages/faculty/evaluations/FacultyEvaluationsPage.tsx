@@ -2,14 +2,15 @@ import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import CommonInput from '@components/input/CommonInput';
+import CommonFormModal from '@components/modal/CommonFormModal';
 import CommonProgressBar from '@components/progress-bar/CommonProgressBar';
 import CommonSelect from '@components/select/CommonSelect';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
-import InsightStatTile from '@pages/shared/analytics/InsightStatTile';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Tooltip from '@mui/material/Tooltip';
+import InsightStatTile from '@pages/shared/analytics/InsightStatTile';
 import {
     ArrowClockwiseIcon,
     ChatCircleTextIcon,
@@ -24,13 +25,22 @@ import {
 import { getFacultyEvaluationSummary } from '@services/faculty.service';
 import { FacultyEvaluationSummary } from '@type/faculty.type';
 import { formatShortDate } from '@utils/date.util';
-import { SyntheticEvent, useEffect, useMemo, useState } from 'react';
+import {
+    FormEvent,
+    SyntheticEvent,
+    useEffect,
+    useMemo,
+    useState
+} from 'react';
 
 type EvaluationSubTab = 'questions' | 'comments';
 
+const FILTER_FORM_ID = 'faculty-evaluation-filter-form';
+
 function formatRating(value: number | null): string {
     if (value === null || value === undefined) return '—';
-    const formatted = Number(value).toFixed(2);
+    const formatted = Number(value)
+        .toFixed(2);
     return `${formatted} / 5.00`;
 }
 
@@ -68,6 +78,10 @@ export default function FacultyEvaluationsPage() {
     const [selectedSection, setSelectedSection] = useState<string>('');
     const [selectedRating, setSelectedRating] = useState<string>('ALL');
     const [searchQuery, setSearchQuery] = useState<string>('');
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [draftCourse, setDraftCourse] = useState('');
+    const [draftSection, setDraftSection] = useState('');
+    const [draftRating, setDraftRating] = useState('ALL');
 
     useEffect(function() {
         async function fetchSummary() {
@@ -82,6 +96,38 @@ export default function FacultyEvaluationsPage() {
 
     function handleTabChange(_: SyntheticEvent, value: string) {
         setActiveTab(value as EvaluationSubTab);
+    }
+
+    /**
+     * Opens the filter modal with the filters in use.
+     */
+    function handleFilterOpen() {
+        setDraftCourse(selectedCourse);
+        setDraftSection(selectedSection);
+        setDraftRating(selectedRating);
+        setIsFilterOpen(true);
+    }
+
+    /**
+     * Applies the filters chosen in the modal.
+     *
+     * @param event - Submit event of the filter form.
+     */
+    function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setSelectedCourse(draftCourse);
+        setSelectedSection(draftSection);
+        setSelectedRating(draftRating);
+        setIsFilterOpen(false);
+    }
+
+    /**
+     * Clears the filters chosen in the modal.
+     */
+    function handleFilterModalReset() {
+        setDraftCourse('');
+        setDraftSection('');
+        setDraftRating('ALL');
     }
 
     function handleResetFilters() {
@@ -102,18 +148,19 @@ export default function FacultyEvaluationsPage() {
         });
         return [
             { label: 'All Courses / Subjects', value: '' },
-            ...Array.from(uniqueCourses.entries()).map(([code, title]) => ({
-                label: title,
-                value: code
-            }))
+            ...Array.from(uniqueCourses.entries())
+                .map(([code, title]) => ({
+                    label: title,
+                    value: code
+                }))
         ];
     }, [summary]);
 
     const sectionOptions = useMemo(() => {
         if (!summary?.sections) return [{ label: 'All Sections', value: '' }];
         let secs = summary.sections;
-        if (selectedCourse) {
-            secs = secs.filter((s) => s.course_code === selectedCourse);
+        if (draftCourse) {
+            secs = secs.filter((s) => s.course_code === draftCourse);
         }
         return [
             { label: 'All Sections', value: '' },
@@ -122,7 +169,7 @@ export default function FacultyEvaluationsPage() {
                 value: s.section_code
             }))
         ];
-    }, [summary, selectedCourse]);
+    }, [summary, draftCourse]);
 
     // Filtered data sets
     const filteredSections = useMemo(() => {
@@ -140,10 +187,14 @@ export default function FacultyEvaluationsPage() {
             }
 
             if (searchQuery.trim()) {
-                const q = searchQuery.toLowerCase().trim();
-                const matchCourse = sec.course_code.toLowerCase().includes(q);
-                const matchSection = sec.section_code.toLowerCase().includes(q);
-                const matchTitle = sec.course_title.toLowerCase().includes(q);
+                const q = searchQuery.toLowerCase()
+                    .trim();
+                const matchCourse = sec.course_code.toLowerCase()
+                    .includes(q);
+                const matchSection = sec.section_code.toLowerCase()
+                    .includes(q);
+                const matchTitle = sec.course_title.toLowerCase()
+                    .includes(q);
                 if (!matchCourse && !matchSection && !matchTitle) return false;
             }
 
@@ -158,10 +209,14 @@ export default function FacultyEvaluationsPage() {
             if (selectedSection && comment.section_code !== selectedSection) return false;
 
             if (searchQuery.trim()) {
-                const q = searchQuery.toLowerCase().trim();
-                const matchText = comment.response_text.toLowerCase().includes(q);
-                const matchCourse = comment.course_code.toLowerCase().includes(q);
-                const matchSection = comment.section_code.toLowerCase().includes(q);
+                const q = searchQuery.toLowerCase()
+                    .trim();
+                const matchText = comment.response_text.toLowerCase()
+                    .includes(q);
+                const matchCourse = comment.course_code.toLowerCase()
+                    .includes(q);
+                const matchSection = comment.section_code.toLowerCase()
+                    .includes(q);
                 if (!matchText && !matchCourse && !matchSection) return false;
             }
 
@@ -181,9 +236,12 @@ export default function FacultyEvaluationsPage() {
             }
 
             if (searchQuery.trim()) {
-                const q = searchQuery.toLowerCase().trim();
-                const matchText = qItem.question_text.toLowerCase().includes(q);
-                const matchType = qItem.question_type.toLowerCase().includes(q);
+                const q = searchQuery.toLowerCase()
+                    .trim();
+                const matchText = qItem.question_text.toLowerCase()
+                    .includes(q);
+                const matchType = qItem.question_type.toLowerCase()
+                    .includes(q);
                 if (!matchText && !matchType) return false;
             }
 
@@ -223,14 +281,18 @@ export default function FacultyEvaluationsPage() {
             return {
                 activeSectionsCount: 0,
                 avgRating: null,
-                dist: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+                dist: {
+                    1: 0, 2: 0, 3: 0, 4: 0, 5: 0
+                },
                 highRatingsCount: 0,
                 totalDistCount: 0,
                 totalEvals: 0
             };
         }
 
-        const dist = summary.rating_distribution ?? { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        const dist = summary.rating_distribution ?? {
+            1: 0, 2: 0, 3: 0, 4: 0, 5: 0
+        };
         const totalDistCount = dist[1] + dist[2] + dist[3] + dist[4] + dist[5];
         const highRatingsCount = dist[5] + dist[4];
 
@@ -255,7 +317,9 @@ export default function FacultyEvaluationsPage() {
             }
         });
 
-        const avgRating = totalEvalsSum > 0 ? weightedRatingSum / totalEvalsSum : null;
+        const avgRating = totalEvalsSum > 0
+            ? weightedRatingSum / totalEvalsSum
+            : null;
 
         return {
             activeSectionsCount: filteredSections.length,
@@ -289,86 +353,60 @@ export default function FacultyEvaluationsPage() {
                 </div>
             </div>
 
-            {/* Filter & Search Bar */}
-            <div className="bg-(--mui-palette-background-default) border border-(--mui-palette-divider) flex flex-col gap-3 p-4 rounded-xl">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-(--mui-palette-text-primary) font-medium text-sm">
-                        <FunnelIcon className="text-(--mui-palette-primary-main)" size={18} weight="bold" />
-                        <span>Filter & Search Evaluations</span>
+            {/* Search and filters, like the other list pages */}
+            <div className="flex flex-col gap-3">
+                <div className="flex flex-wrap gap-2 items-center">
+                    <div className="flex-1 min-w-48">
+                        <CommonInput
+                            fullWidth
+                            hasClearButton
+                            placeholder="Search feedback, questions..."
+                            size="small"
+                            slotProps={{
+                                input: {
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <MagnifyingGlassIcon
+                                                className="text-(--mui-palette-text-secondary)"
+                                                size={18}
+                                            />
+                                        </InputAdornment>
+                                    )
+                                }
+                            }}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onClear={() => setSearchQuery('')}
+                        />
                     </div>
+                    <CommonButton
+                        size="small"
+                        startIcon={(
+                            <FunnelIcon
+                                size={16}
+                                weight="bold"
+                            />
+                        )}
+                        variant="contained"
+                        onClick={handleFilterOpen}
+                    >
+                        Filters
+                    </CommonButton>
                     {isFiltered && (
                         <CommonButton
-                            onClick={handleResetFilters}
                             size="small"
                             startIcon={<ArrowClockwiseIcon />}
                             variant="text"
+                            onClick={handleResetFilters}
                         >
                             Reset Filters
                         </CommonButton>
                     )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-                    {/* Course Filter */}
-                    <CommonSelect
-                        fullWidth
-                        label=""
-                        options={courseOptions}
-                        placeholder="Select Course / Subject"
-                        size="small"
-                        value={selectedCourse}
-                        onChange={(e) => {
-                            setSelectedCourse(e.target.value as string);
-                            setSelectedSection('');
-                        }}
-                    />
-
-                    {/* Section Filter */}
-                    <CommonSelect
-                        fullWidth
-                        label=""
-                        options={sectionOptions}
-                        placeholder="Select Section"
-                        size="small"
-                        value={selectedSection}
-                        onChange={(e) => setSelectedSection(e.target.value as string)}
-                    />
-
-                    {/* Rating Level Filter */}
-                    <CommonSelect
-                        fullWidth
-                        label=""
-                        options={RATING_FILTER_OPTIONS}
-                        placeholder="Filter by Rating"
-                        size="small"
-                        value={selectedRating}
-                        onChange={(e) => setSelectedRating(e.target.value as string)}
-                    />
-
-                    {/* Text Search Field */}
-                    <CommonInput
-                        fullWidth
-                        hasClearButton
-                        placeholder="Search feedback, questions..."
-                        size="small"
-                        slotProps={{
-                            input: {
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <MagnifyingGlassIcon className="text-(--mui-palette-text-secondary)" size={18} />
-                                    </InputAdornment>
-                                )
-                            }
-                        }}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onClear={() => setSearchQuery('')}
-                    />
-                </div>
-
                 {/* Active Filter Chips */}
                 {isFiltered && (
-                    <div className="flex flex-wrap gap-2 items-center pt-1 border-t border-(--mui-palette-divider)">
+                    <div className="flex flex-wrap gap-2 items-center">
                         <span className="text-xs text-(--mui-palette-text-secondary) font-medium">Active Filters:</span>
                         {selectedCourse && (
                             <Chip
@@ -402,15 +440,81 @@ export default function FacultyEvaluationsPage() {
                 )}
             </div>
 
+            <CommonFormModal
+                cardProps={{
+                    cardHeaderProps: {
+                        subheader: 'Narrow the results by course, section or rating.',
+                        title: 'Filter Evaluations'
+                    }
+                }}
+                confirmText="Apply Filters"
+                containerClassName="w-full"
+                formContent={(
+                    <form
+                        className="flex flex-col gap-4"
+                        id={FILTER_FORM_ID}
+                        onSubmit={handleFilterSubmit}
+                    >
+                        <CommonSelect
+                            fullWidth
+                            label="Course / Subject"
+                            options={courseOptions}
+                            size="small"
+                            value={draftCourse}
+                            onChange={(e) => {
+                                setDraftCourse(e.target.value as string);
+                                setDraftSection('');
+                            }}
+                        />
+                        <CommonSelect
+                            fullWidth
+                            label="Section"
+                            options={sectionOptions}
+                            size="small"
+                            value={draftSection}
+                            onChange={(e) => setDraftSection(e.target.value as string)}
+                        />
+                        <CommonSelect
+                            fullWidth
+                            label="Rating"
+                            options={RATING_FILTER_OPTIONS}
+                            size="small"
+                            value={draftRating}
+                            onChange={(e) => setDraftRating(e.target.value as string)}
+                        />
+                    </form>
+                )}
+                formId={FILTER_FORM_ID}
+                open={isFilterOpen}
+                sx={{
+                    '& .MuiDialog-paper:not(.MuiDialog-paperFullScreen)': {
+                        maxWidth: {
+                            sm: '34rem',
+                            xs: 'calc(100% - 2rem)'
+                        },
+                        width: {
+                            sm: '100%',
+                            xs: 'calc(100% - 2rem)'
+                        }
+                    }
+                }}
+                onClose={() => setIsFilterOpen(false)}
+                onReset={handleFilterModalReset}
+            />
+
             {/* Insight Overview Tiles */}
             <div className="gap-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
                 <InsightStatTile
-                    hint={isFiltered ? 'Filtered average rating' : 'Calculated from student surveys'}
+                    hint={isFiltered
+                        ? 'Filtered average rating'
+                        : 'Calculated from student surveys'}
                     label="Overall Rating"
                     value={formatRating(computedStats.avgRating)}
                 />
                 <InsightStatTile
-                    hint={isFiltered ? 'Filtered submission count' : 'Submitted student evaluation forms'}
+                    hint={isFiltered
+                        ? 'Filtered submission count'
+                        : 'Submitted student evaluation forms'}
                     label="Evaluations Count"
                     value={String(computedStats.totalEvals)}
                 />
@@ -420,7 +524,9 @@ export default function FacultyEvaluationsPage() {
                     value={`${computedStats.highRatingsCount} ratings`}
                 />
                 <InsightStatTile
-                    hint={isFiltered ? 'Filtered sections count' : 'Evaluated teaching sections'}
+                    hint={isFiltered
+                        ? 'Filtered sections count'
+                        : 'Evaluated teaching sections'}
                     label="Active Sections"
                     value={`${computedStats.activeSectionsCount} sections`}
                 />
@@ -446,16 +552,27 @@ export default function FacultyEvaluationsPage() {
 
                             return (
                                 <div
-                                    className={`flex gap-3 items-center p-1.5 rounded-lg transition-colors cursor-pointer hover:bg-(--mui-palette-action-hover) ${isSelected ? 'bg-(--mui-palette-action-selected) font-semibold' : ''}`}
+                                    className={`flex gap-3 items-center p-1.5 rounded-lg transition-colors cursor-pointer hover:bg-(--mui-palette-action-hover) ${isSelected
+                                        ? 'bg-(--mui-palette-action-selected) font-semibold'
+                                        : ''}`}
                                     key={stars}
-                                    onClick={() => setSelectedRating(isSelected ? 'ALL' : String(stars))}
+                                    onClick={() => setSelectedRating(isSelected
+                                        ? 'ALL'
+                                        : String(stars))}
                                 >
                                     <span className="flex font-medium gap-1 items-center shrink-0 text-(--mui-palette-text-primary) text-sm w-20">
-                                        <StarIcon className="text-amber-500" size={16} weight="fill" />
+                                        <StarIcon
+                                            className="text-amber-500"
+                                            size={16}
+                                            weight="fill"
+                                        />
                                         {stars} Stars
                                     </span>
                                     <div className="flex-1 min-w-0">
-                                        <CommonProgressBar percentage={pct} type="bar" />
+                                        <CommonProgressBar
+                                            percentage={pct}
+                                            type="bar"
+                                        />
                                     </div>
                                     <span className="shrink-0 text-(--mui-palette-text-secondary) text-xs w-16 text-right font-mono">
                                         {count} ({pct.toFixed(0)}%)
@@ -477,18 +594,25 @@ export default function FacultyEvaluationsPage() {
                     <div className="flex flex-col gap-2 p-4 pt-0 max-h-[320px] overflow-y-auto">
                         {filteredSections.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-8 text-center text-(--mui-palette-text-secondary)">
-                                <FunnelIcon className="opacity-40 mb-2" size={32} />
+                                <FunnelIcon
+                                    className="opacity-40 mb-2"
+                                    size={32}
+                                />
                                 <p className="m-0 text-sm font-medium">No sections match your filter criteria.</p>
                                 <p className="m-0 text-xs text-(--mui-palette-text-secondary) mt-1">Try resetting or broadening your search filters.</p>
                             </div>
                         )}
                         {filteredSections.map((sec) => {
                             const isCurrentSelected = selectedSection === sec.section_code;
-                            const scorePct = sec.avg_rating !== null ? (sec.avg_rating / 5) * 100 : 0;
+                            const scorePct = sec.avg_rating !== null
+                                ? (sec.avg_rating / 5) * 100
+                                : 0;
 
                             return (
                                 <div
-                                    className={`border border-(--mui-palette-divider) flex flex-col gap-2 p-3 rounded-lg transition-colors hover:border-(--mui-palette-primary-main) ${isCurrentSelected ? 'bg-(--mui-palette-primary-50) border-(--mui-palette-primary-main)' : ''}`}
+                                    className={`border border-(--mui-palette-divider) flex flex-col gap-2 p-3 rounded-lg transition-colors hover:border-(--mui-palette-primary-main) ${isCurrentSelected
+                                        ? 'bg-(--mui-palette-primary-50) border-(--mui-palette-primary-main)'
+                                        : ''}`}
                                     key={sec.section_id}
                                 >
                                     <div className="flex gap-3 items-center justify-between">
@@ -513,18 +637,32 @@ export default function FacultyEvaluationsPage() {
                                                 label={formatRating(sec.avg_rating)}
                                                 variant={resolveRatingVariant(sec.avg_rating)}
                                             />
-                                            <Tooltip title={isCurrentSelected ? 'Clear Section Filter' : 'Filter by this section'}>
+                                            <Tooltip
+                                                title={isCurrentSelected
+                                                    ? 'Clear Section Filter'
+                                                    : 'Filter by this section'}
+                                            >
                                                 <IconButton
                                                     size="small"
-                                                    onClick={() => setSelectedSection(isCurrentSelected ? '' : sec.section_code)}
+                                                    onClick={() => setSelectedSection(isCurrentSelected
+                                                        ? ''
+                                                        : sec.section_code)}
                                                 >
-                                                    <FunnelIcon size={14} weight={isCurrentSelected ? 'fill' : 'regular'} />
+                                                    <FunnelIcon
+                                                        size={14}
+                                                        weight={isCurrentSelected
+                                                            ? 'fill'
+                                                            : 'regular'}
+                                                    />
                                                 </IconButton>
                                             </Tooltip>
                                         </div>
                                     </div>
                                     <div className="w-full">
-                                        <CommonProgressBar percentage={scorePct} type="bar" />
+                                        <CommonProgressBar
+                                            percentage={scorePct}
+                                            type="bar"
+                                        />
                                     </div>
                                 </div>
                             );
@@ -558,14 +696,17 @@ export default function FacultyEvaluationsPage() {
                     <div className="flex flex-col gap-3">
                         {filteredQuestions.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-12 text-center text-(--mui-palette-text-secondary)">
-                                <ListChecksIcon className="opacity-40 mb-2" size={36} />
+                                <ListChecksIcon
+                                    className="opacity-40 mb-2"
+                                    size={36}
+                                />
                                 <p className="m-0 text-sm font-medium">No evaluation questions match your search or filter.</p>
                                 {isFiltered && (
                                     <CommonButton
                                         className="mt-3"
-                                        onClick={handleResetFilters}
                                         size="xsmall"
                                         startIcon={<ArrowClockwiseIcon />}
+                                        onClick={handleResetFilters}
                                     >
                                         Reset Filters
                                     </CommonButton>
@@ -576,7 +717,9 @@ export default function FacultyEvaluationsPage() {
                         {filteredQuestions.map((q, idx) => {
                             const isTop = q.question_id === topQuestionId;
                             const isLowest = q.question_id === lowestQuestionId && summary?.questions && summary.questions.length > 2;
-                            const scorePct = q.avg_rating !== null ? (q.avg_rating / 5) * 100 : 0;
+                            const scorePct = q.avg_rating !== null
+                                ? (q.avg_rating / 5) * 100
+                                : 0;
 
                             return (
                                 <div
@@ -591,7 +734,10 @@ export default function FacultyEvaluationsPage() {
                                                 </span>
                                                 {isTop && (
                                                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                                                        <TrendUpIcon size={12} weight="bold" /> Highest Rated
+                                                        <TrendUpIcon
+                                                            size={12}
+                                                            weight="bold"
+                                                        /> Highest Rated
                                                     </span>
                                                 )}
                                                 {isLowest && (
@@ -608,9 +754,15 @@ export default function FacultyEvaluationsPage() {
                                         <div className="flex items-center gap-3 shrink-0">
                                             <div className="flex flex-col items-end">
                                                 <div className="flex items-center gap-1">
-                                                    <StarIcon className="text-amber-500" size={16} weight="fill" />
+                                                    <StarIcon
+                                                        className="text-amber-500"
+                                                        size={16}
+                                                        weight="fill"
+                                                    />
                                                     <span className="font-bold text-base text-(--mui-palette-text-primary)">
-                                                        {q.avg_rating !== null ? q.avg_rating.toFixed(2) : '—'}
+                                                        {q.avg_rating !== null
+                                                            ? q.avg_rating.toFixed(2)
+                                                            : '—'}
                                                     </span>
                                                     <span className="text-xs text-(--mui-palette-text-secondary)">/ 5.00</span>
                                                 </div>
@@ -627,7 +779,10 @@ export default function FacultyEvaluationsPage() {
 
                                     {/* Progress bar visual indicator */}
                                     <div className="pt-1 w-full">
-                                        <CommonProgressBar percentage={scorePct} type="bar" />
+                                        <CommonProgressBar
+                                            percentage={scorePct}
+                                            type="bar"
+                                        />
                                     </div>
                                 </div>
                             );
@@ -640,14 +795,17 @@ export default function FacultyEvaluationsPage() {
                     <div className="flex flex-col gap-3">
                         {filteredComments.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-12 text-center text-(--mui-palette-text-secondary)">
-                                <ChatCircleTextIcon className="opacity-40 mb-2" size={36} />
+                                <ChatCircleTextIcon
+                                    className="opacity-40 mb-2"
+                                    size={36}
+                                />
                                 <p className="m-0 text-sm font-medium">No student comments match your selected filters.</p>
                                 {isFiltered && (
                                     <CommonButton
                                         className="mt-3"
-                                        onClick={handleResetFilters}
                                         size="xsmall"
                                         startIcon={<ArrowClockwiseIcon />}
+                                        onClick={handleResetFilters}
                                     >
                                         Clear Filters
                                     </CommonButton>
@@ -670,7 +828,11 @@ export default function FacultyEvaluationsPage() {
                                             variant="outlined"
                                         />
                                         <span className="text-xs text-(--mui-palette-text-secondary) flex items-center gap-1">
-                                            <CheckCircleIcon className="text-emerald-500" size={14} weight="fill" /> Verified Student Response
+                                            <CheckCircleIcon
+                                                className="text-emerald-500"
+                                                size={14}
+                                                weight="fill"
+                                            /> Verified Student Response
                                         </span>
                                     </div>
                                     <span className="text-(--mui-palette-text-secondary) text-xs">
@@ -678,7 +840,11 @@ export default function FacultyEvaluationsPage() {
                                     </span>
                                 </div>
                                 <div className="flex items-start gap-3 pt-1">
-                                    <QuotesIcon className="text-(--mui-palette-primary-main) shrink-0 opacity-40 mt-0.5" size={24} weight="fill" />
+                                    <QuotesIcon
+                                        className="text-(--mui-palette-primary-main) shrink-0 opacity-40 mt-0.5"
+                                        size={24}
+                                        weight="fill"
+                                    />
                                     <p className="italic m-0 text-(--mui-palette-text-primary) text-sm leading-relaxed">
                                         &ldquo;{comment.response_text}&rdquo;
                                     </p>

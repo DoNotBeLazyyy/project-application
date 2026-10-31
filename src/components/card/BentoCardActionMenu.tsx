@@ -10,7 +10,7 @@ export interface BentoCardAction {
     label: string;
     icon?: ReactNode;
     destructive?: boolean;
-    onClick: () => void;
+    onClick: VoidFunction;
 }
 
 interface BentoCardActionMenuProps {
@@ -60,7 +60,10 @@ export default function BentoCardActionMenu({ actions, ariaLabel }: BentoCardAct
                 type="button"
                 onClick={handleOpenMenu}
             >
-                <DotsThreeVerticalIcon size={18} weight="bold" />
+                <DotsThreeVerticalIcon
+                    size={18}
+                    weight="bold"
+                />
             </button>
             <Menu
                 anchorEl={anchorEl}

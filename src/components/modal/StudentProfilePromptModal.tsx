@@ -3,8 +3,8 @@ import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
 import { CommonSelectOption } from '@components/select/CommonSelect';
-import { GraduationCapIcon, IdentificationCardIcon } from '@phosphor-icons/react';
 import { CIVIL_STATUS_OPTIONS, GENDER_OPTIONS } from '@pages/shared/profile/constants/profile.constant';
+import { GraduationCapIcon, IdentificationCardIcon } from '@phosphor-icons/react';
 import { initAuthSession } from '@services/auth.service';
 import { createMyStudentProfile } from '@services/profile.service';
 import { getPrograms } from '@services/program/program.service';
@@ -25,8 +25,8 @@ const YEAR_LEVEL_OPTIONS: CommonSelectOption[] = [
 
 export interface StudentProfilePromptModalProps {
     open: boolean;
-    onClose?: () => void;
-    onSuccess?: () => void;
+    onClose?: VoidFunction;
+    onSuccess?: VoidFunction;
     currentProfile?: MyProfile | null;
     isMandatory?: boolean;
 }
@@ -71,7 +71,8 @@ function toFormValues(profile?: MyProfile | null): StudentProfileFormValues {
 
 function notBlank(label: string) {
     return function(value: string | number) {
-        return String(value ?? '').trim() !== '' || `${label} is required`;
+        return String(value ?? '')
+            .trim() !== '' || `${label} is required`;
     };
 }
 
@@ -117,7 +118,8 @@ export default function StudentProfilePromptModal({
         fetchPrograms();
     }, [open, currentProfile, reset]);
 
-    const today = new Date().toISOString()
+    const today = new Date()
+        .toISOString()
         .slice(0, 10);
 
     const fields: FormFieldConfig<StudentProfileFormValues>[] = [
@@ -256,7 +258,8 @@ export default function StudentProfilePromptModal({
             const successMsg = assignedNo
                 ? `Student profile set up successfully! System Generated Student No: ${assignedNo}`
                 : 'Student profile set up successfully!';
-            useToastStore.getState().showToast(successMsg, 'success');
+            useToastStore.getState()
+                .showToast(successMsg, 'success');
             await initAuthSession();
             onSuccess?.();
             if (onClose) onClose();
@@ -265,10 +268,6 @@ export default function StudentProfilePromptModal({
 
     return (
         <CommonModal
-            fullWidth
-            maxWidth="md"
-            open={open}
-            onClose={isMandatory ? undefined : onClose}
             cardProps={{
                 className: 'flex flex-col max-h-[100dvh] sm:max-h-[85dvh] w-full max-w-2xl overflow-hidden',
                 cardHeaderProps: {
@@ -276,10 +275,19 @@ export default function StudentProfilePromptModal({
                     subheader: 'Please fill in your student information to activate your student account.'
                 }
             }}
+            fullWidth
+            maxWidth="md"
+            open={open}
+            onClose={isMandatory
+                ? undefined
+                : onClose}
         >
             <div className="flex flex-1 flex-col gap-5 min-h-0 overflow-y-auto p-4 sm:p-6 pt-0 sm:pt-0 pb-6">
                 <div className="border border-(--mui-palette-info-main) bg-(--mui-palette-info-light) p-3 rounded-lg flex items-start gap-3 text-xs text-(--mui-palette-text-primary)">
-                    <GraduationCapIcon size={24} className="text-(--mui-palette-info-main) shrink-0 mt-0.5" />
+                    <GraduationCapIcon
+                        className="text-(--mui-palette-info-main) shrink-0 mt-0.5"
+                        size={24}
+                    />
                     <div>
                         <p className="font-semibold m-0 text-sm">Welcome Student!</p>
                         <p className="m-0 mt-0.5 text-(--mui-palette-text-secondary)">
@@ -290,7 +298,10 @@ export default function StudentProfilePromptModal({
 
                 <div className="border border-(--mui-palette-divider) p-3 rounded-lg bg-(--mui-palette-background-default) flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <IdentificationCardIcon size={20} className="text-(--mui-palette-primary-main)" />
+                        <IdentificationCardIcon
+                            className="text-(--mui-palette-primary-main)"
+                            size={20}
+                        />
                         <span className="text-xs font-medium text-(--mui-palette-text-secondary)">Student Number:</span>
                     </div>
                     <span className="font-mono text-xs font-semibold px-2 py-1 bg-(--mui-palette-action-hover) rounded text-(--mui-palette-primary-main) border border-(--mui-palette-divider)">
@@ -328,7 +339,9 @@ export default function StudentProfilePromptModal({
                             formErrors(errors, methods);
                         })}
                     >
-                        {isSubmitting ? 'Saving Profile...' : 'Save & Create Profile'}
+                        {isSubmitting
+                            ? 'Saving Profile...'
+                            : 'Save & Create Profile'}
                     </CommonButton>
                 </div>
             </div>

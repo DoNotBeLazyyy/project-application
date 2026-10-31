@@ -19,8 +19,12 @@ export async function listStudentProfileRequests(
         p_page: page,
         p_search: search || null,
         p_size: size,
-        p_sort: sort.length > 0 ? sort : null,
-        p_status: status && status !== 'All' ? status : null
+        p_sort: sort.length > 0
+            ? sort
+            : null,
+        p_status: status && status !== 'All'
+            ? status
+            : null
     });
 }
 
@@ -68,13 +72,17 @@ export async function listRegistrarLogs(
     filters: RegistrarLogFilterValues | null
 ): Promise<ServiceResult<CommonListResDto<RegistrarLogRow>>> {
     return callRpc<CommonListResDto<RegistrarLogRow>>('fn_list_registrar_logs', {
-        p_action: filters?.action && filters.action !== 'All' ? filters.action : null,
+        p_action: filters?.action && filters.action !== 'All'
+            ? filters.action
+            : null,
         p_date_from: filters?.date_from || null,
         p_date_to: filters?.date_to || null,
         p_page: page,
         p_search: search || null,
         p_size: size,
-        p_sort: sort.length > 0 ? sort : null
+        p_sort: sort.length > 0
+            ? sort
+            : null
     });
 }
 

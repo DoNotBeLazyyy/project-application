@@ -11,15 +11,24 @@ type MenuOptionPreset = 'view' | 'edit' | 'delete';
 
 const PRESET_DEFAULTS: Record<MenuOptionPreset, { icon: ReactNode; label: string }> = {
     delete: {
-        icon: <TrashIcon size={24} weight="bold" />,
+        icon: <TrashIcon
+            size={24}
+            weight="bold"
+              />,
         label: 'Delete'
     },
     edit: {
-        icon: <PencilSimpleIcon size={24} weight="bold" />,
+        icon: <PencilSimpleIcon
+            size={24}
+            weight="bold"
+              />,
         label: 'Edit'
     },
     view: {
-        icon: <EyeIcon size={24} weight="bold" />,
+        icon: <EyeIcon
+            size={24}
+            weight="bold"
+              />,
         label: 'View'
     }
 };

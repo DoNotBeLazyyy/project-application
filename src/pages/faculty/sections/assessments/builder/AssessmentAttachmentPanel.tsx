@@ -71,7 +71,12 @@ export default function AssessmentAttachmentPanel({
                 <CommonButton
                     disabled={!assessmentDbId || isUploading}
                     size="small"
-                    startIcon={<ArrowLineUpIcon size={14} weight="bold" />}
+                    startIcon={(
+                        <ArrowLineUpIcon
+                            size={14}
+                            weight="bold"
+                        />
+                    )}
                     variant="outlined"
                     onClick={function() {
                         fileInputRef.current?.click();
@@ -125,7 +130,10 @@ export default function AssessmentAttachmentPanel({
                                 handleDownload(attachment);
                             }}
                         >
-                            <ArrowLineDownIcon size={13} weight="bold" />
+                            <ArrowLineDownIcon
+                                size={13}
+                                weight="bold"
+                            />
                         </CommonButton>
                         <CommonButton
                             color="error"
@@ -134,7 +142,10 @@ export default function AssessmentAttachmentPanel({
                                 handleDelete(attachment.id);
                             }}
                         >
-                            <TrashIcon size={13} weight="bold" />
+                            <TrashIcon
+                                size={13}
+                                weight="bold"
+                            />
                         </CommonButton>
                     </div>
                 ))}

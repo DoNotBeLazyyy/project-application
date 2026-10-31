@@ -19,18 +19,27 @@ export default function RoleGate({ allowedRoles }: RoleGateProps) {
 
     useEffect(() => {
         if (availableRoles.length > 0 && !isAuthorized) {
-            useToastStore.getState().showToast(
-                'Access Denied: You do not have permission to access this page.',
-                'error'
-            );
-        } else if (matchingRole && activeRole !== matchingRole.code) {
+            useToastStore.getState()
+                .showToast(
+                    'Access Denied: You do not have permission to access this page.',
+                    'error'
+                );
+        }
+        else if (matchingRole && activeRole !== matchingRole.code) {
             setActiveRole(matchingRole.code);
         }
     }, [activeRole, allowedRoles, availableRoles, isAuthorized, matchingRole, setActiveRole]);
 
     if (!isAuthorized) {
-        const fallbackHome = activeRole ? ROLE_HOME[activeRole] : '/login';
-        return <Navigate replace to={fallbackHome} />;
+        const fallbackHome = activeRole
+            ? ROLE_HOME[activeRole]
+            : '/login';
+        return (
+            <Navigate
+                replace
+                to={fallbackHome}
+            />
+        );
     }
 
     return <Outlet />;

@@ -36,8 +36,8 @@ export function canManageCommunication(
     }
 
     if (
-        Boolean(item.created_by_role && (currentRole === 'Dean' || currentRole === 'Registrar') && item.created_by_role === currentRole) &&
-        item.target_audience !== 'Section'
+        Boolean(item.created_by_role && (currentRole === 'Dean' || currentRole === 'Registrar') && item.created_by_role === currentRole)
+        && item.target_audience !== 'Section'
     ) {
         return true;
     }

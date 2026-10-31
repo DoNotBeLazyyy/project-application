@@ -15,11 +15,13 @@ export function CommonBadgeStatus({
         warning: <WarningIcon weight="fill" />
     }; // Maps badge status variants to their corresponding icon components
 
-    return <Chip
-        color={variant}
-        icon={iconMap[variant]}
-        label={label}
-        size={size}
-        {...restProps}
-    />;
+    return (
+        <Chip
+            color={variant}
+            icon={iconMap[variant]}
+            label={label}
+            size={size}
+            {...restProps}
+        />
+    );
 }

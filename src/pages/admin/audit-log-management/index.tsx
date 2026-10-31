@@ -28,14 +28,15 @@ function toTitleCase(value: string): string {
 }
 
 function formatDate(value: string): string {
-    return new Date(value).toLocaleString('en-PH', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-    });
+    return new Date(value)
+        .toLocaleString('en-PH', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
 }
 
 export default function AuditLogManagement() {
@@ -59,7 +60,8 @@ export default function AuditLogManagement() {
                 setSelectedLog(found);
                 setIsViewOpen(true);
             }
-        } else {
+        }
+        else {
             setSelectedLog(logOrId);
             setIsViewOpen(true);
         }
@@ -91,7 +93,9 @@ export default function AuditLogManagement() {
         // Merge active filters with quick action chip if set
         const effectiveFilters: AuditLogFilterValues = {
             ...(activeFilters || EMPTY_FILTERS),
-            action: quickAction !== 'All' ? quickAction : (activeFilters?.action || 'All')
+            action: quickAction !== 'All'
+                ? quickAction
+                : (activeFilters?.action || 'All')
         };
 
         const result = await listAuditLogs(page, size, search, sort, effectiveFilters);
@@ -142,11 +146,15 @@ export default function AuditLogManagement() {
             },
             {
                 label: 'Date',
-                value: item.changed_at ? formatDate(item.changed_at) : '—'
+                value: item.changed_at
+                    ? formatDate(item.changed_at)
+                    : '—'
             },
             {
                 label: 'Entity',
-                value: item.table_name ? toTitleCase(item.table_name) : '—'
+                value: item.table_name
+                    ? toTitleCase(item.table_name)
+                    : '—'
             }
         ];
 
@@ -182,14 +190,14 @@ export default function AuditLogManagement() {
                     const isSelected = quickAction === pill.value;
                     return (
                         <button
-                            key={pill.value}
-                            type="button"
-                            onClick={() => handleQuickActionChange(pill.value)}
                             className={`px-3 py-1 text-xs font-bold rounded-lg border transition-all cursor-pointer shadow-2xs ${
                                 isSelected
                                     ? 'bg-slate-900 text-white border-slate-900 dark:bg-slate-100 dark:text-slate-900 dark:border-slate-100'
                                     : 'bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-750'
                             }`}
+                            key={pill.value}
+                            type="button"
+                            onClick={() => handleQuickActionChange(pill.value)}
                         >
                             {pill.label}
                         </button>

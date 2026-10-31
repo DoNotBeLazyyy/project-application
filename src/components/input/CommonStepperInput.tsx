@@ -55,19 +55,25 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
 }, ref) => {
     const hasValue = value !== '' && value !== undefined && value !== null;
     const numericValue = typeof value === 'string'
-        ? (value === '' ? 0 : (parseFloat(value) || 0))
+        ? (value === ''
+            ? 0
+            : (parseFloat(value) || 0))
         : (value ?? 0);
 
     const handleIncrement = useCallback(() => {
         if (disabled || !onChange) return;
-        const base = hasValue ? Number(numericValue) : min;
+        const base = hasValue
+            ? Number(numericValue)
+            : min;
         const next = Math.min(max, Number((base + step).toFixed(2)));
         onChange(next);
     }, [disabled, max, hasValue, numericValue, onChange, step, min]);
 
     const handleDecrement = useCallback(() => {
         if (disabled || !onChange) return;
-        const base = hasValue ? Number(numericValue) : min;
+        const base = hasValue
+            ? Number(numericValue)
+            : min;
         const next = Math.max(min, Number((base - step).toFixed(2)));
         onChange(next);
     }, [disabled, min, hasValue, numericValue, onChange, step]);
@@ -88,13 +94,19 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
         if (clampOnInput) {
             const clamped = Math.max(min, Math.min(max, raw));
             onChange(clamped);
-        } else {
-            onChange(rawStr.endsWith('.') ? rawStr : raw);
+        }
+        else {
+            onChange(rawStr.endsWith('.')
+                ? rawStr
+                : raw);
         }
     }, [clampOnInput, max, min, onChange]);
 
     return (
-        <div className={classMerge('flex flex-col gap-(--mui-tokens-spacing-2) w-full', className)} ref={ref}>
+        <div
+            className={classMerge('flex flex-col gap-(--mui-tokens-spacing-2) w-full', className)}
+            ref={ref}
+        >
             {/*
               * Same label row as every other field: guidance and the validation
               * message hang off the label as icons. Unlabelled steppers keep the
@@ -102,8 +114,12 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
               */}
             {label && (
                 <FormLabel
-                    description={error ? undefined : helperText}
-                    errorMessage={error ? helperText : undefined}
+                    description={error
+                        ? undefined
+                        : helperText}
+                    errorMessage={error
+                        ? helperText
+                        : undefined}
                     isRequired={isRequired}
                     label={label}
                 />
@@ -125,13 +141,12 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
                         disabled={disabled}
                         error={error}
                         fullWidth
-                        helperText={label ? undefined : helperText}
+                        helperText={label
+                            ? undefined
+                            : helperText}
                         name={name}
                         placeholder={placeholder}
                         size={size}
-                        type="number"
-                        value={hasValue ? value : ''}
-                        onChange={handleInputChange}
                         slotProps={{
                             htmlInput: {
                                 min,
@@ -141,6 +156,11 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
                                 autoComplete
                             }
                         }}
+                        type="number"
+                        value={hasValue
+                            ? value
+                            : ''}
+                        onChange={handleInputChange}
                     />
                 </div>
                 {showButtons && (

@@ -53,7 +53,9 @@ describe('RubricGradingPanel', () => {
     it('renders both the student submission answer with link and the rubric criteria', () => {
         render(
             <RubricGradingPanel
-                draftEvaluations={[{ criteria_id: 'crit-1', feedback: '', points_earned: 45 }]}
+                draftEvaluations={[{
+                    criteria_id: 'crit-1', feedback: '', points_earned: 45
+                }]}
                 draftFeedback=""
                 isDirty={false}
                 isSaving={false}
@@ -67,13 +69,18 @@ describe('RubricGradingPanel', () => {
         );
 
         // Student submission question and answer must be visible
-        expect(screen.getByText(/1\. Submit your GitHub repository link and brief description/i)).toBeInTheDocument();
+        expect(screen.getByText(/1\. Submit your GitHub repository link and brief description/i))
+            .toBeInTheDocument();
         const link = screen.getByRole('link', { name: /https:\/\/github\.com\/student\/final-project/i });
-        expect(link).toBeInTheDocument();
-        expect(link).toHaveAttribute('href', 'https://github.com/student/final-project');
+        expect(link)
+            .toBeInTheDocument();
+        expect(link)
+            .toHaveAttribute('href', 'https://github.com/student/final-project');
 
         // Rubric title and criterion must also be visible
-        expect(screen.getByText('Final Project Rubric')).toBeInTheDocument();
-        expect(screen.getByText('Code Quality')).toBeInTheDocument();
+        expect(screen.getByText('Final Project Rubric'))
+            .toBeInTheDocument();
+        expect(screen.getByText('Code Quality'))
+            .toBeInTheDocument();
     });
 });

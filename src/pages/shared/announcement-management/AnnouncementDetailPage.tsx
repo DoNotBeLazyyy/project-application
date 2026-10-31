@@ -1,7 +1,9 @@
 import EntityFormPage from '@components/entity-form/EntityFormPage';
 import AnnouncementForm from '@pages/shared/announcement-management/AnnouncementForm';
 import { useAnnouncementBasePath } from '@pages/shared/announcement-management/useAnnouncementBasePath';
-import { createAnnouncement, deleteAnnouncement, getAnnouncementById, getAnnouncementSectionOptions, updateAnnouncement } from '@services/announcement.service';
+import {
+    createAnnouncement, deleteAnnouncement, getAnnouncementById, getAnnouncementSectionOptions, updateAnnouncement
+} from '@services/announcement.service';
 import { createEvent, deleteEvent, getEventById, updateEvent } from '@services/event.service';
 import { useAppStore } from '@stores/app.store';
 import { AnnouncementAudience, CommunicationFormValues, CommunicationItemType } from '@type/announcement.type';
@@ -11,7 +13,9 @@ import { canManageCommunication } from '@utils/communication.util';
 import { getRoleFromPath } from '@utils/role-path.util';
 import { sanitizeUuidArray } from '@utils/uuid.util';
 import { useCallback, useMemo, useState } from 'react';
-import { Navigate, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import {
+    Navigate, useLocation, useNavigate, useParams, useSearchParams
+} from 'react-router-dom';
 
 const FORM_ID = 'communication-form';
 
@@ -56,14 +60,20 @@ export default function AnnouncementDetailPage() {
     const { id: routeId = '' } = useParams<{ id: string }>();
     const isEventUrl = pathname.includes('/event-management') || searchParams.get('type') === 'Event';
     const basePath = (location.state as { from?: string } | null)?.from || announcementBasePath;
-    const initialType: CommunicationItemType = isEventUrl ? 'Event' : 'Announcement';
+    const initialType: CommunicationItemType = isEventUrl
+        ? 'Event'
+        : 'Announcement';
     const isFacultyOnly = currentRole === 'Faculty';
 
     const defaultValues: CommunicationFormValues = useMemo(function() {
         const stateDate = (location.state as { defaultDate?: string | Date } | null)?.defaultDate;
+        // A section's announcement tab opens this form with that section chosen
+        const stateSectionId = (location.state as { sectionId?: string } | null)?.sectionId;
         let defaultStartAt = '';
         if (stateDate && initialType === 'Event') {
-            const dt = stateDate instanceof Date ? new Date(stateDate.getTime()) : new Date(stateDate);
+            const dt = stateDate instanceof Date
+                ? new Date(stateDate.getTime())
+                : new Date(stateDate);
             if (!Number.isNaN(dt.getTime())) {
                 dt.setHours(9, 0, 0, 0);
                 defaultStartAt = dt.toISOString();
@@ -83,9 +93,13 @@ export default function AnnouncementDetailPage() {
             item_type: initialType,
             location: '',
             posted_on: '',
-            section_ids: [],
+            section_ids: stateSectionId
+                ? [stateSectionId]
+                : [],
             start_at: defaultStartAt,
-            target_audience: isFacultyOnly ? 'Section' : 'Global',
+            target_audience: isFacultyOnly || stateSectionId
+                ? 'Section'
+                : 'Global',
             title: ''
         };
     }, [initialType, isFacultyOnly, location.state]);
@@ -122,7 +136,9 @@ export default function AnnouncementDetailPage() {
                         item_type: 'Event',
                         location: d.location ?? '',
                         posted_on: formatTimestamp(d.created_at),
-                        section_ids: d.target_audience === 'Section' ? (d.section_ids ?? []) : [],
+                        section_ids: d.target_audience === 'Section'
+                            ? (d.section_ids ?? [])
+                            : [],
                         sections: d.sections ?? [],
                         start_at: toEventDateInput(d.start_at, d.all_day),
                         target_audience: d.target_audience || 'Global',
@@ -169,7 +185,8 @@ export default function AnnouncementDetailPage() {
             }
 
             return { data: null, error: eventRes.error || annResult.error };
-        } else {
+        }
+        else {
             const annResult = await getAnnouncementById(id, { silent: true });
             if (annResult.data) {
                 const d = annResult.data;
@@ -232,7 +249,9 @@ export default function AnnouncementDetailPage() {
                         item_type: 'Event',
                         location: d.location ?? '',
                         posted_on: formatTimestamp(d.created_at),
-                        section_ids: d.target_audience === 'Section' ? (d.section_ids ?? []) : [],
+                        section_ids: d.target_audience === 'Section'
+                            ? (d.section_ids ?? [])
+                            : [],
                         sections: d.sections ?? [],
                         start_at: toEventDateInput(d.start_at, d.all_day),
                         target_audience: d.target_audience || 'Global',
@@ -248,8 +267,12 @@ export default function AnnouncementDetailPage() {
 
     async function handleCreate(values: CommunicationFormValues) {
         const isFacultyOnly = getRoleFromPath(pathname) === 'Faculty';
-        const audience = isFacultyOnly ? 'Section' : (values.target_audience || 'Global');
-        let sectionIds = (audience === 'Section' ? (sanitizeUuidArray(values.section_ids ?? []) ?? []) : []);
+        const audience = isFacultyOnly
+            ? 'Section'
+            : (values.target_audience || 'Global');
+        let sectionIds = (audience === 'Section'
+            ? (sanitizeUuidArray(values.section_ids ?? []) ?? [])
+            : []);
         const currentRole = getRoleFromPath(pathname);
 
         if (isFacultyOnly && sectionIds.length === 0) {
@@ -262,14 +285,20 @@ export default function AnnouncementDetailPage() {
         if (values.item_type === 'Event') {
             const body = (values.description || values.content || '').trim();
             const isAllDay = Boolean(values.all_day);
-            const startAt = values.start_at ? values.start_at.trim() : '';
-            const endAt = values.end_at ? values.end_at.trim() : '';
+            const startAt = values.start_at
+                ? values.start_at.trim()
+                : '';
+            const endAt = values.end_at
+                ? values.end_at.trim()
+                : '';
             const eventPayload: EventFormValues = {
                 all_day: isAllDay,
                 attachments: values.attachments,
                 description: body,
                 end_at: endAt,
-                location: values.location ? values.location.trim() : '',
+                location: values.location
+                    ? values.location.trim()
+                    : '',
                 section_ids: sectionIds,
                 start_at: startAt,
                 target_audience: audience,
@@ -292,12 +321,21 @@ export default function AnnouncementDetailPage() {
 
     async function handleUpdate(id: string, values: CommunicationFormValues) {
         if (!canEdit) {
-            return { data: null, error: { code: null, message: 'You do not have permission to edit this item.', status: null } };
+            return {
+                data: null,
+                error: {
+                    code: null, message: 'You do not have permission to edit this item.', status: null
+                }
+            };
         }
 
         const isFacultyOnly = currentRole === 'Faculty';
-        const audience = isFacultyOnly ? 'Section' : (values.target_audience || 'Global');
-        let sectionIds = (audience === 'Section' ? (sanitizeUuidArray(values.section_ids ?? []) ?? []) : []);
+        const audience = isFacultyOnly
+            ? 'Section'
+            : (values.target_audience || 'Global');
+        let sectionIds = (audience === 'Section'
+            ? (sanitizeUuidArray(values.section_ids ?? []) ?? [])
+            : []);
 
         if (isFacultyOnly && sectionIds.length === 0) {
             const secRes = await getAnnouncementSectionOptions();
@@ -309,14 +347,20 @@ export default function AnnouncementDetailPage() {
         if (values.item_type === 'Event') {
             const body = (values.description || values.content || '').trim();
             const isAllDay = Boolean(values.all_day);
-            const startAt = values.start_at ? values.start_at.trim() : '';
-            const endAt = values.end_at ? values.end_at.trim() : '';
+            const startAt = values.start_at
+                ? values.start_at.trim()
+                : '';
+            const endAt = values.end_at
+                ? values.end_at.trim()
+                : '';
             const eventPayload: EventFormValues = {
                 all_day: isAllDay,
                 attachments: values.attachments,
                 description: body,
                 end_at: endAt,
-                location: values.location ? values.location.trim() : '',
+                location: values.location
+                    ? values.location.trim()
+                    : '',
                 section_ids: sectionIds,
                 start_at: startAt,
                 target_audience: audience,
@@ -372,8 +416,6 @@ export default function AnnouncementDetailPage() {
             defaultValues={defaultValues}
             fetchById={fetchCommunicationItem}
             formId={FORM_ID}
-            onCreate={handleCreate}
-            onUpdate={handleUpdate}
             renderForm={function({ control, disabled, id, onSubmit }) {
                 return (
                     <AnnouncementForm
@@ -408,6 +450,8 @@ export default function AnnouncementDetailPage() {
                 edit: 'Edit Announcement or Event',
                 view: 'Post Details'
             }}
+            onCreate={handleCreate}
+            onUpdate={handleUpdate}
         />
     );
 }

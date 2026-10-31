@@ -62,19 +62,21 @@ export default function CommonTabMenu({
                     data-menu-style={menuStyle}
                     data-size={size}
                     icon={icon
-                        ? <TabMenuIcon
-                            icon={icon}
-                            iconSize={
-                                isSmall
-                                    ? 'size-[var(--mui-tokens-spacing-6)]'
-                                    : 'size-[var(--mui-tokens-spacing-7)]'
-                            }
-                        />
+                        ? (
+                            <TabMenuIcon
+                                icon={icon}
+                                iconSize={
+                                    isSmall
+                                        ? 'size-[var(--mui-tokens-spacing-6)]'
+                                        : 'size-[var(--mui-tokens-spacing-7)]'
+                                }
+                            />
+                        )
                         : undefined
                     }
                     iconPosition="start"
                     key={value}
-                    label={
+                    label={(
                         <TabMenuLabel
                             badge={badge}
                             badgeSize={
@@ -85,7 +87,7 @@ export default function CommonTabMenu({
                             hasArrow={hasArrow}
                             label={label}
                         />
-                    }
+                    )}
                     value={value}
                 />
             ))}

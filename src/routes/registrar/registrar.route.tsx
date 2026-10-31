@@ -64,15 +64,24 @@ export const registrarRoutes: RouteObject[] = [
                 path: 'announcement-management/:id'
             },
             {
-                element: <Navigate replace to="/registrar/announcement-management" />,
+                element: <Navigate
+                    replace
+                    to="/registrar/announcement-management"
+                />,
                 path: 'event-management'
             },
             {
-                element: <Navigate replace to="/registrar/announcement-management/new?type=Event" />,
+                element: <Navigate
+                    replace
+                    to="/registrar/announcement-management/new?type=Event"
+                />,
                 path: 'event-management/new'
             },
             {
-                element: <CommunicationRedirect basePath="/registrar/announcement-management" itemType="Event" />,
+                element: <CommunicationRedirect
+                    basePath="/registrar/announcement-management"
+                    itemType="Event"
+                />,
                 path: 'event-management/:id'
             },
             {

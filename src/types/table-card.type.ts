@@ -1,8 +1,8 @@
 import { CommonFormModalProps } from '@components/modal/CommonFormModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
+import { TableActionConfig } from '@components/table/useTableConfigs';
 import { TableCardModeToggleProps } from '@components/table-card/TableCardActionMenu';
 import { TableCardControlsProps } from '@components/table-card/TableCardControls';
-import { TableActionConfig } from '@components/table/useTableConfigs';
 import { CardHeaderProps } from '@mui/material';
 import { CsvTemplateColumn, DetailedBulkImportResult } from '@type/bulk-import.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
@@ -23,10 +23,10 @@ export interface UploadCsvModalProps {
     templateColumns: CsvTemplateColumn[];
     title?: string;
     templateDownloadFilename?: string;
-    onClose: () => void;
+    onClose: VoidFunction;
     onBulkImport: (rows: Record<string, string>[]) => Promise<DetailedBulkImportResult>;
     onMapRow?: (row: Record<string, string>) => Record<string, string>;
-    onSuccess?: () => void;
+    onSuccess?: VoidFunction;
 }
 
 export interface TableCardSelectionBarProps {
@@ -35,9 +35,9 @@ export interface TableCardSelectionBarProps {
     entityName?: string;
     deleteActionLabel?: string;
     deleteActionIcon?: ReactNode;
-    onSelectAll?: () => void;
-    onClearSelection: () => void;
-    onDeleteSelected?: () => void;
+    onSelectAll?: VoidFunction;
+    onClearSelection: VoidFunction;
+    onDeleteSelected?: VoidFunction;
     isDeleting?: boolean;
     extraActions?: ReactNode;
 }
@@ -53,7 +53,7 @@ export interface CommonTableCardSelectionBarConfig {
     entityName?: string;
     deleteActionLabel?: string;
     deleteActionIcon?: ReactNode;
-    extraActions?: (selectedIds: string[], clearSelection: () => void) => ReactNode;
+    extraActions?: (selectedIds: string[], clearSelection: VoidFunction) => ReactNode;
 }
 
 export interface CommonTableCardProps<T extends FieldValues> {
@@ -90,7 +90,7 @@ export interface CommonTableCardProps<T extends FieldValues> {
     renderGridCard?: (
         item: T,
         isSelected: boolean,
-        onToggleSelect: () => void,
+        onToggleSelect: VoidFunction,
         onRequestDeleteRow: (id: string) => void
     ) => ReactNode;
     onDelete?: (ids: string[]) => Promise<ServiceResult<unknown>>;
@@ -101,8 +101,8 @@ export interface CommonTableCardProps<T extends FieldValues> {
         search: string,
         sort: SortStringDto[]
     ) => Promise<ServiceResult<CommonListResDto<T>>>;
-    onCreate?: () => void;
-    onFilter?: () => void;
+    onCreate?: VoidFunction;
+    onFilter?: VoidFunction;
     onRowClick?: (id: string) => void;
     onSort?: (sort: SortStringDto[]) => void;
 }

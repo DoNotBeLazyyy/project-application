@@ -1,375 +1,409 @@
 import CommonButton from '@components/button/CommonButton';
-import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
-import CommonInput from '@components/input/CommonInput';
+import CommonForm from '@components/form/CommonForm';
+import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
-import CommonSelect from '@components/select/CommonSelect';
 import { CIVIL_STATUS_OPTIONS, GENDER_OPTIONS } from '@pages/shared/profile/constants/profile.constant';
-import { BuildingsIcon, GraduationCapIcon, SignOutIcon, UserCircleIcon } from '@phosphor-icons/react';
+import {
+    BuildingsIcon,
+    GraduationCapIcon,
+    SignOutIcon,
+    UserCircleIcon
+} from '@phosphor-icons/react';
 import { initAuthSession, logout } from '@services/auth.service';
 import { completeUserProfile } from '@services/profile.service';
 import { useAppStore } from '@stores/app.store';
 import { useToastStore } from '@stores/toast.store';
+import {
+    DEFAULT_FORM_OPTIONS,
+    formErrors,
+    MOBILE_NUMBER_RULE,
+    POSTAL_CODE_RULE
+} from '@utils/form.util';
 import { useEffect, useState } from 'react';
+import { FieldErrors, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-export interface UserProfilePromptModalProps {
-    open: boolean;
-    onClose?: () => void;
-    onSuccess?: () => void;
+interface UserProfilePromptModalProps {
+    // Hides Skip and Close so the user must finish or sign out
     isMandatory?: boolean;
+    // Shows the modal
+    open: boolean;
+    onClose?: VoidFunction;
+    onSuccess?: VoidFunction;
 }
 
+interface UserProfileFormValues {
+    address_line1: string;
+    address_line2: string;
+    city: string;
+    civil_status: string;
+    date_of_birth: string;
+    first_name: string;
+    gender: string;
+    last_name: string;
+    middle_name: string;
+    mobile_number: string;
+    nationality: string;
+    postal_code: string;
+    preferred_name: string;
+    province: string;
+    suffix: string;
+}
+
+const EMPTY_VALUES: UserProfileFormValues = {
+    address_line1: '',
+    address_line2: '',
+    city: '',
+    civil_status: '',
+    date_of_birth: '',
+    first_name: '',
+    gender: '',
+    last_name: '',
+    middle_name: '',
+    mobile_number: '',
+    nationality: '',
+    postal_code: '',
+    preferred_name: '',
+    province: '',
+    suffix: ''
+};
+
+/**
+ * Builds a validator that rejects text made of spaces only.
+ *
+ * @param label - Field name used in the message.
+ * @returns
+ */
+function requireText(label: string) {
+    return (value: string | number) => String(value ?? '')
+        .trim() !== '' || `${label} is required`;
+}
+
+/**
+ * Trims a value and turns an empty result into undefined.
+ *
+ * @param value - Raw field value.
+ * @returns
+ */
+function trimToUndefined(value: string): string | undefined {
+    return value.trim() || undefined;
+}
+
+/**
+ * Lists the fields of the profile form.
+ *
+ * @param isDisabled - Disables every field while saving.
+ * @returns
+ */
+function buildFields(isDisabled: boolean): FormFieldConfig<UserProfileFormValues>[] {
+    const today = new Date()
+        .toISOString()
+        .slice(0, 10);
+
+    return [
+        {
+            disabled: isDisabled,
+            label: 'First Name',
+            name: 'first_name',
+            rules: {
+                required: 'First name is required',
+                validate: requireText('First name')
+            },
+            type: 'text'
+        },
+        {
+            disabled: isDisabled,
+            label: 'Middle Name',
+            name: 'middle_name',
+            type: 'text'
+        },
+        {
+            disabled: isDisabled,
+            label: 'Last Name',
+            name: 'last_name',
+            rules: {
+                required: 'Last name is required',
+                validate: requireText('Last name')
+            },
+            type: 'text'
+        },
+        {
+            disabled: isDisabled,
+            label: 'Suffix',
+            name: 'suffix',
+            placeholder: 'e.g. Jr., III',
+            type: 'text'
+        },
+        {
+            disabled: isDisabled,
+            label: 'Preferred Name',
+            name: 'preferred_name',
+            type: 'text'
+        },
+        {
+            disabled: isDisabled,
+            label: 'Mobile Number',
+            name: 'mobile_number',
+            placeholder: 'e.g. 0917 123 4567',
+            rules: { pattern: MOBILE_NUMBER_RULE },
+            type: 'text'
+        },
+        {
+            disabled: isDisabled,
+            label: 'Date of Birth',
+            name: 'date_of_birth',
+            rules: {
+                validate: (value: string | number) => !value
+                    || String(value) <= today
+                    || 'Date of birth cannot be in the future'
+            },
+            type: 'date'
+        },
+        {
+            disabled: isDisabled,
+            label: 'Gender',
+            name: 'gender',
+            options: GENDER_OPTIONS,
+            type: 'select'
+        },
+        {
+            disabled: isDisabled,
+            label: 'Civil Status',
+            name: 'civil_status',
+            options: CIVIL_STATUS_OPTIONS,
+            type: 'select'
+        },
+        {
+            disabled: isDisabled,
+            label: 'Nationality',
+            name: 'nationality',
+            placeholder: 'e.g. Filipino',
+            type: 'text'
+        },
+        {
+            disabled: isDisabled,
+            label: 'Address Line 1',
+            name: 'address_line1',
+            placeholder: 'House, unit, street',
+            type: 'text'
+        },
+        {
+            disabled: isDisabled,
+            label: 'Address Line 2',
+            name: 'address_line2',
+            placeholder: 'Barangay, subdivision',
+            type: 'text'
+        },
+        {
+            disabled: isDisabled,
+            label: 'City / Municipality',
+            name: 'city',
+            type: 'text'
+        },
+        {
+            disabled: isDisabled,
+            label: 'Province',
+            name: 'province',
+            type: 'text'
+        },
+        {
+            disabled: isDisabled,
+            label: 'Postal Code',
+            name: 'postal_code',
+            rules: { pattern: POSTAL_CODE_RULE },
+            type: 'text'
+        }
+    ];
+}
+
+/**
+ * UserProfilePromptModal
+ * Asks a newly activated user to complete their name and personal details.
+ */
 export default function UserProfilePromptModal({
+    isMandatory = true,
     open,
     onClose,
-    onSuccess,
-    isMandatory = true
+    onSuccess
 }: UserProfilePromptModalProps) {
     const navigate = useNavigate();
     const userProfile = useAppStore((state) => state.userProfile);
     const activeRole = useAppStore((state) => state.activeRole);
     const availableRoles = useAppStore((state) => state.availableRoles);
-
-    const isDean = activeRole === 'Dean' || availableRoles.some((r) => r.code === 'Dean');
-    const isStudent = activeRole === 'Student' || availableRoles.some((r) => r.code === 'Student');
-
-    // Personal fields
-    const [firstName, setFirstName] = useState('');
-    const [middleName, setMiddleName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [suffix, setSuffix] = useState('');
-    const [preferredName, setPreferredName] = useState('');
-    const [mobileNumber, setMobileNumber] = useState('');
-    const [dateOfBirth, setDateOfBirth] = useState('');
-    const [gender, setGender] = useState('');
-    const [civilStatus, setCivilStatus] = useState('');
-    const [nationality, setNationality] = useState('');
-
-    // Address fields
-    const [addressLine1, setAddressLine1] = useState('');
-    const [addressLine2, setAddressLine2] = useState('');
-    const [city, setCity] = useState('');
-    const [province, setProvince] = useState('');
-    const [postalCode, setPostalCode] = useState('');
-
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+    const methods = useForm<UserProfileFormValues>({
+        ...DEFAULT_FORM_OPTIONS,
+        defaultValues: EMPTY_VALUES
+    });
+
+    const isDean = activeRole === 'Dean' || availableRoles.some((role) => role.code === 'Dean');
+    const isStudent = activeRole === 'Student' || availableRoles.some((role) => role.code === 'Student');
+    const fields = buildFields(isSubmitting);
 
     useEffect(() => {
-        if (!open) return;
+        if (!open || !userProfile) return;
 
-        if (userProfile) {
-            setFirstName(userProfile.first_name || '');
-            setMiddleName(userProfile.middle_name || '');
-            setLastName(userProfile.last_name || '');
-            setSuffix(userProfile.suffix || '');
-            setPreferredName(userProfile.preferred_name || '');
-            setMobileNumber(userProfile.mobile_number || '');
-        }
-    }, [open, userProfile]);
+        methods.reset({
+            ...EMPTY_VALUES,
+            first_name: userProfile.first_name ?? '',
+            last_name: userProfile.last_name ?? '',
+            middle_name: userProfile.middle_name ?? '',
+            mobile_number: userProfile.mobile_number ?? '',
+            preferred_name: userProfile.preferred_name ?? '',
+            suffix: userProfile.suffix ?? ''
+        });
+    }, [open, userProfile, methods]);
 
-    async function handleLogout() {
+    /**
+     * Signs the user out from the prompt.
+     */
+    async function handleSignOutClick() {
         await logout();
         navigate('/login');
     }
 
-    async function handleSubmit() {
-        setHasAttemptedSubmit(true);
-
-        const hasFirstName = Boolean(firstName.trim());
-        const hasLastName = Boolean(lastName.trim());
-
-        if (!hasFirstName && !hasLastName) {
-            useToastStore.getState().showToast('First name and last name are required to continue.', 'error');
-            return;
-        }
-
-        if (!hasFirstName) {
-            useToastStore.getState().showToast('First name is required to continue.', 'error');
-            return;
-        }
-
-        if (!hasLastName) {
-            useToastStore.getState().showToast('Last name is required to continue.', 'error');
-            return;
-        }
-
+    /**
+     * Saves the profile and reloads the session.
+     *
+     * @param values - Validated form values.
+     */
+    async function handleValidSubmit(values: UserProfileFormValues) {
         setIsSubmitting(true);
-        try {
-            const res = await completeUserProfile({
-                first_name: firstName.trim(),
-                last_name: lastName.trim(),
-                middle_name: middleName.trim() || undefined,
-                suffix: suffix.trim() || undefined,
-                preferred_name: preferredName.trim() || undefined,
-                mobile_number: mobileNumber.trim() || undefined,
-                date_of_birth: dateOfBirth || undefined,
-                gender: gender || undefined,
-                civil_status: civilStatus || undefined,
-                nationality: nationality.trim() || undefined,
-                address_line1: addressLine1.trim() || undefined,
-                address_line2: addressLine2.trim() || undefined,
-                city: city.trim() || undefined,
-                province: province.trim() || undefined,
-                postal_code: postalCode.trim() || undefined
-            });
+        const result = await completeUserProfile({
+            address_line1: trimToUndefined(values.address_line1),
+            address_line2: trimToUndefined(values.address_line2),
+            city: trimToUndefined(values.city),
+            civil_status: values.civil_status || undefined,
+            date_of_birth: values.date_of_birth || undefined,
+            first_name: values.first_name.trim(),
+            gender: values.gender || undefined,
+            last_name: values.last_name.trim(),
+            middle_name: trimToUndefined(values.middle_name),
+            mobile_number: trimToUndefined(values.mobile_number),
+            nationality: trimToUndefined(values.nationality),
+            postal_code: trimToUndefined(values.postal_code),
+            preferred_name: trimToUndefined(values.preferred_name),
+            province: trimToUndefined(values.province),
+            suffix: trimToUndefined(values.suffix)
+        });
+        setIsSubmitting(false);
 
-            if (res.error) {
-                useToastStore.getState().showToast(res.error.message || 'Failed to complete profile.', 'error');
-                return;
-            }
-
-            useToastStore.getState().showToast('Profile completed successfully! Welcome aboard.', 'success');
-            await initAuthSession();
-            onSuccess?.();
-            onClose?.();
-        } finally {
-            setIsSubmitting(false);
+        if (result.error) {
+            useToastStore.getState()
+                .showToast(result.error.message || 'Failed to complete profile.', 'error');
+            return;
         }
+
+        useToastStore.getState()
+            .showToast('Profile completed. Welcome aboard.', 'success');
+        await initAuthSession();
+        onSuccess?.();
+        onClose?.();
+    }
+
+    /**
+     * Focuses the first field with an error.
+     *
+     * @param errors - Errors from the form.
+     */
+    function handleInvalidSubmit(errors: FieldErrors<UserProfileFormValues>) {
+        formErrors(errors, methods);
+    }
+
+    /**
+     * Validates and submits the form.
+     */
+    function handleSaveClick() {
+        methods.handleSubmit(handleValidSubmit, handleInvalidSubmit)();
     }
 
     return (
         <CommonModal
+            cardProps={{
+                cardHeaderProps: {
+                    subheader: 'Please fill in your user profile information.',
+                    title: 'Complete Your Profile Information'
+                },
+                className: 'flex flex-col max-h-[100dvh] sm:max-h-[85dvh] overflow-hidden w-full'
+            }}
             fullWidth
             maxWidth="md"
             open={open}
-            onClose={isMandatory ? undefined : onClose}
-            cardProps={{
-                className: 'flex flex-col max-h-[100dvh] sm:max-h-[85dvh] w-full max-w-2xl overflow-hidden',
-                cardHeaderProps: {
-                    title: 'Complete Your Profile Information',
-                    subheader: 'Please fill in your user profile information.'
-                }
-            }}
+            onClose={isMandatory
+                ? undefined
+                : onClose}
         >
-            <div className="flex flex-1 flex-col gap-5 min-h-0 overflow-y-auto p-4 sm:p-6 pt-0 sm:pt-0 pb-6">
-                <div className="bg-(--mui-palette-primary-50) border border-(--mui-palette-primary-200) rounded-(--mui-tokens-radius-md) p-3.5 flex gap-3 items-start">
-                    <UserCircleIcon className="text-(--mui-palette-primary-main) shrink-0 mt-0.5" size={24} />
-                    <div className="text-xs text-(--mui-palette-text-primary) flex flex-col gap-1">
-                        <p className="font-semibold text-sm text-(--mui-palette-primary-900)">Welcome to AU-JAS!</p>
-                        <p className="text-(--mui-palette-text-secondary) leading-relaxed">
+            <div className="flex flex-1 flex-col gap-5 min-h-0 overflow-y-auto p-4 pb-6 pt-0 sm:p-6 sm:pt-0">
+                <div className="bg-(--mui-palette-primary-50) border border-(--mui-palette-primary-200) flex gap-3 items-start p-3.5 rounded-(--mui-tokens-radius-md)">
+                    <UserCircleIcon
+                        className="shrink-0 text-(--mui-palette-primary-main)"
+                        size={24}
+                    />
+                    <div className="flex flex-col gap-1 text-xs">
+                        <p className="font-semibold text-(--mui-palette-primary-900) text-sm">
+                            Welcome to AU-JAS!
+                        </p>
+                        <p className="text-(--mui-palette-text-secondary)">
                             Before you can use the system, please complete your user profile.
                         </p>
                     </div>
                 </div>
 
-                {/* Dean Department Info */}
                 {isDean && (
-                    <div className="flex flex-col gap-2 p-4 border border-(--mui-palette-secondary-200) bg-(--mui-palette-secondary-50) rounded-(--mui-tokens-radius-md)">
-                        <div className="flex items-center gap-2 font-semibold text-sm text-(--mui-palette-secondary-main)">
+                    <div className="bg-(--mui-palette-secondary-50) border border-(--mui-palette-secondary-200) flex flex-col gap-2 p-4 rounded-(--mui-tokens-radius-md)">
+                        <div className="flex font-semibold gap-2 items-center text-(--mui-palette-secondary-main) text-sm">
                             <BuildingsIcon size={20} />
-                            <span>Governing Department</span>
+                            <span>
+                                Governing Department
+                            </span>
                         </div>
-                        <p className="text-xs text-(--mui-palette-text-secondary) m-0">
+                        <p className="text-(--mui-palette-text-secondary) text-xs">
                             {userProfile?.department_name
-                                ? `Assigned to: ${userProfile.department_code} — ${userProfile.department_name} (Assigned by Administrator)`
+                                ? `Assigned to ${userProfile.department_code} · ${userProfile.department_name} by the Administrator.`
                                 : 'Your academic department will be assigned by the Administrator.'}
                         </p>
                     </div>
                 )}
 
-                {/* Student Academic Info */}
                 {isStudent && (
-                    <div className="flex flex-col gap-2 p-4 border border-(--mui-palette-info-200) bg-(--mui-palette-info-50) rounded-(--mui-tokens-radius-md)">
-                        <div className="flex items-center gap-2 font-semibold text-sm text-(--mui-palette-info-main)">
+                    <div className="bg-(--mui-palette-info-50) border border-(--mui-palette-info-200) flex flex-col gap-2 p-4 rounded-(--mui-tokens-radius-md)">
+                        <div className="flex font-semibold gap-2 items-center text-(--mui-palette-info-main) text-sm">
                             <GraduationCapIcon size={20} />
-                            <span>Academic Program & Year Level</span>
+                            <span>
+                                Academic Program & Year Level
+                            </span>
                         </div>
-                        <p className="text-xs text-(--mui-palette-text-secondary) m-0">
-                            Your academic program and initial year level will be assigned directly by the Registrar's Office upon verification.
+                        <p className="text-(--mui-palette-text-secondary) text-xs">
+                            The Registrar&apos;s Office assigns your program and year level after verification.
                         </p>
                     </div>
                 )}
 
-                {/* Personal Information */}
-                <div className="flex flex-col gap-3">
-                    <div className="border-b border-(--mui-palette-divider) pb-2">
-                        <span className="font-semibold text-xs text-(--mui-palette-text-secondary) uppercase tracking-wide">
-                            Personal Information
-                        </span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <CommonInput
-                            disabled={isSubmitting}
-                            error={hasAttemptedSubmit && !firstName.trim()}
-                            fullWidth
-                            helperText={hasAttemptedSubmit && !firstName.trim() ? 'First name is required' : undefined}
-                            isRequired
-                            label="First Name"
-                            placeholder="Given name (required)"
-                            size="small"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                        />
-                        <CommonInput
-                            disabled={isSubmitting}
-                            fullWidth
-                            label="Middle Name"
-                            placeholder="Middle name (optional)"
-                            size="small"
-                            value={middleName}
-                            onChange={(e) => setMiddleName(e.target.value)}
-                        />
-                        <CommonInput
-                            disabled={isSubmitting}
-                            error={hasAttemptedSubmit && !lastName.trim()}
-                            fullWidth
-                            helperText={hasAttemptedSubmit && !lastName.trim() ? 'Last name is required' : undefined}
-                            isRequired
-                            label="Last Name"
-                            placeholder="Family name (required)"
-                            size="small"
-                            value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
-                        />
-                        <CommonInput
-                            disabled={isSubmitting}
-                            fullWidth
-                            label="Suffix"
-                            placeholder="Jr., Sr., III (optional)"
-                            size="small"
-                            value={suffix}
-                            onChange={(e) => setSuffix(e.target.value)}
-                        />
-                        <CommonInput
-                            disabled={isSubmitting}
-                            fullWidth
-                            label="Preferred Name"
-                            placeholder="Nickname (optional)"
-                            size="small"
-                            value={preferredName}
-                            onChange={(e) => setPreferredName(e.target.value)}
-                        />
-                        <CommonInput
-                            disabled={isSubmitting}
-                            fullWidth
-                            label="Mobile Number"
-                            placeholder="e.g. 09171234567 (optional)"
-                            size="small"
-                            value={mobileNumber}
-                            onChange={(e) => setMobileNumber(e.target.value)}
-                        />
-                        <CommonDatePicker
-                            disabled={isSubmitting}
-                            fullWidth
-                            label="Date of Birth"
-                            size="small"
-                            value={dateOfBirth}
-                            onChange={(val) => setDateOfBirth(val || '')}
-                        />
-                        <CommonSelect
-                            disabled={isSubmitting}
-                            fullWidth
-                            label="Gender"
-                            options={GENDER_OPTIONS}
-                            size="small"
-                            value={gender}
-                            onChange={(e) => setGender(e.target.value as string)}
-                        />
-                        <CommonSelect
-                            disabled={isSubmitting}
-                            fullWidth
-                            label="Civil Status"
-                            options={CIVIL_STATUS_OPTIONS}
-                            size="small"
-                            value={civilStatus}
-                            onChange={(e) => setCivilStatus(e.target.value as string)}
-                        />
-                        <CommonInput
-                            disabled={isSubmitting}
-                            fullWidth
-                            label="Nationality"
-                            placeholder="e.g. Filipino (optional)"
-                            size="small"
-                            value={nationality}
-                            onChange={(e) => setNationality(e.target.value)}
-                        />
-                    </div>
-                </div>
+                <CommonForm
+                    component="div"
+                    containerClassName="gap-4 grid grid-cols-1 sm:grid-cols-2"
+                    control={methods.control}
+                    enableDraftRecovery={false}
+                    fields={fields}
+                    hasHelper
+                />
 
-                {/* Address Information */}
-                <div className="flex flex-col gap-3">
-                    <div className="flex items-center justify-between border-b border-(--mui-palette-divider) pb-2">
-                        <span className="font-semibold text-xs text-(--mui-palette-text-secondary) uppercase tracking-wide">
-                            Address Details (Optional)
-                        </span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="sm:col-span-2">
-                            <CommonInput
+                <div className="border-(--mui-palette-divider) border-t flex items-center justify-between pt-4">
+                    {isMandatory
+                        ? (
+                            <CommonButton
+                                color="error"
                                 disabled={isSubmitting}
-                                fullWidth
-                                label="Address Line 1"
-                                placeholder="House / Unit / Street (optional)"
                                 size="small"
-                                value={addressLine1}
-                                onChange={(e) => setAddressLine1(e.target.value)}
-                            />
-                        </div>
-                        <div className="sm:col-span-2">
-                            <CommonInput
-                                disabled={isSubmitting}
-                                fullWidth
-                                label="Address Line 2"
-                                placeholder="Barangay / Subdivision (optional)"
-                                size="small"
-                                value={addressLine2}
-                                onChange={(e) => setAddressLine2(e.target.value)}
-                            />
-                        </div>
-                        <CommonInput
-                            disabled={isSubmitting}
-                            fullWidth
-                            label="City"
-                            placeholder="City / Municipality (optional)"
-                            size="small"
-                            value={city}
-                            onChange={(e) => setCity(e.target.value)}
-                        />
-                        <CommonInput
-                            disabled={isSubmitting}
-                            fullWidth
-                            label="Province"
-                            placeholder="Province (optional)"
-                            size="small"
-                            value={province}
-                            onChange={(e) => setProvince(e.target.value)}
-                        />
-                        <CommonInput
-                            disabled={isSubmitting}
-                            fullWidth
-                            label="Postal Code"
-                            placeholder="ZIP / Postal code (optional)"
-                            size="small"
-                            value={postalCode}
-                            onChange={(e) => setPostalCode(e.target.value)}
-                        />
-                    </div>
-                </div>
-
-                {/* Modal Footer Controls */}
-                <div className="flex items-center justify-between pt-4 mt-2 border-t border-(--mui-palette-divider)">
-                    {isMandatory ? (
-                        <CommonButton
-                            color="error"
-                            disabled={isSubmitting}
-                            size="small"
-                            startIcon={<SignOutIcon size={18} />}
-                            variant="outlined"
-                            onClick={handleLogout}
-                        >
-                            Sign Out
-                        </CommonButton>
-                    ) : (
-                        <span />
-                    )}
-                    <div className="flex items-center gap-3">
-                        {(!firstName.trim() || !lastName.trim()) && (
-                            <span className="text-xs text-(--mui-palette-text-secondary) hidden sm:inline">
-                                <span className="text-(--mui-tokens-color-red-500) font-bold mr-0.5">*</span>
-                                First and Last Name required
-                            </span>
-                        )}
+                                startIcon={<SignOutIcon size={18} />}
+                                variant="outlined"
+                                onClick={handleSignOutClick}
+                            >
+                                Sign Out
+                            </CommonButton>
+                        )
+                        : <span />}
+                    <div className="flex gap-3 items-center">
                         {!isMandatory && onClose && (
                             <CommonButton
                                 disabled={isSubmitting}
@@ -386,7 +420,7 @@ export default function UserProfilePromptModal({
                             loading={isSubmitting}
                             size="small"
                             variant="contained"
-                            onClick={handleSubmit}
+                            onClick={handleSaveClick}
                         >
                             Save & Continue
                         </CommonButton>

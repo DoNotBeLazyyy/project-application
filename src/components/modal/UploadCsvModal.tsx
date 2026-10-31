@@ -6,21 +6,19 @@ import {
     ArrowLineDownIcon, ArrowLineUpIcon, CheckCircleIcon, WarningCircleIcon, XCircleIcon
 } from '@phosphor-icons/react';
 import { BulkImportError, DetailedBulkImportResult } from '@type/bulk-import.type';
+import { UploadCsvModalProps } from '@type/table-card.type';
+import { classMerge } from '@utils/css.util';
 import {
     CsvParseResult,
     generateTemplateCsv,
     parseCsvWithColumns
 } from '@utils/csv.util';
 import { exportCsvFile } from '@utils/file.util';
-import { UploadCsvModalProps } from '@type/table-card.type';
-import { classMerge } from '@utils/css.util';
 import { ColDef } from 'ag-grid-community';
 import { useMemo, useRef, useState } from 'react';
 
 type UploadStep = 'upload' | 'preview' | 'results';
 type ParsedRow = Record<string, string>;
-
-
 
 export default function UploadCsvModal({
     onBulkImport,
@@ -128,7 +126,8 @@ export default function UploadCsvModal({
             }
 
             if (missingValues.length) {
-                const shown = missingValues.slice(0, 5).join('; ');
+                const shown = missingValues.slice(0, 5)
+                    .join('; ');
                 const more = missingValues.length > 5
                     ? ` and ${missingValues.length - 5} more`
                     : '';
@@ -197,7 +196,12 @@ export default function UploadCsvModal({
                         <CommonButton
                             color="primary"
                             size="small"
-                            startIcon={<ArrowLineDownIcon size={16} weight="bold" />}
+                            startIcon={(
+                                <ArrowLineDownIcon
+                                    size={16}
+                                    weight="bold"
+                                />
+                            )}
                             variant="contained"
                             onClick={downloadTemplate}
                         >
@@ -235,7 +239,10 @@ export default function UploadCsvModal({
 
                 {parseError && (
                     <div className="flex gap-2 items-center text-(--mui-palette-error-main)">
-                        <XCircleIcon size={16} weight="bold" />
+                        <XCircleIcon
+                            size={16}
+                            weight="bold"
+                        />
                         <span className="text-xs">{parseError}</span>
                     </div>
                 )}
@@ -264,7 +271,11 @@ export default function UploadCsvModal({
                 </div>
                 {parseWarning && (
                     <div className="flex gap-2 items-start text-(--mui-palette-warning-main)">
-                        <WarningCircleIcon className="mt-0.5 shrink-0" size={16} weight="bold" />
+                        <WarningCircleIcon
+                            className="mt-0.5 shrink-0"
+                            size={16}
+                            weight="bold"
+                        />
                         <span className="text-xs">{parseWarning}</span>
                     </div>
                 )}
@@ -307,8 +318,20 @@ export default function UploadCsvModal({
                     )}
                 >
                     {hasErrors
-                        ? <WarningCircleIcon className="shrink-0 text-(--mui-palette-warning-main)" size={20} weight="bold" />
-                        : <CheckCircleIcon className="shrink-0 text-(--mui-palette-success-main)" size={20} weight="bold" />
+                        ? (
+                            <WarningCircleIcon
+                                className="shrink-0 text-(--mui-palette-warning-main)"
+                                size={20}
+                                weight="bold"
+                            />
+                        )
+                        : (
+                            <CheckCircleIcon
+                                className="shrink-0 text-(--mui-palette-success-main)"
+                                size={20}
+                                weight="bold"
+                            />
+                        )
                     }
                     <div className="flex flex-col gap-1">
                         <p className="font-semibold text-(--mui-palette-text-primary) text-sm">

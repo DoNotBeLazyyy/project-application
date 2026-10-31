@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import BentoCardActionMenu, { BentoCardAction } from '@components/card/BentoCardActionMenu';
 import CommonBentoCard from '@components/card/CommonBentoCard';
 import CommonCard from '@components/card/CommonCard';
 import CommonEmptyState from '@components/empty/CommonEmptyState';
@@ -6,14 +7,13 @@ import DeletePromptModal from '@components/modal/DeletePromptModal';
 import TableModals from '@components/modal/TableModals';
 import UploadCsvModal from '@components/modal/UploadCsvModal';
 import CommonPagination from '@components/pagination/CommonPagination';
+import CommonTable from '@components/table/CommonTable';
 import { useInfiniteScrollSentinel } from '@components/table-card/hooks/useInfiniteScrollSentinel';
 import { useLastVisibleRow } from '@components/table-card/hooks/useLastVisibleRow';
 import { useTableData } from '@components/table-card/hooks/useTableData';
 import { useTableSelection } from '@components/table-card/hooks/useTableSelection';
 import TableCardControls from '@components/table-card/TableCardControls';
 import TableCardSelectionBar from '@components/table-card/TableCardSelectionBar';
-import CommonTable from '@components/table/CommonTable';
-import BentoCardActionMenu, { BentoCardAction } from '@components/card/BentoCardActionMenu';
 import { ArrowUpIcon, EyeIcon, TrashIcon } from '@phosphor-icons/react';
 import { ChangeEventInputTextarea, KeyboardEventDivElement } from '@type/common.type';
 import { SortStringDto } from '@type/http.type';
@@ -262,7 +262,7 @@ export default function CommonTableCard<T extends FieldValues>({
 
     const isGridSelectionActive = activeViewMode === 'grid' && gridSelectedIds.size > 0;
 
-    function renderDefaultBentoCard(item: T, isSelected: boolean, onToggleSelect: () => void) {
+    function renderDefaultBentoCard(item: T, isSelected: boolean, onToggleSelect: VoidFunction) {
         const columnDefs = tableProps.leadingColumnDefs ?? [];
         const plan = resolveMobileCardPlan(columnDefs);
         const id = String(item[uniqueIdKey]);
@@ -395,7 +395,10 @@ export default function CommonTableCard<T extends FieldValues>({
             defaultActions.push({
                 key: 'open',
                 label: 'Open',
-                icon: <EyeIcon size={18} weight="bold" />,
+                icon: <EyeIcon
+                    size={18}
+                    weight="bold"
+                />,
                 onClick: () => onRowClick(id)
             });
         }
@@ -403,7 +406,10 @@ export default function CommonTableCard<T extends FieldValues>({
             defaultActions.push({
                 key: 'delete',
                 label: 'Delete',
-                icon: <TrashIcon size={18} weight="bold" />,
+                icon: <TrashIcon
+                    size={18}
+                    weight="bold"
+                />,
                 destructive: true,
                 onClick: () => onDeleteRow(id)
             });
@@ -506,7 +512,8 @@ export default function CommonTableCard<T extends FieldValues>({
                                     extraActions={selectionBarProps?.extraActions?.(effectiveSelectedIds, function() {
                                         if (activeViewMode === 'grid') {
                                             handleClearGridSelection();
-                                        } else {
+                                        }
+                                        else {
                                             gridApi?.deselectAll();
                                         }
                                     })}
@@ -720,7 +727,10 @@ export default function CommonTableCard<T extends FieldValues>({
                             type="button"
                             onClick={scrollGridToTop}
                         >
-                            <ArrowUpIcon size={14} weight="bold" />
+                            <ArrowUpIcon
+                                size={14}
+                                weight="bold"
+                            />
                             <span className="hidden sm:inline">Scroll to top</span>
                         </button>
                         <span className="font-medium text-(--mui-palette-text-secondary) text-right text-xs">
@@ -768,21 +778,27 @@ export default function CommonTableCard<T extends FieldValues>({
             )}
 
             <DeletePromptModal
-                actionIconProps={deleteModalProps?.actionIcon ? { icon: deleteModalProps.actionIcon } : undefined}
+                actionIconProps={deleteModalProps?.actionIcon
+                    ? { icon: deleteModalProps.actionIcon }
+                    : undefined}
                 formButtonsProps={{
                     cancelProps: {
                         disabled: isDeleting,
                         onClick: handleCancelDelete
                     },
                     confirmProps: {
-                        children: deleteModalProps?.confirmText ?? (pendingDeleteIds.length > 1 ? 'Yes, Delete' : 'Yes, Delete'),
+                        children: deleteModalProps?.confirmText ?? (pendingDeleteIds.length > 1
+                            ? 'Yes, Delete'
+                            : 'Yes, Delete'),
                         loading: isDeleting,
                         onClick: handleConfirmDelete
                     }
                 }}
                 mainContent={{
                     title: deleteModalProps?.title
-                        ? (typeof deleteModalProps.title === 'function' ? deleteModalProps.title(pendingDeleteIds.length) : deleteModalProps.title)
+                        ? (typeof deleteModalProps.title === 'function'
+                            ? deleteModalProps.title(pendingDeleteIds.length)
+                            : deleteModalProps.title)
                         : (pendingDeleteIds.length > 1
                             ? `Delete ${pendingDeleteIds.length} records?`
                             : 'Delete this record?')

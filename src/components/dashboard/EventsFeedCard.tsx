@@ -97,8 +97,8 @@ export default function EventsFeedCard({ events, error }: EventsFeedCardProps) {
                 )}
                 {events.map((event) => {
                     const hasAttachments = Boolean(
-                        (event.attachment_count && event.attachment_count > 0) ||
-                        (event.attachments && event.attachments.length > 0)
+                        (event.attachment_count && event.attachment_count > 0)
+                        || (event.attachments && event.attachments.length > 0)
                     );
                     const attachmentCount = event.attachment_count || event.attachments?.length || 0;
 
@@ -125,19 +125,26 @@ export default function EventsFeedCard({ events, error }: EventsFeedCardProps) {
                                     {formatEventStart(event)}
                                 </span>
                                 <div className="flex items-center justify-between gap-2 mt-0.5">
-                                    {event.location ? (
-                                        <span className="flex gap-1 items-center text-(--mui-palette-text-disabled) text-xs truncate">
-                                            <MapPinIcon size={12} />
-                                            {event.location}
-                                        </span>
-                                    ) : (
-                                        <span />
-                                    )}
+                                    {event.location
+                                        ? (
+                                            <span className="flex gap-1 items-center text-(--mui-palette-text-disabled) text-xs truncate">
+                                                <MapPinIcon size={12} />
+                                                {event.location}
+                                            </span>
+                                        )
+                                        : (
+                                            <span />
+                                        )}
                                     {hasAttachments && (
                                         <span className="inline-flex items-center gap-1 text-(--mui-palette-primary-main) text-xs font-medium shrink-0 ml-auto">
-                                            <PaperclipIcon size={13} weight="bold" />
+                                            <PaperclipIcon
+                                                size={13}
+                                                weight="bold"
+                                            />
                                             <span>
-                                                {attachmentCount} {attachmentCount === 1 ? 'file' : 'files'}
+                                                {attachmentCount} {attachmentCount === 1
+                                                    ? 'file'
+                                                    : 'files'}
                                             </span>
                                         </span>
                                     )}
