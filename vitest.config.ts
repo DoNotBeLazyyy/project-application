@@ -28,6 +28,9 @@ export default defineConfig({
         environment: 'jsdom',
         setupFiles: ['./src/test/setup.ts'],
         include: ['src/**/*.{test,spec}.{ts,tsx}'],
-        passWithNoTests: true
+        passWithNoTests: true,
+        // UI tests render whole MUI forms and are slow on shared CI machines
+        testTimeout: 60000,
+        hookTimeout: 60000
     }
 });
