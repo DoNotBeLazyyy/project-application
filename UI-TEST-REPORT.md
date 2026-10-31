@@ -144,3 +144,49 @@ Legend: **BUG** = broken behavior (fixed before moving on; the fix is noted) ·
 ### Old admin routes
 - OK: /admin/terms, /special-grades and the other retired pages redirect to Academic Years.
 
+
+## Dean (bianca.robles@au-jas.test)
+
+### Dashboard
+- OK: counts (2 programs, 47 courses, 24 sections, 59 students, 9 faculty), announcements, upcoming events.
+- DATA (fixed): the "Undas Long Weekend (No Classes)" event was only a campus event, so classes still showed on Oct 31.
+  Added it as a class-suspension holiday (Oct 31–Nov 1) in the 2026-2027 academic year.
+- INCONSISTENCY (edge case): switching accounts without signing out (e.g. opening another account's link while signed in)
+  first shows "Access Denied" until a reload, because the previous account's role is kept.
+
+### Sections
+- BUG (fixed): every section card showed "0 / 40" enrolled. The list function never returned the enrolled count
+  (migration `20261031040000_section_list_enrolled_count`).
+- OK: create wizard (term, course, faculty, room, slots), required fields, "Must be at least 1" slots, end time before start
+  time rejected, grading weights inherited.
+- BUG (fixed): a section could be saved with a slot that double-books its instructor or room; the clash only showed up later
+  on the Schedule Conflicts report. The wizard now checks first and stops with the clashing section, day and time
+  (`fn_check_section_schedule_conflicts`, migration `20261031050000`).
+- INCONSISTENCY: a generated section code looks like "ACC211-001" while existing ones look like "ACC-222-BSA2A".
+- INCONSISTENCY: the Term dropdown offers the already closed 1st Semester.
+
+### Faculty Loading
+- OK: load details (sections, units, weekly hours, students), schedule conflict analysis (shows the overlap time).
+- BUG (fixed, all card lists): cards without a term showed the placeholder text "1st Sem AY 25-26" (hard-coded fallback in
+  `CommonTableCard`).
+- INCONSISTENCY: the list shows totals across all terms; the detail shows the current term only. Each card repeats the
+  faculty's name under "Faculty In-Charge".
+
+### Programs
+- BUG (fixed, serious): deleting a program that still had students silently removed the program from every student (30 BSA
+  students lost their program). Restored the data; a program with students can no longer be deleted.
+
+## Security (found while testing Programs)
+- BUG (fixed, critical): 22 database write functions had no role check. Signed in as a student, it was possible to delete
+  programs, sections, school years, students, enrollments and curriculum entries, or enroll any student in any section.
+  Each now requires the role that owns the page; 16 functions no page calls are no longer callable by signed-in users
+  (migrations `20261031060000`, `20261031070000`, `20261031080000`).
+- BUG (fixed): a student could switch their own program and year level at any time; now only first-time setup is allowed,
+  and later shifts go through the Registrar.
+- BUG (fixed): a student could read another student's credited courses and grades, the list of every account's email, and
+  the progression candidate list (migration `20261031090000`).
+- BUG (fixed, critical): 5 tables (registrar logs, staff and student profile change requests, credited courses, course types
+  link) let any signed-in user read, change or delete every row through the API. They are now read-only to the row's owner
+  and the responsible staff (migration `20261031100000`).
+- Verified by calling each function as a student inside rolled-back transactions: before, the calls succeeded; after, all
+  are refused, while the Registrar still sees everything they need.
