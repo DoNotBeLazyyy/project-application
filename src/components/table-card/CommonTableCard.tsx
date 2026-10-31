@@ -411,7 +411,7 @@ export default function CommonTableCard<T extends FieldValues>({
 
         return (
             <CommonBentoCard
-                actionMenu={defaultActions.length > 0
+                actionMenu={defaultActions.some((action) => action.key !== 'open')
                     ? (
                         <BentoCardActionMenu
                             actions={defaultActions}
