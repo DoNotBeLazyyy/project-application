@@ -190,3 +190,8 @@ Legend: **BUG** = broken behavior (fixed before moving on; the fix is noted) ·
   and the responsible staff (migration `20261031100000`).
 - Verified by calling each function as a student inside rolled-back transactions: before, the calls succeeded; after, all
   are refused, while the Registrar still sees everything they need.
+- BUG (fixed): a section that still had students (including completed 1st-semester sections with released grades) could be
+  deleted, removing those grades from the students' records. Now refused while students remain (migration `20261031110000`).
+- BUG (fixed): a past academic year with student records could be deleted, hiding that year's grades from transcripts and
+  the GWA. Now refused (migration `20261031120000`).
+- OK: deleting a section without students (the test section) works for the Dean.
