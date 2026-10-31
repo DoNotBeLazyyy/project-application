@@ -7,12 +7,21 @@ export interface ToastItem {
     id: string;
     message: string;
     variant: ToastVariant;
+    createdAt?: number;
 }
 
 interface ToastStore {
     toasts: ToastItem[];
     showToast: (message: string, variant?: ToastVariant) => void;
     removeToast: (id: string) => void;
+}
+
+// One user action can reach the toast twice: the RPC wrapper shows the server's message and the page
+// may confirm the same action in its own words. Treat those as one toast.
+const SAME_ACTION_WINDOW_MS = 1500;
+
+function normalizeMessage(message: string): string {
+    return message.trim().toLowerCase().replace(/[.!\s]+$/, '');
 }
 
 export const useToastStore = create<ToastStore>(function(set) {
@@ -22,15 +31,20 @@ export const useToastStore = create<ToastStore>(function(set) {
             try {
                 const id = generateId();
                 set(function(state) {
+                    const now = Date.now();
                     const isDuplicate = state.toasts.some(function(t) {
-                        return t.message.trim() === message.trim() && t.variant === variant;
+                        if (t.variant !== variant) {
+                            return false;
+                        }
+                        return normalizeMessage(t.message) === normalizeMessage(message)
+                            || (variant === 'success' && now - (t.createdAt ?? 0) < SAME_ACTION_WINDOW_MS);
                     });
                     if (isDuplicate) {
                         return state;
                     }
                     const next = [
                         ...state.toasts.slice(-2),
-                        { id, message, variant }
+                        { createdAt: now, id, message, variant }
                     ];
                     return { toasts: next };
                 });

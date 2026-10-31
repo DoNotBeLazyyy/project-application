@@ -1,6 +1,6 @@
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import { CaretDownIcon, CheckCircleIcon } from '@phosphor-icons/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export interface ModalStepItem {
     step: number;
@@ -23,6 +23,18 @@ export default function ModalStepperHeader({
     readOnly = false
 }: ModalStepperHeaderProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const headerRef = useRef<HTMLDivElement>(null);
+
+    // Each step starts at the top: the step body is the scrollable element rendered after this header
+    useEffect(() => {
+        let body = headerRef.current?.nextElementSibling ?? null;
+        while (body && !body.className.includes('overflow-y-auto')) {
+            body = body.querySelector('.overflow-y-auto');
+        }
+        if (body) {
+            body.scrollTop = 0;
+        }
+    }, [currentStep]);
 
     const activeStepConfig = steps.find((s) => s.step === currentStep) || steps[0];
     const hasDiffTracking = steps.some((s) => typeof s.diffCount === 'number');
@@ -34,7 +46,7 @@ export default function ModalStepperHeader({
     }
 
     return (
-        <div className="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-900/60 px-3.5 sm:px-5 py-2.5 shrink-0 relative space-y-2">
+        <div ref={headerRef} className="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-900/60 px-3.5 sm:px-5 py-2.5 shrink-0 relative space-y-2">
             <div
                 className={`w-full flex items-center justify-between gap-2.5 p-2.5 sm:p-3 rounded-xl bg-white dark:bg-zinc-800 border shadow-xs transition-all group text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20 select-none ${
                     activeHasDiff

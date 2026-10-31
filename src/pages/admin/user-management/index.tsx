@@ -189,7 +189,6 @@ export default function UserManagement() {
     async function handleReactivateSingle(id: string) {
         const result = await reactivateUsers([id]);
         if (!result.error) {
-            useToastStore.getState().showToast('User reactivated successfully.', 'success');
             setActiveFilters((prev) => ({ ...prev } as UserFilterValues));
         }
     }
@@ -198,7 +197,6 @@ export default function UserManagement() {
         const result = await reactivateUsers(ids);
         if (!result.error) {
             clearSelection();
-            useToastStore.getState().showToast(`Successfully reactivated ${ids.length} user(s).`, 'success');
             setActiveFilters((prev) => ({ ...prev } as UserFilterValues));
         }
     }

@@ -264,6 +264,10 @@ export default function CommonInfoTooltip({
                 open={isOpen}
                 placement={placement}
                 slotProps={{
+                    // An error bubble sits over the field it describes; clicks must reach the input underneath
+                    popper: variant === 'error'
+                        ? { sx: { pointerEvents: 'none' } }
+                        : undefined,
                     tooltip: {
                         sx: {
                             backgroundColor: background,

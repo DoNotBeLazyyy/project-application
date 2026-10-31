@@ -27,6 +27,12 @@ export const LIGHT_PALETTE: PaletteOptions = {
         dark: TOKENS.color?.state?.success,
         contrastText: TOKENS.color?.common?.white
     },
+    info: {
+        main: TOKENS.color?.state?.info as string,
+        light: TOKENS.color?.state?.infoLight,
+        dark: '#1D4ED8',
+        contrastText: TOKENS.color?.common?.white
+    },
     warning: {
         main: TOKENS.color?.state?.warning as string,
         light: TOKENS.color?.state?.warningLight,
@@ -79,6 +85,12 @@ export const DARK_PALETTE: PaletteOptions = {
         main: '#4ADE80',
         light: '#86EFAC',
         dark: '#16A34A',
+        contrastText: '#09090B'
+    },
+    info: {
+        main: '#60A5FA',
+        light: '#1E3A5F',
+        dark: '#3B82F6',
         contrastText: '#09090B'
     },
     warning: {

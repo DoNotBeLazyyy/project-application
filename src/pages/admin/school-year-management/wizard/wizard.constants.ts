@@ -990,11 +990,9 @@ export function validateStep1SchoolYear(
 export function parseYearFromDate(dateStr: string): number | null {
     if (!dateStr) return null;
     const match = dateStr.match(/^(\d{4})/);
-    if (match) {
-        return parseInt(match[1], 10);
-    }
-    const d = new Date(dateStr);
-    return isNaN(d.getFullYear()) ? null : d.getFullYear();
+    const year = match ? parseInt(match[1], 10) : new Date(dateStr).getFullYear();
+    // A year still being typed (e.g. "0002") is not a real year yet
+    return isNaN(year) || year < 1900 ? null : year;
 }
 
 export function generateAcademicYearCode(startDate: string, endDate: string): string | null {

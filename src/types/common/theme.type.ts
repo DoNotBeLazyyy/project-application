@@ -55,6 +55,12 @@ interface ColorStateProps {
     // Light error variant
     errorLight?: string;
 
+    // Primary info color
+    info?: string;
+
+    // Light info variant
+    infoLight?: string;
+
     // Primary success color
     success?: string;
 

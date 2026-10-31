@@ -17,6 +17,7 @@ import {
     generateAcademicYearLabel,
     MAX_UNITS_PER_TERM_MAX,
     MAX_UNITS_PER_TERM_MIN,
+    parseYearFromDate,
     SourceSchoolYearInfo
 } from './wizard.constants';
 
@@ -184,6 +185,7 @@ export default function Step1SchoolYearInfo({
                             required: 'Start date is required',
                             validate: (val) => {
                                 if (!val) return 'Start date is required';
+                                if (!parseYearFromDate(val as string)) return 'Enter a valid date (MM/DD/YYYY)';
                                 if (endDate) {
                                     if (new Date(endDate) <= new Date(val as string)) {
                                         return 'Start date must be strictly before end date';
@@ -222,6 +224,7 @@ export default function Step1SchoolYearInfo({
                             required: 'End date is required',
                             validate: (val) => {
                                 if (!val) return 'End date is required';
+                                if (!parseYearFromDate(val as string)) return 'Enter a valid date (MM/DD/YYYY)';
                                 if (startDate) {
                                     if (new Date(val as string) <= new Date(startDate)) {
                                         return 'End date must be strictly after start date';

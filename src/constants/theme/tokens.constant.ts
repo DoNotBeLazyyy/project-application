@@ -69,6 +69,8 @@ export const TOKENS: SharedTokenProps = {
         state: {
             error: '#EB5757',
             errorLight: '#FFDDDD',
+            info: '#3B82F6',
+            infoLight: '#DBEAFE',
             success: '#2DCC70',
             successLight: '#CEF6DF',
             warning: '#FBA732',

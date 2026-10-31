@@ -319,6 +319,15 @@ export function useFormDraft<T extends FieldValues>({
             const parsed = JSON.parse(raw) as StoredDraftPayload<T>;
             const currentDefaultVals = (control as unknown as { _defaultValues?: Record<string, any> })._defaultValues;
 
+            const currentFormValues = (control as unknown as { _formValues?: Record<string, any> })._formValues;
+
+            // The form already shows exactly this draft (e.g. it was briefly disabled while a save
+            // failed), so there is nothing to restore
+            if (parsed?.values && areFormValuesEqual(parsed.values, currentFormValues, { ignoreSensitive: true })) {
+                hasWrittenDraftRef.current = true;
+                return;
+            }
+
             if (parsed && parsed.values && hasMeaningfulValues(parsed.values, currentDefaultVals)) {
                 setPendingDraft(parsed.values);
                 setIsPromptOpen(true);
