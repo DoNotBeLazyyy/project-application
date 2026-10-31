@@ -280,3 +280,9 @@ Legend: **BUG** = broken behavior (fixed before moving on; the fix is noted) ·
   Now refused with "Classes are suspended on this date" (migration `20261031180000`).
 - BUG (fixed): deleting an attendance session happened immediately with no confirmation; it now asks first like every
   other delete.
+- OK Class Roster and student detail (attendance, assessments, grades; the grade card opens the Gradebook's breakdown).
+- BUG (fixed): the grade breakdown showed "Raw Percentage 0.00%" and a formula "Major Exam 0% × 60% + Quizzes 100% × 40%
+  = 0.00%" because it printed the last saved grade instead of the components it lists; it now computes the total from
+  the components (40.00%). "Passing Score 3%" showed the 1.00–5.00 passing grade as a percentage; now "Passing Grade 3.00".
+- INCONSISTENCY (relabelled): the roster's "Current GWA" was the GWA of the current term only, so it read N/A all term;
+  now "Term GWA: Not yet released".

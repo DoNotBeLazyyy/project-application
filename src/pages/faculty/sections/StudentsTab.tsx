@@ -163,7 +163,7 @@ export default function StudentsTab({ sectionId }: StudentsTabProps) {
                                 { label: 'Enrolled', value: enrolledDate }
                             ]}
                             metrics={[
-                                { label: 'Current GWA', value: student.gwa != null ? String(student.gwa) : 'N/A' },
+                                { label: 'Term GWA', value: student.gwa != null ? String(student.gwa) : 'Not yet released' },
                                 {
                                     label: 'Academic Standing',
                                     value: isAtRisk

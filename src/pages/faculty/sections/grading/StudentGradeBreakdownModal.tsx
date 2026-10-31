@@ -76,6 +76,10 @@ export default function StudentGradeBreakdownModal({
         }
     }, [open, enrollmentId, gradingPeriodId]);
 
+    const rawPercentage = data?.components?.length
+        ? data.components.reduce((sum, c) => sum + ((c.percentage ?? 0) * Number(c.weight ?? 0)) / 100, 0)
+        : (data?.raw_grade ?? 0);
+
     return (
         <CommonModal
             open={open}
@@ -110,6 +114,8 @@ export default function StudentGradeBreakdownModal({
                 </div>
 
                 {/* Metric Summary Cards Grid */}
+                {/* The raw percentage is computed from the components shown below, so the card, the
+                    formula and the itemization agree even before the grade sheet is calculated */}
                 <div className="gap-3 sm:gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                     <AuditStatCard
                         hint="Weighted percentage sum"
@@ -117,7 +123,7 @@ export default function StudentGradeBreakdownModal({
                         iconBg="bg-blue-50 dark:bg-blue-950/60"
                         iconColor="text-blue-600 dark:text-blue-400"
                         label="Raw Percentage"
-                        value={`${(data?.raw_grade ?? 0).toFixed(2)}%`}
+                        value={`${rawPercentage.toFixed(2)}%`}
                     />
                     <AuditStatCard
                         hint="Transmuted institutional GPA"
@@ -136,12 +142,13 @@ export default function StudentGradeBreakdownModal({
                         value={data?.special_grade ?? 'None'}
                     />
                     <AuditStatCard
-                        hint="Passing threshold requirement"
+                        hint="Passing mark on the 1.00 to 5.00 scale"
                         icon={<TargetIcon size={22} />}
                         iconBg="bg-emerald-50 dark:bg-emerald-950/60"
                         iconColor="text-emerald-600 dark:text-emerald-400"
-                        label="Passing Score"
-                        value={`${data?.passing_grade ?? 75}%`}
+                        label="Passing Grade"
+                        value={Number(data?.passing_grade ?? 3)
+                            .toFixed(2)}
                     />
                 </div>
 
@@ -160,7 +167,7 @@ export default function StudentGradeBreakdownModal({
                                 </span>
                             ))}
                             <span className="font-bold text-blue-600 dark:text-blue-400">
-                                {' = '}{(data.raw_grade ?? 0).toFixed(2)}%
+                                {' = '}{rawPercentage.toFixed(2)}%
                             </span>
                         </div>
                     </div>
