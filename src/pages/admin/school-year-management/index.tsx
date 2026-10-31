@@ -4,7 +4,7 @@ import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import AcademicYearHistoryModal from '@pages/admin/school-year-management/history/AcademicYearHistoryModal';
 import SchoolYearFilterForm from '@pages/admin/school-year-management/SchoolYearFilterForm';
 import SchoolYearGridCard from '@pages/admin/school-year-management/SchoolYearGridCard';
-import { useSchoolYearTableConfig } from '@pages/admin/school-year-management/useSchoolYearTableConfig';
+import { useSchoolYearTableConfig } from '@pages/admin/school-year-management/use-school-year-table-config';
 import AcademicYearWizardModal from '@pages/admin/school-year-management/wizard/AcademicYearWizardModal';
 import {
     bulkDeleteSchoolYears,

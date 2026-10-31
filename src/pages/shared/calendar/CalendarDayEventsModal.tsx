@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
+import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from '@pages/shared/calendar/calendar.types';
 import {
     CalendarDotsIcon,
     CaretRightIcon,
@@ -9,8 +10,6 @@ import {
     XIcon
 } from '@phosphor-icons/react';
 import { useMemo } from 'react';
-
-import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from './calendar.types';
 
 export interface CalendarDayEventsModalProps {
     canCreateEvent?: boolean;
@@ -107,71 +106,73 @@ export function CalendarDayEventsModal({
 
                 {/* Event List */}
                 <div className="p-3 sm:p-4 space-y-2.5 max-h-[60vh] overflow-y-auto">
-                    {events.length === 0 ? (
-                        <div className="py-8 text-center text-xs text-neutral-400 dark:text-neutral-500">
-                            No events scheduled for this day
-                        </div>
-                    ) : (
-                        events.map((ev) => {
-                            const cat = categoryMap.get(ev.category) || CALENDAR_CATEGORIES[0];
-                            const timeLabel = ev.allDay
-                                ? 'All day'
-                                : `${ev.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} - ${ev.end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+                    {events.length === 0
+                        ? (
+                            <div className="py-8 text-center text-xs text-neutral-400 dark:text-neutral-500">
+                                No events scheduled for this day
+                            </div>
+                        )
+                        : (
+                            events.map((ev) => {
+                                const cat = categoryMap.get(ev.category) || CALENDAR_CATEGORIES[0];
+                                const timeLabel = ev.allDay
+                                    ? 'All day'
+                                    : `${ev.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} - ${ev.end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
 
-                            return (
-                                <button
-                                    className="w-full text-left p-3 rounded-xl border border-neutral-200/80 dark:border-neutral-800 bg-neutral-50/40 dark:bg-neutral-800/40 hover:border-blue-500/70 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 hover:shadow-xs transition-all cursor-pointer group flex flex-col gap-1.5"
-                                    key={ev.id}
-                                    type="button"
-                                    onClick={() => onSelectEvent(ev)}
-                                >
-                                    {/* Category badge & Time */}
-                                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                                        <span
-                                            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold border ${cat.bgClass}`}
-                                        >
-                                            <span className={`w-1.5 h-1.5 rounded-full ${cat.dotClass}`} />
-                                            {cat.label}
-                                        </span>
+                                return (
+                                    <button
+                                        className="w-full text-left p-3 rounded-xl border border-neutral-200/80 dark:border-neutral-800 bg-neutral-50/40 dark:bg-neutral-800/40 hover:border-blue-500/70 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 hover:shadow-xs transition-all cursor-pointer group flex flex-col gap-1.5"
+                                        key={ev.id}
+                                        type="button"
+                                        onClick={() => onSelectEvent(ev)}
+                                    >
+                                        {/* Category badge & Time */}
+                                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                                            <span
+                                                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold border ${cat.bgClass}`}
+                                            >
+                                                <span className={`w-1.5 h-1.5 rounded-full ${cat.dotClass}`} />
+                                                {cat.label}
+                                            </span>
 
-                                        <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-1 shrink-0">
-                                            <ClockIcon size={12} />
-                                            {timeLabel}
-                                        </span>
-                                    </div>
-
-                                    {/* Title & Chevron */}
-                                    <div className="flex items-center justify-between gap-2">
-                                        <h3 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
-                                            {ev.title}
-                                        </h3>
-                                        <CaretRightIcon
-                                            className="text-neutral-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all shrink-0"
-                                            size={16}
-                                        />
-                                    </div>
-
-                                    {/* Location */}
-                                    {ev.location && (
-                                        <div className="flex items-center gap-1 text-[11px] text-neutral-500 dark:text-neutral-400">
-                                            <MapPinIcon
-                                                className="shrink-0"
-                                                size={12}
-                                            />
-                                            <span className="truncate">{ev.location}</span>
+                                            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-1 shrink-0">
+                                                <ClockIcon size={12} />
+                                                {timeLabel}
+                                            </span>
                                         </div>
-                                    )}
 
-                                    {/* Description */}
-                                    {ev.description && (
-                                        <p className="text-[11px] text-neutral-600 dark:text-neutral-400 line-clamp-2 leading-relaxed">
-                                            {ev.description}
-                                        </p>
-                                    )}
-                                </button>
-                            );
-                        })
-                    )}
+                                        {/* Title & Chevron */}
+                                        <div className="flex items-center justify-between gap-2">
+                                            <h3 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+                                                {ev.title}
+                                            </h3>
+                                            <CaretRightIcon
+                                                className="text-neutral-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all shrink-0"
+                                                size={16}
+                                            />
+                                        </div>
+
+                                        {/* Location */}
+                                        {ev.location && (
+                                            <div className="flex items-center gap-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+                                                <MapPinIcon
+                                                    className="shrink-0"
+                                                    size={12}
+                                                />
+                                                <span className="truncate">{ev.location}</span>
+                                            </div>
+                                        )}
+
+                                        {/* Description */}
+                                        {ev.description && (
+                                            <p className="text-[11px] text-neutral-600 dark:text-neutral-400 line-clamp-2 leading-relaxed">
+                                                {ev.description}
+                                            </p>
+                                        )}
+                                    </button>
+                                );
+                            })
+                        )}
                 </div>
 
                 {/* Footer Actions */}

@@ -3,7 +3,7 @@ import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import FacultyLoadFilterForm from '@pages/dean/faculty-load/FacultyLoadFilterForm';
 import FacultyLoadWizardModal from '@pages/dean/faculty-load/FacultyLoadWizardModal';
-import { useFacultyLoadTableConfig } from '@pages/dean/faculty-load/hooks/useFacultyLoadTableConfig';
+import { useFacultyLoadTableConfig } from '@pages/dean/faculty-load/hooks/use-faculty-load-table-config';
 import { listFacultyLoad } from '@services/faculty-load.service';
 import { getActiveTerm } from '@services/term/term.service';
 import { FacultyLoadFilterValues, FacultyLoadRow } from '@type/faculty-load.type';

@@ -13,7 +13,7 @@ interface ProgramLevelFormProps extends ComponentPropsForm {
     setValue?: UseFormSetValue<ProgramLevelFormValues>;
 }
 
-export function getProgramLevelFormFields(
+function getProgramLevelFormFields(
     disabled?: boolean
 ): FormFieldConfig<ProgramLevelFormValues>[] {
     return [
@@ -33,7 +33,7 @@ export function getProgramLevelFormFields(
                 ? undefined
                 : {
                     required: 'Label is required',
-                    validate: (val: any) => Boolean(val && String(val)
+                    validate: (val: unknown) => Boolean(val && String(val)
                         .trim()) || 'Label cannot be empty or whitespace only'
                 },
             type: 'text'

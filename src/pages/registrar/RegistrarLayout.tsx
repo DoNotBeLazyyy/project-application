@@ -46,7 +46,7 @@ export default function RegistrarLayout() {
             ]
         },
         {
-            sectionLabel: 'STUDENT PROFILE VERIFICATION',
+            sectionLabel: 'STUDENT RECORDS',
             items: [
                 {
                     icon: <UserCheckIcon size={18} />,

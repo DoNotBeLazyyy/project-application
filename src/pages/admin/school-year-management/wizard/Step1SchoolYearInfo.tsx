@@ -4,15 +4,8 @@ import ValidCommonDatePicker from '@components/datepicker/ValidCommonDatepicker'
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import ValidCommonNumberInput from '@components/input/ValidCommonNumberInput';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
-import { CopySimpleIcon, ShieldCheckIcon } from '@phosphor-icons/react';
-import { AcademicYearWizardFormValues, SchoolYearOption } from '@type/school-year.type';
-import { useEffect, useMemo, useRef } from 'react';
-import { Control, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
-
 import {
-    checkSchoolYearCodeConflict,
     checkSchoolYearDateConflict,
-    checkSchoolYearLabelConflict,
     ExistingSchoolYearComparison,
     generateAcademicYearCode,
     generateAcademicYearLabel,
@@ -20,7 +13,11 @@ import {
     MAX_UNITS_PER_TERM_MIN,
     parseYearFromDate,
     SourceSchoolYearInfo
-} from './wizard.constants';
+} from '@pages/admin/school-year-management/wizard/wizard.constants';
+import { CopySimpleIcon, ShieldCheckIcon } from '@phosphor-icons/react';
+import { AcademicYearWizardFormValues, SchoolYearOption } from '@type/school-year.type';
+import { useEffect, useMemo, useRef } from 'react';
+import { Control, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
 
 interface Step1SchoolYearInfoProps {
     control: Control<AcademicYearWizardFormValues>;
@@ -36,14 +33,12 @@ interface Step1SchoolYearInfoProps {
 }
 
 export default function Step1SchoolYearInfo({
-    availableSourceYears = [],
     control,
     currentSchoolYearId = null,
     disabled = false,
     existingSchoolYears = [],
     isNew = true,
     onClearSourceYear,
-    onSelectSourceYear,
     setValue,
     sourceSchoolYear
 }: Step1SchoolYearInfoProps) {

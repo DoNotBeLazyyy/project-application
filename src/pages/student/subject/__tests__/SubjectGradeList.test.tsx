@@ -1,22 +1,37 @@
+import SubjectGradeList from '@pages/student/subject/SubjectGradeList';
 import { render, screen } from '@testing-library/react';
 import { SubjectGradeItem } from '@type/student-portal.type';
+import { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
-import SubjectGradeList from '../SubjectGradeList';
+type MockRow = Record<string, unknown>;
+
+interface MockColumn {
+    cellRenderer?: (params: { data: MockRow }) => ReactNode;
+    colId?: string;
+    field?: string;
+    headerName?: string;
+    valueFormatter?: (params: { value: unknown; data: MockRow }) => ReactNode;
+}
+
+interface MockTableProps {
+    leadingColumnDefs: MockColumn[];
+    rowData: MockRow[];
+}
 
 vi.mock('@components/table/CommonTable', () => ({
-    default: ({ leadingColumnDefs, rowData }: any) => (
+    default: ({ leadingColumnDefs, rowData }: MockTableProps) => (
         <div data-testid="mock-table">
-            {rowData.map((row: any, rowIndex: number) => (
+            {rowData.map((row, rowIndex) => (
                 <div
                     data-testid={`row-${rowIndex}`}
                     key={rowIndex}
                 >
-                    {leadingColumnDefs.map((col: any) => {
-                        const value = col.field
+                    {leadingColumnDefs.map((col) => {
+                        const value = (col.field
                             ? row[col.field]
-                            : undefined;
+                            : undefined) as ReactNode;
                         const formatted = col.valueFormatter
                             ? col.valueFormatter({ value, data: row })
                             : value;

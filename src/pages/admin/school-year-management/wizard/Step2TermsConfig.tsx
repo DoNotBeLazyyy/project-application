@@ -35,7 +35,6 @@ export default function Step2TermsConfig({
     setValue
 }: Step2TermsConfigProps) {
     const [termTypes, setTermTypes] = useState<TermTypeOption[]>([]);
-    const [isLoadingTypes, setIsLoadingTypes] = useState(false);
     const [deleteTermTarget, setDeleteTermTarget] = useState<{ index: number; name: string } | null>(null);
     const [collapsedTerms, setCollapsedTerms] = useState<Record<number, boolean>>({});
 
@@ -67,13 +66,9 @@ export default function Step2TermsConfig({
     useEffect(() => {
         let isMounted = true;
         async function fetchTypes() {
-            setIsLoadingTypes(true);
             const res = await getTermTypes();
             if (isMounted && res.data) {
                 setTermTypes(res.data);
-            }
-            if (isMounted) {
-                setIsLoadingTypes(false);
             }
         }
         fetchTypes();

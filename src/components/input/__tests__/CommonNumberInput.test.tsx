@@ -58,11 +58,13 @@ describe('CommonNumberInput - Leading Zero Handling', () => {
 
     it('calls onChange with parsed number 3', () => {
         const handleChange = vi.fn();
-        render(<CommonNumberInput
-            aria-label="number-input"
-            value={0}
-            onChange={handleChange}
-               />);
+        render(
+            <CommonNumberInput
+                aria-label="number-input"
+                value={0}
+                onChange={handleChange}
+            />
+        );
         const input = screen.getByRole('textbox') as HTMLInputElement;
 
         fireEvent.change(input, { target: { value: '03' } });

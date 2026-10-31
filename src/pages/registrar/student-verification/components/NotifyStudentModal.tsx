@@ -5,7 +5,7 @@ import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import { CommonSelectOption } from '@components/select/CommonSelect';
-import { useFormDraft } from '@hooks/useFormDraft';
+import { useFormDraft } from '@hooks/use-form-draft';
 import { PaperPlaneTiltIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { sendStudentProfileNotification } from '@services/registrar-verification.service';
 import { useToastStore } from '@stores/toast.store';
@@ -220,7 +220,7 @@ export default function NotifyStudentModal({
                         <div>
                             <p className="font-semibold m-0 text-sm">Official Registrar Notification</p>
                             <p className="m-0 mt-0.5 text-(--mui-palette-text-secondary)">
-                                This notification will be immediately dispatched to the student's notification center and recorded in the Registrar Log audit trail.
+                                This notification will be immediately dispatched to the student&apos;s notification center and recorded in the Registrar Log audit trail.
                             </p>
                         </div>
                     </div>

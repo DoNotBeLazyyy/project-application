@@ -1,7 +1,7 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonFormModal from '@components/modal/CommonFormModal';
-import { hasRealFormChanges } from '@hooks/useFormDraft';
+import { hasRealFormChanges } from '@hooks/use-form-draft';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';

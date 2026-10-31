@@ -163,8 +163,7 @@ export function detectDelimiter(text: string): string {
     let tabCount = 0;
     let inQuotes = false;
 
-    for (let i = 0; i < firstLine.length; i++) {
-        const c = firstLine[i];
+    for (const c of firstLine) {
         if (c === '"') {
             inQuotes = !inQuotes;
             continue;

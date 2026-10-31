@@ -240,10 +240,12 @@ export default function SectionGradeSheetModal({
                                 </span>
                             )}
                             <span className="text-(--mui-palette-text-secondary)">
-                                Status: <CommonBadgeStatus
+                                Status:
+                                {' '}
+                                <CommonBadgeStatus
                                     label={effectiveStatus}
                                     variant={resolveGradeStatusVariant(effectiveStatus)}
-                                        />
+                                />
                             </span>
                         </div>
                     </div>
@@ -316,209 +318,213 @@ export default function SectionGradeSheetModal({
 
                     {/* Students List / Table Container */}
                     <div className="border border-(--mui-palette-divider) max-h-96 overflow-x-auto overflow-y-auto rounded-lg">
-                        {isLoading ? (
-                            <div className="py-12">
-                                <PageLoadingFallback />
-                            </div>
-                        ) : filteredStudents.length === 0 ? (
-                            <div className="p-8 text-center text-(--mui-palette-text-secondary) text-sm">
-                                {students.length === 0
-                                    ? 'No students enrolled or no grades generated yet.'
-                                    : 'No matching students found.'}
-                            </div>
-                        ) : (
-                            <>
-                                {/* Mobile View: Student Grade Cards */}
-                                <div className="md:hidden flex flex-col divide-y divide-(--mui-palette-divider)">
-                                    {filteredStudents.map(function(st) {
-                                        return (
-                                            <div
-                                                className="p-3.5 flex flex-col gap-2.5 bg-(--mui-palette-background-paper) hover:bg-(--mui-palette-action-hover)/20 transition-colors"
-                                                key={st.enrollment_id}
-                                            >
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <div className="flex flex-col min-w-0">
-                                                        <span className="font-semibold text-sm text-(--mui-palette-text-primary) truncate">
-                                                            {st.full_name}
-                                                        </span>
-                                                        <span className="font-mono text-xs text-(--mui-palette-text-secondary)">
-                                                            {st.student_number}
-                                                        </span>
-                                                    </div>
-                                                    <CommonBadgeStatus
-                                                        label={st.status}
-                                                        variant={resolveGradeStatusVariant(st.status)}
-                                                    />
-                                                </div>
-
-                                                <div className="grid grid-cols-3 gap-2 bg-(--mui-palette-action-hover)/30 p-2 rounded-lg text-xs text-center">
-                                                    <div>
-                                                        <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Raw</span>
-                                                        <span className="font-medium text-(--mui-palette-text-primary)">
-                                                            {st.raw_grade !== null
-                                                                ? Number(st.raw_grade)
-                                                                    .toFixed(1)
-                                                                : '—'}
-                                                        </span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Final</span>
-                                                        <span
-                                                            className={`font-bold ${st.final_grade !== null && Number(st.final_grade) < 75
-                                                                ? 'text-(--mui-palette-error-main)'
-                                                                : 'text-(--mui-palette-text-primary)'}`}
-                                                        >
-                                                            {st.final_grade !== null
-                                                                ? Number(st.final_grade)
-                                                                    .toFixed(1)
-                                                                : '—'}
-                                                        </span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Transmuted</span>
-                                                        <span className="font-bold text-(--mui-palette-primary-main)">
-                                                            {st.transmuted_grade !== null
-                                                                ? Number(st.transmuted_grade)
-                                                                    .toFixed(2)
-                                                                : '—'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-center justify-between text-xs pt-0.5">
-                                                    {st.special_grade
-                                                        ? (
-                                                            <span className="bg-(--mui-palette-warning-50) text-(--mui-palette-warning-dark) text-[11px] font-semibold px-2 py-0.5 rounded">
-                                                            Special: {st.special_grade}
-                                                            </span>
-                                                        )
-                                                        : (
-                                                            <span className="text-[11px] text-(--mui-palette-text-secondary)">Regular Grade</span>
-                                                        )}
-
-                                                    {st.is_evaluation_completed
-                                                        ? (
-                                                            <span className="flex items-center gap-1 text-(--mui-palette-success-main) text-xs">
-                                                                <CheckCircleIcon
-                                                                    size={14}
-                                                                    weight="fill"
-                                                                />
-                                                                <span>Evaluation Done</span>
-                                                            </span>
-                                                        )
-                                                        : (
-                                                            <span className="flex items-center gap-1 text-(--mui-palette-warning-main) text-xs">
-                                                                <ClockIcon
-                                                                    size={14}
-                                                                    weight="bold"
-                                                                />
-                                                                <span>Eval Pending</span>
-                                                            </span>
-                                                        )}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                        {isLoading
+                            ? (
+                                <div className="py-12">
+                                    <PageLoadingFallback />
                                 </div>
+                            )
+                            : filteredStudents.length === 0
+                                ? (
+                                    <div className="p-8 text-center text-(--mui-palette-text-secondary) text-sm">
+                                        {students.length === 0
+                                            ? 'No students enrolled or no grades generated yet.'
+                                            : 'No matching students found.'}
+                                    </div>
+                                )
+                                : (
+                                    <>
+                                        {/* Mobile View: Student Grade Cards */}
+                                        <div className="md:hidden flex flex-col divide-y divide-(--mui-palette-divider)">
+                                            {filteredStudents.map(function(st) {
+                                                return (
+                                                    <div
+                                                        className="p-3.5 flex flex-col gap-2.5 bg-(--mui-palette-background-paper) hover:bg-(--mui-palette-action-hover)/20 transition-colors"
+                                                        key={st.enrollment_id}
+                                                    >
+                                                        <div className="flex items-start justify-between gap-2">
+                                                            <div className="flex flex-col min-w-0">
+                                                                <span className="font-semibold text-sm text-(--mui-palette-text-primary) truncate">
+                                                                    {st.full_name}
+                                                                </span>
+                                                                <span className="font-mono text-xs text-(--mui-palette-text-secondary)">
+                                                                    {st.student_number}
+                                                                </span>
+                                                            </div>
+                                                            <CommonBadgeStatus
+                                                                label={st.status}
+                                                                variant={resolveGradeStatusVariant(st.status)}
+                                                            />
+                                                        </div>
 
-                                {/* Desktop View: Full Table */}
-                                <table className="hidden md:table border-collapse text-left text-sm w-full">
-                                    <thead className="bg-(--mui-palette-action-hover)/50 border-b border-(--mui-palette-divider) sticky text-(--mui-palette-text-secondary) text-xs top-0 uppercase">
-                                        <tr>
-                                            <th className="font-semibold p-3">Student No.</th>
-                                            <th className="font-semibold p-3">Student Name</th>
-                                            <th className="font-semibold p-3 text-right">Raw Grade</th>
-                                            <th className="font-semibold p-3 text-right">Final Grade</th>
-                                            <th className="font-semibold p-3 text-right">Transmuted</th>
-                                            <th className="font-semibold p-3 text-center">Special</th>
-                                            <th className="font-semibold p-3 text-center">Status</th>
-                                            <th className="font-semibold p-3 text-center">Evaluation</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-(--mui-palette-divider)">
-                                        {filteredStudents.map(function(st) {
-                                            return (
-                                                <tr
-                                                    className="hover:bg-(--mui-palette-action-hover)/30 transition-colors"
-                                                    key={st.enrollment_id}
-                                                >
-                                                    <td className="font-mono p-3 text-(--mui-palette-text-secondary) text-xs whitespace-nowrap">
-                                                        {st.student_number}
-                                                    </td>
-                                                    <td className="font-medium p-3 text-(--mui-palette-text-primary) whitespace-nowrap">
-                                                        {st.full_name}
-                                                    </td>
-                                                    <td className="p-3 text-(--mui-palette-text-secondary) text-right">
-                                                        {st.raw_grade !== null
-                                                            ? Number(st.raw_grade)
-                                                                .toFixed(2)
-                                                            : '—'}
-                                                    </td>
-                                                    <td className="font-semibold p-3 text-(--mui-palette-text-primary) text-right">
-                                                        {st.final_grade !== null
-                                                            ? (
+                                                        <div className="grid grid-cols-3 gap-2 bg-(--mui-palette-action-hover)/30 p-2 rounded-lg text-xs text-center">
+                                                            <div>
+                                                                <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Raw</span>
+                                                                <span className="font-medium text-(--mui-palette-text-primary)">
+                                                                    {st.raw_grade !== null
+                                                                        ? Number(st.raw_grade)
+                                                                            .toFixed(1)
+                                                                        : '—'}
+                                                                </span>
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Final</span>
                                                                 <span
-                                                                    className={Number(st.final_grade) < 75
+                                                                    className={`font-bold ${st.final_grade !== null && Number(st.final_grade) < 75
                                                                         ? 'text-(--mui-palette-error-main)'
-                                                                        : ''}
+                                                                        : 'text-(--mui-palette-text-primary)'}`}
                                                                 >
-                                                                    {Number(st.final_grade)
-                                                                        .toFixed(2)}
+                                                                    {st.final_grade !== null
+                                                                        ? Number(st.final_grade)
+                                                                            .toFixed(1)
+                                                                        : '—'}
                                                                 </span>
-                                                            )
-                                                            : '—'}
-                                                    </td>
-                                                    <td className="font-mono p-3 text-(--mui-palette-primary-main) text-right">
-                                                        {st.transmuted_grade !== null
-                                                            ? Number(st.transmuted_grade)
-                                                                .toFixed(2)
-                                                            : '—'}
-                                                    </td>
-                                                    <td className="p-3 text-center">
-                                                        {st.special_grade
-                                                            ? (
-                                                                <span className="bg-(--mui-palette-warning-50) font-semibold px-2 py-0.5 rounded text-(--mui-palette-warning-dark) text-xs">
-                                                                    {st.special_grade}
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Transmuted</span>
+                                                                <span className="font-bold text-(--mui-palette-primary-main)">
+                                                                    {st.transmuted_grade !== null
+                                                                        ? Number(st.transmuted_grade)
+                                                                            .toFixed(2)
+                                                                        : '—'}
                                                                 </span>
-                                                            )
-                                                            : (
-                                                                <span className="text-(--mui-palette-text-disabled)">—</span>
-                                                            )}
-                                                    </td>
-                                                    <td className="p-3 text-center">
-                                                        <CommonBadgeStatus
-                                                            label={st.status}
-                                                            variant={resolveGradeStatusVariant(st.status)}
-                                                        />
-                                                    </td>
-                                                    <td className="p-3 text-center">
-                                                        {st.is_evaluation_completed
-                                                            ? (
-                                                                <span className="flex gap-1 inline-flex items-center text-(--mui-palette-success-main) text-xs">
-                                                                    <CheckCircleIcon
-                                                                        size={14}
-                                                                        weight="fill"
-                                                                    />
-                                                                    <span>Completed</span>
-                                                                </span>
-                                                            )
-                                                            : (
-                                                                <span className="flex gap-1 inline-flex items-center text-(--mui-palette-warning-main) text-xs">
-                                                                    <ClockIcon
-                                                                        size={14}
-                                                                        weight="bold"
-                                                                    />
-                                                                    <span>Pending</span>
-                                                                </span>
-                                                            )}
-                                                    </td>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex items-center justify-between text-xs pt-0.5">
+                                                            {st.special_grade
+                                                                ? (
+                                                                    <span className="bg-(--mui-palette-warning-50) text-(--mui-palette-warning-dark) text-[11px] font-semibold px-2 py-0.5 rounded">
+                                                                    Special: {st.special_grade}
+                                                                    </span>
+                                                                )
+                                                                : (
+                                                                    <span className="text-[11px] text-(--mui-palette-text-secondary)">Regular Grade</span>
+                                                                )}
+
+                                                            {st.is_evaluation_completed
+                                                                ? (
+                                                                    <span className="flex items-center gap-1 text-(--mui-palette-success-main) text-xs">
+                                                                        <CheckCircleIcon
+                                                                            size={14}
+                                                                            weight="fill"
+                                                                        />
+                                                                        <span>Evaluation Done</span>
+                                                                    </span>
+                                                                )
+                                                                : (
+                                                                    <span className="flex items-center gap-1 text-(--mui-palette-warning-main) text-xs">
+                                                                        <ClockIcon
+                                                                            size={14}
+                                                                            weight="bold"
+                                                                        />
+                                                                        <span>Eval Pending</span>
+                                                                    </span>
+                                                                )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {/* Desktop View: Full Table */}
+                                        <table className="hidden md:table border-collapse text-left text-sm w-full">
+                                            <thead className="bg-(--mui-palette-action-hover)/50 border-b border-(--mui-palette-divider) sticky text-(--mui-palette-text-secondary) text-xs top-0 uppercase">
+                                                <tr>
+                                                    <th className="font-semibold p-3">Student No.</th>
+                                                    <th className="font-semibold p-3">Student Name</th>
+                                                    <th className="font-semibold p-3 text-right">Raw Grade</th>
+                                                    <th className="font-semibold p-3 text-right">Final Grade</th>
+                                                    <th className="font-semibold p-3 text-right">Transmuted</th>
+                                                    <th className="font-semibold p-3 text-center">Special</th>
+                                                    <th className="font-semibold p-3 text-center">Status</th>
+                                                    <th className="font-semibold p-3 text-center">Evaluation</th>
                                                 </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </>
-                        )}
+                                            </thead>
+                                            <tbody className="divide-y divide-(--mui-palette-divider)">
+                                                {filteredStudents.map(function(st) {
+                                                    return (
+                                                        <tr
+                                                            className="hover:bg-(--mui-palette-action-hover)/30 transition-colors"
+                                                            key={st.enrollment_id}
+                                                        >
+                                                            <td className="font-mono p-3 text-(--mui-palette-text-secondary) text-xs whitespace-nowrap">
+                                                                {st.student_number}
+                                                            </td>
+                                                            <td className="font-medium p-3 text-(--mui-palette-text-primary) whitespace-nowrap">
+                                                                {st.full_name}
+                                                            </td>
+                                                            <td className="p-3 text-(--mui-palette-text-secondary) text-right">
+                                                                {st.raw_grade !== null
+                                                                    ? Number(st.raw_grade)
+                                                                        .toFixed(2)
+                                                                    : '—'}
+                                                            </td>
+                                                            <td className="font-semibold p-3 text-(--mui-palette-text-primary) text-right">
+                                                                {st.final_grade !== null
+                                                                    ? (
+                                                                        <span
+                                                                            className={Number(st.final_grade) < 75
+                                                                                ? 'text-(--mui-palette-error-main)'
+                                                                                : ''}
+                                                                        >
+                                                                            {Number(st.final_grade)
+                                                                                .toFixed(2)}
+                                                                        </span>
+                                                                    )
+                                                                    : '—'}
+                                                            </td>
+                                                            <td className="font-mono p-3 text-(--mui-palette-primary-main) text-right">
+                                                                {st.transmuted_grade !== null
+                                                                    ? Number(st.transmuted_grade)
+                                                                        .toFixed(2)
+                                                                    : '—'}
+                                                            </td>
+                                                            <td className="p-3 text-center">
+                                                                {st.special_grade
+                                                                    ? (
+                                                                        <span className="bg-(--mui-palette-warning-50) font-semibold px-2 py-0.5 rounded text-(--mui-palette-warning-dark) text-xs">
+                                                                            {st.special_grade}
+                                                                        </span>
+                                                                    )
+                                                                    : (
+                                                                        <span className="text-(--mui-palette-text-disabled)">—</span>
+                                                                    )}
+                                                            </td>
+                                                            <td className="p-3 text-center">
+                                                                <CommonBadgeStatus
+                                                                    label={st.status}
+                                                                    variant={resolveGradeStatusVariant(st.status)}
+                                                                />
+                                                            </td>
+                                                            <td className="p-3 text-center">
+                                                                {st.is_evaluation_completed
+                                                                    ? (
+                                                                        <span className="flex gap-1 inline-flex items-center text-(--mui-palette-success-main) text-xs">
+                                                                            <CheckCircleIcon
+                                                                                size={14}
+                                                                                weight="fill"
+                                                                            />
+                                                                            <span>Completed</span>
+                                                                        </span>
+                                                                    )
+                                                                    : (
+                                                                        <span className="flex gap-1 inline-flex items-center text-(--mui-palette-warning-main) text-xs">
+                                                                            <ClockIcon
+                                                                                size={14}
+                                                                                weight="bold"
+                                                                            />
+                                                                            <span>Pending</span>
+                                                                        </span>
+                                                                    )}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </>
+                                )}
                     </div>
                 </div>
             </CommonActionModal>

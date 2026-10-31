@@ -1,7 +1,7 @@
 import MobileCardCell from '@components/table/MobileCardCell';
-import { useTableConfigs } from '@components/table/useTableConfigs';
-import { useTableLogic } from '@components/table/useTableLogic';
-import useBreakpoint from '@hooks/useBreakpoint';
+import { useTableConfigs } from '@components/table/use-table-configs';
+import { useTableLogic } from '@components/table/use-table-logic';
+import useBreakpoint from '@hooks/use-breakpoint';
 import { CommonTableProps } from '@type/table.type';
 import { classMerge } from '@utils/css.util';
 import { calculateMobileCardHeight, preventDefaultContextMenu, resolveMobileCardPlan } from '@utils/table.util';

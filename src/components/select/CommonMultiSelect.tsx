@@ -122,8 +122,14 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
                 isOptionEqualToValue={(option, val) => option.value === val.value}
                 multiple
                 options={resolvedOptions}
-                popupIcon={<CaretDownIcon size={16} weight="bold" />}
+                popupIcon={(
+                    <CaretDownIcon
+                        size={16}
+                        weight="bold"
+                    />
+                )}
                 readOnly={readOnly}
+                ref={ref}
                 renderInput={(params) => (
                     <TextField
                         {...params}
@@ -272,13 +278,12 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
                         );
                     })
                 }
-                value={selectedOptions}
-                onChange={handleChange}
-                ref={ref}
                 // Line the placeholder up with the 1rem text inset of the other standard-size fields
                 sx={isSmall
                     ? undefined
                     : { '& .MuiOutlinedInput-root': { paddingLeft: 'var(--mui-tokens-spacing-4)' } }}
+                value={selectedOptions}
+                onChange={handleChange}
             />
         </div>
     );

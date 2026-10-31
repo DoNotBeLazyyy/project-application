@@ -8,7 +8,7 @@ import NotificationBell from '@components/notification/NotificationBell';
 import CommonSideBar from '@components/sidebar/CommonSideBar';
 import CommonSideBarList from '@components/sidebar/CommonSideBarList';
 import { resolvePanelLabel } from '@constants/role.constant';
-import useBreakpoint from '@hooks/useBreakpoint';
+import useBreakpoint from '@hooks/use-breakpoint';
 import IconButton from '@mui/material/IconButton';
 import AiAssistant from '@pages/shared/assistant/AiAssistant';
 import { ListIcon } from '@phosphor-icons/react';

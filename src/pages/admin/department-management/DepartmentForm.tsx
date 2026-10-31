@@ -19,39 +19,16 @@ import { generateDepartmentCode } from '@utils/entity-code.util';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
 
-export const DEPARTMENT_FORM_STEPS = [
-    {
-        step: 1,
-        title: 'Department Details',
-        subtitle: 'Department code, name, and academic description'
-    },
-    {
-        step: 2,
-        title: 'Dean Assignment',
-        subtitle: 'Assign or look up the department Dean'
-    },
-    {
-        step: 3,
-        title: 'Faculty Roster',
-        subtitle: 'Assign or look up faculty in this department'
-    }
-];
-
 interface DepartmentFormProps extends ComponentPropsForm {
     activeStep?: number;
     control: Control<DepartmentFormValues>;
     departmentId?: string | null;
     disabled?: boolean;
-    isCodeDisabled?: boolean;
     isCreate?: boolean;
     setValue?: UseFormSetValue<DepartmentFormValues>;
-    onStepChange?: (step: number) => void;
 }
 
-export function getDepartmentFormFields(
-    disabled?: boolean,
-    _isCodeDisabled?: boolean
-): FormFieldConfig<DepartmentFormValues>[] {
+function getDepartmentFormFields(disabled?: boolean): FormFieldConfig<DepartmentFormValues>[] {
     return [
         {
             disabled: true,
@@ -100,13 +77,11 @@ export default function DepartmentForm({
     control,
     departmentId,
     disabled = false,
-    isCodeDisabled,
     isCreate = false,
     setValue,
-    onStepChange,
     ...formProps
 }: DepartmentFormProps) {
-    const fields = getDepartmentFormFields(disabled, isCodeDisabled);
+    const fields = getDepartmentFormFields(disabled);
     const watchedName = useWatch({ control, name: 'name' });
     const watchedCode = useWatch({ control, name: 'code' });
     const watchedDeanId = useWatch({ control, name: 'dean_id' }) || '';

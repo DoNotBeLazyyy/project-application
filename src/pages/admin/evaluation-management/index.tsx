@@ -2,12 +2,12 @@ import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import { MenuOption } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/useTableConfigs';
+import { TableActionConfig } from '@components/table/use-table-configs';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import EvaluationTemplateGridCard from '@pages/admin/evaluation-management/EvaluationTemplateGridCard';
 import EvaluationWizardModal from '@pages/admin/evaluation-management/EvaluationWizardModal';
-import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
+import { useProgramOptions } from '@pages/dean/program-management/use-program-options';
 import {
     bulkCreateEvaluationTemplates,
     createEvaluationTemplate,

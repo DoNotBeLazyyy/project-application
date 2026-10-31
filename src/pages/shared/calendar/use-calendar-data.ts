@@ -1,3 +1,4 @@
+import { UnifiedCalendarEvent } from '@pages/shared/calendar/calendar.types';
 import { listMyEventsFeed } from '@services/event.service';
 import { getAcademicYearCalendarDetails, listSchoolYears } from '@services/school-year.service';
 import { getStudentDashboard, getStudentSchedule } from '@services/student-portal.service';
@@ -8,8 +9,6 @@ import { DayOfWeek } from '@type/student-portal.type';
 import { getRoleFromPath } from '@utils/role-path.util';
 import { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-
-import { UnifiedCalendarEvent } from './calendar.types';
 
 const DAY_NAME_MAP: Record<number, DayOfWeek> = {
     0: 'Sunday',

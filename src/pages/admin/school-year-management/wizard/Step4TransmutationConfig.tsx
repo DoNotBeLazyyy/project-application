@@ -4,6 +4,11 @@ import ValidCommonInput from '@components/input/ValidCommonInput';
 import ValidCommonNumberInput from '@components/input/ValidCommonNumberInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonSelect from '@components/select/CommonSelect';
+import SpecialGradeRuleFields from '@pages/admin/school-year-management/wizard/SpecialGradeRuleFields';
+import {
+    isSpecialGradeRow,
+    NUMERIC_5_2_MAX
+} from '@pages/admin/school-year-management/wizard/wizard.constants';
 import {
     CaretDownIcon,
     PlusIcon,
@@ -16,12 +21,6 @@ import { useEffect, useState } from 'react';
 import {
     Control, useFieldArray, useFormState, UseFormSetValue, useWatch
 } from 'react-hook-form';
-
-import SpecialGradeRuleFields from './SpecialGradeRuleFields';
-import {
-    isSpecialGradeRow,
-    NUMERIC_5_2_MAX
-} from './wizard.constants';
 
 interface Step4TransmutationConfigProps {
     control: Control<AcademicYearWizardFormValues>;

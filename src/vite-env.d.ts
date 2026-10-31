@@ -48,7 +48,7 @@ declare module '@toast-ui/editor' {
 
 declare module '@toast-ui/editor-plugin-color-syntax' {
     import { PluginInfo } from '@toast-ui/editor';
-    const colorSyntax: (context?: any, options?: any) => PluginInfo | Record<string, unknown>;
+    const colorSyntax: (context?: unknown, options?: unknown) => PluginInfo | Record<string, unknown>;
     export default colorSyntax;
 }
 

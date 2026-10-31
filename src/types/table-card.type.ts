@@ -1,9 +1,10 @@
 import { CommonFormModalProps } from '@components/modal/CommonFormModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
-import { TableActionConfig } from '@components/table/useTableConfigs';
+import { TableActionConfig } from '@components/table/use-table-configs';
 import { TableCardModeToggleProps } from '@components/table-card/TableCardActionMenu';
 import { TableCardControlsProps } from '@components/table-card/TableCardControls';
 import { CardHeaderProps } from '@mui/material';
+import { Icon } from '@phosphor-icons/react';
 import { CsvTemplateColumn, DetailedBulkImportResult } from '@type/bulk-import.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
@@ -46,7 +47,7 @@ export interface CommonTableCardDeleteModalProps {
     title?: string | ((count: number) => string);
     subTitle?: string;
     confirmText?: string;
-    actionIcon?: any;
+    actionIcon?: Icon;
 }
 
 export interface CommonTableCardSelectionBarConfig {

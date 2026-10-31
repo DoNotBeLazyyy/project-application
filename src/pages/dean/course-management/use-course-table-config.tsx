@@ -1,77 +1,80 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/useTableConfigs';
-import { ProgramListRow } from '@type/program/program.type';
+import { TableActionConfig } from '@components/table/use-table-configs';
+import { CourseListRow } from '@type/course/course.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
-interface useProgramTableConfigProps {
+interface UseCourseTableConfigProps {
     onEdit: (id: string) => void;
     onRequestDeleteRow: (id: string) => void;
     onView: (id: string) => void;
 }
 
-export function useProgramTableConfig({
+export function useCourseTableConfig({
     onEdit,
     onView
-}: useProgramTableConfigProps) {
+}: UseCourseTableConfigProps) {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'code',
-                flex: 1.5,
+                flex: 1,
                 headerName: 'Code',
                 mobileCard: 'subtitle',
                 sortable: true
             },
             {
-                field: 'name',
+                field: 'title',
                 flex: 3,
-                headerName: 'Name',
+                headerName: 'Title',
                 mobileCard: 'title',
                 sortable: true
             },
             {
                 field: 'department_name',
-                flex: 3,
+                flex: 2,
                 headerName: 'Department',
-                sortable: false
+                sortable: true
             },
             {
-                field: 'program_level_label',
-                flex: 3,
-                headerName: 'Program Level',
+                field: 'course_type_label',
+                flex: 2,
+                headerName: 'Course Type',
+                sortable: true
+            },
+            {
+                field: 'total_units',
+                flex: 1,
+                headerName: 'Units',
                 sortable: false
             },
             {
                 field: 'is_active',
-                flex: 1.5,
+                flex: 1,
                 headerName: 'Status',
                 sortable: false,
-                cellRenderer: (params: { data: ProgramListRow }) => (
+                cellRenderer: (params: { data: CourseListRow }) => (
                     <div className="flex h-full items-center">
                         <CommonBadgeStatus
-                            label={
-                                params.data.is_active
-                                    ? 'Active'
-                                    : 'Inactive'
-                            }
-                            variant={
-                                params.data.is_active
-                                    ? 'success'
-                                    : 'warning'
-                            }
+                            label={params.data.is_active
+                                ? 'Active'
+                                : 'Inactive'}
+                            variant={params.data.is_active
+                                ? 'success'
+                                : 'error'}
                         />
                     </div>
                 )
             }
         ];
     }, []);
+
     const tableActionConfig = useMemo(function() {
-        return function(onDelete: (id: string) => void): TableActionConfig<ProgramListRow> {
+        return function(onDelete: (id: string) => void): TableActionConfig<CourseListRow> {
             return {
-                onEditClick: (row: ProgramListRow) => () => onEdit(row.id),
-                menuOptions: (row: ProgramListRow): MenuOption[] => [
+                onEditClick: (row: CourseListRow) => () => onEdit(row.id),
+                menuOptions: (row: CourseListRow): MenuOption[] => [
                     {
                         preset: 'view',
                         onClick: () => onView(row.id)

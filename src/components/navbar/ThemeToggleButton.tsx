@@ -1,4 +1,4 @@
-import { useThemeMode } from '@hooks/useThemeMode';
+import { useThemeMode } from '@hooks/use-theme-mode';
 import { IconButton, Tooltip } from '@mui/material';
 import { DesktopIcon, MoonIcon, SunIcon } from '@phosphor-icons/react';
 

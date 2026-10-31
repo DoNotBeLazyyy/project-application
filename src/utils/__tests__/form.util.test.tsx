@@ -1,7 +1,5 @@
 import CommonStepperInput from '@components/input/CommonStepperInput';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
-
 import {
     announceFormError,
     blurActiveElementWithin,
@@ -10,7 +8,9 @@ import {
     FORM_ERROR_EVENT,
     getLastWindowFocusTime,
     setLastWindowFocusTime
-} from '../form.util';
+} from '@utils/form.util';
+import { FieldErrors } from 'react-hook-form';
+import { describe, expect, it, vi } from 'vitest';
 
 describe('form.util - Error Focus & Autofill Handling', () => {
     describe('checkForMessage', () => {
@@ -20,7 +20,7 @@ describe('form.util - Error Focus & Autofill Handling', () => {
                 code: { message: 'Code is required', type: 'required' }
             };
 
-            const result = checkForMessage(errors as any);
+            const result = checkForMessage(errors as FieldErrors);
             expect(result.count)
                 .toBe(2);
             expect(result.firstError)

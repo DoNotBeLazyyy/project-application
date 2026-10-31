@@ -76,10 +76,12 @@ export const studentRoutes: RouteObject[] = [
                 path: 'grade-report'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/student/grade-report"
-                />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/student/grade-report"
+                    />
+                ),
                 path: 'transcript'
             },
             {
@@ -107,10 +109,12 @@ export const studentRoutes: RouteObject[] = [
                 path: 'announcement-management'
             },
             {
-                element: <CommunicationRedirect
-                    basePath="/student/announcement-management"
-                    itemType="Announcement"
-                />,
+                element: (
+                    <CommunicationRedirect
+                        basePath="/student/announcement-management"
+                        itemType="Announcement"
+                    />
+                ),
                 path: 'announcement-management/:id'
             },
             {
@@ -120,24 +124,30 @@ export const studentRoutes: RouteObject[] = [
                 path: 'announcements'
             },
             {
-                element: <CommunicationRedirect
-                    basePath="/student/announcement-management"
-                    itemType="Announcement"
-                />,
+                element: (
+                    <CommunicationRedirect
+                        basePath="/student/announcement-management"
+                        itemType="Announcement"
+                    />
+                ),
                 path: 'announcements/:id'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/student/announcement-management"
-                />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/student/announcement-management"
+                    />
+                ),
                 path: 'event-management'
             },
             {
-                element: <CommunicationRedirect
-                    basePath="/student/announcement-management"
-                    itemType="Event"
-                />,
+                element: (
+                    <CommunicationRedirect
+                        basePath="/student/announcement-management"
+                        itemType="Event"
+                    />
+                ),
                 path: 'event-management/:id'
             }
         ]

@@ -5,7 +5,7 @@ import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import ProgramFilterForm from '@pages/dean/program-management/ProgramFilterForm';
 import ProgramGridCard from '@pages/dean/program-management/ProgramGridCard';
 import ProgramWizardModal from '@pages/dean/program-management/ProgramWizardModal';
-import { useProgramTableConfig } from '@pages/dean/program-management/useProgramTableConfig';
+import { useProgramTableConfig } from '@pages/dean/program-management/use-program-table-config';
 import {
     bulkCreatePrograms, bulkDeletePrograms, createProgram, deleteProgram, getProgramById, listPrograms, updateProgram
 } from '@services/program/program.service';
@@ -121,12 +121,12 @@ export default function ProgramManagement() {
                 name: result.data.name,
                 department_id: result.data.department_id ?? '',
                 program_level_id: result.data.program_level_id ?? '',
-                school_year_id: (result.data as any).school_year_id ?? '',
+                school_year_id: result.data.school_year_id ?? '',
                 total_units: result.data.total_units ?? '',
                 years_duration: result.data.years_duration ?? '',
                 is_active: result.data.is_active ?? false,
                 description: result.data.description ?? '',
-                grading_periods: (result.data as any).grading_periods ?? []
+                grading_periods: result.data.grading_periods ?? []
             });
         }
     }

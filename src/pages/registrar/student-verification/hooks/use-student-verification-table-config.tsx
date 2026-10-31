@@ -1,59 +1,45 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
-import { CommonChip } from '@components/badge/CommonChip';
-import { StaffProfileRequestRow } from '@type/admin-verification.type';
+import { StudentProfileRequestRow } from '@type/registrar-verification.type';
 import { MobileCardColDef } from '@type/table.type';
-import { ICellRendererParams } from 'ag-grid-community';
+import { ICellRendererParams, ValueFormatterParams } from 'ag-grid-community';
 import { useMemo } from 'react';
 
-export function useStaffVerificationTableConfig() {
+export function useStudentVerificationTableConfig() {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
-                field: 'user_name',
+                field: 'student_number',
+                flex: 1.5,
+                headerName: 'Student No.',
+                minWidth: 130,
+                mobileCard: 'meta',
+                sortable: true
+            },
+            {
+                field: 'student_name',
                 flex: 2,
-                headerName: 'Staff Name',
+                headerName: 'Student Name',
                 minWidth: 180,
                 mobileCard: 'title',
                 sortable: true
             },
             {
-                cellRenderer: function(params: ICellRendererParams<StaffProfileRequestRow>) {
+                cellRenderer: function(params: ICellRendererParams<StudentProfileRequestRow>) {
                     if (!params.data) return null;
-                    const role = params.data.role_code;
                     return (
-                        <div className="flex items-center gap-1.5">
-                            <CommonChip
-                                label={role}
-                                size="small"
-                                variant={role === 'Dean'
-                                    ? 'dark'
-                                    : 'light'}
-                            />
-                            {params.data.department_code && (
-                                <span className="text-xs text-(--mui-palette-text-secondary)">
-                                    ({params.data.department_code})
-                                </span>
-                            )}
-                        </div>
+                        <span>
+                            {params.data.program_code} (Yr {params.data.year_level})
+                        </span>
                     );
                 },
-                field: 'role_code',
+                field: 'program_code',
                 flex: 1.5,
-                headerName: 'Role & Dept',
+                headerName: 'Program & Year',
                 minWidth: 150,
-                mobileCard: 'subtitle',
-                sortable: true
+                mobileCard: 'subtitle'
             },
             {
-                field: 'user_email',
-                flex: 2,
-                headerName: 'Email Address',
-                minWidth: 180,
-                mobileCard: 'meta',
-                sortable: true
-            },
-            {
-                cellRenderer: function(params: ICellRendererParams<StaffProfileRequestRow>) {
+                cellRenderer: function(params: ICellRendererParams<StudentProfileRequestRow>) {
                     if (!params.value) return null;
                     const status = params.value as string;
                     const variant
@@ -61,9 +47,7 @@ export function useStaffVerificationTableConfig() {
                             ? 'warning'
                             : status === 'Approved' || status === 'Approved with Edits'
                                 ? 'success'
-                                : status === 'Cancelled'
-                                    ? 'info'
-                                    : 'error';
+                                : 'error';
                     return (
                         <CommonBadgeStatus
                             label={status}
@@ -84,7 +68,7 @@ export function useStaffVerificationTableConfig() {
                 headerName: 'Submitted On',
                 minWidth: 170,
                 sortable: true,
-                valueFormatter: (params: any) =>
+                valueFormatter: (params: ValueFormatterParams) =>
                     params.value
                         ? new Date(params.value as string)
                             .toLocaleString('en-PH', {

@@ -28,7 +28,7 @@ export default function ValidCommonNumberInput<T extends FieldValues = FieldValu
         control, name, rules
     });
 
-    function handleChange(val: any) {
+    function handleChange(val: number | undefined) {
         if (fieldState.error) {
             clearFieldError(control, name);
         }

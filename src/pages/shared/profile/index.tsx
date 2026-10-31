@@ -4,7 +4,7 @@ import CommonCard from '@components/card/CommonCard';
 import StudentProfilePromptModal from '@components/modal/StudentProfilePromptModal';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
-import { useHasRealChanges } from '@hooks/useHasRealChanges';
+import { useHasRealChanges } from '@hooks/use-has-real-changes';
 import ChangePasswordForm from '@pages/shared/profile/ChangePasswordForm';
 import { PASSWORD_FORM_ID, PROFILE_FORM_ID } from '@pages/shared/profile/constants/profile.constant';
 import PendingChangesModal from '@pages/shared/profile/PendingChangesModal';

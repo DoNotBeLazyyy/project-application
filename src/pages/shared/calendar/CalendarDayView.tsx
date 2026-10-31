@@ -1,10 +1,9 @@
+import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from '@pages/shared/calendar/calendar.types';
 import {
     ClockIcon,
     MapPinIcon
 } from '@phosphor-icons/react';
 import { useMemo } from 'react';
-
-import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from './calendar.types';
 
 interface CalendarDayViewProps {
     date: Date;

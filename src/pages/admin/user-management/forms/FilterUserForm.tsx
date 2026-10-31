@@ -1,6 +1,6 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import { useRoleOptions } from '@pages/admin/role-management/hooks/useRoleOptions';
+import { useRoleOptions } from '@pages/admin/role-management/hooks/use-role-options';
 import { STATUS_OPTIONS } from '@pages/admin/user-management/constants/admin-user.constant';
 import { ComponentPropsForm } from '@type/common.type';
 import { UserFilterValues } from '@type/user.type';

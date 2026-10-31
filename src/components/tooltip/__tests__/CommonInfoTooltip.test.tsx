@@ -1,8 +1,7 @@
+import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { announceFormError } from '@utils/form.util';
 import { describe, expect, it } from 'vitest';
-
-import CommonInfoTooltip from '../CommonInfoTooltip';
 
 describe('CommonInfoTooltip - Form Error & Focus Auto-Display', () => {
     it('automatically opens error tooltip when input in the same container receives focus', () => {

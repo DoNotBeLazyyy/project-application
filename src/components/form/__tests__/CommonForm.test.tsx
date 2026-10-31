@@ -46,7 +46,10 @@ describe('CommonForm - error focus', () => {
 
         await user.click(screen.getByRole('button', { name: /save/i }));
 
-        const titleInput = container.querySelector<HTMLInputElement>('input[name="title"]')!;
+        const titleInput = container.querySelector<HTMLInputElement>('input[name="title"]');
+        if (!titleInput) {
+            throw new Error('Title input not rendered');
+        }
         await waitFor(() => expect(document.activeElement)
             .toBe(titleInput));
 

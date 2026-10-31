@@ -1,8 +1,8 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { YEAR_LEVEL_OPTIONS } from '@constants/year-level.constant';
-import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
-import { TermTypeOptionWithMeta, useActiveTermOptions } from '@pages/dean/curriculum-map-management/useActiveTermOptions';
+import { useCourseOptions } from '@pages/dean/course-management/use-course-options';
+import { TermTypeOptionWithMeta, useActiveTermOptions } from '@pages/dean/curriculum-map-management/use-active-term-options';
 import { ComponentPropsForm } from '@type/common.type';
 import { CurriculumMapEntry, CurriculumMapFormValues } from '@type/curriculum-map.type';
 import { useEffect, useMemo } from 'react';
@@ -208,7 +208,7 @@ export default function CurriculumMapForm({
                     required: 'Sequence is required',
                     min: { value: 1, message: 'Must be at least 1' },
                     max: { value: 32767, message: 'Sequence is too large' },
-                    validate: (val: any) => Number.isInteger(Number(val)) || 'Sequence must be a whole number'
+                    validate: (val: unknown) => Number.isInteger(Number(val)) || 'Sequence must be a whole number'
                 },
             type: 'number',
             gridCols: 1

@@ -1,9 +1,8 @@
 import CommonModal from '@components/modal/CommonModal';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
+import AcademicYearTimelinePreview from '@pages/admin/school-year-management/wizard/AcademicYearTimelinePreview';
 import { CalendarDotsIcon, XIcon } from '@phosphor-icons/react';
 import { WizardCalendarExceptionItem, WizardTermItem } from '@type/school-year.type';
-
-import AcademicYearTimelinePreview from './AcademicYearTimelinePreview';
 
 interface AcademicYearSchedulePreviewModalProps {
     open: boolean;

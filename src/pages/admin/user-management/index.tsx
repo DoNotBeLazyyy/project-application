@@ -2,12 +2,12 @@ import CommonButton from '@components/button/CommonButton';
 import BulkImportModal from '@components/modal/BulkImportModal';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
-import { useHasRealChanges } from '@hooks/useHasRealChanges';
+import { useHasRealChanges } from '@hooks/use-has-real-changes';
 import { CREATE_FORM_ID, FILTER_FORM_ID, SORT_COLUMNS } from '@pages/admin/user-management/constants/admin-user.constant';
 import CreateUserForm from '@pages/admin/user-management/forms/CreateUserForm';
 import FilterUserForm from '@pages/admin/user-management/forms/FilterUserForm';
 import UserForm from '@pages/admin/user-management/forms/UserForm';
-import { handleResendInvite, handleResetPassword, useUserTableConfig } from '@pages/admin/user-management/hooks/useUserTableConfig';
+import { handleResendInvite, handleResetPassword, useUserTableConfig } from '@pages/admin/user-management/hooks/use-user-table-config';
 import UserGridCard from '@pages/admin/user-management/UserGridCard';
 import { ArrowCounterClockwiseIcon, ProhibitIcon } from '@phosphor-icons/react';
 import {
@@ -374,10 +374,12 @@ export default function UserManagement() {
                 selectionBarProps={{
                     entityName: 'User',
                     deleteActionLabel: 'Deactivate Selected',
-                    deleteActionIcon: <ProhibitIcon
-                        size={16}
-                        weight="bold"
-                    />,
+                    deleteActionIcon: (
+                        <ProhibitIcon
+                            size={16}
+                            weight="bold"
+                        />
+                    ),
                     extraActions: (selectedIds, clearSelection) => (
                         <CommonButton
                             color="success"

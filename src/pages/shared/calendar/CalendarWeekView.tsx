@@ -1,6 +1,5 @@
+import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from '@pages/shared/calendar/calendar.types';
 import { useMemo } from 'react';
-
-import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from './calendar.types';
 
 interface CalendarWeekViewProps {
     currentDate: Date;

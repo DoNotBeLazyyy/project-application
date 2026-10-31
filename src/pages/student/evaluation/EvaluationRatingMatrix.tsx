@@ -1,4 +1,4 @@
-import useBreakpoint from '@hooks/useBreakpoint';
+import useBreakpoint from '@hooks/use-breakpoint';
 import Radio from '@mui/material/Radio';
 import { EvaluationAnswerForm, EvaluationAnswersForm } from '@type/evaluation.type';
 import { clearFieldError } from '@utils/form.util';

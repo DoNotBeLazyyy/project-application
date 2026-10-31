@@ -1,5 +1,5 @@
 import { ROLE_HOME } from '@constants/role.constant';
-import { useThemeMode } from '@hooks/useThemeMode';
+import { useThemeMode } from '@hooks/use-theme-mode';
 import { Divider, Menu, MenuItem } from '@mui/material';
 import {
     CaretUpDownIcon,

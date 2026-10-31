@@ -1,7 +1,7 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
-import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
+import { useCourseOptions } from '@pages/dean/course-management/use-course-options';
 import { ChalkboardIcon } from '@phosphor-icons/react';
 import {
     FacultyOption, getExistingSectionOfferings, getFacultyOptions, getTerms, SectionOfferingRecord, TermOption
@@ -248,7 +248,7 @@ export default function Step1SectionOverview({
                     required: 'Maximum slots is required',
                     min: { value: 1, message: 'Must be at least 1' },
                     max: { value: 999, message: 'Cannot exceed 999' },
-                    validate: (val: any) => Number.isInteger(Number(val)) || 'Max slots must be a whole number'
+                    validate: (val: unknown) => Number.isInteger(Number(val)) || 'Max slots must be a whole number'
                 },
             fieldProps: {
                 helperText: 'Maximum number of enrollees (1-999)', maxDecimals: 0, min: 1, max: 999

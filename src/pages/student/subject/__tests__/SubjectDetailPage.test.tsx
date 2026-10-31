@@ -1,11 +1,10 @@
+import SubjectDetailPage from '@pages/student/subject/SubjectDetailPage';
 import * as studentPortalService from '@services/student-portal.service';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import {
     beforeEach, describe, expect, it, vi
 } from 'vitest';
-
-import SubjectDetailPage from '../SubjectDetailPage';
 
 vi.mock('@services/student-portal.service', () => ({
     getSubjectDetail: vi.fn(),

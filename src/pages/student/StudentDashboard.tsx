@@ -8,7 +8,7 @@ import EventsFeedCard from '@components/dashboard/EventsFeedCard';
 import InstitutionalIdentityCard from '@components/dashboard/InstitutionalIdentityCard';
 import StudentInsightSummaryCard from '@components/dashboard/StudentInsightSummaryCard';
 import StudentProfilePromptModal from '@components/modal/StudentProfilePromptModal';
-import useDashboardFeeds from '@hooks/useDashboardFeeds';
+import useDashboardFeeds from '@hooks/use-dashboard-feeds';
 import {
     BookOpenIcon, CalendarCheckIcon, ClockIcon, GraduationCapIcon, UserFocusIcon
 } from '@phosphor-icons/react';

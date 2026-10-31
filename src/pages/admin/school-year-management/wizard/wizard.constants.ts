@@ -3,12 +3,10 @@ import {
     AcademicYearCalendarDetails,
     AcademicYearWizardFormValues,
     CalendarExceptionType,
-    WizardGradingPeriodItem,
     WizardTermItem,
     WizardThresholdItem,
     WizardTransmutationRow
 } from '@type/school-year.type';
-import { formatDate } from '@utils/date.util';
 
 /**
  * Limits mirrored from the live DB schema written by fn_save_academic_year_calendar:

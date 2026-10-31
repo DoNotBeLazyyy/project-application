@@ -1,4 +1,4 @@
-import { TableActionConfig } from '@components/table/useTableConfigs';
+import { TableActionConfig } from '@components/table/use-table-configs';
 import { BooleanFunction } from '@type/common.type';
 import { SortStringDto } from '@type/http.type';
 import { ColDef } from 'ag-grid-community';

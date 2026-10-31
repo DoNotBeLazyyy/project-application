@@ -2,7 +2,7 @@ import PageLoadingFallback from '@components/loading/PageLoadingFallback';
 import SessionTimeoutModal from '@components/modal/SessionTimeoutModal';
 import UserProfilePromptModal from '@components/modal/UserProfilePromptModal';
 import NotificationModalContainer from '@components/notification/NotificationModalContainer';
-import useIdleTimeout from '@hooks/useIdleTimeout';
+import useIdleTimeout from '@hooks/use-idle-timeout';
 import { logout, refreshSession } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
 import { useLoadingStore } from '@stores/loading.store';

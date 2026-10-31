@@ -3,6 +3,11 @@ import Divider from '@mui/material/Divider';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import {
+    CALENDAR_CATEGORIES,
+    CalendarEventCategory,
+    CalendarViewMode
+} from '@pages/shared/calendar/calendar.types';
+import {
     ArrowsClockwiseIcon,
     CalendarDotsIcon,
     CheckIcon,
@@ -14,12 +19,6 @@ import {
 } from '@phosphor-icons/react';
 import { MouseEventButtonElement } from '@type/common.type';
 import { useState } from 'react';
-
-import {
-    CALENDAR_CATEGORIES,
-    CalendarEventCategory,
-    CalendarViewMode
-} from './calendar.types';
 
 export interface CalendarActionMenuProps {
     activeCategories: Set<CalendarEventCategory>;
@@ -56,18 +55,18 @@ export default function CalendarActionMenu({
 
     const isFilterActive = activeCategories.size < CALENDAR_CATEGORIES.length;
 
-    const handleOpenMenu = (event: MouseEventButtonElement) => {
+    function handleOpenMenu(event: MouseEventButtonElement) {
         setAnchorEl(event.currentTarget);
-    };
+    }
 
-    const handleCloseMenu = () => {
+    function handleCloseMenu() {
         setAnchorEl(null);
-    };
+    }
 
-    const handleViewSelect = (mode: CalendarViewMode) => {
+    function handleViewSelect(mode: CalendarViewMode) {
         onSelectViewMode(mode);
         handleCloseMenu();
-    };
+    }
 
     return (
         <>

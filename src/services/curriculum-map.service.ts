@@ -115,7 +115,9 @@ function sanitizeCurriculumRow(entry: CurriculumMapBulkRow): { row?: CurriculumM
         const value = String(entry[key] ?? '')
             .trim();
         if (value === '') {
-            delete row[key];
+            if (key === 'lecture_units') delete row.lecture_units;
+            else if (key === 'laboratory_units') delete row.laboratory_units;
+            else delete row.units;
         }
         else if (isNaN(Number(value)) || Number(value) < 0) {
             return { message: 'Units must be numbers of 0 or more' };

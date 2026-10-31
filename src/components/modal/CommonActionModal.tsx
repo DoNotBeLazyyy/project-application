@@ -1,8 +1,10 @@
 import FormButtons, { FormButtonsProps } from '@components/button/FormButtons';
 import CommonModal, { CommonModalProps } from '@components/modal/CommonModal';
-import useBreakpoint from '@hooks/useBreakpoint';
+import useBreakpoint from '@hooks/use-breakpoint';
+import { DialogCloseProps } from '@type/common/theme.type';
 import { classMerge } from '@utils/css.util';
 import { normalizeSx } from '@utils/theme.util';
+import { MouseEvent } from 'react';
 
 export interface CommonActionModalProps extends CommonModalProps {
     containerClassName?: string;
@@ -25,12 +27,12 @@ export default function CommonActionModal({
     const { cancelProps, className, confirmProps } = formButtonsProps ?? {};
     const isConfirmLoading = Boolean(confirmProps?.loading);
 
-    const handleClose = (event: any, reason: any) => {
+    function handleClose(event: DialogCloseProps[0], reason: DialogCloseProps[1]) {
         if (isConfirmLoading) {
             return;
         }
         onClose?.(event, reason);
-    };
+    }
 
     return (
         <CommonModal
@@ -41,7 +43,7 @@ export default function CommonActionModal({
                 defaultActionProps: cardProps?.defaultActionProps
                     ? {
                         ...cardProps.defaultActionProps,
-                        onClick: (e: any) => {
+                        onClick: (e: MouseEvent<SVGSVGElement>) => {
                             if (isConfirmLoading) return;
                             cardProps.defaultActionProps?.onClick?.(e);
                         }
@@ -102,7 +104,7 @@ export default function CommonActionModal({
                         : {
                             children: 'Cancel',
                             color: 'secondary',
-                            onClick: (e: any) => handleClose(e, 'backdropClick'),
+                            onClick: (e: MouseEvent<HTMLButtonElement>) => handleClose(e, 'backdropClick'),
                             variant: 'outlined',
                             disabled: isConfirmLoading,
                             ...cancelProps

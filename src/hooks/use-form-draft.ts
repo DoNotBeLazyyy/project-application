@@ -161,13 +161,15 @@ export function areFormValuesEqual(
  * this returns `false`.
  */
 export function hasRealFormChanges(
-    values: Record<string, any> | undefined | null,
-    defaultValues?: Record<string, any> | undefined | null,
+    values: object | undefined | null,
+    defaultValues?: object | undefined | null,
     options?: { ignoreSensitive?: boolean }
 ): boolean {
     if (!values || typeof values !== 'object') {
         return false;
     }
+    const valueRecord = values as Record<string, unknown>;
+    const defaultRecord = defaultValues as Record<string, unknown> | undefined | null;
 
     const keys = new Set([
         ...Object.keys(values),
@@ -182,9 +184,9 @@ export function hasRealFormChanges(
             continue;
         }
 
-        const val = values[key];
-        const defaultVal = defaultValues
-            ? defaultValues[key]
+        const val = valueRecord[key];
+        const defaultVal = defaultRecord
+            ? defaultRecord[key]
             : undefined;
 
         if (!areFormValuesEqual(val, defaultVal, options)) {
@@ -195,12 +197,12 @@ export function hasRealFormChanges(
     return false;
 }
 
-function filterSensitiveFields<T extends Record<string, any>>(values: T): Partial<T> {
+function filterSensitiveFields<T extends object>(values: T): Partial<T> {
     if (!values || typeof values !== 'object') {
         return {};
     }
 
-    const filtered: Record<string, any> = {};
+    const filtered: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(values)) {
         if (isSensitiveKey(key)) {
@@ -220,8 +222,8 @@ function filterSensitiveFields<T extends Record<string, any>>(values: T): Partia
 }
 
 function hasMeaningfulValues(
-    values: Record<string, any> | undefined | null,
-    defaultValues?: Record<string, any> | undefined | null
+    values: object | undefined | null,
+    defaultValues?: object | undefined | null
 ): boolean {
     return hasRealFormChanges(values, defaultValues, { ignoreSensitive: true });
 }
@@ -275,9 +277,9 @@ export function useFormDraft<T extends FieldValues>({
     const { isSubmitSuccessful, isSubmitting } = useFormState({ control });
     const currentValues = useWatch({ control });
 
-    const defaultVals = (control as unknown as { _defaultValues?: Record<string, any> })._defaultValues;
+    const defaultVals = (control as unknown as { _defaultValues?: Record<string, unknown> })._defaultValues;
     const liveValues = (currentValues
-        ?? (control as unknown as { _formValues?: Record<string, any> })._formValues) as Record<string, any> | undefined;
+        ?? (control as unknown as { _formValues?: Record<string, unknown> })._formValues) as Record<string, unknown> | undefined;
 
     const hasRealChanges = useMemo(() => {
         return hasRealFormChanges(liveValues, defaultVals);
@@ -327,9 +329,9 @@ export function useFormDraft<T extends FieldValues>({
             }
 
             const parsed = JSON.parse(raw) as StoredDraftPayload<T>;
-            const currentDefaultVals = (control as unknown as { _defaultValues?: Record<string, any> })._defaultValues;
+            const currentDefaultVals = (control as unknown as { _defaultValues?: Record<string, unknown> })._defaultValues;
 
-            const currentFormValues = (control as unknown as { _formValues?: Record<string, any> })._formValues;
+            const currentFormValues = (control as unknown as { _formValues?: Record<string, unknown> })._formValues;
 
             // The form already shows exactly this draft (e.g. it was briefly disabled while a save
             // failed), so there is nothing to restore
@@ -357,7 +359,7 @@ export function useFormDraft<T extends FieldValues>({
             return;
         }
 
-        const currentDefaultVals = (control as unknown as { _defaultValues?: Record<string, any> })._defaultValues;
+        const currentDefaultVals = (control as unknown as { _defaultValues?: Record<string, unknown> })._defaultValues;
         try {
             if (hasMeaningfulValues(currentValues, currentDefaultVals)) {
                 const sanitized = filterSensitiveFields(currentValues);
@@ -466,8 +468,8 @@ export function useFormDraft<T extends FieldValues>({
 
         // Apply restored draft values to react-hook-form
         const controlAny = control as unknown as {
-            _formValues?: Record<string, any>;
-            _reset?: (values: any, options?: any) => void;
+            _formValues?: Record<string, unknown>;
+            _reset?: (values: Record<string, unknown>, options?: { keepDefaultValues?: boolean }) => void;
         };
 
         if (typeof controlAny._reset === 'function') {
@@ -498,7 +500,7 @@ export function useFormDraft<T extends FieldValues>({
     };
 }
 
-export interface UseObjectDraftOptions<T extends Record<string, any>> {
+export interface UseObjectDraftOptions<T extends object> {
     defaultValues?: T;
     enabled?: boolean;
     formId: string;
@@ -513,7 +515,7 @@ export interface UseObjectDraftOptions<T extends Record<string, any>> {
  * Saves arbitrary state-based form objects to `sessionStorage` and triggers
  * restoration prompt when returning. Useful for stepper modals that use React state.
  */
-export function useObjectDraft<T extends Record<string, any>>({
+export function useObjectDraft<T extends object>({
     defaultValues,
     enabled = true,
     formId,

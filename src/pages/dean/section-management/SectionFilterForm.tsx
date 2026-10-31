@@ -1,7 +1,7 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
-import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
+import { useProgramOptions } from '@pages/dean/program-management/use-program-options';
 import { getTerms } from '@services/section.service';
 import { ComponentPropsForm } from '@type/common.type';
 import { SectionFilterValues, SectionStatus } from '@type/section.type';

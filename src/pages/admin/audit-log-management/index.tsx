@@ -5,7 +5,7 @@ import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import AuditLogDetailContent from '@pages/admin/audit-log-management/components/AuditLogDetailContent';
 import { FILTER_FORM_ID, SORT_COLUMNS } from '@pages/admin/audit-log-management/constants/audit-log.constant';
 import FilterAuditLogForm from '@pages/admin/audit-log-management/forms/FilterAuditLogForm';
-import { useAuditLogTableConfig } from '@pages/admin/audit-log-management/hooks/useAuditLogTableConfig';
+import { useAuditLogTableConfig } from '@pages/admin/audit-log-management/hooks/use-audit-log-table-config';
 import { getAuditLogFilters, listAuditLogs } from '@services/audit-log.service';
 import { AuditLogFilterValues, AuditLogRow } from '@type/audit-log.type';
 import { SortStringDto } from '@type/http.type';

@@ -6,7 +6,7 @@ import CommonNumberInput from '@components/input/CommonNumberInput';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
-import { useFormDraft } from '@hooks/useFormDraft';
+import { useFormDraft } from '@hooks/use-form-draft';
 import {
     ArrowsClockwiseIcon,
     CheckIcon,
@@ -412,150 +412,152 @@ export default function GradingComponentPanel({
 
             {/* Components Container */}
             <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2.5 pr-1">
-                {isEditMode ? (
-                    /* Edit Mode: In-Place Simultaneous Editing */
-                    <div className="flex flex-col gap-2.5">
-                        {draftRows.map((row) => (
-                            <div
-                                className="bg-white dark:bg-zinc-900 border border-blue-300 dark:border-blue-700/80 rounded-2xl p-3 shadow-2xs flex flex-col gap-2 transition-all ring-1 ring-blue-500/20"
-                                key={row.id}
-                            >
-                                <div className="flex items-start gap-2">
-                                    <div className="flex-1 min-w-0">
-                                        <CommonInput
-                                            error={!row.name.trim()}
-                                            fullWidth
-                                            helperText={row.name.trim()
-                                                ? undefined
-                                                : 'Name is required.'}
-                                            placeholder="Component name (e.g. Quizzes)"
-                                            size="small"
-                                            value={row.name}
-                                            onChange={(e) => handleRowNameChange(row.id, e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="shrink-0 w-24">
-                                        <CommonNumberInput
-                                            error={row.weight <= 0}
-                                            helperText={row.weight > 0
-                                                ? undefined
-                                                : 'Must be 1-100.'}
-                                            max={100}
-                                            maxDecimals={0}
-                                            min={1}
-                                            size="small"
-                                            suffixText="%"
-                                            value={row.weight || ''}
-                                            onChange={(value) => handleRowWeightChange(row.id, value)}
-                                        />
-                                    </div>
-                                    <button
-                                        className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
-                                        title="Delete row"
-                                        type="button"
-                                        onClick={() => handleRemoveDraftRow(row.id, row.isNew)}
-                                    >
-                                        <TrashIcon
-                                            size={16}
-                                            weight="bold"
-                                        />
-                                    </button>
-                                </div>
-
-                                <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
-                                    <span>
-                                        {periodWeight !== undefined && row.weight
-                                            ? `${((row.weight * periodWeight) / 100).toFixed(1)}% of course final`
-                                            : 'Period component'}
-                                    </span>
-                                    {row.isNew && (
-                                        <span className="text-blue-600 dark:text-blue-400 font-semibold">
-                                            New Row
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-
-                        {/* Add Row Button inside Edit Mode */}
-                        <button
-                            className="p-2.5 rounded-xl border border-dashed border-slate-300 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 text-slate-600 dark:text-slate-400 hover:text-blue-600 flex items-center justify-center gap-1.5 text-xs font-semibold cursor-pointer transition-colors"
-                            type="button"
-                            onClick={handleAddDraftRow}
-                        >
-                            <PlusIcon
-                                size={14}
-                                weight="bold"
-                            />
-                            Add Component Row
-                        </button>
-                    </div>
-                ) : (
-                    /* Read Mode: Bento Cards */
-                    components.length === 0
-                        ? (
-                            <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900/40">
-                                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                No Components Configured
-                                </span>
-                                <p className="text-[11px] text-slate-400 mt-1 max-w-[200px]">
-                                Add assessment components to calculate student grades for this period.
-                                </p>
-                            </div>
-                        )
-                        : (
-                            components.map((component) => (
+                {isEditMode
+                    ? (
+                        /* Edit Mode: In-Place Simultaneous Editing */
+                        <div className="flex flex-col gap-2.5">
+                            {draftRows.map((row) => (
                                 <div
-                                    className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs flex flex-col justify-between gap-2.5 group hover:border-slate-300 dark:hover:border-zinc-700 transition-all"
-                                    key={component.id}
+                                    className="bg-white dark:bg-zinc-900 border border-blue-300 dark:border-blue-700/80 rounded-2xl p-3 shadow-2xs flex flex-col gap-2 transition-all ring-1 ring-blue-500/20"
+                                    key={row.id}
                                 >
-                                    <div className="flex items-center justify-between gap-2">
-                                        <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate">
-                                            {component.name}
-                                        </span>
-                                        <span className="font-mono font-bold text-xs px-2.5 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
-                                            {component.weight}%
-                                        </span>
+                                    <div className="flex items-start gap-2">
+                                        <div className="flex-1 min-w-0">
+                                            <CommonInput
+                                                error={!row.name.trim()}
+                                                fullWidth
+                                                helperText={row.name.trim()
+                                                    ? undefined
+                                                    : 'Name is required.'}
+                                                placeholder="Component name (e.g. Quizzes)"
+                                                size="small"
+                                                value={row.name}
+                                                onChange={(e) => handleRowNameChange(row.id, e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="shrink-0 w-24">
+                                            <CommonNumberInput
+                                                error={row.weight <= 0}
+                                                helperText={row.weight > 0
+                                                    ? undefined
+                                                    : 'Must be 1-100.'}
+                                                max={100}
+                                                maxDecimals={0}
+                                                min={1}
+                                                size="small"
+                                                suffixText="%"
+                                                value={row.weight || ''}
+                                                onChange={(value) => handleRowWeightChange(row.id, value)}
+                                            />
+                                        </div>
+                                        <button
+                                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                                            title="Delete row"
+                                            type="button"
+                                            onClick={() => handleRemoveDraftRow(row.id, row.isNew)}
+                                        >
+                                            <TrashIcon
+                                                size={16}
+                                                weight="bold"
+                                            />
+                                        </button>
                                     </div>
 
-                                    <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-zinc-800 text-[11px] text-slate-500">
+                                    <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
                                         <span>
-                                            {periodWeight !== undefined
-                                                ? `${((component.weight * periodWeight) / 100).toFixed(1)}% of course`
-                                                : 'Period Component'}
+                                            {periodWeight !== undefined && row.weight
+                                                ? `${((row.weight * periodWeight) / 100).toFixed(1)}% of course final`
+                                                : 'Period component'}
                                         </span>
-
-                                        {!locked && (
-                                            <div className="flex items-center gap-1">
-                                                <button
-                                                    className="p-1 text-slate-400 hover:text-blue-600 rounded-md hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                                                    title="Edit all in Edit Mode"
-                                                    type="button"
-                                                    onClick={handleEnterEditMode}
-                                                >
-                                                    <PencilSimpleIcon
-                                                        size={14}
-                                                        weight="bold"
-                                                    />
-                                                </button>
-                                                <button
-                                                    className="p-1 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
-                                                    title="Delete Component"
-                                                    type="button"
-                                                    onClick={() => onDelete(component.id)}
-                                                >
-                                                    <TrashIcon
-                                                        size={14}
-                                                        weight="bold"
-                                                    />
-                                                </button>
-                                            </div>
+                                        {row.isNew && (
+                                            <span className="text-blue-600 dark:text-blue-400 font-semibold">
+                                                New Row
+                                            </span>
                                         )}
                                     </div>
                                 </div>
-                            ))
-                        )
-                )}
+                            ))}
+
+                            {/* Add Row Button inside Edit Mode */}
+                            <button
+                                className="p-2.5 rounded-xl border border-dashed border-slate-300 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 text-slate-600 dark:text-slate-400 hover:text-blue-600 flex items-center justify-center gap-1.5 text-xs font-semibold cursor-pointer transition-colors"
+                                type="button"
+                                onClick={handleAddDraftRow}
+                            >
+                                <PlusIcon
+                                    size={14}
+                                    weight="bold"
+                                />
+                                Add Component Row
+                            </button>
+                        </div>
+                    )
+                    : (
+                        /* Read Mode: Bento Cards */
+                        components.length === 0
+                            ? (
+                                <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900/40">
+                                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                    No Components Configured
+                                    </span>
+                                    <p className="text-[11px] text-slate-400 mt-1 max-w-[200px]">
+                                    Add assessment components to calculate student grades for this period.
+                                    </p>
+                                </div>
+                            )
+                            : (
+                                components.map((component) => (
+                                    <div
+                                        className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs flex flex-col justify-between gap-2.5 group hover:border-slate-300 dark:hover:border-zinc-700 transition-all"
+                                        key={component.id}
+                                    >
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate">
+                                                {component.name}
+                                            </span>
+                                            <span className="font-mono font-bold text-xs px-2.5 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
+                                                {component.weight}%
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-zinc-800 text-[11px] text-slate-500">
+                                            <span>
+                                                {periodWeight !== undefined
+                                                    ? `${((component.weight * periodWeight) / 100).toFixed(1)}% of course`
+                                                    : 'Period Component'}
+                                            </span>
+
+                                            {!locked && (
+                                                <div className="flex items-center gap-1">
+                                                    <button
+                                                        className="p-1 text-slate-400 hover:text-blue-600 rounded-md hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                                                        title="Edit all in Edit Mode"
+                                                        type="button"
+                                                        onClick={handleEnterEditMode}
+                                                    >
+                                                        <PencilSimpleIcon
+                                                            size={14}
+                                                            weight="bold"
+                                                        />
+                                                    </button>
+                                                    <button
+                                                        className="p-1 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                                                        title="Delete Component"
+                                                        type="button"
+                                                        onClick={() => onDelete(component.id)}
+                                                    >
+                                                        <TrashIcon
+                                                            size={14}
+                                                            weight="bold"
+                                                        />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))
+                            )
+                    )}
             </div>
 
             {/* Standalone Create Component Modal */}

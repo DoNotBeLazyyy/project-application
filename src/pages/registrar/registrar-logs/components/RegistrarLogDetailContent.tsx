@@ -14,6 +14,8 @@ function formatActionLabel(action: string): string {
 export default function RegistrarLogDetailContent({ row }: RegistrarLogDetailContentProps) {
     const oldValues = (row.old_values || {}) as Record<string, unknown>;
     const newValues = (row.new_values || {}) as Record<string, unknown>;
+    const isFalseInfo = Boolean(row.metadata?.is_false_info);
+    const rejectionReason = row.metadata?.rejection_reason;
 
     const allKeys = Array.from(new Set([...Object.keys(oldValues), ...Object.keys(newValues)]));
     const changedKeys = allKeys.filter(
@@ -62,7 +64,7 @@ export default function RegistrarLogDetailContent({ row }: RegistrarLogDetailCon
             {/* Details & Rejection Warning */}
             <div
                 className={`border p-3 rounded-lg flex flex-col gap-2 ${
-                    row.action.includes('REJECTED') || (row.metadata as any)?.is_false_info
+                    row.action.includes('REJECTED') || isFalseInfo
                         ? 'border-(--mui-palette-error-main) bg-(--mui-palette-error-light)/30'
                         : row.action.includes('APPROVED')
                             ? 'border-(--mui-palette-success-main) bg-(--mui-palette-success-light)/20'
@@ -71,7 +73,7 @@ export default function RegistrarLogDetailContent({ row }: RegistrarLogDetailCon
             >
                 <div className="flex items-center justify-between">
                     <span className="text-(--mui-palette-text-secondary) text-[11px] font-semibold">Details & Status</span>
-                    {(row.metadata as any)?.is_false_info && (
+                    {isFalseInfo && (
                         <CommonChip
                             label="Flagged: False Information"
                             size="small"
@@ -83,11 +85,11 @@ export default function RegistrarLogDetailContent({ row }: RegistrarLogDetailCon
                     {row.details || 'No additional remarks.'}
                 </p>
 
-                {(row.metadata as any)?.rejection_reason && (
+                {Boolean(rejectionReason) && (
                     <div className="mt-1 p-2.5 rounded bg-(--mui-palette-error-light)/50 border border-(--mui-palette-error-main)">
                         <span className="font-semibold text-(--mui-palette-error-main) block text-[11px]">Official Rejection Reason</span>
                         <p className="m-0 text-(--mui-palette-text-primary) text-xs mt-0.5">
-                            {String((row.metadata as any).rejection_reason)}
+                            {String(rejectionReason)}
                         </p>
                     </div>
                 )}

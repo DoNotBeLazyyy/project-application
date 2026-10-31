@@ -14,7 +14,7 @@ import { classMerge } from '@utils/css.util';
  * />
  */
 export interface ModalCloseIconProps extends Omit<IconProps, 'onClick'> {
-    onClick?: React.MouseEventHandler<any>;
+    onClick?: React.MouseEventHandler<Element>;
 }
 
 export default function ModalCloseIcon({ className, onClick, ...props }: ModalCloseIconProps) {

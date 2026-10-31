@@ -7,7 +7,7 @@ import React, { forwardRef, useCallback } from 'react';
 
 export interface CommonStepperInputProps {
     value?: number | string;
-    onChange?: (value: any) => void;
+    onChange?: (value: number | string | undefined) => void;
     min?: number;
     max?: number;
     step?: number;

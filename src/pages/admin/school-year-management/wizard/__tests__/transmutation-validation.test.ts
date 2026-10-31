@@ -1,7 +1,6 @@
+import { DEFAULT_TRANSMUTATION_ROWS, validateTransmutationRows } from '@pages/admin/school-year-management/wizard/wizard.constants';
 import { WizardTransmutationRow } from '@type/school-year.type';
 import { describe, expect, it } from 'vitest';
-
-import { DEFAULT_TRANSMUTATION_ROWS, validateTransmutationRows } from '../wizard.constants';
 
 describe('validateTransmutationRows', () => {
     it('should validate successfully for default transmutation rows', () => {

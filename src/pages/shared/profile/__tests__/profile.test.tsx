@@ -66,7 +66,7 @@ describe('ProfilePage - Multi-Role Tests', () => {
             .mockResolvedValue({
                 data: [{
                     id: 'prog-1', code: 'BSCS', label: 'Computer Science'
-                } as any],
+                }],
                 error: null
             });
     });

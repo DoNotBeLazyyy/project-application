@@ -2,10 +2,10 @@ import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
-import { useHasRealChanges } from '@hooks/useHasRealChanges';
+import { useHasRealChanges } from '@hooks/use-has-real-changes';
 import CourseTypeForm from '@pages/dean/course-management/type/CourseTypeForm';
 import CourseTypeGridCard from '@pages/dean/course-management/type/CourseTypeGridCard';
-import { useCourseTypeTableConfig } from '@pages/dean/course-management/type/useCourseTypeTableConfig';
+import { useCourseTypeTableConfig } from '@pages/dean/course-management/type/use-course-type-table-config';
 import {
     bulkCreateCourseTypes,
     createCourseType, deleteCourseType, getCourseTypeById, listCourseTypes, updateCourseType

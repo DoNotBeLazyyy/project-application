@@ -1,6 +1,6 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import { useRoleOptions } from '@pages/admin/role-management/hooks/useRoleOptions';
+import { useRoleOptions } from '@pages/admin/role-management/hooks/use-role-options';
 import { ComponentPropsForm } from '@type/common.type';
 import { AddUserFormValues } from '@type/user.type';
 import { Control } from 'react-hook-form';

@@ -13,7 +13,7 @@ interface CourseTypeFormProps extends ComponentPropsForm {
     setValue?: UseFormSetValue<CourseTypeFormValues>;
 }
 
-export function getCourseTypeFormFields(
+function getCourseTypeFormFields(
     disabled?: boolean
 ): FormFieldConfig<CourseTypeFormValues>[] {
     return [
@@ -33,7 +33,7 @@ export function getCourseTypeFormFields(
                 ? undefined
                 : {
                     required: 'Label is required',
-                    validate: (val: any) => Boolean(val && String(val)
+                    validate: (val: unknown) => Boolean(val && String(val)
                         .trim()) || 'Label cannot be empty or whitespace only'
                 },
             type: 'text'

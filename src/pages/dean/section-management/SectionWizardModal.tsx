@@ -3,7 +3,8 @@ import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
-import { useFormDraft } from '@hooks/useFormDraft';
+import { SECTION_WIZARD_STEPS } from '@constants/section-wizard.constant';
+import { useFormDraft } from '@hooks/use-form-draft';
 import Step1SectionOverview from '@pages/dean/section-management/Step1SectionOverview';
 import Step2SectionSchedule from '@pages/dean/section-management/Step2SectionSchedule';
 import Step3SectionGradingSchema from '@pages/dean/section-management/Step3SectionGradingSchema';
@@ -30,25 +31,7 @@ import { useToastStore } from '@stores/toast.store';
 import { SectionFormValues, SectionScheduleSlot } from '@type/section.type';
 import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useState } from 'react';
-import { FormProvider, useForm } from 'react-hook-form';
-
-export const SECTION_WIZARD_STEPS = [
-    {
-        step: 1,
-        title: 'Overview',
-        subtitle: 'Basic section identity, term, course, instructor, room, and capacity'
-    },
-    {
-        step: 2,
-        title: 'Schedule Assignment',
-        subtitle: 'Configure class meeting days, time slots, and room assignments'
-    },
-    {
-        step: 3,
-        title: 'Grading Schema Settings',
-        subtitle: 'Configure section grading schema and component weights'
-    }
-];
+import { FieldPath, FormProvider, useForm } from 'react-hook-form';
 
 const defaultFormValues: SectionFormValues = {
     term_id: '',
@@ -181,28 +164,28 @@ export default function SectionWizardModal({
         for (let i = 0; i < schedules.length; i++) {
             const slot = schedules[i];
             if (!slot.days || slot.days.length === 0) {
-                methods.setError(`schedules.${i}.days` as any, {
+                methods.setError(`schedules.${i}.days` as FieldPath<SectionFormValues>, {
                     type: 'manual',
                     message: `Schedule Slot #${i + 1} must have at least one day selected.`
                 });
                 hasErrors = true;
             }
             if (!slot.time_start) {
-                methods.setError(`schedules.${i}.time_start` as any, {
+                methods.setError(`schedules.${i}.time_start` as FieldPath<SectionFormValues>, {
                     type: 'manual',
                     message: `Schedule Slot #${i + 1}: Start time is required.`
                 });
                 hasErrors = true;
             }
             if (!slot.time_end) {
-                methods.setError(`schedules.${i}.time_end` as any, {
+                methods.setError(`schedules.${i}.time_end` as FieldPath<SectionFormValues>, {
                     type: 'manual',
                     message: `Schedule Slot #${i + 1}: End time is required.`
                 });
                 hasErrors = true;
             }
             if (slot.time_start && slot.time_end && slot.time_start >= slot.time_end) {
-                methods.setError(`schedules.${i}.time_start` as any, {
+                methods.setError(`schedules.${i}.time_start` as FieldPath<SectionFormValues>, {
                     type: 'manual',
                     message: `Schedule Slot #${i + 1}: Start time must be earlier than end time.`
                 });
@@ -219,7 +202,7 @@ export default function SectionWizardModal({
                 && slot.time_start < other.time_end
                 && other.time_start < slot.time_end);
             if (overlapIndex >= 0) {
-                methods.setError(`schedules.${i}.time_start` as any, {
+                methods.setError(`schedules.${i}.time_start` as FieldPath<SectionFormValues>, {
                     type: 'manual',
                     message: `Schedule Slot #${i + 1} overlaps Slot #${overlapIndex + 1} on a shared day.`
                 });
@@ -246,7 +229,7 @@ export default function SectionWizardModal({
             const components = period.components || [];
             components.forEach(function(component, cIdx) {
                 if (!component.name || !component.name.trim()) {
-                    methods.setError(`grading_periods.${pIdx}.components.${cIdx}.name` as any, {
+                    methods.setError(`grading_periods.${pIdx}.components.${cIdx}.name` as FieldPath<SectionFormValues>, {
                         type: 'manual',
                         message: 'Component name is required.'
                     });
@@ -254,7 +237,7 @@ export default function SectionWizardModal({
                 }
                 const weight = Number(component.weight);
                 if (!(weight > 0 && weight <= 100)) {
-                    methods.setError(`grading_periods.${pIdx}.components.${cIdx}.weight` as any, {
+                    methods.setError(`grading_periods.${pIdx}.components.${cIdx}.weight` as FieldPath<SectionFormValues>, {
                         type: 'manual',
                         message: 'Weight must be greater than 0 and at most 100.'
                     });
@@ -263,7 +246,7 @@ export default function SectionWizardModal({
             });
             const total = components.reduce((sum, component) => sum + (Number(component.weight) || 0), 0);
             if (components.length === 0 || Math.abs(total - 100) > 0.001) {
-                methods.setError(`grading_periods.${pIdx}.weight` as any, {
+                methods.setError(`grading_periods.${pIdx}.weight` as FieldPath<SectionFormValues>, {
                     type: 'manual',
                     message: `${period.name} component weights must total 100% (currently ${total}%).`
                 });

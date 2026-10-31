@@ -3,6 +3,7 @@ import { ActionIconProps } from '@type/common/modal.type';
 import { HTMLAttributesSpanElement } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
 import { normalizeSx } from '@utils/theme.util';
+import { MouseEvent } from 'react';
 
 export interface CommonPromptModalProps extends CommonActionModalProps {
     // Action icon props
@@ -57,7 +58,7 @@ export default function CommonPromptModal({
                 isButtonsFullWidth,
                 cancelProps: {
                     color: 'secondary',
-                    onClick: (e: any) => props.onClose?.(e, 'backdropClick'),
+                    onClick: (e: MouseEvent<HTMLButtonElement>) => props.onClose?.(e, 'backdropClick'),
                     variant: 'outlined',
                     ...cancelProps
                 }

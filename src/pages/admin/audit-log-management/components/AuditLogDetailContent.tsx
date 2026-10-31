@@ -1,4 +1,4 @@
-import { CheckIcon, CopyIcon, EyeIcon } from '@phosphor-icons/react';
+import { CheckIcon, CopyIcon } from '@phosphor-icons/react';
 import { AuditLogRow } from '@type/audit-log.type';
 import { useMemo, useState } from 'react';
 

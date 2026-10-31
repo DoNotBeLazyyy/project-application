@@ -4,7 +4,7 @@ import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import DepartmentGridCard from '@pages/admin/department-management/DepartmentGridCard';
 import DepartmentWizardModal from '@pages/admin/department-management/DepartmentWizardModal';
-import { useDepartmentTableConfig } from '@pages/admin/department-management/useDepartmentTableConfig';
+import { useDepartmentTableConfig } from '@pages/admin/department-management/use-department-table-config';
 import {
     bulkCreateDepartments,
     bulkDeleteDepartments,
@@ -271,7 +271,6 @@ export default function DepartmentManagement() {
             <DepartmentWizardModal
                 departmentId={selectedId}
                 initialStep={wizardStep}
-                isCodeDisabled
                 isSaving={isSaving}
                 methods={updateMethods}
                 open={isUpdateOpen}

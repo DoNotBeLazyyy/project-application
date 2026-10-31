@@ -6,7 +6,7 @@ import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
-import { useObjectDraft } from '@hooks/useFormDraft';
+import { useObjectDraft } from '@hooks/use-form-draft';
 import { isBlankText, MATERIAL_URL_PATTERN } from '@pages/shared/content/content-form.constant';
 import {
     ArrowLeftIcon,
@@ -38,7 +38,7 @@ import {
 } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
-export const LESSON_MODULE_WIZARD_STEPS: ModalStepItem[] = [
+const LESSON_MODULE_WIZARD_STEPS: ModalStepItem[] = [
     {
         step: 1,
         title: 'Module Identity',

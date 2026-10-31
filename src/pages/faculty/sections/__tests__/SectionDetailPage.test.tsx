@@ -1,11 +1,10 @@
+import SectionDetailPage from '@pages/faculty/sections/SectionDetailPage';
 import * as facultyService from '@services/faculty.service';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import {
     beforeEach, describe, expect, it, vi
 } from 'vitest';
-
-import SectionDetailPage from '../SectionDetailPage';
 
 vi.mock('@services/faculty.service', () => ({
     getSectionDetail: vi.fn(),

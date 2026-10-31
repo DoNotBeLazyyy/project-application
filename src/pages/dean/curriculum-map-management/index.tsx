@@ -5,20 +5,20 @@ import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import CommonSelect from '@components/select/CommonSelect';
-import { useFormDraft } from '@hooks/useFormDraft';
+import { useFormDraft } from '@hooks/use-form-draft';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSchoolYearOptions';
-import { useTermTypeOptions } from '@pages/admin/term-management/type/useTermTypeOptions';
+import { useSchoolYearOptions } from '@pages/admin/school-year-management/use-school-year-options';
+import { useTermTypeOptions } from '@pages/admin/term-management/type/use-term-type-options';
 import CurriculumMapForm from '@pages/dean/curriculum-map-management/CurriculumMapForm';
 import CurriculumTermTable from '@pages/dean/curriculum-map-management/CurriculumTermTable';
-import { useActiveTermOptions } from '@pages/dean/curriculum-map-management/useActiveTermOptions';
-import { useCurriculumMapGrouped } from '@pages/dean/curriculum-map-management/useCurriculumMapGrouped';
-import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
+import { useActiveTermOptions } from '@pages/dean/curriculum-map-management/use-active-term-options';
+import { useCurriculumMapGrouped } from '@pages/dean/curriculum-map-management/use-curriculum-map-grouped';
+import { useProgramOptions } from '@pages/dean/program-management/use-program-options';
 import {
     DotsThreeVerticalIcon, PlusIcon, PrinterIcon, TrashIcon, UploadSimpleIcon
 } from '@phosphor-icons/react';
@@ -811,12 +811,12 @@ export default function CurriculumMapManagement({
                 .toLowerCase();
             const normalizedTarget = targetCode.replace(/[\s\-_]+/g, '');
 
-            const matchesCode = (c: { code: string }) => {
+            function matchesCode(c: { code: string }) {
                 const cCode = c.code.trim()
                     .toLowerCase();
                 const normalizedCCode = cCode.replace(/[\s\-_]+/g, '');
                 return cCode === targetCode || normalizedCCode === normalizedTarget;
-            };
+            }
             // Other departments' courses (e.g. General Education) are allowed in a curriculum
             const course = courses.find(matchesCode) ?? allCoursesRes.data?.find(matchesCode);
 

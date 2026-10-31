@@ -3,8 +3,9 @@ import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
-import { useFormDraft } from '@hooks/useFormDraft';
-import DepartmentForm, { DEPARTMENT_FORM_STEPS } from '@pages/admin/department-management/DepartmentForm';
+import { DEPARTMENT_FORM_STEPS } from '@constants/department.constant';
+import { useFormDraft } from '@hooks/use-form-draft';
+import DepartmentForm from '@pages/admin/department-management/DepartmentForm';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -26,7 +27,6 @@ interface DepartmentWizardModalProps {
     readOnly?: boolean;
     initialStep?: number;
     departmentId?: string | null;
-    isCodeDisabled?: boolean;
     isSaving?: boolean;
     methods: UseFormReturn<DepartmentFormValues>;
     onClose: VoidFunction;
@@ -39,7 +39,6 @@ export default function DepartmentWizardModal({
     readOnly = false,
     initialStep = 1,
     departmentId,
-    isCodeDisabled = false,
     isSaving = false,
     methods,
     onClose,
@@ -234,10 +233,8 @@ export default function DepartmentWizardModal({
                     control={control}
                     departmentId={departmentId}
                     disabled={readOnly}
-                    isCodeDisabled={isCodeDisabled}
                     isCreate={!departmentId && !readOnly}
                     setValue={setValue}
-                    onStepChange={handleStepClick}
                 />
             </div>
 

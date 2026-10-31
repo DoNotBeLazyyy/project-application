@@ -1,5 +1,5 @@
 import TableActionCell, { TableActionCellRendererParams } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/useTableConfigs';
+import { TableActionConfig } from '@components/table/use-table-configs';
 import Checkbox from '@mui/material/Checkbox';
 import { ChangeEventInput } from '@type/common.type';
 import { MobileCardColDef } from '@type/table.type';

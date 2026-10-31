@@ -348,3 +348,6 @@ Legend: **BUG** = broken behavior (fixed before moving on; the fix is noted) ·
   that opens the shared filter modal.
 - Code standard: ESLint now uses the reference configuration (one JSX prop per line, object and import line breaks,
   sorted imports), auto-fixed across `src`; function types without arguments use `VoidFunction`.
+- Code standard (continued): all 535 remaining ESLint errors fixed by hand (any types, arrow-function declarations, relative imports, non-null assertions, console calls, exports from component files); hook files renamed to kebab-case. ESLint 0 errors, tsc clean, 185 tests pass.
+- INCONSISTENCY (fixed): the Registrar dashboard squeezed 5 stat cards into one row on laptops; the sidebar group "STUDENT PROFILE VERIFICATION" was cut off (now "STUDENT RECORDS"); Faculty Evaluations said "No sections match" while still loading.
+- NOTE: Grade Release froze the automated test browser; a clean Chrome (Playwright, 5 widths, light and dark, all terms and periods) never froze, so it was the test tool, not the app.

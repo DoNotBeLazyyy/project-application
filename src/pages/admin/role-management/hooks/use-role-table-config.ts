@@ -1,19 +1,19 @@
 import { MenuOption } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/useTableConfigs';
-import { ProgramLevelListRow } from '@type/program/program-level.type';
+import { TableActionConfig } from '@components/table/use-table-configs';
+import { RoleListRow } from '@type/role.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
-interface UseProgramLevelTableConfigProps {
-    onEdit: (id: string) => void;
+interface UseRoleTableConfigProps {
     onRequestDeleteRow: (id: string) => void;
+    onEdit: (id: string) => void;
     onView: (id: string) => void;
 }
 
-export function useProgramLevelTableConfig({
+export function useRoleTableConfig({
     onEdit,
     onView
-}: UseProgramLevelTableConfigProps) {
+}: UseRoleTableConfigProps) {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
@@ -40,10 +40,12 @@ export function useProgramLevelTableConfig({
     }, []);
 
     const tableActionConfig = useMemo(function() {
-        return function(onDelete: (id: string) => void): TableActionConfig<ProgramLevelListRow> {
+        return function(onDelete: (id: string) => void): TableActionConfig<RoleListRow> {
             return {
-                onEditClick: (row: ProgramLevelListRow) => () => onEdit(row.id),
-                menuOptions: (row: ProgramLevelListRow): MenuOption[] => [
+                onEditClick: (row: RoleListRow) => function() {
+                    onEdit(row.id);
+                },
+                menuOptions: (row: RoleListRow): MenuOption[] => [
                     {
                         preset: 'view',
                         onClick: () => onView(row.id)

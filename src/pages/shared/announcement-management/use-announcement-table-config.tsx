@@ -1,6 +1,6 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/useTableConfigs';
+import { TableActionConfig } from '@components/table/use-table-configs';
 import { PaperclipIcon, PushPinIcon } from '@phosphor-icons/react';
 import { AnnouncementAudience, CommunicationListRow } from '@type/announcement.type';
 import { BadgeStatusVariant } from '@type/common/badge.type';

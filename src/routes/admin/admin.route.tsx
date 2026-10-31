@@ -40,52 +40,66 @@ export const adminRoutes: RouteObject[] = [
                 path: 'departments'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/admin/departments"
-                />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/admin/departments"
+                    />
+                ),
                 path: 'department-management'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/admin/school-years"
-                         />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/admin/school-years"
+                    />
+                ),
                 path: 'school-year-management'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/admin/school-years"
-                         />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/admin/school-years"
+                    />
+                ),
                 path: 'transmutation'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/admin/school-years"
-                         />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/admin/school-years"
+                    />
+                ),
                 path: 'grading-periods'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/admin/school-years"
-                         />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/admin/school-years"
+                    />
+                ),
                 path: 'special-grades'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/admin/school-years"
-                         />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/admin/school-years"
+                    />
+                ),
                 path: 'grade-configurations'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/admin/school-years"
-                         />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/admin/school-years"
+                    />
+                ),
                 path: 'grading-rules'
             },
             {
@@ -95,17 +109,21 @@ export const adminRoutes: RouteObject[] = [
                 path: 'evaluations'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/admin/evaluations"
-                />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/admin/evaluations"
+                    />
+                ),
                 path: 'evaluations/new'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/admin/evaluations"
-                />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/admin/evaluations"
+                    />
+                ),
                 path: 'evaluations/:id'
             },
             {
@@ -115,24 +133,30 @@ export const adminRoutes: RouteObject[] = [
                 path: 'roles'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/admin/school-years"
-                         />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/admin/school-years"
+                    />
+                ),
                 path: 'terms'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/admin/school-years"
-                         />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/admin/school-years"
+                    />
+                ),
                 path: 'term-types'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/admin/school-years"
-                         />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/admin/school-years"
+                    />
+                ),
                 path: 'academic-thresholds'
             },
             {
@@ -154,24 +178,30 @@ export const adminRoutes: RouteObject[] = [
                 path: 'announcement-management/:id'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/admin/announcement-management"
-                />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/admin/announcement-management"
+                    />
+                ),
                 path: 'event-management'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/admin/announcement-management/new?type=Event"
-                />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/admin/announcement-management/new?type=Event"
+                    />
+                ),
                 path: 'event-management/new'
             },
             {
-                element: <CommunicationRedirect
-                    basePath="/admin/announcement-management"
-                    itemType="Event"
-                />,
+                element: (
+                    <CommunicationRedirect
+                        basePath="/admin/announcement-management"
+                        itemType="Event"
+                    />
+                ),
                 path: 'event-management/:id'
             },
             {

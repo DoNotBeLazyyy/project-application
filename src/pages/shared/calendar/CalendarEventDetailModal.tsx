@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
+import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from '@pages/shared/calendar/calendar.types';
 import {
     ArrowSquareOutIcon,
     ClockIcon,
@@ -9,8 +10,6 @@ import {
 } from '@phosphor-icons/react';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from './calendar.types';
 
 interface CalendarEventDetailModalProps {
     event: UnifiedCalendarEvent | null;
@@ -77,12 +76,13 @@ export function CalendarEventDetailModal({
         return `${startStr} at ${startTime} – ${endStr} at ${endTime}`;
     })();
 
-    const handleActionClick = () => {
-        if (event.metadata?.targetUrl) {
+    function handleActionClick() {
+        const targetUrl = event?.metadata?.targetUrl;
+        if (targetUrl) {
             onClose();
-            navigate(event.metadata.targetUrl);
+            navigate(targetUrl);
         }
-    };
+    }
 
     return (
         <CommonModal

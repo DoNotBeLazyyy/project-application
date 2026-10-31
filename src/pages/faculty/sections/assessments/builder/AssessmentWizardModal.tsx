@@ -8,7 +8,7 @@ import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { DEFAULT_ASSSESSMENT_VALUES, DEFAULT_QUESTION_VALUES } from '@constants/faculty.constant';
-import { useFormDraft } from '@hooks/useFormDraft';
+import { useFormDraft } from '@hooks/use-form-draft';
 import AssessmentAttachmentPanel from '@pages/faculty/sections/assessments/builder/AssessmentAttachmentPanel';
 import QuestionList from '@pages/faculty/sections/assessments/builder/QuestionList';
 import QuestionModal from '@pages/faculty/sections/assessments/builder/QuestionModal';
@@ -46,7 +46,7 @@ import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-export const ASSESSMENT_WIZARD_STEPS: ModalStepItem[] = [
+const ASSESSMENT_WIZARD_STEPS: ModalStepItem[] = [
     {
         step: 1,
         title: 'Overview & Grading',
@@ -781,160 +781,162 @@ export default function AssessmentWizardModal({
 
             {/* Wizard Step Body */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/50 dark:bg-zinc-900/40">
-                {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-3">
-                        <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
-                        <p className="text-xs text-slate-500">Loading assessment details...</p>
-                    </div>
-                ) : (
-                    <>
-                        {/* Step 1: Overview & Grading */}
-                        {currentStep === 1 && (
-                            <div className="flex flex-col gap-4">
-                                <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs">
-                                    <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm block mb-3">
-                                        Assessment Identity & Grading Component
-                                    </span>
-                                    <CommonForm
-                                        containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
-                                        control={settingsMethods.control}
-                                        fields={step1Fields}
-                                        formProps={{
-                                            id: 'assessment-wizard-step1-form',
-                                            onSubmit: (e) => e.preventDefault()
-                                        }}
-                                    />
+                {isLoading
+                    ? (
+                        <div className="flex flex-col items-center justify-center py-20 gap-3">
+                            <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
+                            <p className="text-xs text-slate-500">Loading assessment details...</p>
+                        </div>
+                    )
+                    : (
+                        <>
+                            {/* Step 1: Overview & Grading */}
+                            {currentStep === 1 && (
+                                <div className="flex flex-col gap-4">
+                                    <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs">
+                                        <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm block mb-3">
+                                            Assessment Identity & Grading Component
+                                        </span>
+                                        <CommonForm
+                                            containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
+                                            control={settingsMethods.control}
+                                            fields={step1Fields}
+                                            formProps={{
+                                                id: 'assessment-wizard-step1-form',
+                                                onSubmit: (e) => e.preventDefault()
+                                            }}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {/* Step 2: Schedule & Timing */}
-                        {currentStep === 2 && (
-                            <div className="flex flex-col gap-4">
-                                <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs flex flex-col gap-4">
-                                    <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
-                                        Time Limits & Attempt Controls
-                                    </span>
-                                    <CommonForm
-                                        component="div"
-                                        containerClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
-                                        control={settingsMethods.control}
-                                        enableDraftRecovery={false}
-                                        fields={step2TimingFields}
-                                    />
-
-                                    <div className="border-t border-slate-100 dark:border-zinc-800 pt-4 flex flex-col gap-4">
+                            {/* Step 2: Schedule & Timing */}
+                            {currentStep === 2 && (
+                                <div className="flex flex-col gap-4">
+                                    <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs flex flex-col gap-4">
                                         <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
-                                            Availability & Deadlines
+                                            Time Limits & Attempt Controls
                                         </span>
                                         <CommonForm
                                             component="div"
                                             containerClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
                                             control={settingsMethods.control}
                                             enableDraftRecovery={false}
-                                            fields={step2ScheduleFields}
+                                            fields={step2TimingFields}
                                         />
 
-                                        <div className="bg-slate-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-slate-100 dark:border-zinc-800">
+                                        <div className="border-t border-slate-100 dark:border-zinc-800 pt-4 flex flex-col gap-4">
+                                            <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
+                                                Availability & Deadlines
+                                            </span>
                                             <CommonForm
                                                 component="div"
-                                                containerClassName="flex flex-col gap-2"
+                                                containerClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
                                                 control={settingsMethods.control}
                                                 enableDraftRecovery={false}
-                                                fields={step2OptionFields}
+                                                fields={step2ScheduleFields}
                                             />
+
+                                            <div className="bg-slate-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-slate-100 dark:border-zinc-800">
+                                                <CommonForm
+                                                    component="div"
+                                                    containerClassName="flex flex-col gap-2"
+                                                    control={settingsMethods.control}
+                                                    enableDraftRecovery={false}
+                                                    fields={step2OptionFields}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {/* Step 3: Questions & Content */}
-                        {currentStep === 3 && (
-                            <div className="flex flex-col gap-4">
-                                {activeAssessmentId
-                                    ? (
-                                        <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs">
-                                            <QuestionList
-                                                assessmentDbId={activeAssessmentId}
-                                                configuredTotalPoints={configuredTotalPoints}
-                                                expandedQuestionId={expandedQuestionId}
-                                                questions={questions}
-                                                onAddQuestion={handleOpenAddQuestion}
-                                                onDeleteQuestion={handleDeleteQuestion}
-                                                onEditQuestion={handleOpenEditQuestion}
-                                                onImportQuestions={() => setIsImportOpen(true)}
-                                                onSyncTotalPoints={handleSyncTotalPoints}
-                                                onToggleExpand={handleToggleExpand}
-                                            />
-                                        </div>
-                                    )
-                                    : (
-                                        <div className="p-8 text-center bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800">
-                                            <p className="text-slate-500 text-sm">
-                                            Please complete Step 1 to initialize the assessment before adding questions.
+                            {/* Step 3: Questions & Content */}
+                            {currentStep === 3 && (
+                                <div className="flex flex-col gap-4">
+                                    {activeAssessmentId
+                                        ? (
+                                            <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs">
+                                                <QuestionList
+                                                    assessmentDbId={activeAssessmentId}
+                                                    configuredTotalPoints={configuredTotalPoints}
+                                                    expandedQuestionId={expandedQuestionId}
+                                                    questions={questions}
+                                                    onAddQuestion={handleOpenAddQuestion}
+                                                    onDeleteQuestion={handleDeleteQuestion}
+                                                    onEditQuestion={handleOpenEditQuestion}
+                                                    onImportQuestions={() => setIsImportOpen(true)}
+                                                    onSyncTotalPoints={handleSyncTotalPoints}
+                                                    onToggleExpand={handleToggleExpand}
+                                                />
+                                            </div>
+                                        )
+                                        : (
+                                            <div className="p-8 text-center bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800">
+                                                <p className="text-slate-500 text-sm">
+                                                Please complete Step 1 to initialize the assessment before adding questions.
+                                                </p>
+                                            </div>
+                                        )}
+                                </div>
+                            )}
+
+                            {/* Step 4: Settings & Rubrics */}
+                            {currentStep === 4 && (
+                                <div className="flex flex-col gap-4">
+                                    {activeAssessmentId && (
+                                        <RubricAttachPanel
+                                            assessmentId={activeAssessmentId}
+                                            sectionId={sectionId}
+                                        />
+                                    )}
+
+                                    <AssessmentAttachmentPanel
+                                        assessmentDbId={activeAssessmentId}
+                                        attachments={attachments}
+                                        onAttachmentsChange={refreshAttachments}
+                                    />
+
+                                    <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs flex flex-col gap-3">
+                                        <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
+                                            Question Presentation & Display Rules
+                                        </span>
+                                        <CommonForm
+                                            component="div"
+                                            containerClassName="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                                            control={settingsMethods.control}
+                                            enableDraftRecovery={false}
+                                            fields={step4DisplayFields}
+                                        />
+                                    </div>
+
+                                    {/* Summary Card */}
+                                    <div className="p-4 rounded-xl border border-blue-200/80 bg-blue-50/60 dark:bg-blue-950/20 dark:border-blue-800/60 flex items-center justify-between gap-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-bold text-blue-900 dark:text-blue-200 uppercase tracking-wide">
+                                                Points Summary
+                                            </span>
+                                            <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">
+                                                Configured Total: <strong>{configuredTotalPoints} pts</strong> | Questions Sum: <strong>{questionSumPoints} pts</strong> ({questions.length} question{questions.length === 1
+                                                    ? ''
+                                                    : 's'})
                                             </p>
                                         </div>
-                                    )}
-                            </div>
-                        )}
-
-                        {/* Step 4: Settings & Rubrics */}
-                        {currentStep === 4 && (
-                            <div className="flex flex-col gap-4">
-                                {activeAssessmentId && (
-                                    <RubricAttachPanel
-                                        assessmentId={activeAssessmentId}
-                                        sectionId={sectionId}
-                                    />
-                                )}
-
-                                <AssessmentAttachmentPanel
-                                    assessmentDbId={activeAssessmentId}
-                                    attachments={attachments}
-                                    onAttachmentsChange={refreshAttachments}
-                                />
-
-                                <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs flex flex-col gap-3">
-                                    <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
-                                        Question Presentation & Display Rules
-                                    </span>
-                                    <CommonForm
-                                        component="div"
-                                        containerClassName="grid grid-cols-1 sm:grid-cols-2 gap-3"
-                                        control={settingsMethods.control}
-                                        enableDraftRecovery={false}
-                                        fields={step4DisplayFields}
-                                    />
-                                </div>
-
-                                {/* Summary Card */}
-                                <div className="p-4 rounded-xl border border-blue-200/80 bg-blue-50/60 dark:bg-blue-950/20 dark:border-blue-800/60 flex items-center justify-between gap-4">
-                                    <div className="flex flex-col">
-                                        <span className="text-xs font-bold text-blue-900 dark:text-blue-200 uppercase tracking-wide">
-                                            Points Summary
-                                        </span>
-                                        <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">
-                                            Configured Total: <strong>{configuredTotalPoints} pts</strong> | Questions Sum: <strong>{questionSumPoints} pts</strong> ({questions.length} question{questions.length === 1
-                                                ? ''
-                                                : 's'})
-                                        </p>
+                                        {questionSumPoints !== configuredTotalPoints && (
+                                            <CommonButton
+                                                color="primary"
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() => handleSyncTotalPoints(questionSumPoints)}
+                                            >
+                                                Sync to {questionSumPoints} pts
+                                            </CommonButton>
+                                        )}
                                     </div>
-                                    {questionSumPoints !== configuredTotalPoints && (
-                                        <CommonButton
-                                            color="primary"
-                                            size="small"
-                                            variant="outlined"
-                                            onClick={() => handleSyncTotalPoints(questionSumPoints)}
-                                        >
-                                            Sync to {questionSumPoints} pts
-                                        </CommonButton>
-                                    )}
                                 </div>
-                            </div>
-                        )}
-                    </>
-                )}
+                            )}
+                        </>
+                    )}
             </div>
 
             {/* Sticky Bottom Action Bar */}

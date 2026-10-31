@@ -5,8 +5,8 @@ import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import AnnouncementFilterForm from '@pages/shared/announcement-management/AnnouncementFilterForm';
 import CommunicationGridCard from '@pages/shared/announcement-management/CommunicationGridCard';
-import { useAnnouncementBasePath } from '@pages/shared/announcement-management/useAnnouncementBasePath';
-import { useAnnouncementTableConfig } from '@pages/shared/announcement-management/useAnnouncementTableConfig';
+import { useAnnouncementBasePath } from '@pages/shared/announcement-management/use-announcement-base-path';
+import { useAnnouncementTableConfig } from '@pages/shared/announcement-management/use-announcement-table-config';
 import {
     bulkDeleteAnnouncements,
     deleteAnnouncement,
@@ -20,7 +20,7 @@ import {
     listMyEventsFeed
 } from '@services/event.service';
 import { useAppStore } from '@stores/app.store';
-import { AnnouncementFilterValues, CommunicationListRow } from '@type/announcement.type';
+import { AnnouncementFeedRow, AnnouncementFilterValues, CommunicationListRow } from '@type/announcement.type';
 import { EventFeedRow } from '@type/event.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
@@ -36,6 +36,12 @@ const COMMUNICATION_SORT_COLUMNS: SortColumn[] = [
 ];
 
 const FILTER_COMMUNICATION_FORM_ID = 'filter-communication-form';
+
+// Feed rows can carry a section count the base feed type does not declare
+type FeedRowWithSectionCount = AnnouncementFeedRow & { section_count?: number };
+
+// Sort entries may still arrive with the legacy grid 'field' key
+type SortWithLegacyField = SortStringDto & { field?: string };
 
 interface AnnouncementManagementProps {
     defaultTab?: 'announcements' | 'events';
@@ -165,7 +171,7 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                     items = items.filter((a) => a.is_pinned === isPinned);
                 }
 
-                const rows: CommunicationListRow[] = items.map((a: any) => ({
+                const rows: CommunicationListRow[] = (items as FeedRowWithSectionCount[]).map((a) => ({
                     attachment_count: a.attachment_count ?? a.attachments?.length ?? 0,
                     author_name: a.author_name,
                     content: a.content,
@@ -394,7 +400,7 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                 annItems = annItems.filter((a) => a.is_pinned === isPinned);
             }
 
-            const annRows: CommunicationListRow[] = annItems.map((a: any) => ({
+            const annRows: CommunicationListRow[] = (annItems as FeedRowWithSectionCount[]).map((a) => ({
                 attachment_count: a.attachment_count ?? a.attachments?.length ?? 0,
                 author_name: a.author_name,
                 content: a.content,
@@ -518,7 +524,7 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
 
         // --- MANAGEMENT MODE (CRUD) ---
         if (filterType === 'Announcement') {
-            const annSort = sort.map((s: any) => ((s.sortKey || s.field) === 'date'
+            const annSort = (sort as SortWithLegacyField[]).map((s) => ((s.sortKey || s.field) === 'date'
                 ? { sortKey: 'created_at', isAsc: s.isAsc ?? true }
                 : s));
             const res = await listAnnouncements(page, size, search, annSort, audience, isPinned, currentRole);
@@ -580,7 +586,7 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
         }
 
         if (filterType === 'Event') {
-            const evtSort = sort.map((s: any) => ((s.sortKey || s.field) === 'date'
+            const evtSort = (sort as SortWithLegacyField[]).map((s) => ((s.sortKey || s.field) === 'date'
                 ? { sortKey: 'start_at', isAsc: s.isAsc ?? true }
                 : s));
             const res = await listEvents(page, size, search, evtSort, audience, false, currentRole);
@@ -648,10 +654,10 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
 
         // filterType === 'All' in Management Mode
         const fetchLimit = Math.max(page * size, 50);
-        const annSort = sort.map((s: any) => ((s.sortKey || s.field) === 'date'
+        const annSort = (sort as SortWithLegacyField[]).map((s) => ((s.sortKey || s.field) === 'date'
             ? { sortKey: 'created_at', isAsc: s.isAsc ?? true }
             : s));
-        const evtSort = sort.map((s: any) => ((s.sortKey || s.field) === 'date'
+        const evtSort = (sort as SortWithLegacyField[]).map((s) => ((s.sortKey || s.field) === 'date'
             ? { sortKey: 'start_at', isAsc: s.isAsc ?? true }
             : s));
 
@@ -783,7 +789,14 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
     async function handleDeleteRow(id: string) {
         const item = rowMapRef.current.get(id);
         if (item && !canManageCommunication(item, currentUserId, currentRole)) {
-            return { data: null, error: { message: 'You do not have permission to delete this item.' } as any };
+            return {
+                data: null,
+                error: {
+                    code: null,
+                    message: 'You do not have permission to delete this item.',
+                    status: null
+                }
+            };
         }
         if (item?.item_type === 'Event') {
             return deleteEvent(id);
@@ -800,7 +813,14 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
         });
 
         if (allowedIds.length === 0) {
-            return { data: null, error: { message: 'You do not have permission to delete the selected items.' } as any };
+            return {
+                data: null,
+                error: {
+                    code: null,
+                    message: 'You do not have permission to delete the selected items.',
+                    status: null
+                }
+            };
         }
 
         const annIds: string[] = [];

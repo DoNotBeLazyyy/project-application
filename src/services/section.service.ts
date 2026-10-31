@@ -1,5 +1,5 @@
 import { callRpc } from '@services/supabase.wrapper';
-import { BulkImportError, DetailedBulkImportResult } from '@type/bulk-import.type';
+import { BulkImportError, BulkImportRowItem, DetailedBulkImportResult } from '@type/bulk-import.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import {
     DayOfWeek,
@@ -19,8 +19,9 @@ export function groupScheduleSlotsToBlocks(slots: SectionScheduleSlot[]): Sectio
         const room = slot.room || '';
         const key = `${start}_${end}_${room}`;
 
-        if (map.has(key)) {
-            const existing = map.get(key)!;
+        const existing = map.get(key);
+
+        if (existing) {
             if (!existing.days.includes(slot.day_of_week)) {
                 existing.days.push(slot.day_of_week);
             }
@@ -272,7 +273,7 @@ export function parseGradingPeriodsSchema(input?: string): SectionGradingPeriodO
             if (Array.isArray(jsonParsed)) {
                 return jsonParsed.map((item, idx) => ({
                     components: Array.isArray(item.components)
-                        ? item.components.map((c: any) => ({
+                        ? item.components.map((c: { name?: unknown; weight?: unknown }) => ({
                             name: String(c.name || 'Component'),
                             weight: Number(c.weight) || 0
                         }))
@@ -402,15 +403,15 @@ export async function bulkCreateSections(
         provisioned_count?: number;
         created_count?: number;
         updated_count?: number;
-        created_rows?: any[];
-        updated_rows?: any[];
+        created_rows?: BulkImportRowItem[];
+        updated_rows?: BulkImportRowItem[];
         errors: BulkImportError[];
     }>('fn_bulk_create_sections', { p_sections: mappedSections });
 
     let provisionedCount = 0;
     let updatedCount = 0;
-    let createdRows: any[] = [];
-    let updatedRows: any[] = [];
+    let createdRows: BulkImportRowItem[] = [];
+    let updatedRows: BulkImportRowItem[] = [];
     let structuredErrors: BulkImportError[] = [];
     const structuredConflicts: BulkImportError[] = [];
 
@@ -439,7 +440,7 @@ export async function bulkCreateSections(
         end: string;
     }[] = [];
 
-    const conflictRows: any[] = [];
+    const conflictRows: BulkImportRowItem[] = [];
 
     if (provisionedCount > 0) {
         const sectionsRes = await getSections();
@@ -463,11 +464,13 @@ export async function bulkCreateSections(
             // 1. Process Schedule & Conflict Detection
             const days = parseDaysOfWeek(row.schedule_days);
             if (days.length > 0 && row.schedule_time_start && row.schedule_time_end) {
+                const slotStart = row.schedule_time_start.slice(0, 5);
+                const slotEnd = row.schedule_time_end.slice(0, 5);
                 const slots: SectionScheduleSlot[] = days.map((day) => ({
                     day_of_week: day,
                     room: row.schedule_room || row.room || null,
-                    time_end: row.schedule_time_end!.slice(0, 5),
-                    time_start: row.schedule_time_start!.slice(0, 5)
+                    time_end: slotEnd,
+                    time_start: slotStart
                 }));
                 await saveSectionSchedules(createdSec.id, slots);
 

@@ -263,148 +263,150 @@ export default function GradeSheetPanel({
 
             {/* Bento Cards Grid for Grade Sheet */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-                {filteredRows.length === 0 ? (
-                    <div className="py-12 text-center text-slate-500 text-xs border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900">
-                        {gradeSheet.length === 0
-                            ? 'No grade records generated for this period yet. Click "Calculate" to compute.'
-                            : `No students match "${searchQuery}".`}
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pb-6">
-                        {filteredRows.map((row) => (
-                            <div
-                                className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between gap-3"
-                                key={row.enrollment_id}
-                            >
-                                <div>
-                                    {/* Student Header */}
-                                    <div className="flex items-center justify-between gap-2 mb-2">
-                                        <div className="flex items-center gap-2 min-w-0">
-                                            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300 font-bold text-xs flex items-center justify-center shrink-0">
-                                                {row.full_name
-                                                    ?.split(' ')
-                                                    .map((n) => n[0])
-                                                    .slice(0, 2)
-                                                    .join('') || <UserCircleIcon size={18} />}
+                {filteredRows.length === 0
+                    ? (
+                        <div className="py-12 text-center text-slate-500 text-xs border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900">
+                            {gradeSheet.length === 0
+                                ? 'No grade records generated for this period yet. Click "Calculate" to compute.'
+                                : `No students match "${searchQuery}".`}
+                        </div>
+                    )
+                    : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pb-6">
+                            {filteredRows.map((row) => (
+                                <div
+                                    className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between gap-3"
+                                    key={row.enrollment_id}
+                                >
+                                    <div>
+                                        {/* Student Header */}
+                                        <div className="flex items-center justify-between gap-2 mb-2">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300 font-bold text-xs flex items-center justify-center shrink-0">
+                                                    {row.full_name
+                                                        ?.split(' ')
+                                                        .map((n) => n[0])
+                                                        .slice(0, 2)
+                                                        .join('') || <UserCircleIcon size={18} />}
+                                                </div>
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-sm truncate leading-snug">
+                                                        {row.full_name}
+                                                    </span>
+                                                    <span className="text-[11px] font-mono text-slate-400">
+                                                        {row.student_number}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div className="flex flex-col min-w-0">
-                                                <span className="font-bold text-slate-900 dark:text-slate-100 text-sm truncate leading-snug">
-                                                    {row.full_name}
-                                                </span>
-                                                <span className="text-[11px] font-mono text-slate-400">
-                                                    {row.student_number}
-                                                </span>
-                                            </div>
-                                        </div>
 
-                                        <span
-                                            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border shrink-0 ${
-                                                row.status === 'Submitted' || row.status === 'Approved'
-                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                                                    : 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-zinc-800 dark:text-slate-300'
-                                            }`}
-                                        >
-                                            {row.status ?? 'Draft'}
-                                        </span>
-                                    </div>
-
-                                    {/* Metrics Grid */}
-                                    <div className="grid grid-cols-3 gap-1.5 mt-2.5">
-                                        <div className="bg-slate-50/90 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800/80 p-2 rounded-xl text-center">
-                                            <span className="block font-medium text-[10px] text-slate-400 uppercase tracking-tight">
-                                                Raw
-                                            </span>
-                                            <span className="font-bold text-xs text-slate-800 dark:text-slate-200 block mt-0.5">
-                                                {row.raw_grade != null
-                                                    ? `${row.raw_grade}%`
-                                                    : '—'}
-                                            </span>
-                                        </div>
-
-                                        <div className="bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/60 p-2 rounded-xl text-center">
-                                            <span className="block font-bold text-[10px] text-blue-600 dark:text-blue-400 uppercase tracking-tight">
-                                                Transmuted
-                                            </span>
-                                            <span className="font-extrabold text-sm text-blue-700 dark:text-blue-300 block mt-0.5">
-                                                {row.transmuted_grade != null
-                                                    ? String(row.transmuted_grade)
-                                                    : '—'}
-                                            </span>
-                                        </div>
-
-                                        <div className="bg-slate-50/90 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800/80 p-2 rounded-xl text-center flex flex-col justify-between">
-                                            <span className="block font-medium text-[10px] text-slate-400 uppercase tracking-tight flex items-center justify-center gap-1">
-                                                <FlagIcon
-                                                    className="text-amber-500"
-                                                    size={10}
-                                                    weight="fill"
-                                                />
-                                                Flag Selector
-                                            </span>
-                                            <select
-                                                aria-label={`Special grade flag for ${row.full_name || 'student'}`}
-                                                className="w-full text-xs font-bold text-center bg-transparent border-0 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded cursor-pointer mt-0.5 truncate"
-                                                disabled={isSubmitted || !isEncodingOpen || isFlagBusy}
-                                                title="Select special grade flag (INC, DRP, FA, UW)"
-                                                value={row.special_grade || ''}
-                                                onChange={(e) => onUpdateSpecialGrade?.(row.enrollment_id, e.target.value || null)}
+                                            <span
+                                                className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border shrink-0 ${
+                                                    row.status === 'Submitted' || row.status === 'Approved'
+                                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                                        : 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-zinc-800 dark:text-slate-300'
+                                                }`}
                                             >
-                                                <option
-                                                    className="text-slate-700 dark:text-slate-200 bg-white dark:bg-zinc-900"
-                                                    value=""
-                                                >— None —</option>
-                                                <option
-                                                    className="text-amber-700 dark:text-amber-300 bg-white dark:bg-zinc-900"
-                                                    value="INC"
-                                                >INC (Incomplete)</option>
-                                                <option
-                                                    className="text-rose-700 dark:text-rose-300 bg-white dark:bg-zinc-900"
-                                                    value="DRP"
-                                                >DRP (Dropped)</option>
-                                                <option
-                                                    className="text-purple-700 dark:text-purple-300 bg-white dark:bg-zinc-900"
-                                                    value="FA"
-                                                >FA (Absences)</option>
-                                                <option
-                                                    className="text-red-700 dark:text-red-300 bg-white dark:bg-zinc-900"
-                                                    value="UW"
-                                                >UW (Unauthorized)</option>
-                                            </select>
+                                                {row.status ?? 'Draft'}
+                                            </span>
+                                        </div>
+
+                                        {/* Metrics Grid */}
+                                        <div className="grid grid-cols-3 gap-1.5 mt-2.5">
+                                            <div className="bg-slate-50/90 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800/80 p-2 rounded-xl text-center">
+                                                <span className="block font-medium text-[10px] text-slate-400 uppercase tracking-tight">
+                                                    Raw
+                                                </span>
+                                                <span className="font-bold text-xs text-slate-800 dark:text-slate-200 block mt-0.5">
+                                                    {row.raw_grade != null
+                                                        ? `${row.raw_grade}%`
+                                                        : '—'}
+                                                </span>
+                                            </div>
+
+                                            <div className="bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/60 p-2 rounded-xl text-center">
+                                                <span className="block font-bold text-[10px] text-blue-600 dark:text-blue-400 uppercase tracking-tight">
+                                                    Transmuted
+                                                </span>
+                                                <span className="font-extrabold text-sm text-blue-700 dark:text-blue-300 block mt-0.5">
+                                                    {row.transmuted_grade != null
+                                                        ? String(row.transmuted_grade)
+                                                        : '—'}
+                                                </span>
+                                            </div>
+
+                                            <div className="bg-slate-50/90 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800/80 p-2 rounded-xl text-center flex flex-col justify-between">
+                                                <span className="block font-medium text-[10px] text-slate-400 uppercase tracking-tight flex items-center justify-center gap-1">
+                                                    <FlagIcon
+                                                        className="text-amber-500"
+                                                        size={10}
+                                                        weight="fill"
+                                                    />
+                                                    Flag Selector
+                                                </span>
+                                                <select
+                                                    aria-label={`Special grade flag for ${row.full_name || 'student'}`}
+                                                    className="w-full text-xs font-bold text-center bg-transparent border-0 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded cursor-pointer mt-0.5 truncate"
+                                                    disabled={isSubmitted || !isEncodingOpen || isFlagBusy}
+                                                    title="Select special grade flag (INC, DRP, FA, UW)"
+                                                    value={row.special_grade || ''}
+                                                    onChange={(e) => onUpdateSpecialGrade?.(row.enrollment_id, e.target.value || null)}
+                                                >
+                                                    <option
+                                                        className="text-slate-700 dark:text-slate-200 bg-white dark:bg-zinc-900"
+                                                        value=""
+                                                    >— None —</option>
+                                                    <option
+                                                        className="text-amber-700 dark:text-amber-300 bg-white dark:bg-zinc-900"
+                                                        value="INC"
+                                                    >INC (Incomplete)</option>
+                                                    <option
+                                                        className="text-rose-700 dark:text-rose-300 bg-white dark:bg-zinc-900"
+                                                        value="DRP"
+                                                    >DRP (Dropped)</option>
+                                                    <option
+                                                        className="text-purple-700 dark:text-purple-300 bg-white dark:bg-zinc-900"
+                                                        value="FA"
+                                                    >FA (Absences)</option>
+                                                    <option
+                                                        className="text-red-700 dark:text-red-300 bg-white dark:bg-zinc-900"
+                                                        value="UW"
+                                                    >UW (Unauthorized)</option>
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Audit Math Button & Special Grade Indicator */}
-                                <div className="border-t border-slate-100 dark:border-zinc-800 pt-2 flex items-center justify-between">
-                                    {row.special_grade
-                                        ? (
-                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
-                                                <FlagIcon
-                                                    size={11}
-                                                    weight="fill"
-                                                />
-                                            Flag: {row.special_grade}
-                                            </span>
-                                        )
-                                        : (
-                                            <span className="text-[10px] text-slate-400 font-medium">Regular Grading</span>
-                                        )}
-                                    <button
-                                        className="cursor-pointer flex font-semibold gap-1.5 items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 text-xs px-2.5 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors"
-                                        type="button"
-                                        onClick={() => setAuditEnrollmentId(row.enrollment_id)}
-                                    >
-                                        <ChartLineUpIcon
-                                            size={14}
-                                            weight="bold"
-                                        />
-                                        Audit Breakdown
-                                    </button>
+                                    {/* Audit Math Button & Special Grade Indicator */}
+                                    <div className="border-t border-slate-100 dark:border-zinc-800 pt-2 flex items-center justify-between">
+                                        {row.special_grade
+                                            ? (
+                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                                                    <FlagIcon
+                                                        size={11}
+                                                        weight="fill"
+                                                    />
+                                                Flag: {row.special_grade}
+                                                </span>
+                                            )
+                                            : (
+                                                <span className="text-[10px] text-slate-400 font-medium">Regular Grading</span>
+                                            )}
+                                        <button
+                                            className="cursor-pointer flex font-semibold gap-1.5 items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 text-xs px-2.5 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors"
+                                            type="button"
+                                            onClick={() => setAuditEnrollmentId(row.enrollment_id)}
+                                        >
+                                            <ChartLineUpIcon
+                                                size={14}
+                                                weight="bold"
+                                            />
+                                            Audit Breakdown
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            ))}
+                        </div>
+                    )}
             </div>
 
             {/* Confirm Submit Grades Modal */}

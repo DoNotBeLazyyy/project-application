@@ -3,7 +3,7 @@ import StatCard from '@components/card/StatCard';
 import AnnouncementsFeedCard from '@components/dashboard/AnnouncementsFeedCard';
 import DashboardHeader from '@components/dashboard/DashboardHeader';
 import EventsFeedCard from '@components/dashboard/EventsFeedCard';
-import useDashboardFeeds from '@hooks/useDashboardFeeds';
+import useDashboardFeeds from '@hooks/use-dashboard-feeds';
 import {
     CaretRightIcon,
     ClipboardTextIcon,
@@ -103,7 +103,7 @@ export default function RegistrarDashboard() {
                 title="Dashboard"
             />
 
-            <div className="gap-3 sm:gap-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+            <div className="2xl:grid-cols-5 gap-3 grid grid-cols-2 md:grid-cols-3 sm:gap-4">
                 {STAT_CARDS.map((card) => (
                     <StatCard
                         icon={card.icon}

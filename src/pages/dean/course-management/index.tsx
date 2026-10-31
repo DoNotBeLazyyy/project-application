@@ -5,8 +5,8 @@ import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import CourseFilterForm from '@pages/dean/course-management/CourseFilterForm';
 import CourseGridCard from '@pages/dean/course-management/CourseGridCard';
 import CourseWizardModal from '@pages/dean/course-management/CourseWizardModal';
-import { useCourseTableConfig } from '@pages/dean/course-management/useCourseTableConfig';
-import { normalizeMinimumGrade } from '@pages/dean/course-management/useMinimumGradeOptions';
+import { useCourseTableConfig } from '@pages/dean/course-management/use-course-table-config';
+import { normalizeMinimumGrade } from '@pages/dean/course-management/use-minimum-grade-options';
 import {
     bulkCreateCourses, bulkDeleteCourses, createCourse, deleteCourse, getCourseById, listCourses, updateCourse
 } from '@services/course/course.service';
@@ -61,6 +61,21 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     }
 ];
 
+// Unit fields start blank in the form even though they are typed as numbers
+const EMPTY_NUMBER = '' as unknown as number;
+
+/**
+ * Turns a stored unit value into a form value. A missing value stays blank.
+ *
+ * @param value - Value from the course record.
+ * @returns
+ */
+function toFormNumber(value: number | string | null | undefined): number {
+    return value === null || value === undefined
+        ? EMPTY_NUMBER
+        : Number(value);
+}
+
 const defaultFormValues: CourseFormValues = {
     code: '',
     title: '',
@@ -68,7 +83,7 @@ const defaultFormValues: CourseFormValues = {
     department_id: '',
     course_types: [
         {
-            course_type_id: '', units: '' as any, credit_hours: '' as any
+            course_type_id: '', units: EMPTY_NUMBER, credit_hours: EMPTY_NUMBER
         }
     ],
     is_active: true,
@@ -110,12 +125,12 @@ export default function CourseManagement() {
                 ? [
                     {
                         course_type_id: result.data.course_type_id,
-                        units: result.data.laboratory_units ?? result.data.lecture_units ?? ('' as any),
-                        credit_hours: result.data.credit_hours ?? result.data.lecture_units ?? ('' as any)
+                        units: toFormNumber(result.data.laboratory_units ?? result.data.lecture_units),
+                        credit_hours: toFormNumber(result.data.credit_hours ?? result.data.lecture_units)
                     }
                 ]
                 : [{
-                    course_type_id: '', units: '' as any, credit_hours: '' as any
+                    course_type_id: '', units: EMPTY_NUMBER, credit_hours: EMPTY_NUMBER
                 }];
 
             updateMethods.reset({

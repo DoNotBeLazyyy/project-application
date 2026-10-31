@@ -3,7 +3,7 @@ import CommonCard from '@components/card/CommonCard';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
-import { useHasRealChanges } from '@hooks/useHasRealChanges';
+import { useHasRealChanges } from '@hooks/use-has-real-changes';
 import { CameraIcon, InfoIcon, TrashIcon } from '@phosphor-icons/react';
 import { uploadFile } from '@services/storage.service';
 import { getSystemSettings, updateSystemSettings } from '@services/system-settings.service';
@@ -133,7 +133,7 @@ export default function SystemSettings() {
             name: 'institution_name',
             rules: {
                 required: 'Institution name is required',
-                validate: (v: any) => Boolean(v && String(v)
+                validate: (v: unknown) => Boolean(v && String(v)
                     .trim()) || 'Institution name cannot be empty or whitespace only'
             },
             type: 'text'
@@ -142,7 +142,7 @@ export default function SystemSettings() {
             name: 'institution_short_name',
             rules: {
                 required: 'Short name is required',
-                validate: (v: any) => Boolean(v && String(v)
+                validate: (v: unknown) => Boolean(v && String(v)
                     .trim()) || 'Short name cannot be empty or whitespace only'
             },
             type: 'text'
@@ -151,7 +151,7 @@ export default function SystemSettings() {
             name: 'institution_address',
             rules: {
                 required: 'Institution address is required',
-                validate: (v: any) => Boolean(v && String(v)
+                validate: (v: unknown) => Boolean(v && String(v)
                     .trim()) || 'Institution address cannot be empty or whitespace only'
             },
             type: 'text'
@@ -171,7 +171,7 @@ export default function SystemSettings() {
             name: 'institution_phone',
             rules: {
                 required: 'Institution phone is required',
-                validate: (v: any) => Boolean(v && String(v)
+                validate: (v: unknown) => Boolean(v && String(v)
                     .trim()) || 'Institution phone cannot be empty or whitespace only',
                 pattern: {
                     value: /^[+(0-9][0-9 ()-]{6,19}$/,

@@ -1,4 +1,4 @@
-import { areFormValuesEqual, hasRealFormChanges } from '@hooks/useFormDraft';
+import { areFormValuesEqual, hasRealFormChanges } from '@hooks/use-form-draft';
 import { useMemo } from 'react';
 import { Control, FieldValues, useWatch } from 'react-hook-form';
 
@@ -15,14 +15,14 @@ export { areFormValuesEqual, hasRealFormChanges };
  */
 export function useHasRealChanges<T extends FieldValues>(
     control: Control<T>,
-    baselineValues?: Partial<T> | Record<string, any> | null
+    baselineValues?: Partial<T> | object | null
 ): boolean {
     const liveValues = useWatch({ control });
 
     return useMemo(() => {
         if (!control) return false;
-        const defaultVals = baselineValues ?? (control as unknown as { _defaultValues?: Record<string, any> })?._defaultValues;
-        const current = (liveValues ?? (control as unknown as { _formValues?: Record<string, any> })?._formValues) as Record<string, any> | undefined;
+        const defaultVals = baselineValues ?? (control as unknown as { _defaultValues?: Record<string, unknown> })?._defaultValues;
+        const current = (liveValues ?? (control as unknown as { _formValues?: Record<string, unknown> })?._formValues) as Record<string, unknown> | undefined;
         return hasRealFormChanges(current, defaultVals);
     }, [control, liveValues, baselineValues]);
 }
@@ -32,7 +32,7 @@ export function useHasRealChanges<T extends FieldValues>(
  *
  * Compares two state-based objects semantically to determine if a real change exists.
  */
-export function useObjectHasRealChanges<T extends Record<string, any>>(
+export function useObjectHasRealChanges<T extends object>(
     currentValues: T | null | undefined,
     baselineValues: T | null | undefined
 ): boolean {

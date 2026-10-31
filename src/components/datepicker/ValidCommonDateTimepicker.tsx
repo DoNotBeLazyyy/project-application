@@ -14,7 +14,7 @@ import {
 } from '@utils/form.util';
 import { DateTime } from 'luxon';
 import {
-    ReactNode, useEffect, useMemo, useRef, useState
+    FocusEvent, MouseEvent, PointerEvent, ReactNode, useEffect, useMemo, useRef, useState
 } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
@@ -195,14 +195,14 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
         ? helperTextProp
         : undefined);
 
-    const blurPickerInput = () => {
+    function blurPickerInput() {
         if (blurTimerRef.current) {
             clearTimeout(blurTimerRef.current);
         }
         blurTimerRef.current = setTimeout(() => {
             blurActiveElementWithin(containerRef.current);
         }, 50);
-    };
+    }
 
     useEffect(() => {
         return () => {
@@ -226,20 +226,16 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
         );
     }
 
-    function handleAccept(date: DateTime | null) {
+    function handleAccept(...args: Parameters<NonNullable<DateTimePickerProps['onAccept']>>) {
         blurPickerInput();
-        if (typeof (props as any).onAccept === 'function') {
-            (props as any).onAccept(date);
-        }
+        props.onAccept?.(...args);
     }
 
     function handleClose() {
         isClosing.current = true;
         setIsOpen(false);
         blurPickerInput();
-        if (typeof (props as any).onClose === 'function') {
-            (props as any).onClose();
-        }
+        props.onClose?.();
         setTimeout(function() {
             isClosing.current = false;
         }, 300);
@@ -250,9 +246,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
             return;
         }
         setIsOpen(true);
-        if (typeof (props as any).onOpen === 'function') {
-            (props as any).onOpen();
-        }
+        props.onOpen?.();
     }
 
     useEffect(() => {
@@ -334,7 +328,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                             size: resolvedSize === 'large'
                                 ? 'medium'
                                 : 'small',
-                            edge: false as any,
+                            edge: false as const,
                             sx: {
                                 margin: 0,
                                 marginRight: 0
@@ -360,24 +354,20 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                                 ? 'medium'
                                 : resolvedSize) as 'small' | 'medium' | undefined,
                             variant: 'outlined' as unknown as 'standard',
-                            onPointerDown: (e: any) => {
+                            onPointerDown: (e: PointerEvent<HTMLDivElement>) => {
                                 lastPointerDownTimeRef.current = Date.now();
-                                if (typeof (externalTextFieldProps as any)?.onPointerDown === 'function') {
-                                    (externalTextFieldProps as any).onPointerDown(e);
-                                }
+                                externalTextFieldProps?.onPointerDown?.(e);
                             },
-                            onMouseDown: (e: any) => {
+                            onMouseDown: (e: MouseEvent<HTMLDivElement>) => {
                                 lastPointerDownTimeRef.current = Date.now();
-                                if (typeof (externalTextFieldProps as any)?.onMouseDown === 'function') {
-                                    (externalTextFieldProps as any).onMouseDown(e);
-                                }
+                                externalTextFieldProps?.onMouseDown?.(e);
                             },
-                            onFocus: (e: any) => {
+                            onFocus: (e: FocusEvent<HTMLInputElement>) => {
                                 if (isNonInteractive) {
                                     return;
                                 }
                                 if (typeof externalOnFocus === 'function') {
-                                    (externalOnFocus as (e: any) => void)(e);
+                                    externalOnFocus(e);
                                 }
                             },
                             sx: [

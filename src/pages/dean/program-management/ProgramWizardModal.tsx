@@ -5,11 +5,12 @@ import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
-import { useFormDraft } from '@hooks/useFormDraft';
-import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
-import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSchoolYearOptions';
+import { PROGRAM_WIZARD_STEPS } from '@constants/program-wizard.constant';
+import { useFormDraft } from '@hooks/use-form-draft';
+import { useDepartmentOptions } from '@pages/admin/department-management/use-department-options';
+import { useSchoolYearOptions } from '@pages/admin/school-year-management/use-school-year-options';
 import CurriculumMapManagement from '@pages/dean/curriculum-map-management';
-import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
+import { useProgramLevelOptions } from '@pages/dean/program-management/level/use-program-level-options';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -37,15 +38,6 @@ interface ProgramWizardModalProps {
     onSubmit: (values: ProgramFormValues) => void;
     onSwitchToEdit?: (step?: number) => void;
 }
-
-export const PROGRAM_WIZARD_STEPS = [
-    {
-        step: 1, title: 'Program Details', subtitle: 'Basic identity & academic duration'
-    },
-    {
-        step: 2, title: 'Curriculum Map', subtitle: 'Course subjects mapped by year level & term'
-    }
-];
 
 export default function ProgramWizardModal({
     open,
@@ -146,7 +138,7 @@ export default function ProgramWizardModal({
                 ? undefined
                 : {
                     required: 'Program name is required',
-                    validate: (val: any) => Boolean(val && String(val)
+                    validate: (val: unknown) => Boolean(val && String(val)
                         .trim()) || 'Program name cannot be empty or whitespace only'
                 },
             type: 'text',
@@ -194,7 +186,7 @@ export default function ProgramWizardModal({
                     required: 'Number of years is required',
                     min: { value: 1, message: 'Must be at least 1 year' },
                     max: { value: 8, message: 'Cannot exceed 8 years' },
-                    validate: (val: any) => Number.isInteger(Number(val)) || 'Duration must be a whole number of years'
+                    validate: (val: unknown) => Number.isInteger(Number(val)) || 'Duration must be a whole number of years'
                 },
             type: 'number',
             fieldProps: {
@@ -432,9 +424,9 @@ export default function ProgramWizardModal({
                         readOnly={readOnly}
                         schoolYearId={activeSchoolYearId}
                         onChangeEntries={(newEntries, pendingDeleted) => {
-                            setValue('curriculum_entries', newEntries as any, { shouldDirty: true });
+                            setValue('curriculum_entries', newEntries as unknown as ProgramFormValues['curriculum_entries'], { shouldDirty: true });
                             if (pendingDeleted) {
-                                setValue('pending_deleted_curriculum_ids', pendingDeleted as any, { shouldDirty: true });
+                                setValue('pending_deleted_curriculum_ids', pendingDeleted, { shouldDirty: true });
                             }
                         }}
                     />

@@ -120,7 +120,6 @@ export default function CommonBentoCard({
     primaryAction,
     progress,
     secondaryAction,
-    selectVariant = 'checkbox',
     status = 'Active',
     subtitle,
     title,

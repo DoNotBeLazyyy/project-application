@@ -1,6 +1,6 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/useTableConfigs';
+import { TableActionConfig } from '@components/table/use-table-configs';
 import { CertificateIcon, CopyIcon, EnvelopeSimpleIcon, GraduationCapIcon } from '@phosphor-icons/react';
 import { useToastStore } from '@stores/toast.store';
 import { EnrollmentStudentRow, StudentStatus } from '@type/enrollment.type';

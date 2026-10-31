@@ -1,16 +1,16 @@
+import AuditLogDetailContent from '@pages/admin/audit-log-management/components/AuditLogDetailContent';
+import FilterAuditLogForm from '@pages/admin/audit-log-management/forms/FilterAuditLogForm';
+import { useAuditLogTableConfig } from '@pages/admin/audit-log-management/hooks/use-audit-log-table-config';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { AuditLogFilterValues, AuditLogRow } from '@type/audit-log.type';
+import { MobileCardColDef } from '@type/table.type';
 import { useForm } from 'react-hook-form';
 import { describe, expect, it, vi } from 'vitest';
-
-import AuditLogDetailContent from '../components/AuditLogDetailContent';
-import FilterAuditLogForm from '../forms/FilterAuditLogForm';
-import { useAuditLogTableConfig } from '../hooks/useAuditLogTableConfig';
 
 describe('useAuditLogTableConfig', () => {
     it('configures table columns with required fields and payload inspector', () => {
         const onViewPayload = vi.fn();
-        let columnDefs: any[] = [];
+        let columnDefs: MobileCardColDef[] = [];
 
         function TestComponent() {
             const config = useAuditLogTableConfig({ onViewPayload });

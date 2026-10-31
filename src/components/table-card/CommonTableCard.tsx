@@ -8,10 +8,10 @@ import TableModals from '@components/modal/TableModals';
 import UploadCsvModal from '@components/modal/UploadCsvModal';
 import CommonPagination from '@components/pagination/CommonPagination';
 import CommonTable from '@components/table/CommonTable';
-import { useInfiniteScrollSentinel } from '@components/table-card/hooks/useInfiniteScrollSentinel';
-import { useLastVisibleRow } from '@components/table-card/hooks/useLastVisibleRow';
-import { useTableData } from '@components/table-card/hooks/useTableData';
-import { useTableSelection } from '@components/table-card/hooks/useTableSelection';
+import { useInfiniteScrollSentinel } from '@components/table-card/hooks/use-infinite-scroll-sentinel';
+import { useLastVisibleRow } from '@components/table-card/hooks/use-last-visible-row';
+import { useTableData } from '@components/table-card/hooks/use-table-data';
+import { useTableSelection } from '@components/table-card/hooks/use-table-selection';
 import TableCardControls from '@components/table-card/TableCardControls';
 import TableCardSelectionBar from '@components/table-card/TableCardSelectionBar';
 import { ArrowUpIcon, EyeIcon, TrashIcon } from '@phosphor-icons/react';
@@ -395,10 +395,12 @@ export default function CommonTableCard<T extends FieldValues>({
             defaultActions.push({
                 key: 'open',
                 label: 'Open',
-                icon: <EyeIcon
-                    size={18}
-                    weight="bold"
-                />,
+                icon: (
+                    <EyeIcon
+                        size={18}
+                        weight="bold"
+                    />
+                ),
                 onClick: () => onRowClick(id)
             });
         }
@@ -406,10 +408,12 @@ export default function CommonTableCard<T extends FieldValues>({
             defaultActions.push({
                 key: 'delete',
                 label: 'Delete',
-                icon: <TrashIcon
-                    size={18}
-                    weight="bold"
-                />,
+                icon: (
+                    <TrashIcon
+                        size={18}
+                        weight="bold"
+                    />
+                ),
                 destructive: true,
                 onClick: () => onDeleteRow(id)
             });

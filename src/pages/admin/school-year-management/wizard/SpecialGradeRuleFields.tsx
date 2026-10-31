@@ -1,9 +1,8 @@
 import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
+import ConditionBuilder from '@pages/admin/school-year-management/wizard/ConditionBuilder';
 import { SpecialGradeCondition, SpecialGradeConditionGroup } from '@type/grading-config.type';
 import { AcademicYearWizardFormValues } from '@type/school-year.type';
 import { Control, useController, useWatch } from 'react-hook-form';
-
-import ConditionBuilder from './ConditionBuilder';
 
 const EMPTY_GROUP: SpecialGradeConditionGroup = { all: [] };
 

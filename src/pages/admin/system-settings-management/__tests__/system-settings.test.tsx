@@ -1,6 +1,7 @@
 import SystemSettings from '@pages/admin/system-settings-management';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { SystemSettingsFormValues } from '@type/system-settings.type';
 import {
     beforeEach, describe, expect, it, vi
 } from 'vitest';
@@ -10,7 +11,7 @@ const mockUpdateSystemSettings = vi.fn();
 
 vi.mock('@services/system-settings.service', () => ({
     getSystemSettings: () => mockGetSystemSettings(),
-    updateSystemSettings: (params: any) => mockUpdateSystemSettings(params)
+    updateSystemSettings: (params: SystemSettingsFormValues) => mockUpdateSystemSettings(params)
 }));
 
 vi.mock('@services/storage.service', () => ({

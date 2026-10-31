@@ -1,7 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import { AnnouncementDetailModal } from '@components/modal/AnnouncementDetailModal';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
-import { useAnnouncementBasePath } from '@pages/shared/announcement-management/useAnnouncementBasePath';
+import { useAnnouncementBasePath } from '@pages/shared/announcement-management/use-announcement-base-path';
 import {
     CalendarBlankIcon,
     MegaphoneIcon,
@@ -124,88 +124,90 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
 
             {/* Content: Empty State or Bento Card Grid */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-                {announcements.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900/50">
-                        <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center mb-3">
-                            <MegaphoneIcon
-                                size={26}
-                                weight="duotone"
-                            />
+                {announcements.length === 0
+                    ? (
+                        <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900/50">
+                            <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center mb-3">
+                                <MegaphoneIcon
+                                    size={26}
+                                    weight="duotone"
+                                />
+                            </div>
+                            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                                No announcements posted yet
+                            </h4>
+                            <p className="text-xs text-slate-500 max-w-sm mt-1">
+                                Keep students informed about class updates, schedule adjustments, or important reminders.
+                            </p>
                         </div>
-                        <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                            No announcements posted yet
-                        </h4>
-                        <p className="text-xs text-slate-500 max-w-sm mt-1">
-                            Keep students informed about class updates, schedule adjustments, or important reminders.
-                        </p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
-                        {announcements.map((item) => (
-                            <div
-                                className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-4.5 shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between cursor-pointer group hover:border-blue-400 dark:hover:border-blue-700"
-                                key={item.id}
-                                onClick={() => setSelectedAnnouncement(item)}
-                            >
-                                <div>
-                                    {/* Card Header */}
-                                    <div className="flex items-center justify-between gap-2 mb-2.5">
-                                        <div className="flex items-center gap-1.5">
-                                            {item.is_pinned && (
-                                                <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                                                    <PushPinIcon
-                                                        size={12}
-                                                        weight="fill"
+                    )
+                    : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
+                            {announcements.map((item) => (
+                                <div
+                                    className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-4.5 shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between cursor-pointer group hover:border-blue-400 dark:hover:border-blue-700"
+                                    key={item.id}
+                                    onClick={() => setSelectedAnnouncement(item)}
+                                >
+                                    <div>
+                                        {/* Card Header */}
+                                        <div className="flex items-center justify-between gap-2 mb-2.5">
+                                            <div className="flex items-center gap-1.5">
+                                                {item.is_pinned && (
+                                                    <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                                        <PushPinIcon
+                                                            size={12}
+                                                            weight="fill"
+                                                        />
+                                                        Pinned
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {canManage && (
+                                                <button
+                                                    className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                                                    title="Delete Announcement"
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setPendingDeleteId(item.id);
+                                                    }}
+                                                >
+                                                    <TrashIcon
+                                                        size={16}
+                                                        weight="bold"
                                                     />
-                                                    Pinned
-                                                </span>
+                                                </button>
                                             )}
                                         </div>
 
-                                        {canManage && (
-                                            <button
-                                                className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
-                                                title="Delete Announcement"
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setPendingDeleteId(item.id);
-                                                }}
-                                            >
-                                                <TrashIcon
-                                                    size={16}
-                                                    weight="bold"
-                                                />
-                                            </button>
-                                        )}
+                                        {/* Title */}
+                                        <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-2">
+                                            {item.title}
+                                        </h3>
+
+                                        {/* Body preview */}
+                                        <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed mb-3">
+                                            {item.content}
+                                        </p>
                                     </div>
 
-                                    {/* Title */}
-                                    <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-2">
-                                        {item.title}
-                                    </h3>
-
-                                    {/* Body preview */}
-                                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed mb-3">
-                                        {item.content}
-                                    </p>
+                                    {/* Card Footer */}
+                                    <div className="border-t border-slate-100 dark:border-zinc-800 pt-2.5 flex items-center justify-between text-slate-400 text-xs mt-auto">
+                                        <span className="flex items-center gap-1 text-[11px] font-medium text-slate-500">
+                                            <UserIcon size={13} />
+                                            {item.author_name}
+                                        </span>
+                                        <span className="flex items-center gap-1 text-[11px]">
+                                            <CalendarBlankIcon size={13} />
+                                            {formatShortDate(item.created_at)}
+                                        </span>
+                                    </div>
                                 </div>
-
-                                {/* Card Footer */}
-                                <div className="border-t border-slate-100 dark:border-zinc-800 pt-2.5 flex items-center justify-between text-slate-400 text-xs mt-auto">
-                                    <span className="flex items-center gap-1 text-[11px] font-medium text-slate-500">
-                                        <UserIcon size={13} />
-                                        {item.author_name}
-                                    </span>
-                                    <span className="flex items-center gap-1 text-[11px]">
-                                        <CalendarBlankIcon size={13} />
-                                        {formatShortDate(item.created_at)}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            ))}
+                        </div>
+                    )}
             </div>
 
             {/* Read Modal: AnnouncementDetailModal */}

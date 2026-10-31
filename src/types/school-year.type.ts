@@ -193,5 +193,5 @@ export interface AcademicYearHistoryItem {
         thresholds?: WizardThresholdItem[];
         holidays?: WizardCalendarExceptionItem[];
     };
-    changes?: Record<string, any> | null;
+    changes?: Record<string, unknown> | null;
 }

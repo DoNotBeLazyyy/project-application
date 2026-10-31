@@ -3,7 +3,7 @@ import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import StaffProfileVerificationModal from '@pages/admin/profile-verification/components/StaffProfileVerificationModal';
 import FilterStaffVerificationForm from '@pages/admin/profile-verification/forms/FilterStaffVerificationForm';
-import { useStaffVerificationTableConfig } from '@pages/admin/profile-verification/hooks/useStaffVerificationTableConfig';
+import { useStaffVerificationTableConfig } from '@pages/admin/profile-verification/hooks/use-staff-verification-table-config';
 import { listStaffProfileRequests } from '@services/admin-verification.service';
 import { supabase } from '@services/supabase.client';
 import { StaffProfileRequestFilterValues, StaffProfileRequestRow } from '@type/admin-verification.type';

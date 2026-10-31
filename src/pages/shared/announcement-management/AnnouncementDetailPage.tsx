@@ -1,6 +1,6 @@
 import EntityFormPage from '@components/entity-form/EntityFormPage';
 import AnnouncementForm from '@pages/shared/announcement-management/AnnouncementForm';
-import { useAnnouncementBasePath } from '@pages/shared/announcement-management/useAnnouncementBasePath';
+import { useAnnouncementBasePath } from '@pages/shared/announcement-management/use-announcement-base-path';
 import {
     createAnnouncement, deleteAnnouncement, getAnnouncementById, getAnnouncementSectionOptions, updateAnnouncement
 } from '@services/announcement.service';

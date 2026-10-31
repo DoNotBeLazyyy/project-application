@@ -6,7 +6,7 @@ import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import EnrollmentStudentFilterForm from '@pages/registrar/enrollment-management/EnrollmentStudentFilterForm';
 import EnrollmentStudentGridCard from '@pages/registrar/enrollment-management/EnrollmentStudentGridCard';
 import EnrollmentWorkspaceModal from '@pages/registrar/enrollment-management/EnrollmentWorkspaceModal';
-import { useEnrollmentStudentTableConfig } from '@pages/registrar/enrollment-management/useEnrollmentStudentTableConfig';
+import { useEnrollmentStudentTableConfig } from '@pages/registrar/enrollment-management/use-enrollment-student-table-config';
 import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
 import CreditTransfereeCoursesModal from '@pages/shared/records/CreditTransfereeCoursesModal';
 import { bulkEnrollStudents, getEnrollmentTargetTerm, listEnrollmentStudents } from '@services/enrollment.service';

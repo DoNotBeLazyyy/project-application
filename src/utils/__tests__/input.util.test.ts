@@ -1,6 +1,5 @@
+import { stripLeadingZeros } from '@utils/input.util';
 import { describe, expect, it } from 'vitest';
-
-import { stripLeadingZeros } from '../input.util';
 
 describe('stripLeadingZeros', () => {
     it('returns empty string for null or undefined', () => {

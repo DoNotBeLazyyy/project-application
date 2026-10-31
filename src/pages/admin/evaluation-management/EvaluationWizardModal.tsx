@@ -11,9 +11,9 @@ import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalSteppe
 import ValidCommonSelect from '@components/select/ValidCommonSelect';
 import ValidCommonTextarea from '@components/textarea/ValidCommonTextArea';
 import { QUESTIONS_SCROLL_STEP } from '@constants/evaluation.constant';
-import { useFormDraft } from '@hooks/useFormDraft';
-import { useInfiniteScroll } from '@hooks/useInfiniteScroll';
-import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
+import { useFormDraft } from '@hooks/use-form-draft';
+import { useInfiniteScroll } from '@hooks/use-infinite-scroll';
+import { useProgramOptions } from '@pages/dean/program-management/use-program-options';
 import {
     ArrowDownIcon,
     ArrowLeftIcon,
@@ -36,7 +36,7 @@ import {
     Control, FieldErrors, FieldPath, FieldValues, useFieldArray, UseFormReturn, useWatch
 } from 'react-hook-form';
 
-export const EVALUATION_WIZARD_STEPS: ModalStepItem[] = [
+const EVALUATION_WIZARD_STEPS: ModalStepItem[] = [
     {
         step: 1,
         title: 'Section Details & Scope',
@@ -123,7 +123,7 @@ function getQuestionFieldNames(count: number): FieldPath<EvaluationTemplateForm>
     return names;
 }
 
-export function validateUniqueQuestion(value: any, formValues: FieldValues) {
+function validateUniqueQuestion(value: unknown, formValues: FieldValues) {
     const normalized = String(value ?? '')
         .trim()
         .toLowerCase();
@@ -500,7 +500,7 @@ export default function EvaluationWizardModal({
                 ? undefined
                 : {
                     required: 'Section title is required',
-                    validate: (val: any) => Boolean(val && String(val)
+                    validate: (val: unknown) => Boolean(val && String(val)
                         .trim()) || 'Section title cannot be empty or whitespace only'
                 },
             type: 'text',
@@ -547,26 +547,28 @@ export default function EvaluationWizardModal({
                         : 'Only selected programs will be included in this section.'
             }
         },
-        ...(targetMode !== 'ALL' ? [{
-            name: 'program_ids' as const,
-            label: 'Programs',
-            disabled: readOnly,
-            options: programOptions,
-            // A section with no linked programs applies to every program, so INCLUDE/EXCLUDE
-            // without a selection would silently behave like ALL.
-            rules: readOnly
-                ? undefined
-                : {
-                    validate: (val: unknown) => (Array.isArray(val) && val.length > 0) || 'Select at least one program'
-                },
-            type: 'multi-select' as const,
-            fieldProps: {
-                placeholder: 'Select programs',
-                helperText: targetMode === 'EXCLUDE'
-                    ? 'Students in selected programs will NOT see this section.'
-                    : 'Only students in selected programs will see this section.'
-            }
-        }] : []),
+        ...(targetMode !== 'ALL'
+            ? [{
+                name: 'program_ids' as const,
+                label: 'Programs',
+                disabled: readOnly,
+                options: programOptions,
+                // A section with no linked programs applies to every program, so INCLUDE/EXCLUDE
+                // without a selection would silently behave like ALL.
+                rules: readOnly
+                    ? undefined
+                    : {
+                        validate: (val: unknown) => (Array.isArray(val) && val.length > 0) || 'Select at least one program'
+                    },
+                type: 'multi-select' as const,
+                fieldProps: {
+                    placeholder: 'Select programs',
+                    helperText: targetMode === 'EXCLUDE'
+                        ? 'Students in selected programs will NOT see this section.'
+                        : 'Only students in selected programs will see this section.'
+                }
+            }]
+            : []),
         {
             name: 'is_active',
             disabled: readOnly,

@@ -1,4 +1,4 @@
-import useBreakpoint from '@hooks/useBreakpoint';
+import useBreakpoint from '@hooks/use-breakpoint';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
 import Tooltip, { TooltipProps } from '@mui/material/Tooltip';
 import { InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';

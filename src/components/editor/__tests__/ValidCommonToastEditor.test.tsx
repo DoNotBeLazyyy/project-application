@@ -8,8 +8,8 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('@toast-ui/editor', () => {
     return {
         default: class MockEditor {
-            options: any;
-            constructor(options: any) {
+            options: { el?: HTMLElement };
+            constructor(options: { el?: HTMLElement }) {
                 this.options = options;
                 if (options?.el) {
                     const editorDiv = document.createElement('div');

@@ -1,7 +1,7 @@
 import { FormField, FormFieldConfig } from '@components/form/FormField';
 import FormLabel from '@components/form/FormLabel';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
-import { useFormDraft } from '@hooks/useFormDraft';
+import { useFormDraft } from '@hooks/use-form-draft';
 import { ComponentPropsForm } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
 import {

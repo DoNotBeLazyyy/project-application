@@ -54,20 +54,24 @@ export default function CommunicationGridCard({
                 <BentoCardActionMenu
                     actions={[
                         {
-                            icon: <EyeIcon
-                                size={18}
-                                weight="bold"
-                            />,
+                            icon: (
+                                <EyeIcon
+                                    size={18}
+                                    weight="bold"
+                                />
+                            ),
                             key: 'view',
                             label: 'View',
                             onClick: () => onView(row.id)
                         },
                         ...(canManage && onEdit
                             ? [{
-                                icon: <PencilSimpleIcon
-                                    size={18}
-                                    weight="bold"
-                                      />,
+                                icon: (
+                                    <PencilSimpleIcon
+                                        size={18}
+                                        weight="bold"
+                                    />
+                                ),
                                 key: 'edit',
                                 label: 'Edit',
                                 onClick: () => onEdit(row.id)
@@ -76,10 +80,12 @@ export default function CommunicationGridCard({
                         ...(canManage && onRequestDelete
                             ? [{
                                 destructive: true,
-                                icon: <TrashIcon
-                                    size={18}
-                                    weight="bold"
-                                      />,
+                                icon: (
+                                    <TrashIcon
+                                        size={18}
+                                        weight="bold"
+                                    />
+                                ),
                                 key: 'delete',
                                 label: 'Delete',
                                 onClick: () => onRequestDelete(row.id)

@@ -4,6 +4,19 @@ import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import PageLoadingFallback from '@components/loading/PageLoadingFallback';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
+    CALENDAR_CATEGORIES,
+    CalendarEventCategory,
+    CalendarViewMode,
+    UnifiedCalendarEvent
+} from '@pages/shared/calendar/calendar.types';
+import CalendarActionMenu from '@pages/shared/calendar/CalendarActionMenu';
+import { CalendarAgendaView } from '@pages/shared/calendar/CalendarAgendaView';
+import { CalendarDayView } from '@pages/shared/calendar/CalendarDayView';
+import { CalendarEventDetailModal } from '@pages/shared/calendar/CalendarEventDetailModal';
+import { CalendarMonthView } from '@pages/shared/calendar/CalendarMonthView';
+import { CalendarWeekView } from '@pages/shared/calendar/CalendarWeekView';
+import { useCalendarData } from '@pages/shared/calendar/use-calendar-data';
+import {
     CalendarBlankIcon,
     CalendarDotsIcon,
     CaretLeftIcon,
@@ -18,20 +31,6 @@ import { changeMonthUtil } from '@utils/calendar.util';
 import { DateTime } from 'luxon';
 import { useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-
-import {
-    CALENDAR_CATEGORIES,
-    CalendarEventCategory,
-    CalendarViewMode,
-    UnifiedCalendarEvent
-} from './calendar.types';
-import CalendarActionMenu from './CalendarActionMenu';
-import { CalendarAgendaView } from './CalendarAgendaView';
-import { CalendarDayView } from './CalendarDayView';
-import { CalendarEventDetailModal } from './CalendarEventDetailModal';
-import { CalendarMonthView } from './CalendarMonthView';
-import { CalendarWeekView } from './CalendarWeekView';
-import { useCalendarData } from './useCalendarData';
 
 export default function CalendarPage() {
     const navigate = useNavigate();
@@ -71,7 +70,7 @@ export default function CalendarPage() {
     }, [currentRole]);
 
     // Handlers for month navigation
-    const handlePrev = () => {
+    function handlePrev() {
         if (viewMode === 'day') {
             const next = new Date(selectedDate);
             next.setDate(next.getDate() - 1);
@@ -87,9 +86,9 @@ export default function CalendarPage() {
         else {
             setCurrentDate((prev) => changeMonthUtil(prev, -1));
         }
-    };
+    }
 
-    const handleNext = () => {
+    function handleNext() {
         if (viewMode === 'day') {
             const next = new Date(selectedDate);
             next.setDate(next.getDate() + 1);
@@ -105,9 +104,9 @@ export default function CalendarPage() {
         else {
             setCurrentDate((prev) => changeMonthUtil(prev, 1));
         }
-    };
+    }
 
-    const toggleCategory = (catId: CalendarEventCategory) => {
+    function toggleCategory(catId: CalendarEventCategory) {
         setActiveCategories((prev) => {
             const next = new Set(prev);
             if (next.has(catId)) {
@@ -121,13 +120,13 @@ export default function CalendarPage() {
             }
             return next;
         });
-    };
+    }
 
-    const handleSelectAllCategories = () => {
+    function handleSelectAllCategories() {
         setActiveCategories(new Set(['event', 'academic', 'class', 'assessment', 'holiday']));
-    };
+    }
 
-    const handleOpenEventModal = (event: UnifiedCalendarEvent) => {
+    function handleOpenEventModal(event: UnifiedCalendarEvent) {
         // Campus events open the same detail modal as the dashboard, list and notifications
         if (event.category === 'event' && event.metadata?.eventId) {
             const nextParams = new URLSearchParams(searchParams);
@@ -138,51 +137,59 @@ export default function CalendarPage() {
 
         setSelectedEvent(event);
         setIsDetailModalOpen(true);
-    };
+    }
 
-    const handleCloseEventModal = () => {
+    function handleCloseEventModal() {
         setIsDetailModalOpen(false);
         setSelectedEvent(null);
-    };
+    }
 
-    const handleDayViewJump = (date: Date) => {
+    function handleDayViewJump(date: Date) {
         setSelectedDate(date);
         setCurrentDate(date);
         setViewMode('day');
-    };
+    }
 
     const VIEW_MODE_LABELS: Record<CalendarViewMode, { label: string; icon: React.ReactNode }> = {
         month: {
             label: 'Month View',
-            icon: <GridFourIcon
-                className="text-blue-600"
-                size={14}
-                weight="bold"
-            />
+            icon: (
+                <GridFourIcon
+                    className="text-blue-600"
+                    size={14}
+                    weight="bold"
+                />
+            )
         },
         week: {
             label: 'Week View',
-            icon: <CalendarDotsIcon
-                className="text-blue-600"
-                size={14}
-                weight="bold"
-            />
+            icon: (
+                <CalendarDotsIcon
+                    className="text-blue-600"
+                    size={14}
+                    weight="bold"
+                />
+            )
         },
         day: {
             label: 'Day View',
-            icon: <ClockIcon
-                className="text-blue-600"
-                size={14}
-                weight="bold"
-            />
+            icon: (
+                <ClockIcon
+                    className="text-blue-600"
+                    size={14}
+                    weight="bold"
+                />
+            )
         },
         agenda: {
             label: 'Agenda View',
-            icon: <ListBulletsIcon
-                className="text-blue-600"
-                size={14}
-                weight="bold"
-            />
+            icon: (
+                <ListBulletsIcon
+                    className="text-blue-600"
+                    size={14}
+                    weight="bold"
+                />
+            )
         }
     };
 
@@ -193,23 +200,23 @@ export default function CalendarPage() {
             .toISODate() || '';
     }, [viewMode, selectedDate, currentDate]);
 
-    const handlePickerChange = (dateStr: string) => {
+    function handlePickerChange(dateStr: string) {
         if (!dateStr) return;
         const dt = DateTime.fromISO(dateStr);
         if (!dt.isValid) return;
         const nextDate = dt.toJSDate();
         setCurrentDate(nextDate);
         setSelectedDate(nextDate);
-    };
+    }
 
     const canCreateEvents = currentRole === 'Admin' || currentRole === 'Dean' || currentRole === 'Registrar' || currentRole === 'Faculty';
 
-    const handleCreateEvent = (defaultDate?: Date) => {
+    function handleCreateEvent(defaultDate?: Date) {
         const rolePath = currentRole.toLowerCase();
         navigate(`/${rolePath}/announcement-management/new?type=Event`, {
             state: { from: pathname, defaultDate }
         });
-    };
+    }
 
     return (
         <CommonCard

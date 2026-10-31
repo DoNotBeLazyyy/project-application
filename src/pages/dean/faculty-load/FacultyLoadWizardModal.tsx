@@ -24,10 +24,47 @@ import {
     FacultyLoadSection,
     FacultyScheduleConflict
 } from '@type/faculty-load.type';
+import { SectionStatus } from '@type/section.type';
 import { evaluateSectionConflicts } from '@utils/faculty-load-conflicts.util';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+
+// The faculty load RPC returns some unit and id fields under alternate names
+type RawFacultyLoadSection = FacultyLoadSection & {
+    id?: string;
+    laboratory_units?: number | string;
+    total_units?: number | string;
+};
+
+// Shape returned by fn_get_section_by_id, read loosely when adding a section to the load
+interface SectionDetailRecord {
+    id: string;
+    section_code: string;
+    course_id: string;
+    course_code?: string;
+    course_title?: string;
+    term_id: string;
+    term_label?: string;
+    program_id?: string | null;
+    program_code?: string | null;
+    program_name?: string | null;
+    room?: string | null;
+    max_slots?: number | string;
+    enrolled_count?: number | string;
+    status?: SectionStatus;
+    is_active_academic_year?: boolean;
+    lecture_units?: number | string;
+    laboratory_units?: number | string;
+    units?: number | string;
+    total_units?: number | string;
+    schedules?: {
+        day_of_week: string;
+        time_start: string;
+        time_end: string;
+        room?: string | null;
+    }[];
+}
 
 const FACULTY_LOAD_STEPS = [
     {
@@ -117,8 +154,8 @@ export default function FacultyLoadWizardModal({
         try {
             const res = await getFacultyLoadDetail(facultyId, termId);
             if (res.data) {
-                if ((res.data as any).success === false) {
-                    showToast((res.data as any).message || 'Faculty record not found.', 'error');
+                if (res.data.success === false) {
+                    showToast(res.data.message || 'Faculty record not found.', 'error');
                     setDetail(null);
                     setInitialSections([]);
                     setStagedSections([]);
@@ -126,10 +163,10 @@ export default function FacultyLoadWizardModal({
                 }
 
                 setDetail(res.data);
-                const rawSections = res.data.sections || (res.data as any).assigned_sections || [];
-                const fetchedSections: FacultyLoadSection[] = rawSections.map((s: any) => ({
+                const rawSections = (res.data.sections || res.data.assigned_sections || []) as RawFacultyLoadSection[];
+                const fetchedSections: FacultyLoadSection[] = rawSections.map((s) => ({
                     ...s,
-                    section_id: s.section_id || s.id,
+                    section_id: s.section_id || s.id || '',
                     units: Number(s.units) || Number(s.total_units) || 0,
                     lecture_units: Number(s.lecture_units) || 0,
                     lab_units: Number(s.lab_units) || Number(s.laboratory_units) || 0,
@@ -144,8 +181,8 @@ export default function FacultyLoadWizardModal({
                 setStagedSections(fetchedSections);
             }
         }
-        catch (err: any) {
-            showToast(err?.message || 'Failed to load faculty details.', 'error');
+        catch (err) {
+            showToast((err as { message?: string } | null)?.message || 'Failed to load faculty details.', 'error');
         }
         finally {
             setIsLoading(false);
@@ -258,7 +295,7 @@ export default function FacultyLoadWizardModal({
         try {
             const res = await getSectionById(selectedAssignSectionId);
             if (res.data) {
-                const s = res.data as any;
+                const s = res.data as unknown as SectionDetailRecord;
                 const newSection: FacultyLoadSection = {
                     section_id: s.id,
                     section_code: s.section_code,
@@ -281,7 +318,7 @@ export default function FacultyLoadWizardModal({
                     lecture_units: Number(s.lecture_units) || 0,
                     lab_units: Number(s.laboratory_units) || 0,
                     units: Number(s.units) || Number(s.total_units) || 3,
-                    schedules: (s.schedules || []).map((sch: any) => ({
+                    schedules: (s.schedules || []).map((sch) => ({
                         day_of_week: sch.day_of_week,
                         time_start: sch.time_start,
                         time_end: sch.time_end,

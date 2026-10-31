@@ -3,6 +3,7 @@ import ValidCommonInput from '@components/input/ValidCommonInput';
 import CommonModal from '@components/modal/CommonModal';
 import CommonPromptModal from '@components/modal/CommonPromptModal';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
+import { CALENDAR_EXCEPTION_TYPE_LABELS, CALENDAR_EXCEPTION_TYPES, toCalendarExceptionType } from '@pages/admin/school-year-management/wizard/wizard.constants';
 import {
     CheckCircleIcon, GearIcon, PlusIcon, ProhibitIcon, TrashIcon, WarningIcon, XIcon
 } from '@phosphor-icons/react';
@@ -11,8 +12,6 @@ import { ExceptionTypeOptionItem } from '@type/school-year.type';
 import { DEFAULT_FORM_OPTIONS } from '@utils/form.util';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-
-import { CALENDAR_EXCEPTION_TYPE_LABELS, CALENDAR_EXCEPTION_TYPES, toCalendarExceptionType } from './wizard.constants';
 
 interface ManageExceptionTypesModalProps {
     open: boolean;

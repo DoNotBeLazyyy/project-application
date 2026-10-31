@@ -169,7 +169,7 @@ export default function ForgotPasswordPage() {
                                     We verified that an account exists for <strong className="text-(--mui-palette-text-primary)">{sentEmail}</strong> and have sent a password reset link to this address.
                                 </p>
                                 <p className="m-0 text-(--mui-palette-text-secondary) text-xs">
-                                    The link expires after a short while. If you don't receive the email within a few minutes, please check your spam or junk folder.
+                                    The link expires after a short while. If you don&apos;t receive the email within a few minutes, please check your spam or junk folder.
                                 </p>
                             </div>
 

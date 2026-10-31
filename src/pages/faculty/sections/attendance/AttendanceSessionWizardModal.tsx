@@ -6,7 +6,7 @@ import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
-import { useFormDraft } from '@hooks/useFormDraft';
+import { useFormDraft } from '@hooks/use-form-draft';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -31,7 +31,7 @@ import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-export const ATTENDANCE_WIZARD_STEPS: ModalStepItem[] = [
+const ATTENDANCE_WIZARD_STEPS: ModalStepItem[] = [
     {
         step: 1,
         title: 'Session Overview',
@@ -492,10 +492,12 @@ export default function AttendanceSessionWizardModal({
                                 size="small"
                                 slotProps={{
                                     input: {
-                                        startAdornment: <MagnifyingGlassIcon
-                                            className="mr-2 text-slate-400"
-                                            size={16}
-                                        />
+                                        startAdornment: (
+                                            <MagnifyingGlassIcon
+                                                className="mr-2 text-slate-400"
+                                                size={16}
+                                            />
+                                        )
                                     }
                                 }}
                                 value={searchQuery}
@@ -504,84 +506,88 @@ export default function AttendanceSessionWizardModal({
 
                             {/* Student Cards List */}
                             <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2.5 pr-1">
-                                {isLoadingStudents ? (
-                                    <div className="py-12 text-center text-xs text-slate-400">
-                                        Loading section roster...
-                                    </div>
-                                ) : filteredStudents.length === 0 ? (
-                                    <div className="py-12 text-center text-xs text-slate-400">
-                                        No students found matching your search.
-                                    </div>
-                                ) : (
-                                    filteredStudents.map((s) => {
-                                        const draft = studentDrafts[s.enrollment_id] || {
-                                            fullName: s.full_name,
-                                            remarks: '',
-                                            status: defaultStatus,
-                                            studentId: s.enrollment_id,
-                                            studentNumber: s.student_number
-                                        };
-
-                                        return (
-                                            <div
-                                                className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                                                key={s.enrollment_id}
-                                            >
-                                                <div className="flex items-center gap-3 min-w-0">
-                                                    <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300 text-xs shrink-0">
-                                                        {s.full_name
-                                                            .split(' ')
-                                                            .map((w) => w[0])
-                                                            .slice(0, 2)
-                                                            .join('')}
-                                                    </div>
-                                                    <div className="flex flex-col min-w-0">
-                                                        <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate">
-                                                            {s.full_name}
-                                                        </span>
-                                                        <span className="text-[11px] font-mono text-slate-400">
-                                                            {s.student_number}
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                {/* Tactile Status Buttons */}
-                                                <div className="flex items-center gap-1.5 self-end sm:self-center shrink-0">
-                                                    {(['Present', 'Late', 'Absent', 'Excused'] as AttendanceStatus[]).map((status) => {
-                                                        const isSelected = draft.status === status;
-                                                        let colorClasses = 'border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-zinc-800';
-
-                                                        if (isSelected) {
-                                                            if (status === 'Present') {
-                                                                colorClasses = 'bg-emerald-600 text-white border-emerald-600 shadow-xs font-bold';
-                                                            }
-                                                            else if (status === 'Late') {
-                                                                colorClasses = 'bg-amber-600 text-white border-amber-600 shadow-xs font-bold';
-                                                            }
-                                                            else if (status === 'Absent') {
-                                                                colorClasses = 'bg-rose-600 text-white border-rose-600 shadow-xs font-bold';
-                                                            }
-                                                            else {
-                                                                colorClasses = 'bg-blue-600 text-white border-blue-600 shadow-xs font-bold';
-                                                            }
-                                                        }
-
-                                                        return (
-                                                            <button
-                                                                className={`px-2.5 py-1 text-xs rounded-lg border transition-all cursor-pointer ${colorClasses}`}
-                                                                key={status}
-                                                                type="button"
-                                                                onClick={() => handleStudentStatusChange(s.enrollment_id, status)}
-                                                            >
-                                                                {status}
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
+                                {isLoadingStudents
+                                    ? (
+                                        <div className="py-12 text-center text-xs text-slate-400">
+                                            Loading section roster...
+                                        </div>
+                                    )
+                                    : filteredStudents.length === 0
+                                        ? (
+                                            <div className="py-12 text-center text-xs text-slate-400">
+                                                No students found matching your search.
                                             </div>
-                                        );
-                                    })
-                                )}
+                                        )
+                                        : (
+                                            filteredStudents.map((s) => {
+                                                const draft = studentDrafts[s.enrollment_id] || {
+                                                    fullName: s.full_name,
+                                                    remarks: '',
+                                                    status: defaultStatus,
+                                                    studentId: s.enrollment_id,
+                                                    studentNumber: s.student_number
+                                                };
+
+                                                return (
+                                                    <div
+                                                        className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                                                        key={s.enrollment_id}
+                                                    >
+                                                        <div className="flex items-center gap-3 min-w-0">
+                                                            <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300 text-xs shrink-0">
+                                                                {s.full_name
+                                                                    .split(' ')
+                                                                    .map((w) => w[0])
+                                                                    .slice(0, 2)
+                                                                    .join('')}
+                                                            </div>
+                                                            <div className="flex flex-col min-w-0">
+                                                                <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate">
+                                                                    {s.full_name}
+                                                                </span>
+                                                                <span className="text-[11px] font-mono text-slate-400">
+                                                                    {s.student_number}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Tactile Status Buttons */}
+                                                        <div className="flex items-center gap-1.5 self-end sm:self-center shrink-0">
+                                                            {(['Present', 'Late', 'Absent', 'Excused'] as AttendanceStatus[]).map((status) => {
+                                                                const isSelected = draft.status === status;
+                                                                let colorClasses = 'border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-zinc-800';
+
+                                                                if (isSelected) {
+                                                                    if (status === 'Present') {
+                                                                        colorClasses = 'bg-emerald-600 text-white border-emerald-600 shadow-xs font-bold';
+                                                                    }
+                                                                    else if (status === 'Late') {
+                                                                        colorClasses = 'bg-amber-600 text-white border-amber-600 shadow-xs font-bold';
+                                                                    }
+                                                                    else if (status === 'Absent') {
+                                                                        colorClasses = 'bg-rose-600 text-white border-rose-600 shadow-xs font-bold';
+                                                                    }
+                                                                    else {
+                                                                        colorClasses = 'bg-blue-600 text-white border-blue-600 shadow-xs font-bold';
+                                                                    }
+                                                                }
+
+                                                                return (
+                                                                    <button
+                                                                        className={`px-2.5 py-1 text-xs rounded-lg border transition-all cursor-pointer ${colorClasses}`}
+                                                                        key={status}
+                                                                        type="button"
+                                                                        onClick={() => handleStudentStatusChange(s.enrollment_id, status)}
+                                                                    >
+                                                                        {status}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })
+                                        )}
                             </div>
                         </div>
                     )}

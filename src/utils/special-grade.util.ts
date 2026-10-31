@@ -1,23 +1,12 @@
 import {
-    getSignalDescriptor,
     getSignalLabel,
     SPECIAL_GRADE_OPERATOR_LABELS
 } from '@constants/special-grade-signals.constant';
 import {
     SpecialGradeCondition,
     SpecialGradeConditionGroup,
-    SpecialGradeEvidenceItem,
-    SpecialGradeOperator
+    SpecialGradeEvidenceItem
 } from '@type/grading-config.type';
-
-const COMPACT_OPERATORS: Partial<Record<SpecialGradeOperator, string>> = {
-    '!=': '≠',
-    '<': '<',
-    '<=': '≤',
-    '=': '=',
-    '>': '>',
-    '>=': '≥'
-};
 
 /** Pulls the editable leaves out of a group, ignoring any nested sub-groups. */
 export function readConditionLeaves(

@@ -2,7 +2,7 @@ import CommonButton from '@components/button/CommonButton';
 import CommonHeaderSideBar from '@components/sidebar/CommonHeaderSideBar';
 import { SIDEBAR_WIDTH_COLLAPSED, SIDEBAR_WIDTH_EXPANDED } from '@constants/sidebar.constant';
 import { SideBarContext } from '@contexts/SideBarContext';
-import useBreakpoint from '@hooks/useBreakpoint';
+import useBreakpoint from '@hooks/use-breakpoint';
 import Drawer from '@mui/material/Drawer';
 import Tooltip from '@mui/material/Tooltip';
 import { UserCircleIcon } from '@phosphor-icons/react';

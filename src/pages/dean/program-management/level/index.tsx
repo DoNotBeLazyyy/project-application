@@ -2,10 +2,10 @@ import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
-import { useHasRealChanges } from '@hooks/useHasRealChanges';
+import { useHasRealChanges } from '@hooks/use-has-real-changes';
 import ProgramLevelForm from '@pages/dean/program-management/level/ProgramLevelForm';
 import ProgramLevelGridCard from '@pages/dean/program-management/level/ProgramLevelGridCard';
-import { useProgramLevelTableConfig } from '@pages/dean/program-management/level/useProgramLevelTableConfig';
+import { useProgramLevelTableConfig } from '@pages/dean/program-management/level/use-program-level-table-config';
 import {
     bulkCreateProgramLevels,
     createProgramLevel, deleteProgramLevel, getProgramLevelById, listProgramLevels, updateProgramLevel

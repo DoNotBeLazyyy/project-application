@@ -69,7 +69,7 @@ const CommonButton = forwardRef<HTMLButtonElement, CommonButtonProps>(({
             ? null
             : (endIcon ?? null));
 
-    const handleClick = async(event: React.MouseEvent<HTMLButtonElement>) => {
+    async function handleClick(event: React.MouseEvent<HTMLButtonElement>) {
         if (isDisabled || isHandlingRef.current) {
             event.preventDefault();
             event.stopPropagation();
@@ -79,7 +79,7 @@ const CommonButton = forwardRef<HTMLButtonElement, CommonButtonProps>(({
         if (props.onClick) {
             try {
                 const result: unknown = props.onClick(event);
-                if (result && typeof (result as any).then === 'function') {
+                if (typeof result === 'object' && result !== null && 'then' in result && typeof result.then === 'function') {
                     isHandlingRef.current = true;
                     if (loading === undefined) {
                         setAsyncLoading(true);
@@ -94,7 +94,7 @@ const CommonButton = forwardRef<HTMLButtonElement, CommonButtonProps>(({
                 }
             }
         }
-    };
+    }
 
     return (
         <Button

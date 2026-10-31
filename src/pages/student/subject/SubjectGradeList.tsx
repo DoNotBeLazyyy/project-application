@@ -1,7 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonTable from '@components/table/CommonTable';
-import { toTargetPath } from '@pages/student/evaluation/useEvaluationTargets';
+import { toTargetPath } from '@pages/student/evaluation/use-evaluation-targets';
 import { SubjectGradeItem } from '@type/student-portal.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';

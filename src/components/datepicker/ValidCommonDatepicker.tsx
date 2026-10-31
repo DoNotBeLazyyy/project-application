@@ -15,7 +15,7 @@ import {
 } from '@utils/form.util';
 import { DateTime } from 'luxon';
 import {
-    ReactNode, useEffect, useMemo, useRef, useState
+    FocusEvent, MouseEvent, PointerEvent, ReactNode, useEffect, useMemo, useRef, useState
 } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
@@ -190,14 +190,14 @@ export function CommonDatePicker({
 
     const isNonInteractive = Boolean(disabled || readOnly);
 
-    const blurPickerInput = () => {
+    function blurPickerInput() {
         if (blurTimerRef.current) {
             clearTimeout(blurTimerRef.current);
         }
         blurTimerRef.current = setTimeout(() => {
             blurActiveElementWithin(containerRef.current);
         }, 50);
-    };
+    }
 
     useEffect(() => {
         return () => {
@@ -218,11 +218,9 @@ export function CommonDatePicker({
         );
     }
 
-    function handleAccept(date: DateTime | null) {
+    function handleAccept(...args: Parameters<NonNullable<DatePickerProps['onAccept']>>) {
         blurPickerInput();
-        if (typeof (props as any).onAccept === 'function') {
-            (props as any).onAccept(date);
-        }
+        props.onAccept?.(...args);
     }
 
     function handleClose() {
@@ -287,7 +285,7 @@ export function CommonDatePicker({
                     defaultOpenErrorTooltip={defaultOpenErrorTooltip ?? isFirstError}
                     description={labelDescription}
                     errorMessage={labelErrorMessage}
-                    isRequired={isRequired || (props as any).required}
+                    isRequired={isRequired || ('required' in props && Boolean(props.required))}
                     label={label}
                 />
             )}
@@ -310,7 +308,7 @@ export function CommonDatePicker({
                             size: resolvedSize === 'large'
                                 ? 'medium'
                                 : 'small',
-                            edge: false as any,
+                            edge: false as const,
                             sx: {
                                 margin: 0,
                                 marginRight: 0
@@ -335,24 +333,20 @@ export function CommonDatePicker({
                                 ? 'medium'
                                 : resolvedSize) as 'small' | 'medium' | undefined,
                             variant: 'outlined' as unknown as 'standard',
-                            onPointerDown: (e: any) => {
+                            onPointerDown: (e: PointerEvent<HTMLDivElement>) => {
                                 lastPointerDownTimeRef.current = Date.now();
-                                if (typeof (externalTextFieldProps as any)?.onPointerDown === 'function') {
-                                    (externalTextFieldProps as any).onPointerDown(e);
-                                }
+                                externalTextFieldProps?.onPointerDown?.(e);
                             },
-                            onMouseDown: (e: any) => {
+                            onMouseDown: (e: MouseEvent<HTMLDivElement>) => {
                                 lastPointerDownTimeRef.current = Date.now();
-                                if (typeof (externalTextFieldProps as any)?.onMouseDown === 'function') {
-                                    (externalTextFieldProps as any).onMouseDown(e);
-                                }
+                                externalTextFieldProps?.onMouseDown?.(e);
                             },
-                            onFocus: (e: any) => {
+                            onFocus: (e: FocusEvent<HTMLInputElement>) => {
                                 if (isNonInteractive) {
                                     return;
                                 }
                                 if (typeof externalOnFocus === 'function') {
-                                    (externalOnFocus as (e: any) => void)(e);
+                                    externalOnFocus(e);
                                 }
                             },
                             sx: [
@@ -446,14 +440,14 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
         ? helperTextProp
         : undefined);
 
-    const blurPickerInput = () => {
+    function blurPickerInput() {
         if (blurTimerRef.current) {
             clearTimeout(blurTimerRef.current);
         }
         blurTimerRef.current = setTimeout(() => {
             blurActiveElementWithin(containerRef.current);
         }, 50);
-    };
+    }
 
     useEffect(() => {
         return () => {
@@ -477,11 +471,9 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
         );
     }
 
-    function handleAccept(date: DateTime | null) {
+    function handleAccept(...args: Parameters<NonNullable<DatePickerProps['onAccept']>>) {
         blurPickerInput();
-        if (typeof (props as any).onAccept === 'function') {
-            (props as any).onAccept(date);
-        }
+        props.onAccept?.(...args);
     }
 
     function handleClose() {
@@ -596,7 +588,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                             size: resolvedSize === 'large'
                                 ? 'medium'
                                 : 'small',
-                            edge: false as any,
+                            edge: false as const,
                             sx: {
                                 margin: 0,
                                 marginRight: 0
@@ -622,24 +614,20 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                                 ? 'medium'
                                 : resolvedSize) as 'small' | 'medium' | undefined,
                             variant: 'outlined' as unknown as 'standard',
-                            onPointerDown: (e: any) => {
+                            onPointerDown: (e: PointerEvent<HTMLDivElement>) => {
                                 lastPointerDownTimeRef.current = Date.now();
-                                if (typeof (externalTextFieldProps as any)?.onPointerDown === 'function') {
-                                    (externalTextFieldProps as any).onPointerDown(e);
-                                }
+                                externalTextFieldProps?.onPointerDown?.(e);
                             },
-                            onMouseDown: (e: any) => {
+                            onMouseDown: (e: MouseEvent<HTMLDivElement>) => {
                                 lastPointerDownTimeRef.current = Date.now();
-                                if (typeof (externalTextFieldProps as any)?.onMouseDown === 'function') {
-                                    (externalTextFieldProps as any).onMouseDown(e);
-                                }
+                                externalTextFieldProps?.onMouseDown?.(e);
                             },
-                            onFocus: (e: any) => {
+                            onFocus: (e: FocusEvent<HTMLInputElement>) => {
                                 if (isNonInteractive) {
                                     return;
                                 }
                                 if (typeof externalOnFocus === 'function') {
-                                    (externalOnFocus as (e: any) => void)(e);
+                                    externalOnFocus(e);
                                 }
                             },
                             sx: [

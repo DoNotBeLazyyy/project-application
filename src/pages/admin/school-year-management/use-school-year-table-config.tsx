@@ -1,6 +1,6 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/useTableConfigs';
+import { TableActionConfig } from '@components/table/use-table-configs';
 import { ClockCounterClockwiseIcon, CopySimpleIcon } from '@phosphor-icons/react';
 import { SchoolYearListRow } from '@type/school-year.type';
 import { MobileCardColDef } from '@type/table.type';

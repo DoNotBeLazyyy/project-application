@@ -1,5 +1,5 @@
 import ImageAttachmentCard from '@components/attachment/ImageAttachmentCard';
-import { useAttachmentUrls } from '@components/attachment/useAttachmentUrls';
+import { useAttachmentUrls } from '@components/attachment/use-attachment-urls';
 import ImagePreviewModal, { ImagePreviewItem } from '@components/modal/ImagePreviewModal';
 import {
     DownloadSimpleIcon,

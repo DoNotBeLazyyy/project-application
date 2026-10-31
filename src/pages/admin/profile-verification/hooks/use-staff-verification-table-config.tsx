@@ -1,45 +1,59 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
-import { StudentProfileRequestRow } from '@type/registrar-verification.type';
+import { CommonChip } from '@components/badge/CommonChip';
+import { StaffProfileRequestRow } from '@type/admin-verification.type';
 import { MobileCardColDef } from '@type/table.type';
-import { ICellRendererParams } from 'ag-grid-community';
+import { ICellRendererParams, ValueFormatterParams } from 'ag-grid-community';
 import { useMemo } from 'react';
 
-export function useStudentVerificationTableConfig() {
+export function useStaffVerificationTableConfig() {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
-                field: 'student_number',
-                flex: 1.5,
-                headerName: 'Student No.',
-                minWidth: 130,
-                mobileCard: 'meta',
-                sortable: true
-            },
-            {
-                field: 'student_name',
+                field: 'user_name',
                 flex: 2,
-                headerName: 'Student Name',
+                headerName: 'Staff Name',
                 minWidth: 180,
                 mobileCard: 'title',
                 sortable: true
             },
             {
-                cellRenderer: function(params: ICellRendererParams<StudentProfileRequestRow>) {
+                cellRenderer: function(params: ICellRendererParams<StaffProfileRequestRow>) {
                     if (!params.data) return null;
+                    const role = params.data.role_code;
                     return (
-                        <span>
-                            {params.data.program_code} (Yr {params.data.year_level})
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                            <CommonChip
+                                label={role}
+                                size="small"
+                                variant={role === 'Dean'
+                                    ? 'dark'
+                                    : 'light'}
+                            />
+                            {params.data.department_code && (
+                                <span className="text-xs text-(--mui-palette-text-secondary)">
+                                    ({params.data.department_code})
+                                </span>
+                            )}
+                        </div>
                     );
                 },
-                field: 'program_code',
+                field: 'role_code',
                 flex: 1.5,
-                headerName: 'Program & Year',
+                headerName: 'Role & Dept',
                 minWidth: 150,
-                mobileCard: 'subtitle'
+                mobileCard: 'subtitle',
+                sortable: true
             },
             {
-                cellRenderer: function(params: ICellRendererParams<StudentProfileRequestRow>) {
+                field: 'user_email',
+                flex: 2,
+                headerName: 'Email Address',
+                minWidth: 180,
+                mobileCard: 'meta',
+                sortable: true
+            },
+            {
+                cellRenderer: function(params: ICellRendererParams<StaffProfileRequestRow>) {
                     if (!params.value) return null;
                     const status = params.value as string;
                     const variant
@@ -47,7 +61,9 @@ export function useStudentVerificationTableConfig() {
                             ? 'warning'
                             : status === 'Approved' || status === 'Approved with Edits'
                                 ? 'success'
-                                : 'error';
+                                : status === 'Cancelled'
+                                    ? 'info'
+                                    : 'error';
                     return (
                         <CommonBadgeStatus
                             label={status}
@@ -68,7 +84,7 @@ export function useStudentVerificationTableConfig() {
                 headerName: 'Submitted On',
                 minWidth: 170,
                 sortable: true,
-                valueFormatter: (params: any) =>
+                valueFormatter: (params: ValueFormatterParams<StaffProfileRequestRow>) =>
                     params.value
                         ? new Date(params.value as string)
                             .toLocaleString('en-PH', {

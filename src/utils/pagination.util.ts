@@ -1,5 +1,4 @@
 import { StateProps } from '@type/common.type';
-import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { PaginationData } from '@type/table.type';
 
 /**

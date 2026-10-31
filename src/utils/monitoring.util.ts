@@ -1,4 +1,4 @@
-import { DiagnosticReport, MonitoringBreadcrumb, MonitoringUserContext, SeverityLevel } from '@type/monitoring.type';
+import { DiagnosticReport, MonitoringBreadcrumb, MonitoringUserContext } from '@type/monitoring.type';
 import { parseServiceError } from '@utils/error.util';
 
 const MAX_BREADCRUMBS = 50;

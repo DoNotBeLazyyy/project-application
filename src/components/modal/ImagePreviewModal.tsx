@@ -189,7 +189,7 @@ export default function ImagePreviewModal({
     }, [open, onClose, handlePrev, handleNext, handleZoomIn, handleZoomOut, handleResetZoom]);
 
     // Mouse wheel zoom
-    const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+    function handleWheel(event: React.WheelEvent<HTMLDivElement>) {
         event.preventDefault();
         event.stopPropagation();
 
@@ -203,20 +203,20 @@ export default function ImagePreviewModal({
             }
             return next;
         });
-    };
+    }
 
     // Double-click toggle
-    const handleDoubleClick = () => {
+    function handleDoubleClick() {
         if (scale > 1) {
             resetTransform();
         }
         else {
             setScale(2);
         }
-    };
+    }
 
     // Mouse drag / pan / swipe handlers
-    const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+    function handleMouseDown(event: React.MouseEvent<HTMLDivElement>) {
         if (event.button !== 0) return; // Only left-click
         hasMovedRef.current = false;
         dragDistanceRef.current = { x: 0, y: 0 };
@@ -230,9 +230,9 @@ export default function ImagePreviewModal({
                 ? position.y
                 : 0)
         };
-    };
+    }
 
-    const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    function handleMouseMove(event: React.MouseEvent<HTMLDivElement>) {
         if (!isDragging) return;
 
         const deltaX = event.clientX - dragStartRef.current.x;
@@ -249,9 +249,9 @@ export default function ImagePreviewModal({
                 y: event.clientY - dragStartRef.current.y
             });
         }
-    };
+    }
 
-    const handleMouseUp = () => {
+    function handleMouseUp() {
         if (isDragging && scale <= 1 && images.length > 1 && hasMovedRef.current) {
             // Horizontal swipe gesture at 1x scale
             if (dragDistanceRef.current.x < -SWIPE_THRESHOLD) {
@@ -262,10 +262,10 @@ export default function ImagePreviewModal({
             }
         }
         setIsDragging(false);
-    };
+    }
 
     // Touch gesture handlers for mobile
-    const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    function handleTouchStart(event: React.TouchEvent<HTMLDivElement>) {
         if (event.touches.length === 1) {
             setIsDragging(true);
             hasMovedRef.current = false;
@@ -288,9 +288,9 @@ export default function ImagePreviewModal({
             initialTouchDistanceRef.current = dist;
             initialScaleRef.current = scale;
         }
-    };
+    }
 
-    const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    function handleTouchMove(event: React.TouchEvent<HTMLDivElement>) {
         if (event.touches.length === 1 && isDragging) {
             const currentX = event.touches[0].clientX;
             const currentY = event.touches[0].clientY;
@@ -320,9 +320,9 @@ export default function ImagePreviewModal({
             );
             setScale(newScale);
         }
-    };
+    }
 
-    const handleTouchEnd = () => {
+    function handleTouchEnd() {
         if (isDragging && scale <= 1 && images.length > 1 && hasMovedRef.current) {
             if (dragDistanceRef.current.x < -SWIPE_THRESHOLD) {
                 handleNext();
@@ -333,14 +333,14 @@ export default function ImagePreviewModal({
         }
         setIsDragging(false);
         initialTouchDistanceRef.current = null;
-    };
+    }
 
     // Backdrop click: close if user clicked the backdrop without dragging
-    const handleBackdropClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    function handleBackdropClick(event: React.MouseEvent<HTMLDivElement>) {
         if (event.target === containerRef.current && !hasMovedRef.current) {
             onClose();
         }
-    };
+    }
 
     if (!open || !currentImage) return null;
 

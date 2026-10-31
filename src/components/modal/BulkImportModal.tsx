@@ -6,6 +6,7 @@ import {
     ArrowLineDownIcon, ArrowLineUpIcon, CheckCircleIcon, WarningCircleIcon, XCircleIcon
 } from '@phosphor-icons/react';
 import { BulkImportError, CsvTemplateColumn, DetailedBulkImportResult } from '@type/bulk-import.type';
+import { findErrorRow, getTargetEntityName } from '@utils/bulk-import.util';
 import { classMerge } from '@utils/css.util';
 import {
     CsvParseResult,
@@ -20,36 +21,13 @@ type BulkImportStep = 'upload' | 'preview' | 'results';
 
 type ParsedRow = Record<string, string>;
 
-// Finds the 1-based row a plain error message refers to: "Row 3 ..." or "<a value of that row>: ..."
-export function findErrorRow(error: string, rows: ParsedRow[]): number | null {
-    const rowMatch = /^Row #?(\d+)\b/i.exec(error);
-    if (rowMatch) return Number(rowMatch[1]);
-
-    const subject = error.split(':')[0]
-        .trim()
-        .toLowerCase();
-    if (!subject) return null;
-
-    const index = rows.findIndex((row) => Object.values(row)
-        .some((value) => String(value ?? '')
-            .trim()
-            .toLowerCase() === subject));
-    return index >= 0
-        ? index + 1
-        : null;
-}
-
-export function getTargetEntityName(title?: string, entityName?: string): string {
-    if (entityName?.trim()) return entityName.trim();
-    if (title) {
-        let cleaned = title.trim();
-        cleaned = cleaned.replace(/\s*—\s*(preview|results)\s*$/i, '');
-        cleaned = cleaned.replace(/\s*\(csv\)\s*$/i, '');
-        cleaned = cleaned.replace(/^(bulk\s+)?(import|enroll|upload)\s+/i, '');
-        cleaned = cleaned.trim();
-        if (cleaned) return cleaned;
+// Reads the code a row mapper produced, if it produced one
+function getMappedCode(mapped: unknown): string {
+    if (typeof mapped !== 'object' || mapped === null) {
+        return '';
     }
-    return 'Records';
+    const { code, section_code: sectionCode } = mapped as { code?: unknown; section_code?: unknown };
+    return String(code || sectionCode || '');
 }
 
 function DefaultPreviewCard({
@@ -200,7 +178,7 @@ export default function BulkImportModal<TPayload>({
 
     const [step, setStep] = useState<BulkImportStep>('upload');
     const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
-    const [mappedRows, setMappedRows] = useState<any[]>([]);
+    const [mappedRows, setMappedRows] = useState<TPayload[]>([]);
     const [result, setResult] = useState<DetailedBulkImportResult | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [parseError, setParseError] = useState<string | null>(null);
@@ -558,7 +536,6 @@ export default function BulkImportModal<TPayload>({
         const hasStructuredErrors = result?.structuredErrors && result.structuredErrors.length > 0;
         const hasStringErrors = result?.errors && result.errors.length > 0;
         const hasErrors = hasStructuredErrors || hasStringErrors;
-        const hasConflicts = result?.structuredConflicts && result.structuredConflicts.length > 0;
 
         const createdCount = result?.created_count ?? result?.provisioned_count ?? 0;
         const updatedCount = result?.updated_count ?? 0;
@@ -590,8 +567,8 @@ export default function BulkImportModal<TPayload>({
                     .map((row, idx) => ({ row: idx + 1, data: row }))
                     .filter((item) => !failedRowNumbers.has(item.row))
                     .map(({ row, data }) => {
-                        const mapped = mappedRows[row - 1] as Record<string, any> | undefined;
-                        const codeVal = mapped?.code || mapped?.section_code || data.code || data.section_code || data.course_code || data.department_code || data.term_label || data.email || '';
+                        const mappedCode = getMappedCode(mappedRows[row - 1]);
+                        const codeVal = mappedCode || data.code || data.section_code || data.course_code || data.department_code || data.term_label || data.email || '';
                         const titleVal = data.title || data.label || data.name || (data.first_name
                             ? `${data.first_name} ${data.last_name || ''}`.trim()
                             : '');

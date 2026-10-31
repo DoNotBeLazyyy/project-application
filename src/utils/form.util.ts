@@ -1,5 +1,5 @@
 import {
-    Control, FieldErrors, FieldValues, Path, useForm, UseFormProps, UseFormReturn
+    Control, FieldErrors, FieldValues, Path, UseFormReturn, UseFormSetFocus
 } from 'react-hook-form';
 
 interface ErrorMessageProps<T> {
@@ -109,9 +109,9 @@ export function announceFormError(detail: FormErrorEventDetail): void {
  * Automatically focuses the first invalid field and opens its dropdown menu
  * or date picker popover if applicable.
  */
-export function focusAndOpenFirstErrorField(
+export function focusAndOpenFirstErrorField<T extends FieldValues = FieldValues>(
     name: string,
-    methods?: { setFocus?: (name: any) => void }
+    methods?: { setFocus?: UseFormSetFocus<T> }
 ): void {
     if (typeof document === 'undefined') {
         return;
@@ -119,7 +119,7 @@ export function focusAndOpenFirstErrorField(
 
     if (methods && typeof methods.setFocus === 'function') {
         try {
-            methods.setFocus(name);
+            methods.setFocus(name as Path<T>);
         }
         catch {
             // Ignore if field is not registered in RHF

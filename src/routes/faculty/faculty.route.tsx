@@ -70,24 +70,30 @@ export const facultyRoutes: RouteObject[] = [
                 path: 'announcement-management/:id'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/faculty/announcement-management"
-                />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/faculty/announcement-management"
+                    />
+                ),
                 path: 'event-management'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/faculty/announcement-management/new?type=Event"
-                />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/faculty/announcement-management/new?type=Event"
+                    />
+                ),
                 path: 'event-management/new'
             },
             {
-                element: <CommunicationRedirect
-                    basePath="/faculty/announcement-management"
-                    itemType="Event"
-                />,
+                element: (
+                    <CommunicationRedirect
+                        basePath="/faculty/announcement-management"
+                        itemType="Event"
+                    />
+                ),
                 path: 'event-management/:id'
             },
             {

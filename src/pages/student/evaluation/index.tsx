@@ -1,11 +1,11 @@
 import CommonCard from '@components/card/CommonCard';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
 import { QUESTIONS_SCROLL_STEP } from '@constants/evaluation.constant';
-import { useInfiniteScroll } from '@hooks/useInfiniteScroll';
+import { useInfiniteScroll } from '@hooks/use-infinite-scroll';
 import { EvaluationRatingRow } from '@pages/student/evaluation/EvaluationRatingMatrix';
 import Step1FacultyAndGuide from '@pages/student/evaluation/Step1FacultyAndGuide';
 import Step2EvaluationForm, { RenderedSection, ScrolledSection } from '@pages/student/evaluation/Step2EvaluationForm';
-import { toTargetPath, useEvaluationTargets } from '@pages/student/evaluation/useEvaluationTargets';
+import { toTargetPath, useEvaluationTargets } from '@pages/student/evaluation/use-evaluation-targets';
 import { getEvaluationForm, submitEvaluation } from '@services/evaluation.service';
 import { useToastStore } from '@stores/toast.store';
 import { EvaluationAnswerForm, EvaluationAnswersForm, EvaluationForm } from '@type/evaluation.type';

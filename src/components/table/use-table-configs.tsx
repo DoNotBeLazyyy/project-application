@@ -3,7 +3,7 @@ import CaretUpDownStringIcon from '@components/icons/CaretUpDownStringIcon';
 import CaretUpStringIcon from '@components/icons/CaretUpStringIcon';
 import TableActionCell, { TableActionCellBaseProps, TableActionCellRendererParams } from '@components/table/TableActionCell';
 import { TABLE_ACTION_COL_ID, TABLE_ACTION_COL_WIDTH, TABLE_ACTION_COL_WIDTH_MOBILE } from '@constants/table.constant';
-import useBreakpoint from '@hooks/useBreakpoint';
+import useBreakpoint from '@hooks/use-breakpoint';
 import { useLoadingStore } from '@stores/loading.store';
 import { MobileCardColDef } from '@type/table.type';
 import { ColDef } from 'ag-grid-community';

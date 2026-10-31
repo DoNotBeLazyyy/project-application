@@ -592,7 +592,12 @@ export default function FacultyEvaluationsPage() {
                     className="flex flex-col"
                 >
                     <div className="flex flex-col gap-2 p-4 pt-0 max-h-[320px] overflow-y-auto">
-                        {filteredSections.length === 0 && (
+                        {!summary && (
+                            <p className="py-8 text-(--mui-palette-text-secondary) text-center text-sm">
+                                Loading evaluations…
+                            </p>
+                        )}
+                        {summary && filteredSections.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-8 text-center text-(--mui-palette-text-secondary)">
                                 <FunnelIcon
                                     className="opacity-40 mb-2"

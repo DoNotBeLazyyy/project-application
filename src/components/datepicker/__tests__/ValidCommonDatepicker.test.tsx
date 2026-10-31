@@ -1,8 +1,7 @@
+import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { setLastWindowFocusTime } from '@utils/form.util';
 import { describe, expect, it, vi } from 'vitest';
-
-import { CommonDatePicker } from '../ValidCommonDatepicker';
 
 describe('CommonDatePicker - Focus & Tab Revisit Behavior', () => {
     it('renders date picker sections properly', () => {

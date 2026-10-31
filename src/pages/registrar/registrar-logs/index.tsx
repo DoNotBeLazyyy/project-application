@@ -3,7 +3,7 @@ import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import RegistrarLogDetailContent from '@pages/registrar/registrar-logs/components/RegistrarLogDetailContent';
 import FilterRegistrarLogForm from '@pages/registrar/registrar-logs/forms/FilterRegistrarLogForm';
-import { useRegistrarLogTableConfig } from '@pages/registrar/registrar-logs/hooks/useRegistrarLogTableConfig';
+import { useRegistrarLogTableConfig } from '@pages/registrar/registrar-logs/hooks/use-registrar-log-table-config';
 import { listRegistrarLogs } from '@services/registrar-verification.service';
 import { SortStringDto } from '@type/http.type';
 import { RegistrarLogFilterValues, RegistrarLogRow } from '@type/registrar-verification.type';

@@ -108,6 +108,13 @@ interface FormFieldProps<T extends FieldValues> {
     defaultOpenErrorTooltip?: boolean;
 }
 
+// Drops `label` from the field props before they reach the input
+function withoutLabel<P extends { label?: unknown }>(props: P): Omit<P, 'label'> {
+    const rest = { ...props };
+    delete rest.label;
+    return rest;
+}
+
 export function FormField<T extends FieldValues>({
     control,
     defaultOpenErrorTooltip,
@@ -115,7 +122,7 @@ export function FormField<T extends FieldValues>({
     hasHelper = true
 }: FormFieldProps<T>) {
     if (field.type === 'select') {
-        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean };
+        const fieldProps = withoutLabel((field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean });
         return (
             <ValidCommonSelect
                 {...fieldProps}
@@ -132,7 +139,7 @@ export function FormField<T extends FieldValues>({
     }
 
     if (field.type === 'text-area') {
-        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; placeholder?: string; defaultOpenErrorTooltip?: boolean; slotProps?: CommonTextareaProps['slotProps'] };
+        const fieldProps = withoutLabel((field.fieldProps ?? {}) as { label?: unknown; placeholder?: string; defaultOpenErrorTooltip?: boolean; slotProps?: CommonTextareaProps['slotProps'] });
         return (
             <ValidCommonTextarea
                 {...fieldProps}
@@ -158,7 +165,7 @@ export function FormField<T extends FieldValues>({
     }
 
     if (field.type === 'date') {
-        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean };
+        const fieldProps = withoutLabel((field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean });
         return (
             <ValidCommonDatePicker
                 {...fieldProps}
@@ -175,7 +182,7 @@ export function FormField<T extends FieldValues>({
     }
 
     if (field.type === 'datetime') {
-        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean };
+        const fieldProps = withoutLabel((field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean });
         return (
             <ValidCommonDateTimePicker
                 {...fieldProps}
@@ -228,7 +235,7 @@ export function FormField<T extends FieldValues>({
     }
 
     if (field.type === 'number') {
-        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; placeholder?: string; defaultOpenErrorTooltip?: boolean };
+        const fieldProps = withoutLabel((field.fieldProps ?? {}) as { label?: unknown; placeholder?: string; defaultOpenErrorTooltip?: boolean });
         return (
             <ValidCommonNumberInput
                 {...fieldProps}
@@ -247,7 +254,7 @@ export function FormField<T extends FieldValues>({
     }
 
     if (field.type === 'multi-select') {
-        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean };
+        const fieldProps = withoutLabel((field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean });
         return (
             <ValidCommonMultiSelect
                 {...fieldProps}
@@ -267,7 +274,7 @@ export function FormField<T extends FieldValues>({
     const resolvedRules = isEmail
         ? { ...field.rules, pattern: field.rules?.pattern ?? EMAIL_PATTERN }
         : field.rules;
-    const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; placeholder?: string; defaultOpenErrorTooltip?: boolean };
+    const fieldProps = withoutLabel((field.fieldProps ?? {}) as { label?: unknown; placeholder?: string; defaultOpenErrorTooltip?: boolean });
 
     return (
         <ValidCommonInput

@@ -30,7 +30,7 @@ function lazyWithRetry<P extends object>(
             sessionStorage.removeItem(pageAlreadyReloadedKey);
             return component;
         }
-        catch (error: any) {
+        catch (error) {
             if (isChunkLoadError(error)) {
                 const hasReloaded = sessionStorage.getItem(pageAlreadyReloadedKey);
                 if (!hasReloaded) {
@@ -137,7 +137,7 @@ class LazyErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
 export function lazyElement<P extends object>(
     factory: () => Promise<{ default: ComponentType<P> }>
 ): ReactElement {
-    const LazyComponent = lazyWithRetry(factory) as ComponentType<any>;
+    const LazyComponent = lazyWithRetry(factory) as unknown as ComponentType;
 
     return (
         <LazyErrorBoundary>

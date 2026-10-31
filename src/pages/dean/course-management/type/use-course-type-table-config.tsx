@@ -1,5 +1,5 @@
 import { MenuOption } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/useTableConfigs';
+import { TableActionConfig } from '@components/table/use-table-configs';
 import { CourseTypeListRow } from '@type/course/course-type.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';

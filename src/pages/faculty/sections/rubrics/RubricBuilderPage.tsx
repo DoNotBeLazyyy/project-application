@@ -3,8 +3,8 @@ import CommonCard from '@components/card/CommonCard';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import UnsavedChangesPrompt from '@components/modal/UnsavedChangesPrompt';
-import { useFormDraft } from '@hooks/useFormDraft';
-import { useUnsavedChangesGuard } from '@hooks/useUnsavedChangesGuard';
+import { useFormDraft } from '@hooks/use-form-draft';
+import { useUnsavedChangesGuard } from '@hooks/use-unsaved-changes-guard';
 import { ArrowLeftIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { createRubric, getRubric, updateRubric } from '@services/rubric.service';
 import { RubricCriterionInput, RubricFormValues } from '@type/rubric.type';
@@ -194,7 +194,7 @@ export default function RubricBuilderPage() {
                             name="title"
                             rules={{
                                 required: 'Title is required.',
-                                validate: (val: any) => Boolean(val && String(val)
+                                validate: (val: unknown) => Boolean(val && String(val)
                                     .trim()) || 'Title cannot be empty or whitespace only.'
                             }}
                         />
@@ -246,7 +246,7 @@ export default function RubricBuilderPage() {
                                                 name={`criteria.${index}.title`}
                                                 rules={{
                                                     required: 'Required.',
-                                                    validate: (val: any) => Boolean(val && String(val)
+                                                    validate: (val: unknown) => Boolean(val && String(val)
                                                         .trim()) || 'Criterion title cannot be empty or whitespace only.'
                                                 }}
                                             />
@@ -264,7 +264,7 @@ export default function RubricBuilderPage() {
                                                 name={`criteria.${index}.max_points`}
                                                 rules={{
                                                     required: 'Points are required.',
-                                                    validate: (val: any) => {
+                                                    validate: (val: unknown) => {
                                                         const num = Number(val);
                                                         if (!Number.isFinite(num) || num <= 0) return 'Points must be greater than 0.';
                                                         return true;

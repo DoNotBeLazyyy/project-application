@@ -46,7 +46,7 @@ function getAssessmentState(item: SubjectAssessmentItem): {
         ? new Date(item.scheduled_publish_at) > now
         : false;
 
-    const isPublishedEffective = item.is_published === true || (Boolean(item.scheduled_publish_at) && new Date(item.scheduled_publish_at!) <= now);
+    const isPublishedEffective = item.is_published === true || Boolean(item.scheduled_publish_at && new Date(item.scheduled_publish_at) <= now);
 
     if (isSubmitted) return { canTake: false, label: 'Submitted' };
     if (isMaxed) return { canTake: false, label: 'Max attempts reached' };

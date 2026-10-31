@@ -2,7 +2,7 @@ import CommonInput from '@components/input/CommonInput';
 import CommonActionModal from '@components/modal/CommonActionModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
-import { useObjectDraft } from '@hooks/useFormDraft';
+import { useObjectDraft } from '@hooks/use-form-draft';
 import { SpecialGradeFlag } from '@type/grading-config.type';
 import { describeEvidence } from '@utils/special-grade.util';
 import {

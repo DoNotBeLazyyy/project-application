@@ -5,7 +5,7 @@ import FormLabel from '@components/form/FormLabel';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
-import { useObjectDraft } from '@hooks/useFormDraft';
+import { useObjectDraft } from '@hooks/use-form-draft';
 import { isBlankText, MATERIAL_URL_PATTERN } from '@pages/shared/content/content-form.constant';
 import { UploadSimpleIcon } from '@phosphor-icons/react';
 import { createMaterial, MATERIAL_TYPE_OPTIONS, updateMaterial } from '@services/content.service';

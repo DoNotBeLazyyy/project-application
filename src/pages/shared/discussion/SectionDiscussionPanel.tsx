@@ -4,7 +4,7 @@ import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
-import { useObjectDraft } from '@hooks/useFormDraft';
+import { useObjectDraft } from '@hooks/use-form-draft';
 import DiscussionAttachmentPicker from '@pages/shared/discussion/DiscussionAttachmentPicker';
 import DiscussionThreadView from '@pages/shared/discussion/DiscussionThreadView';
 import {
@@ -248,95 +248,97 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
 
             {/* Discussion Threads Bento Grid */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-                {filteredThreads.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900/50">
-                        <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center mb-3">
-                            <ChatCircleTextIcon
-                                size={26}
-                                weight="duotone"
-                            />
+                {filteredThreads.length === 0
+                    ? (
+                        <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900/50">
+                            <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center mb-3">
+                                <ChatCircleTextIcon
+                                    size={26}
+                                    weight="duotone"
+                                />
+                            </div>
+                            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                                No {filterMode !== 'All'
+                                    ? filterMode.toLowerCase()
+                                    : ''} discussions found
+                            </h4>
+                            <p className="text-xs text-slate-500 max-w-sm mt-1">
+                                Start a discussion thread to engage students in questions, peer reviews, or topic debates.
+                            </p>
                         </div>
-                        <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                            No {filterMode !== 'All'
-                                ? filterMode.toLowerCase()
-                                : ''} discussions found
-                        </h4>
-                        <p className="text-xs text-slate-500 max-w-sm mt-1">
-                            Start a discussion thread to engage students in questions, peer reviews, or topic debates.
-                        </p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
-                        {filteredThreads.map((thread) => (
-                            <div
-                                className={`rounded-2xl p-4.5 border transition-all duration-200 flex flex-col justify-between cursor-pointer group shadow-2xs hover:shadow-md ${
-                                    thread.is_pinned
-                                        ? 'bg-amber-50/30 dark:bg-amber-950/20 border-amber-200/90 dark:border-amber-800/80 hover:border-amber-400'
-                                        : 'bg-white dark:bg-zinc-900 border-slate-200/90 dark:border-zinc-800 hover:border-blue-400 dark:hover:border-blue-700'
-                                }`}
-                                key={thread.id}
-                                onClick={() => setSelectedThreadId(thread.id)}
-                            >
-                                <div>
-                                    {/* Badges Header */}
-                                    <div className="flex items-center justify-between gap-2 mb-2.5">
-                                        <div className="flex items-center gap-1.5 flex-wrap">
-                                            {thread.is_pinned && (
-                                                <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                                                    <PushPinIcon
-                                                        size={12}
-                                                        weight="fill"
-                                                    />
-                                                    Pinned
-                                                </span>
-                                            )}
-                                            {thread.is_resolved && (
-                                                <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                                    <CheckCircleIcon
-                                                        size={12}
-                                                        weight="fill"
-                                                    />
-                                                    Resolved
-                                                </span>
-                                            )}
+                    )
+                    : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
+                            {filteredThreads.map((thread) => (
+                                <div
+                                    className={`rounded-2xl p-4.5 border transition-all duration-200 flex flex-col justify-between cursor-pointer group shadow-2xs hover:shadow-md ${
+                                        thread.is_pinned
+                                            ? 'bg-amber-50/30 dark:bg-amber-950/20 border-amber-200/90 dark:border-amber-800/80 hover:border-amber-400'
+                                            : 'bg-white dark:bg-zinc-900 border-slate-200/90 dark:border-zinc-800 hover:border-blue-400 dark:hover:border-blue-700'
+                                    }`}
+                                    key={thread.id}
+                                    onClick={() => setSelectedThreadId(thread.id)}
+                                >
+                                    <div>
+                                        {/* Badges Header */}
+                                        <div className="flex items-center justify-between gap-2 mb-2.5">
+                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                {thread.is_pinned && (
+                                                    <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                                        <PushPinIcon
+                                                            size={12}
+                                                            weight="fill"
+                                                        />
+                                                        Pinned
+                                                    </span>
+                                                )}
+                                                {thread.is_resolved && (
+                                                    <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                                        <CheckCircleIcon
+                                                            size={12}
+                                                            weight="fill"
+                                                        />
+                                                        Resolved
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {/* Reply Counter Badge */}
+                                            <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300">
+                                                <ChatDotsIcon
+                                                    size={13}
+                                                    weight="bold"
+                                                />
+                                                {thread.reply_count}
+                                            </span>
                                         </div>
 
-                                        {/* Reply Counter Badge */}
-                                        <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300">
-                                            <ChatDotsIcon
-                                                size={13}
-                                                weight="bold"
-                                            />
-                                            {thread.reply_count}
-                                        </span>
+                                        {/* Title */}
+                                        <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-2">
+                                            {thread.title}
+                                        </h3>
+
+                                        {/* Preview */}
+                                        <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed mb-3">
+                                            {thread.body}
+                                        </p>
                                     </div>
 
-                                    {/* Title */}
-                                    <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-2">
-                                        {thread.title}
-                                    </h3>
-
-                                    {/* Preview */}
-                                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed mb-3">
-                                        {thread.body}
-                                    </p>
+                                    {/* Footer: Author + Date */}
+                                    <div className="border-t border-slate-100 dark:border-zinc-800 pt-2.5 flex items-center justify-between text-slate-400 text-xs mt-auto">
+                                        <span className="flex items-center gap-1 text-[11px] font-medium text-slate-500">
+                                            <UserIcon size={13} />
+                                            {thread.author_name}
+                                        </span>
+                                        <span className="flex items-center gap-1 text-[11px]">
+                                            <CalendarBlankIcon size={13} />
+                                            {formatShortDate(thread.created_at)}
+                                        </span>
+                                    </div>
                                 </div>
-
-                                {/* Footer: Author + Date */}
-                                <div className="border-t border-slate-100 dark:border-zinc-800 pt-2.5 flex items-center justify-between text-slate-400 text-xs mt-auto">
-                                    <span className="flex items-center gap-1 text-[11px] font-medium text-slate-500">
-                                        <UserIcon size={13} />
-                                        {thread.author_name}
-                                    </span>
-                                    <span className="flex items-center gap-1 text-[11px]">
-                                        <CalendarBlankIcon size={13} />
-                                        {formatShortDate(thread.created_at)}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            ))}
+                        </div>
+                    )}
             </div>
 
             {/* Read Modal: DiscussionThreadModal */}

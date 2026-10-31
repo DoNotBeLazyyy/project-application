@@ -564,74 +564,76 @@ export default function EnrollmentWorkspaceModal({
 
                             {/* Bento Cards Container for Left Workspace */}
                             <div className="flex-1 overflow-y-auto pr-1">
-                                {currentActiveLoad.length === 0 && stagedNewSections.length === 0 ? (
-                                    <div className="border border-dashed border-(--mui-palette-divider) rounded-xl p-12 text-center flex flex-col items-center justify-center gap-2 text-(--mui-palette-text-secondary)">
-                                        <CalendarBlankIcon
-                                            className="text-(--mui-palette-text-disabled)"
-                                            size={36}
-                                        />
-                                        <span className="font-semibold text-sm">No Enrolled or Staged Sections</span>
-                                        <span className="text-xs max-w-sm">
-                                            This student is not enrolled in any sections for this term. Select available sections from the sidebar on the right to build their load.
-                                        </span>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-4">
-                                        {/* 1. Existing Enrolled Sections (Normal or Marked for Drop) */}
-                                        {currentActiveLoad.map(function(row) {
-                                            const isMarkedDrop = markedDropIds.has(row.enrollment_id);
-                                            const item: StudentLoadCardItem = {
-                                                id: row.enrollment_id,
-                                                section_id: row.section_id,
-                                                course_code: row.course_code,
-                                                course_title: row.course_title,
-                                                section_code: row.section_code,
-                                                units: row.units,
-                                                schedule_label: row.schedule_label,
-                                                faculty_name: row.faculty_name,
-                                                status: row.status
-                                            };
+                                {currentActiveLoad.length === 0 && stagedNewSections.length === 0
+                                    ? (
+                                        <div className="border border-dashed border-(--mui-palette-divider) rounded-xl p-12 text-center flex flex-col items-center justify-center gap-2 text-(--mui-palette-text-secondary)">
+                                            <CalendarBlankIcon
+                                                className="text-(--mui-palette-text-disabled)"
+                                                size={36}
+                                            />
+                                            <span className="font-semibold text-sm">No Enrolled or Staged Sections</span>
+                                            <span className="text-xs max-w-sm">
+                                                This student is not enrolled in any sections for this term. Select available sections from the sidebar on the right to build their load.
+                                            </span>
+                                        </div>
+                                    )
+                                    : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-4">
+                                            {/* 1. Existing Enrolled Sections (Normal or Marked for Drop) */}
+                                            {currentActiveLoad.map(function(row) {
+                                                const isMarkedDrop = markedDropIds.has(row.enrollment_id);
+                                                const item: StudentLoadCardItem = {
+                                                    id: row.enrollment_id,
+                                                    section_id: row.section_id,
+                                                    course_code: row.course_code,
+                                                    course_title: row.course_title,
+                                                    section_code: row.section_code,
+                                                    units: row.units,
+                                                    schedule_label: row.schedule_label,
+                                                    faculty_name: row.faculty_name,
+                                                    status: row.status
+                                                };
 
-                                            return (
-                                                <StudentLoadBentoCard
-                                                    item={item}
-                                                    key={row.enrollment_id}
-                                                    state={isMarkedDrop
-                                                        ? 'dropped'
-                                                        : 'enrolled'}
-                                                    onDrop={() => handleMarkDrop(row.enrollment_id)}
-                                                    onUndoDrop={() => handleUndoDrop(row.enrollment_id)}
-                                                />
-                                            );
-                                        })}
+                                                return (
+                                                    <StudentLoadBentoCard
+                                                        item={item}
+                                                        key={row.enrollment_id}
+                                                        state={isMarkedDrop
+                                                            ? 'dropped'
+                                                            : 'enrolled'}
+                                                        onDrop={() => handleMarkDrop(row.enrollment_id)}
+                                                        onUndoDrop={() => handleUndoDrop(row.enrollment_id)}
+                                                    />
+                                                );
+                                            })}
 
-                                        {/* 2. Newly Staged Sections in BLUE */}
-                                        {stagedNewSections.map(function(sec) {
-                                            const item: StudentLoadCardItem = {
-                                                id: sec.section_id,
-                                                section_id: sec.section_id,
-                                                course_code: sec.course_code,
-                                                course_title: sec.course_title,
-                                                section_code: sec.section_code,
-                                                units: sec.units,
-                                                schedule_label: sec.schedule_label,
-                                                faculty_name: sec.faculty_name,
-                                                room: sec.room,
-                                                conflict_with: sec.conflict_with,
-                                                unmet_prerequisites: sec.unmet_prerequisites
-                                            };
+                                            {/* 2. Newly Staged Sections in BLUE */}
+                                            {stagedNewSections.map(function(sec) {
+                                                const item: StudentLoadCardItem = {
+                                                    id: sec.section_id,
+                                                    section_id: sec.section_id,
+                                                    course_code: sec.course_code,
+                                                    course_title: sec.course_title,
+                                                    section_code: sec.section_code,
+                                                    units: sec.units,
+                                                    schedule_label: sec.schedule_label,
+                                                    faculty_name: sec.faculty_name,
+                                                    room: sec.room,
+                                                    conflict_with: sec.conflict_with,
+                                                    unmet_prerequisites: sec.unmet_prerequisites
+                                                };
 
-                                            return (
-                                                <StudentLoadBentoCard
-                                                    item={item}
-                                                    key={`staged-${sec.section_id}`}
-                                                    state="new"
-                                                    onRemoveNew={() => handleUnstageSection(sec.section_id)}
-                                                />
-                                            );
-                                        })}
-                                    </div>
-                                )}
+                                                return (
+                                                    <StudentLoadBentoCard
+                                                        item={item}
+                                                        key={`staged-${sec.section_id}`}
+                                                        state="new"
+                                                        onRemoveNew={() => handleUnstageSection(sec.section_id)}
+                                                    />
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                             </div>
 
                             {/* Overrides form for Staged Sections (Conflicts & Prerequisites) */}

@@ -25,7 +25,6 @@ export default function RichContentReader({
 }: RichContentReaderProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const instanceRef = useRef<EditorInstance | null>(null);
-    const [previewImage, setPreviewImage] = useState<ImagePreviewItem | null>(null);
 
     useEffect(function() {
         if (!containerRef.current) {

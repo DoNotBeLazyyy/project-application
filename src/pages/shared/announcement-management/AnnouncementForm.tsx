@@ -17,7 +17,7 @@ export interface AnnouncementFormProps extends ComponentPropsForm {
     isTypeDisabled?: boolean;
 }
 
-export const ITEM_TYPE_OPTIONS: CommonSelectOption[] = [
+const ITEM_TYPE_OPTIONS: CommonSelectOption[] = [
     { label: 'Announcement', value: 'Announcement' },
     { label: 'Event', value: 'Event' }
 ];

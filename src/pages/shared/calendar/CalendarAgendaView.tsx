@@ -1,3 +1,4 @@
+import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from '@pages/shared/calendar/calendar.types';
 import {
     CalendarBlankIcon,
     ClockIcon,
@@ -5,8 +6,6 @@ import {
     MapPinIcon
 } from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
-
-import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from './calendar.types';
 
 interface CalendarAgendaViewProps {
     events: UnifiedCalendarEvent[];
@@ -60,14 +59,16 @@ export function CalendarAgendaView({
 
         for (const ev of sorted) {
             const key = formatDateKey(ev.start);
-            if (!groups.has(key)) {
-                groups.set(key, {
+            let group = groups.get(key);
+            if (!group) {
+                group = {
                     dateKey: key,
                     date: new Date(ev.start.getFullYear(), ev.start.getMonth(), ev.start.getDate()),
                     events: []
-                });
+                };
+                groups.set(key, group);
             }
-            groups.get(key)!.events.push(ev);
+            group.events.push(ev);
         }
 
         return Array.from(groups.values());
@@ -100,97 +101,99 @@ export function CalendarAgendaView({
 
             {/* List Body */}
             <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 divide-y divide-neutral-200/60 dark:divide-neutral-800/60 space-y-4">
-                {groupedEvents.length === 0 ? (
-                    <div className="p-12 text-center text-neutral-400 dark:text-neutral-500 flex flex-col items-center justify-center">
-                        <CalendarBlankIcon
-                            className="mb-2 opacity-50"
-                            size={40}
-                        />
-                        <p className="font-semibold text-sm">No scheduled items found</p>
-                        <p className="text-xs mt-1">Try adjusting your filters or search terms.</p>
-                    </div>
-                ) : (
-                    groupedEvents.map((group) => {
-                        const dayName = group.date.toLocaleDateString('en-US', { weekday: 'long' });
-                        const fullDateStr = group.date.toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                        });
+                {groupedEvents.length === 0
+                    ? (
+                        <div className="p-12 text-center text-neutral-400 dark:text-neutral-500 flex flex-col items-center justify-center">
+                            <CalendarBlankIcon
+                                className="mb-2 opacity-50"
+                                size={40}
+                            />
+                            <p className="font-semibold text-sm">No scheduled items found</p>
+                            <p className="text-xs mt-1">Try adjusting your filters or search terms.</p>
+                        </div>
+                    )
+                    : (
+                        groupedEvents.map((group) => {
+                            const dayName = group.date.toLocaleDateString('en-US', { weekday: 'long' });
+                            const fullDateStr = group.date.toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                            });
 
-                        return (
-                            <div
-                                className="pt-4 first:pt-0"
-                                key={group.dateKey}
-                            >
-                                {/* Date Section Header */}
-                                <div className="flex items-center gap-2 mb-3">
-                                    <div className="font-bold text-sm text-neutral-900 dark:text-white">
-                                        {dayName}
+                            return (
+                                <div
+                                    className="pt-4 first:pt-0"
+                                    key={group.dateKey}
+                                >
+                                    {/* Date Section Header */}
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="font-bold text-sm text-neutral-900 dark:text-white">
+                                            {dayName}
+                                        </div>
+                                        <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                                            • {fullDateStr}
+                                        </div>
+                                        <div className="h-px bg-neutral-200 dark:bg-neutral-800 flex-1 ml-2" />
                                     </div>
-                                    <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
-                                        • {fullDateStr}
-                                    </div>
-                                    <div className="h-px bg-neutral-200 dark:bg-neutral-800 flex-1 ml-2" />
-                                </div>
 
-                                {/* Events List */}
-                                <div className="space-y-2">
-                                    {group.events.map((ev) => {
-                                        const cat = categoryMap.get(ev.category) || CALENDAR_CATEGORIES[0];
-                                        const timeStr = ev.allDay
-                                            ? 'All Day'
-                                            : `${ev.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} – ${ev.end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+                                    {/* Events List */}
+                                    <div className="space-y-2">
+                                        {group.events.map((ev) => {
+                                            const cat = categoryMap.get(ev.category) || CALENDAR_CATEGORIES[0];
+                                            const timeStr = ev.allDay
+                                                ? 'All Day'
+                                                : `${ev.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} – ${ev.end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
 
-                                        return (
-                                            <div
-                                                className={`p-3.5 rounded-xl border cursor-pointer transition-all hover:scale-[1.01] hover:shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 ${cat.bgClass}`}
-                                                key={ev.id}
-                                                onClick={() => onSelectEvent(ev)}
-                                            >
-                                                <div className="min-w-0">
-                                                    <div className="flex items-center gap-2 flex-wrap">
-                                                        <span className={`w-2 h-2 rounded-full ${cat.dotClass}`} />
-                                                        <span className="font-bold text-sm text-neutral-900 dark:text-white">
-                                                            {ev.title}
-                                                        </span>
-                                                        <span className="text-xs px-2 py-0.5 rounded-full bg-white/70 dark:bg-black/30 font-medium border border-neutral-200/50 dark:border-neutral-700/50">
-                                                            {cat.label}
-                                                        </span>
-                                                        {ev.metadata?.assessmentType && (
-                                                            <span className="text-xs px-2 py-0.5 rounded-full bg-amber-200/60 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200 font-medium">
-                                                                {ev.metadata.assessmentType}
+                                            return (
+                                                <div
+                                                    className={`p-3.5 rounded-xl border cursor-pointer transition-all hover:scale-[1.01] hover:shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 ${cat.bgClass}`}
+                                                    key={ev.id}
+                                                    onClick={() => onSelectEvent(ev)}
+                                                >
+                                                    <div className="min-w-0">
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            <span className={`w-2 h-2 rounded-full ${cat.dotClass}`} />
+                                                            <span className="font-bold text-sm text-neutral-900 dark:text-white">
+                                                                {ev.title}
                                                             </span>
+                                                            <span className="text-xs px-2 py-0.5 rounded-full bg-white/70 dark:bg-black/30 font-medium border border-neutral-200/50 dark:border-neutral-700/50">
+                                                                {cat.label}
+                                                            </span>
+                                                            {ev.metadata?.assessmentType && (
+                                                                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-200/60 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200 font-medium">
+                                                                    {ev.metadata.assessmentType}
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        {ev.description && (
+                                                            <div className="text-xs mt-1.5 text-neutral-600 dark:text-neutral-300 line-clamp-2">
+                                                                {ev.description}
+                                                            </div>
                                                         )}
                                                     </div>
 
-                                                    {ev.description && (
-                                                        <div className="text-xs mt-1.5 text-neutral-600 dark:text-neutral-300 line-clamp-2">
-                                                            {ev.description}
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                <div className="flex items-center gap-4 text-xs shrink-0 text-neutral-500 dark:text-neutral-400">
-                                                    <span className="inline-flex items-center gap-1 font-medium">
-                                                        <ClockIcon size={14} />
-                                                        {timeStr}
-                                                    </span>
-                                                    {ev.location && (
-                                                        <span className="inline-flex items-center gap-1">
-                                                            <MapPinIcon size={14} />
-                                                            {ev.location}
+                                                    <div className="flex items-center gap-4 text-xs shrink-0 text-neutral-500 dark:text-neutral-400">
+                                                        <span className="inline-flex items-center gap-1 font-medium">
+                                                            <ClockIcon size={14} />
+                                                            {timeStr}
                                                         </span>
-                                                    )}
+                                                        {ev.location && (
+                                                            <span className="inline-flex items-center gap-1">
+                                                                <MapPinIcon size={14} />
+                                                                {ev.location}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })
-                )}
+                            );
+                        })
+                    )}
             </div>
         </div>
     );

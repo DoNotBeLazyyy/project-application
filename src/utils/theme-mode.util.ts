@@ -73,11 +73,11 @@ export function initThemeMode(): VoidFunction {
     applyThemeMode(currentMode);
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleSystemChange = () => {
+    function handleSystemChange() {
         if (getStoredThemeMode() === 'system') {
             applyThemeMode('system');
         }
-    };
+    }
 
     mediaQuery.addEventListener('change', handleSystemChange);
     return () => {

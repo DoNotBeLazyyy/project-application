@@ -2,7 +2,7 @@ import CommonButton from '@components/button/CommonButton';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonTableCard from '@components/table-card/CommonTableCard';
-import { toTargetPath } from '@pages/student/evaluation/useEvaluationTargets';
+import { toTargetPath } from '@pages/student/evaluation/use-evaluation-targets';
 import MyGradesFilterForm from '@pages/student/grade/MyGradesFilterForm';
 import { getTerms } from '@services/section.service';
 import { listStudentGrades } from '@services/student-portal.service';

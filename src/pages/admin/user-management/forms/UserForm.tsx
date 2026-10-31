@@ -1,6 +1,6 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import { useRoleOptions } from '@pages/admin/role-management/hooks/useRoleOptions';
+import { useRoleOptions } from '@pages/admin/role-management/hooks/use-role-options';
 import { ComponentPropsForm } from '@type/common.type';
 import { UpdateUserFormValues } from '@type/user.type';
 import { Control } from 'react-hook-form';
@@ -26,7 +26,7 @@ export default function UserForm({
                 ? undefined
                 : {
                     required: 'First name is required',
-                    validate: (v: any) => Boolean(v && String(v)
+                    validate: (v: unknown) => Boolean(v && String(v)
                         .trim()) || 'First name cannot be empty or whitespace only'
                 },
             type: 'text'
@@ -39,7 +39,7 @@ export default function UserForm({
                 ? undefined
                 : {
                     required: 'Last name is required',
-                    validate: (v: any) => Boolean(v && String(v)
+                    validate: (v: unknown) => Boolean(v && String(v)
                         .trim()) || 'Last name cannot be empty or whitespace only'
                 },
             type: 'text'
@@ -67,7 +67,7 @@ export default function UserForm({
             rules: disabled
                 ? undefined
                 : {
-                    validate: (value?: any) => (Array.isArray(value) && value.length > 0)
+                    validate: (value?: unknown) => (Array.isArray(value) && value.length > 0)
                         || 'Assign at least one role'
                 },
             type: 'multi-select',

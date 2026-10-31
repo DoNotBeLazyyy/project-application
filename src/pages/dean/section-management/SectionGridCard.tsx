@@ -36,10 +36,12 @@ export default function SectionGridCard({
         {
             key: 'view',
             label: 'View',
-            icon: <EyeIcon
-                size={18}
-                weight="bold"
-            />,
+            icon: (
+                <EyeIcon
+                    size={18}
+                    weight="bold"
+                />
+            ),
             onClick: () => onView(row.id)
         },
         ...(isEditable
@@ -47,19 +49,23 @@ export default function SectionGridCard({
                 {
                     key: 'edit',
                     label: 'Edit',
-                    icon: <PencilSimpleIcon
-                        size={18}
-                        weight="bold"
-                    />,
+                    icon: (
+                        <PencilSimpleIcon
+                            size={18}
+                            weight="bold"
+                        />
+                    ),
                     onClick: () => onEdit(row.id)
                 },
                 {
                     key: 'delete',
                     label: 'Delete',
-                    icon: <TrashIcon
-                        size={18}
-                        weight="bold"
-                    />,
+                    icon: (
+                        <TrashIcon
+                            size={18}
+                            weight="bold"
+                        />
+                    ),
                     destructive: true,
                     onClick: () => onRequestDelete(row.id)
                 }

@@ -1,9 +1,8 @@
+import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from '@pages/shared/calendar/calendar.types';
+import { CalendarDayEventsModal } from '@pages/shared/calendar/CalendarDayEventsModal';
 import { CalendarDay } from '@type/common/calendar.type';
 import { getCalendarDays } from '@utils/calendar.util';
 import { useMemo, useState } from 'react';
-
-import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from './calendar.types';
-import { CalendarDayEventsModal } from './CalendarDayEventsModal';
 
 interface CalendarMonthViewProps {
     canCreateEvent?: boolean;
@@ -55,7 +54,7 @@ export function CalendarMonthView({
         return new Map(CALENDAR_CATEGORIES.map((c) => [c.id, c]));
     }, []);
 
-    const handleCellClick = (cellDate: Date, dayEvents: UnifiedCalendarEvent[]) => {
+    function handleCellClick(cellDate: Date, dayEvents: UnifiedCalendarEvent[]) {
         onSelectDate(cellDate);
         if (dayEvents.length > 0) {
             setDayEventsPopup({
@@ -63,12 +62,12 @@ export function CalendarMonthView({
                 events: dayEvents
             });
         }
-    };
+    }
 
-    const handleSelectEventFromPopup = (event: UnifiedCalendarEvent) => {
+    function handleSelectEventFromPopup(event: UnifiedCalendarEvent) {
         setDayEventsPopup(null);
         onSelectEvent(event);
-    };
+    }
 
     return (
         <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xs overflow-hidden flex flex-col flex-1 min-h-0">

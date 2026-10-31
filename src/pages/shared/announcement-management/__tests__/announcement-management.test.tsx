@@ -3,7 +3,7 @@ import EventsFeedCard from '@components/dashboard/EventsFeedCard';
 import AnnouncementForm from '@pages/shared/announcement-management/AnnouncementForm';
 import CommunicationGridCard from '@pages/shared/announcement-management/CommunicationGridCard';
 import AnnouncementManagement from '@pages/shared/announcement-management/index';
-import { useAnnouncementTableConfig } from '@pages/shared/announcement-management/useAnnouncementTableConfig';
+import { useAnnouncementTableConfig } from '@pages/shared/announcement-management/use-announcement-table-config';
 import { render, screen, fireEvent, renderHook } from '@testing-library/react';
 import { AnnouncementFeedRow, CommunicationFormValues, CommunicationListRow } from '@type/announcement.type';
 import { EventFeedRow } from '@type/event.type';
@@ -181,7 +181,7 @@ describe('Announcement & Communication Module Tests', () => {
                 .toBe('view');
             expect(tableConfig.onEditClick)
                 .toBeDefined();
-            expect(tableConfig.onEditClick!(adminRow))
+            expect(tableConfig.onEditClick?.(adminRow))
                 .toBeUndefined();
         });
     });
@@ -280,7 +280,7 @@ describe('Announcement & Communication Module Tests', () => {
 
     describe('AnnouncementForm', () => {
         it('disables Type field when isTypeDisabled is true', () => {
-            const Wrapper = () => {
+            function Wrapper() {
                 const { control } = useForm<CommunicationFormValues>({
                     defaultValues: {
                         item_type: 'Event',
@@ -295,7 +295,7 @@ describe('Announcement & Communication Module Tests', () => {
                         isTypeDisabled={true}
                     />
                 );
-            };
+            }
 
             render(<Wrapper />);
             const input = document.querySelector('input[name="item_type"]') as HTMLInputElement;

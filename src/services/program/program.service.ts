@@ -118,8 +118,10 @@ export async function createProgram(
                 return {
                     data: null,
                     error: {
-                        message: `Program saved, but failed to save curriculum map entries: ${currRes.errors.join('; ')}`
-                    } as any
+                        message: `Program saved, but failed to save curriculum map entries: ${currRes.errors.join('; ')}`,
+                        code: null,
+                        status: null
+                    }
                 };
             }
         }
@@ -184,8 +186,10 @@ export async function updateProgram(
                     return {
                         data: null,
                         error: {
-                            message: `Program updated, but failed to save curriculum entries: ${currRes.errors.join('; ')}`
-                        } as any
+                            message: `Program updated, but failed to save curriculum entries: ${currRes.errors.join('; ')}`,
+                            code: null,
+                            status: null
+                        }
                     };
                 }
             }
@@ -217,8 +221,10 @@ export async function updateProgram(
                     return {
                         data: null,
                         error: {
-                            message: `Program updated, but failed to update some curriculum entries: ${firstErr.error?.message}`
-                        } as any
+                            message: `Program updated, but failed to update some curriculum entries: ${firstErr.error?.message}`,
+                            code: null,
+                            status: null
+                        }
                     };
                 }
             }
@@ -301,14 +307,14 @@ export async function bulkCreatePrograms(
     // years_duration, total_units and is_active directly - a blank or malformed value aborts
     // the whole batch. Resolve the codes (code or name, any case) and validate the values here.
     const [departmentsResult, programLevelsResult] = await Promise.all([getDepartments(), getProgramLevels()]);
-    const findByCodeOrLabel = function<T extends { code: string; label: string }>(items: T[], value?: string) {
+    function findByCodeOrLabel<T extends { code: string; label: string }>(items: T[], value?: string) {
         const key = (value || '').trim()
             .toLowerCase();
         return items.find((item) =>
             item.code.trim()
                 .toLowerCase() === key || item.label.trim()
                 .toLowerCase() === key);
-    };
+    }
 
     const errors: string[] = [];
     const sentRowNumbers: number[] = [];

@@ -5,7 +5,7 @@ import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import SectionFilterForm from '@pages/dean/section-management/SectionFilterForm';
 import SectionGridCard from '@pages/dean/section-management/SectionGridCard';
 import SectionWizardModal from '@pages/dean/section-management/SectionWizardModal';
-import { useSectionTableConfig } from '@pages/dean/section-management/useSectionTableConfig';
+import { useSectionTableConfig } from '@pages/dean/section-management/use-section-table-config';
 import {
     bulkCreateSections,
     bulkDeleteSections,

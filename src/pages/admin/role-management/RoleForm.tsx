@@ -8,16 +8,12 @@ import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
 
 interface RoleFormProps extends ComponentPropsForm {
     control: Control<CreateRoleFormValues>;
-    isCodeDisabled?: boolean;
     disabled?: boolean;
     isCreate?: boolean;
     setValue?: UseFormSetValue<CreateRoleFormValues>;
 }
 
-export function getRoleFormFields(
-    disabled?: boolean,
-    _isCodeDisabled?: boolean
-): FormFieldConfig<CreateRoleFormValues>[] {
+function getRoleFormFields(disabled?: boolean): FormFieldConfig<CreateRoleFormValues>[] {
     return [
         {
             disabled: true,
@@ -54,12 +50,11 @@ export function getRoleFormFields(
 export default function RoleForm({
     control,
     disabled,
-    isCodeDisabled,
     isCreate = false,
     setValue,
     ...formProps
 }: RoleFormProps) {
-    const fields = getRoleFormFields(disabled, isCodeDisabled);
+    const fields = getRoleFormFields(disabled);
     const watchedLabel = useWatch({ control, name: 'label' });
     const watchedCode = useWatch({ control, name: 'code' });
 

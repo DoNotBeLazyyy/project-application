@@ -89,7 +89,7 @@ const CommonToastEditor = forwardRef<CommonToastEditorRef, CommonToastEditorProp
         }
     }));
 
-    const destroyCurrentInstance = () => {
+    function destroyCurrentInstance() {
         if (instanceRef.current) {
             try {
                 instanceRef.current.destroy();
@@ -102,7 +102,7 @@ const CommonToastEditor = forwardRef<CommonToastEditorRef, CommonToastEditorProp
         if (containerRef.current) {
             containerRef.current.innerHTML = '';
         }
-    };
+    }
 
     // Initialize or re-create instance when mode (disabled) or editor configuration changes
     useEffect(() => {

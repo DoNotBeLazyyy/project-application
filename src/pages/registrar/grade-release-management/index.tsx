@@ -31,6 +31,7 @@ import {
     SectionGradeSubmissionRow,
     SectionGradeSubmissionStatus
 } from '@type/grade-release.type';
+import { captureException } from '@utils/monitoring.util';
 import { DateTime } from 'luxon';
 import {
     useCallback, useEffect, useMemo, useRef, useState
@@ -144,7 +145,7 @@ export default function GradeRelease() {
         }
         catch (err) {
             if (activeTermRequestIdRef.current === termId) {
-                console.error('Failed to load term grade release data:', err);
+                captureException(err, { context: 'Failed to load term grade release data' });
                 setPeriods([]);
                 setSelectedPeriodId('');
                 setSectionRows([]);
@@ -177,7 +178,7 @@ export default function GradeRelease() {
         }
         catch (err) {
             if (activePeriodRequestIdRef.current === periodId) {
-                console.error('Failed to load section submissions for period:', err);
+                captureException(err, { context: 'Failed to load section submissions for period' });
                 setSectionRows([]);
             }
         }
@@ -208,7 +209,7 @@ export default function GradeRelease() {
             }
         }
         catch (err) {
-            console.error('Failed to refresh grade release data:', err);
+            captureException(err, { context: 'Failed to refresh grade release data' });
         }
     }, [selectedTermId, selectedPeriodId]);
 
@@ -402,129 +403,131 @@ export default function GradeRelease() {
 
             {/* Compact Grading Periods Selector & Active Toolbar */}
             <div className="flex flex-col gap-2">
-                {periods.length === 0 ? (
-                    <p className="text-(--mui-palette-text-disabled) text-xs">
-                        This term has no grading periods configured.
-                    </p>
-                ) : (
-                    <div className="flex flex-col gap-2">
-                        {/* Horizontal Period Selector Pills */}
-                        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-                            {periods.map(function(period) {
-                                const isSelected = period.grading_period_id === selectedPeriodId;
-                                const isFullyReleased = period.total_grades > 0 && period.released_count === period.total_grades;
+                {periods.length === 0
+                    ? (
+                        <p className="text-(--mui-palette-text-disabled) text-xs">
+                            This term has no grading periods configured.
+                        </p>
+                    )
+                    : (
+                        <div className="flex flex-col gap-2">
+                            {/* Horizontal Period Selector Pills */}
+                            <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                                {periods.map(function(period) {
+                                    const isSelected = period.grading_period_id === selectedPeriodId;
+                                    const isFullyReleased = period.total_grades > 0 && period.released_count === period.total_grades;
 
-                                return (
-                                    <button
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 transition-all border cursor-pointer ${
-                                            isSelected
-                                                ? 'bg-(--mui-palette-primary-main) text-white border-(--mui-palette-primary-main) shadow-xs'
-                                                : 'bg-(--mui-palette-background-paper) text-(--mui-palette-text-primary) border-(--mui-palette-divider) hover:border-(--mui-palette-text-secondary)/60'
-                                        }`}
-                                        key={period.grading_period_id}
-                                        type="button"
-                                        onClick={() => handleSelectPeriod(period.grading_period_id)}
-                                    >
-                                        <span>{period.grading_period_name}</span>
-                                        <span
-                                            className={`text-[11px] font-mono px-1.5 py-0.2 rounded-md ${
+                                    return (
+                                        <button
+                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 transition-all border cursor-pointer ${
                                                 isSelected
-                                                    ? 'bg-white/20 text-white'
-                                                    : 'bg-(--mui-palette-action-hover) text-(--mui-palette-text-secondary)'
+                                                    ? 'bg-(--mui-palette-primary-main) text-white border-(--mui-palette-primary-main) shadow-xs'
+                                                    : 'bg-(--mui-palette-background-paper) text-(--mui-palette-text-primary) border-(--mui-palette-divider) hover:border-(--mui-palette-text-secondary)/60'
                                             }`}
+                                            key={period.grading_period_id}
+                                            type="button"
+                                            onClick={() => handleSelectPeriod(period.grading_period_id)}
                                         >
-                                            {period.released_count}/{period.total_grades}
-                                        </span>
-                                        {isFullyReleased
-                                            ? (
-                                                <CheckCircleIcon
-                                                    className={isSelected
-                                                        ? 'text-white'
-                                                        : 'text-(--mui-palette-success-main)'}
-                                                    size={15}
-                                                    weight="fill"
-                                                />
-                                            )
-                                            : period.release_at
+                                            <span>{period.grading_period_name}</span>
+                                            <span
+                                                className={`text-[11px] font-mono px-1.5 py-0.2 rounded-md ${
+                                                    isSelected
+                                                        ? 'bg-white/20 text-white'
+                                                        : 'bg-(--mui-palette-action-hover) text-(--mui-palette-text-secondary)'
+                                                }`}
+                                            >
+                                                {period.released_count}/{period.total_grades}
+                                            </span>
+                                            {isFullyReleased
                                                 ? (
-                                                    <ClockIcon
+                                                    <CheckCircleIcon
                                                         className={isSelected
                                                             ? 'text-white'
-                                                            : 'text-(--mui-palette-info-main)'}
+                                                            : 'text-(--mui-palette-success-main)'}
                                                         size={15}
-                                                        weight="bold"
+                                                        weight="fill"
                                                     />
                                                 )
-                                                : null}
-                                    </button>
-                                );
-                            })}
-                        </div>
+                                                : period.release_at
+                                                    ? (
+                                                        <ClockIcon
+                                                            className={isSelected
+                                                                ? 'text-white'
+                                                                : 'text-(--mui-palette-info-main)'}
+                                                            size={15}
+                                                            weight="bold"
+                                                        />
+                                                    )
+                                                    : null}
+                                        </button>
+                                    );
+                                })}
+                            </div>
 
-                        {/* Active Period Status & Action Strip */}
-                        {currentPeriod && (
-                            <div className="bg-(--mui-palette-action-hover)/40 border border-(--mui-palette-divider) rounded-xl px-3.5 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs">
-                                    <div className="flex items-center gap-1.5 font-semibold text-(--mui-palette-text-primary)">
-                                        <span>{currentPeriod.grading_period_name}:</span>
-                                        <span className="font-mono text-(--mui-palette-primary-main)">
-                                            {currentPeriod.released_count} of {currentPeriod.total_grades} grades released
-                                            ({currentPeriod.total_grades > 0
-                                                ? Math.round((currentPeriod.released_count / currentPeriod.total_grades) * 100)
-                                                : 0}%)
+                            {/* Active Period Status & Action Strip */}
+                            {currentPeriod && (
+                                <div className="bg-(--mui-palette-action-hover)/40 border border-(--mui-palette-divider) rounded-xl px-3.5 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs">
+                                        <div className="flex items-center gap-1.5 font-semibold text-(--mui-palette-text-primary)">
+                                            <span>{currentPeriod.grading_period_name}:</span>
+                                            <span className="font-mono text-(--mui-palette-primary-main)">
+                                                {currentPeriod.released_count} of {currentPeriod.total_grades} grades released
+                                                ({currentPeriod.total_grades > 0
+                                                    ? Math.round((currentPeriod.released_count / currentPeriod.total_grades) * 100)
+                                                    : 0}%)
+                                            </span>
+                                        </div>
+
+                                        <span className="text-(--mui-palette-text-disabled) hidden sm:inline">·</span>
+
+                                        <span className="text-(--mui-palette-text-secondary)">
+                                            {resolveStatusLabel(currentPeriod)}
                                         </span>
+
+                                        {currentPeriod.blocked_count > 0 && (
+                                            <span className="flex items-center gap-1 text-(--mui-palette-warning-main) font-medium bg-amber-500/10 px-2 py-0.5 rounded-full text-[11px]">
+                                                <WarningCircleIcon
+                                                    size={13}
+                                                    weight="fill"
+                                                />
+                                                <span>{currentPeriod.blocked_count} student(s) pending eval</span>
+                                            </span>
+                                        )}
                                     </div>
 
-                                    <span className="text-(--mui-palette-text-disabled) hidden sm:inline">·</span>
-
-                                    <span className="text-(--mui-palette-text-secondary)">
-                                        {resolveStatusLabel(currentPeriod)}
-                                    </span>
-
-                                    {currentPeriod.blocked_count > 0 && (
-                                        <span className="flex items-center gap-1 text-(--mui-palette-warning-main) font-medium bg-amber-500/10 px-2 py-0.5 rounded-full text-[11px]">
-                                            <WarningCircleIcon
-                                                size={13}
-                                                weight="fill"
-                                            />
-                                            <span>{currentPeriod.blocked_count} student(s) pending eval</span>
-                                        </span>
-                                    )}
+                                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                                        <CommonButton
+                                            size="small"
+                                            startIcon={<CalendarBlankIcon size={14} />}
+                                            variant="outlined"
+                                            onClick={() => handleOpenSchedule(currentPeriod)}
+                                        >
+                                            {currentPeriod.release_at
+                                                ? 'Edit Schedule'
+                                                : 'Schedule'}
+                                        </CommonButton>
+                                        <CommonButton
+                                            disabled={
+                                                (currentPeriod.total_grades > 0 && currentPeriod.released_count === currentPeriod.total_grades)
+                                                || currentPeriod.total_grades === 0
+                                            }
+                                            size="small"
+                                            startIcon={(
+                                                <SealCheckIcon
+                                                    size={14}
+                                                    weight="bold"
+                                                />
+                                            )}
+                                            variant="contained"
+                                            onClick={() => setReleaseTarget(currentPeriod)}
+                                        >
+                                            Release All
+                                        </CommonButton>
+                                    </div>
                                 </div>
-
-                                <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                                    <CommonButton
-                                        size="small"
-                                        startIcon={<CalendarBlankIcon size={14} />}
-                                        variant="outlined"
-                                        onClick={() => handleOpenSchedule(currentPeriod)}
-                                    >
-                                        {currentPeriod.release_at
-                                            ? 'Edit Schedule'
-                                            : 'Schedule'}
-                                    </CommonButton>
-                                    <CommonButton
-                                        disabled={
-                                            (currentPeriod.total_grades > 0 && currentPeriod.released_count === currentPeriod.total_grades)
-                                            || currentPeriod.total_grades === 0
-                                        }
-                                        size="small"
-                                        startIcon={(
-                                            <SealCheckIcon
-                                                size={14}
-                                                weight="bold"
-                                            />
-                                        )}
-                                        variant="contained"
-                                        onClick={() => setReleaseTarget(currentPeriod)}
-                                    >
-                                        Release All
-                                    </CommonButton>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
+                            )}
+                        </div>
+                    )}
             </div>
 
             {/* Section Submissions Breakdown */}
@@ -618,105 +621,109 @@ export default function GradeRelease() {
 
                 {/* Section cards */}
                 <div className="flex-1 min-h-0 overflow-y-auto">
-                    {isSectionsLoading ? (
-                        <div className="p-8 text-center text-(--mui-palette-text-secondary) text-sm">
-                            Loading section submissions...
-                        </div>
-                    ) : filteredSections.length === 0 ? (
-                        <div className="p-8 text-center text-(--mui-palette-text-secondary) text-sm">
-                            {sectionRows.length === 0
-                                ? 'No sections found for this academic term.'
-                                : 'No section submissions match the selected filter.'}
-                        </div>
-                    ) : (
-                        <>
-                            {/* Section cards, laid out like the other list pages */}
-                            <div className="gap-3 grid grid-cols-1 lg:grid-cols-3 p-1 sm:grid-cols-2">
-                                {filteredSections.map(function(row) {
-                                    const canRelease
-                                        = row.submission_status !== 'Released'
-                                        && row.submission_status !== 'No Enrollees'
-                                        && row.graded_count > 0;
-
-                                    return (
-                                        <div
-                                            className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) flex flex-col gap-3 hover:border-(--mui-palette-primary-main) p-4 rounded-xl shadow-xs transition-colors"
-                                            key={row.section_id}
-                                        >
-                                            <div className="flex items-start justify-between gap-2">
-                                                <div className="flex flex-col min-w-0">
-                                                    <div className="flex items-center gap-2 flex-wrap">
-                                                        <span className="font-bold text-(--mui-palette-text-primary) text-base">
-                                                            {row.course_code}
-                                                        </span>
-                                                        <span className="font-mono text-xs px-2 py-0.5 rounded bg-(--mui-palette-action-hover) text-(--mui-palette-text-secondary) font-semibold">
-                                                            Sec {row.section_code}
-                                                        </span>
-                                                    </div>
-                                                    <span className="text-xs text-(--mui-palette-text-secondary) mt-0.5 line-clamp-1">
-                                                        {row.course_title}
-                                                    </span>
-                                                </div>
-                                                <CommonBadgeStatus
-                                                    label={row.submission_status}
-                                                    variant={resolveSubmissionBadgeVariant(row.submission_status)}
-                                                />
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-2 bg-(--mui-palette-action-hover)/30 p-2.5 rounded-lg text-xs">
-                                                <div>
-                                                    <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Instructor</span>
-                                                    <span className="font-medium text-(--mui-palette-text-primary) truncate block">
-                                                        {row.faculty_name}
-                                                    </span>
-                                                </div>
-                                                <div>
-                                                    <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Graded</span>
-                                                    <span className="font-mono font-semibold text-(--mui-palette-text-primary)">
-                                                        {row.graded_count} / {row.enrolled_count} ({row.enrolled_count > 0
-                                                            ? Math.round((row.graded_count / row.enrolled_count) * 100)
-                                                            : 0}%)
-                                                    </span>
-                                                </div>
-                                                {row.room && (
-                                                    <div>
-                                                        <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Room</span>
-                                                        <span className="text-(--mui-palette-text-primary)">{row.room}</span>
-                                                    </div>
-                                                )}
-                                                <div>
-                                                    <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Submitted</span>
-                                                    <span className="text-(--mui-palette-text-secondary)">{formatDate(row.last_submitted_at)}</span>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center justify-end gap-2 pt-1 border-t border-(--mui-palette-divider)/60">
-                                                <CommonButton
-                                                    size="small"
-                                                    startIcon={<EyeIcon size={14} />}
-                                                    variant="outlined"
-                                                    onClick={() => setInspectedSection(row)}
-                                                >
-                                                    Inspect
-                                                </CommonButton>
-                                                {canRelease && (
-                                                    <CommonButton
-                                                        size="small"
-                                                        startIcon={<SealCheckIcon size={14} />}
-                                                        variant="contained"
-                                                        onClick={() => setSectionToRelease(row)}
-                                                    >
-                                                        Release
-                                                    </CommonButton>
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                    {isSectionsLoading
+                        ? (
+                            <div className="p-8 text-center text-(--mui-palette-text-secondary) text-sm">
+                                Loading section submissions...
                             </div>
+                        )
+                        : filteredSections.length === 0
+                            ? (
+                                <div className="p-8 text-center text-(--mui-palette-text-secondary) text-sm">
+                                    {sectionRows.length === 0
+                                        ? 'No sections found for this academic term.'
+                                        : 'No section submissions match the selected filter.'}
+                                </div>
+                            )
+                            : (
+                                <>
+                                    {/* Section cards, laid out like the other list pages */}
+                                    <div className="gap-3 grid grid-cols-1 lg:grid-cols-3 p-1 sm:grid-cols-2">
+                                        {filteredSections.map(function(row) {
+                                            const canRelease
+                                                = row.submission_status !== 'Released'
+                                                && row.submission_status !== 'No Enrollees'
+                                                && row.graded_count > 0;
 
-                        </>
-                    )}
+                                            return (
+                                                <div
+                                                    className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) flex flex-col gap-3 hover:border-(--mui-palette-primary-main) p-4 rounded-xl shadow-xs transition-colors"
+                                                    key={row.section_id}
+                                                >
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <div className="flex flex-col min-w-0">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <span className="font-bold text-(--mui-palette-text-primary) text-base">
+                                                                    {row.course_code}
+                                                                </span>
+                                                                <span className="font-mono text-xs px-2 py-0.5 rounded bg-(--mui-palette-action-hover) text-(--mui-palette-text-secondary) font-semibold">
+                                                                    Sec {row.section_code}
+                                                                </span>
+                                                            </div>
+                                                            <span className="text-xs text-(--mui-palette-text-secondary) mt-0.5 line-clamp-1">
+                                                                {row.course_title}
+                                                            </span>
+                                                        </div>
+                                                        <CommonBadgeStatus
+                                                            label={row.submission_status}
+                                                            variant={resolveSubmissionBadgeVariant(row.submission_status)}
+                                                        />
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-2 bg-(--mui-palette-action-hover)/30 p-2.5 rounded-lg text-xs">
+                                                        <div>
+                                                            <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Instructor</span>
+                                                            <span className="font-medium text-(--mui-palette-text-primary) truncate block">
+                                                                {row.faculty_name}
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Graded</span>
+                                                            <span className="font-mono font-semibold text-(--mui-palette-text-primary)">
+                                                                {row.graded_count} / {row.enrolled_count} ({row.enrolled_count > 0
+                                                                    ? Math.round((row.graded_count / row.enrolled_count) * 100)
+                                                                    : 0}%)
+                                                            </span>
+                                                        </div>
+                                                        {row.room && (
+                                                            <div>
+                                                                <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Room</span>
+                                                                <span className="text-(--mui-palette-text-primary)">{row.room}</span>
+                                                            </div>
+                                                        )}
+                                                        <div>
+                                                            <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Submitted</span>
+                                                            <span className="text-(--mui-palette-text-secondary)">{formatDate(row.last_submitted_at)}</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center justify-end gap-2 pt-1 border-t border-(--mui-palette-divider)/60">
+                                                        <CommonButton
+                                                            size="small"
+                                                            startIcon={<EyeIcon size={14} />}
+                                                            variant="outlined"
+                                                            onClick={() => setInspectedSection(row)}
+                                                        >
+                                                            Inspect
+                                                        </CommonButton>
+                                                        {canRelease && (
+                                                            <CommonButton
+                                                                size="small"
+                                                                startIcon={<SealCheckIcon size={14} />}
+                                                                variant="contained"
+                                                                onClick={() => setSectionToRelease(row)}
+                                                            >
+                                                                Release
+                                                            </CommonButton>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                </>
+                            )}
                 </div>
             </div>
 

@@ -56,7 +56,8 @@ export default function StudentsTab({ sectionId }: StudentsTabProps) {
             },
             {
                 cellRenderer: (params: { data: SectionStudent }) => {
-                    const student = params.data as any;
+                    // The roster RPC may also flag students with a pending profile verification
+                    const student: SectionStudent & { has_pending_verification?: boolean } = params.data;
                     if (student.has_pending_verification) {
                         return (
                             <CommonBadgeStatus

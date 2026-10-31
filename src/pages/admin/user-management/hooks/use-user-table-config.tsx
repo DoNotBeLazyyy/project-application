@@ -1,6 +1,6 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/useTableConfigs';
+import { TableActionConfig } from '@components/table/use-table-configs';
 import { ArrowCounterClockwiseIcon, ProhibitIcon } from '@phosphor-icons/react';
 import { resendInvite, resetUserPassword } from '@services/user.service';
 import { useToastStore } from '@stores/toast.store';

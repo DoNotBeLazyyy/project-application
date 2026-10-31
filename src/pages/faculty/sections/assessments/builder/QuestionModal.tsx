@@ -5,7 +5,7 @@ import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import { CHOICE_BASED_TYPES } from '@constants/faculty.constant';
-import { useFormDraft } from '@hooks/useFormDraft';
+import { useFormDraft } from '@hooks/use-form-draft';
 import ChoiceBuilder from '@pages/faculty/sections/assessments/builder/ChoiceBuilder';
 import { AssessmentQuestion, QuestionFormValues, QuestionType } from '@type/assessment.type';
 import { formErrors } from '@utils/form.util';

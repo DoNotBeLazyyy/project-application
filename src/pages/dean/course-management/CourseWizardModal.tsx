@@ -3,8 +3,9 @@ import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
-import { useFormDraft } from '@hooks/useFormDraft';
-import CourseForm, { COURSE_FORM_STEPS } from '@pages/dean/course-management/CourseForm';
+import { COURSE_FORM_STEPS } from '@constants/course-form.constant';
+import { useFormDraft } from '@hooks/use-form-draft';
+import CourseForm from '@pages/dean/course-management/CourseForm';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -16,7 +17,7 @@ import {
 import { CourseFormValues } from '@type/course/course.type';
 import { formErrors } from '@utils/form.util';
 import { useEffect, useState } from 'react';
-import { FieldErrors, UseFormReturn, useWatch } from 'react-hook-form';
+import { FieldErrors, FieldPath, UseFormReturn, useWatch } from 'react-hook-form';
 
 interface CourseWizardModalProps {
     open: boolean;
@@ -76,7 +77,7 @@ export default function CourseWizardModal({
         const values = methods.getValues();
         const courseTypes = values.course_types || [];
         if (courseTypes.length === 0) {
-            methods.setError('course_types' as any, {
+            methods.setError('course_types' as FieldPath<CourseFormValues>, {
                 type: 'manual',
                 message: 'Please add at least one course type.'
             });
@@ -89,14 +90,14 @@ export default function CourseWizardModal({
             const ct = courseTypes[i];
             if (!ct.course_type_id || !String(ct.course_type_id)
                 .trim()) {
-                methods.setError(`course_types.${i}.course_type_id` as any, {
+                methods.setError(`course_types.${i}.course_type_id` as FieldPath<CourseFormValues>, {
                     type: 'manual',
                     message: 'Please select a course type.'
                 });
                 hasError = true;
             }
             if ((ct.units as unknown) === '' || ct.units === undefined || ct.units === null) {
-                methods.setError(`course_types.${i}.units` as any, {
+                methods.setError(`course_types.${i}.units` as FieldPath<CourseFormValues>, {
                     type: 'manual',
                     message: 'Units is required.'
                 });
@@ -105,21 +106,21 @@ export default function CourseWizardModal({
             else {
                 const u = Number(ct.units);
                 if (isNaN(u)) {
-                    methods.setError(`course_types.${i}.units` as any, {
+                    methods.setError(`course_types.${i}.units` as FieldPath<CourseFormValues>, {
                         type: 'manual',
                         message: 'Units must be a valid number.'
                     });
                     hasError = true;
                 }
                 else if (u < 0) {
-                    methods.setError(`course_types.${i}.units` as any, {
+                    methods.setError(`course_types.${i}.units` as FieldPath<CourseFormValues>, {
                         type: 'manual',
                         message: 'Units cannot be less than 0.'
                     });
                     hasError = true;
                 }
                 else if (u > 10) {
-                    methods.setError(`course_types.${i}.units` as any, {
+                    methods.setError(`course_types.${i}.units` as FieldPath<CourseFormValues>, {
                         type: 'manual',
                         message: 'Units cannot exceed 10.'
                     });
@@ -128,7 +129,7 @@ export default function CourseWizardModal({
             }
 
             if ((ct.credit_hours as unknown) === '' || ct.credit_hours === undefined || ct.credit_hours === null) {
-                methods.setError(`course_types.${i}.credit_hours` as any, {
+                methods.setError(`course_types.${i}.credit_hours` as FieldPath<CourseFormValues>, {
                     type: 'manual',
                     message: 'Credit hours is required.'
                 });
@@ -137,21 +138,21 @@ export default function CourseWizardModal({
             else {
                 const ch = Number(ct.credit_hours);
                 if (isNaN(ch)) {
-                    methods.setError(`course_types.${i}.credit_hours` as any, {
+                    methods.setError(`course_types.${i}.credit_hours` as FieldPath<CourseFormValues>, {
                         type: 'manual',
                         message: 'Credit hours must be a valid number.'
                     });
                     hasError = true;
                 }
                 else if (ch < 0) {
-                    methods.setError(`course_types.${i}.credit_hours` as any, {
+                    methods.setError(`course_types.${i}.credit_hours` as FieldPath<CourseFormValues>, {
                         type: 'manual',
                         message: 'Credit hours cannot be less than 0.'
                     });
                     hasError = true;
                 }
                 else if (ch > 20) {
-                    methods.setError(`course_types.${i}.credit_hours` as any, {
+                    methods.setError(`course_types.${i}.credit_hours` as FieldPath<CourseFormValues>, {
                         type: 'manual',
                         message: 'Credit hours cannot exceed 20.'
                     });
@@ -273,7 +274,7 @@ export default function CourseWizardModal({
             for (let i = 0; i < values.prerequisites.length; i++) {
                 const prereq = values.prerequisites[i];
                 if (prereq.prerequisite_kind === 'course' && (!prereq.course_id || !prereq.course_id.trim())) {
-                    methods.setError(`prerequisites.${i}.course_id` as any, {
+                    methods.setError(`prerequisites.${i}.course_id` as FieldPath<CourseFormValues>, {
                         type: 'manual',
                         message: 'Please select a prerequisite course or remove the row.'
                     });
@@ -281,7 +282,7 @@ export default function CourseWizardModal({
                 }
                 if (prereq.prerequisite_kind === 'standing' && (!prereq.year_level_required || !String(prereq.year_level_required)
                     .trim())) {
-                    methods.setError(`prerequisites.${i}.year_level_required` as any, {
+                    methods.setError(`prerequisites.${i}.year_level_required` as FieldPath<CourseFormValues>, {
                         type: 'manual',
                         message: 'Please select a year level standing or remove the row.'
                     });

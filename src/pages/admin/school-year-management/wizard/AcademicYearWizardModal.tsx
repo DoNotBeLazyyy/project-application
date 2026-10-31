@@ -4,12 +4,35 @@ import CommonPromptModal from '@components/modal/CommonPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
-import { useFormDraft } from '@hooks/useFormDraft';
+import { useFormDraft } from '@hooks/use-form-draft';
+import AcademicYearHistoryModal from '@pages/admin/school-year-management/history/AcademicYearHistoryModal';
+import AcademicYearSchedulePreviewModal from '@pages/admin/school-year-management/wizard/AcademicYearSchedulePreviewModal';
+import Step1SchoolYearInfo from '@pages/admin/school-year-management/wizard/Step1SchoolYearInfo';
+import Step2TermsConfig from '@pages/admin/school-year-management/wizard/Step2TermsConfig';
+import Step3GradingPeriodsConfig from '@pages/admin/school-year-management/wizard/Step3GradingPeriodsConfig';
+import Step4HolidaysConfig from '@pages/admin/school-year-management/wizard/Step4HolidaysConfig';
+import Step4TransmutationConfig from '@pages/admin/school-year-management/wizard/Step4TransmutationConfig';
+import Step5ThresholdsConfig from '@pages/admin/school-year-management/wizard/Step5ThresholdsConfig';
+import {
+    cloneSchoolYearForDuplication,
+    DEFAULT_ACADEMIC_THRESHOLDS,
+    DEFAULT_TRANSMUTATION_ROWS,
+    ExistingSchoolYearComparison,
+    isSpecialGradeRow,
+    SourceSchoolYearInfo,
+    toCalendarExceptionType,
+    validateCalendarExceptions,
+    validateGradingPeriods,
+    validateStep1SchoolYear,
+    validateTerms,
+    validateThresholds,
+    validateTransmutationRows,
+    WIZARD_STEPS
+} from '@pages/admin/school-year-management/wizard/wizard.constants';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
     CalendarDotsIcon,
-    CheckCircleIcon,
     ClockCounterClockwiseIcon,
     EyeIcon,
     FloppyDiskIcon,
@@ -34,35 +57,7 @@ import {
     announceFormError, DEFAULT_FORM_OPTIONS, ensureSubmitValidationMode, focusAndOpenFirstErrorField, validateStepFields
 } from '@utils/form.util';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-
-import AcademicYearHistoryModal from '../history/AcademicYearHistoryModal';
-
-import AcademicYearSchedulePreviewModal from './AcademicYearSchedulePreviewModal';
-import Step1SchoolYearInfo from './Step1SchoolYearInfo';
-import Step2TermsConfig from './Step2TermsConfig';
-import Step3GradingPeriodsConfig from './Step3GradingPeriodsConfig';
-import Step4HolidaysConfig from './Step4HolidaysConfig';
-import Step4TransmutationConfig from './Step4TransmutationConfig';
-import Step5ThresholdsConfig from './Step5ThresholdsConfig';
-import {
-    cloneSchoolYearForDuplication,
-    DEFAULT_ACADEMIC_THRESHOLDS,
-    DEFAULT_TRANSMUTATION_ROWS,
-    ExistingSchoolYearComparison,
-    generateAcademicYearCode,
-    generateAcademicYearLabel,
-    isSpecialGradeRow,
-    SourceSchoolYearInfo,
-    toCalendarExceptionType,
-    validateCalendarExceptions,
-    validateGradingPeriods,
-    validateStep1SchoolYear,
-    validateTerms,
-    validateThresholds,
-    validateTransmutationRows,
-    WIZARD_STEPS
-} from './wizard.constants';
+import { Path, useForm } from 'react-hook-form';
 
 interface AcademicYearWizardModalProps {
     open: boolean;
@@ -116,14 +111,14 @@ export default function AcademicYearWizardModal({
     });
 
     if (methods.control) {
-        (methods.control as any)._clearErrors = methods.clearErrors;
-        (methods.control as any).clearErrors = methods.clearErrors;
-        ensureSubmitValidationMode(methods.control as any);
+        const patchableControl = methods.control as unknown as { _clearErrors?: unknown; clearErrors?: unknown };
+        patchableControl._clearErrors = methods.clearErrors;
+        patchableControl.clearErrors = methods.clearErrors;
+        ensureSubmitValidationMode(methods.control);
     }
 
     const {
         control,
-        formState: { isDirty },
         getValues,
         reset,
         setValue,
@@ -286,7 +281,7 @@ export default function AcademicYearWizardModal({
         }
 
         errorsList.forEach((err) => {
-            methods.setError(err.fieldPath as any, { type: 'manual', message: err.message });
+            methods.setError(err.fieldPath as Path<AcademicYearWizardFormValues>, { type: 'manual', message: err.message });
         });
         const first = errorsList[0];
         focusAndOpenFirstErrorField(first.fieldPath, methods);

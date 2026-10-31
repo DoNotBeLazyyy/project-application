@@ -57,6 +57,14 @@ const DEFAULT_FALLBACK_PERIODS: SectionGradingPeriodOverride[] = [
     }
 ];
 
+type FieldMessage = { message?: string } | undefined;
+
+// Error tree for grading_periods, set by the wizard's step validation
+type PeriodErrors = Record<number, {
+    weight?: FieldMessage;
+    components?: Record<number, { name?: FieldMessage; weight?: FieldMessage } | undefined>;
+} | undefined>;
+
 export default function SectionGradingOverride({
     control,
     disabled = false
@@ -74,7 +82,7 @@ export default function SectionGradingOverride({
 
     // Step validation (SectionWizardModal.validateStep3) sets errors on these paths
     const { errors } = useFormState({ control });
-    const periodErrors = errors.grading_periods as any;
+    const periodErrors = errors.grading_periods as unknown as PeriodErrors | undefined;
 
     const [defaultPeriods, setDefaultPeriods] = useState<SectionGradingPeriodOverride[]>(DEFAULT_FALLBACK_PERIODS);
 
@@ -400,7 +408,7 @@ export default function SectionGradingOverride({
                                                     className="text-xs font-medium text-(--mui-palette-error-main)"
                                                     role="alert"
                                                 >
-                                                    {periodErrors[pIdx].weight.message}
+                                                    {periodErrors?.[pIdx]?.weight?.message}
                                                 </p>
                                             )}
 
@@ -485,7 +493,7 @@ export default function SectionGradingOverride({
                                                                 value={comp.weight ?? ''}
                                                                 onChange={(val) =>
                                                                     handleUpdateComponent(pIdx, cIdx, {
-                                                                        weight: val as any
+                                                                        weight: val
                                                                     })
                                                                 }
                                                             />

@@ -1,6 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
-import useBreakpoint from '@hooks/useBreakpoint';
+import useBreakpoint from '@hooks/use-breakpoint';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import { PaperPlaneRightIcon, XIcon } from '@phosphor-icons/react';

@@ -12,6 +12,8 @@ export async function listDepartments(
     size: number,
     search: string,
     sort: SortStringDto[],
+    // Kept for callers that pass filters; fn_list_departments_json does not take any
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _filters: DepartmentFilterValues | null
 ): Promise<ServiceResult<CommonListResDto<DepartmentListRow>>> {
     return callRpc<CommonListResDto<DepartmentListRow>>('fn_list_departments_json', {

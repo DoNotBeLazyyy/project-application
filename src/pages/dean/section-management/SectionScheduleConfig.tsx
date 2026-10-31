@@ -7,7 +7,7 @@ import {
 import { DayOfWeek, SectionFormValues, SectionScheduleBlock } from '@type/section.type';
 import { useEffect, useState } from 'react';
 import {
-    Control, useController, useFormContext, useFormState, useWatch
+    Control, FieldPath, useController, useFormContext, useFormState, useWatch
 } from 'react-hook-form';
 
 const DAYS_OF_WEEK: { label: string; short: string; value: DayOfWeek }[] = [
@@ -62,7 +62,7 @@ export default function SectionScheduleConfig({
     const schedulesValue = useWatch({ control, name: 'schedules' });
     const formContext = useFormContext<SectionFormValues>();
     const { errors } = useFormState({ control });
-    const scheduleErrors = errors.schedules as any;
+    const scheduleErrors = errors.schedules as unknown as Record<number, { days?: { message?: string } } | undefined> | undefined;
 
     const [collapsedSlots, setCollapsedSlots] = useState<Record<number, boolean>>({});
 
@@ -105,10 +105,10 @@ export default function SectionScheduleConfig({
 
     function handleUpdateSlot(index: number, patch: Partial<SectionScheduleBlock>) {
         if (patch.time_start !== undefined) {
-            formContext?.clearErrors?.(`schedules.${index}.time_start` as any);
+            formContext?.clearErrors?.(`schedules.${index}.time_start` as FieldPath<SectionFormValues>);
         }
         if (patch.time_end !== undefined) {
-            formContext?.clearErrors?.(`schedules.${index}.time_end` as any);
+            formContext?.clearErrors?.(`schedules.${index}.time_end` as FieldPath<SectionFormValues>);
         }
         const updated = [...blocks];
         updated[index] = { ...updated[index], ...patch };
@@ -119,7 +119,7 @@ export default function SectionScheduleConfig({
         const target = blocks[index];
         if (!target) return;
 
-        formContext?.clearErrors?.(`schedules.${index}.days` as any);
+        formContext?.clearErrors?.(`schedules.${index}.days` as FieldPath<SectionFormValues>);
 
         const currentDays = target.days || [];
         const isSelected = currentDays.includes(day);

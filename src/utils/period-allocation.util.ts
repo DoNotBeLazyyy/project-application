@@ -1,22 +1,8 @@
 import { GradingPeriodDraft } from '@type/grading-config.type';
 
 export const TERM_WEIGHT_TOTAL = 100;
-export const COMPONENT_WEIGHT_TOTAL = 100;export const MIN_PERIOD_WEIGHT = 1;
-
-/**
- * Sequence is the one thing the old card grid could not express, so the rail
- * colour encodes it: period 1 is the deepest brand blue and each later period
- * steps lighter. A glance down the rail reads as an ordered ramp rather than
- * six unrelated bands.
- */
-const PERIOD_RAIL_COLORS: string[] = [
-    'var(--mui-tokens-color-brand-900)',
-    'var(--mui-tokens-color-brand-800)',
-    'var(--mui-tokens-color-brand-700)',
-    'var(--mui-tokens-color-brand-600)',
-    'var(--mui-tokens-color-brand-500)',
-    'var(--mui-tokens-color-brand-400)'
-];
+export const COMPONENT_WEIGHT_TOTAL = 100;
+export const MIN_PERIOD_WEIGHT = 1;
 
 const COMPONENT_RAIL_COLORS: string[] = [
     'var(--mui-tokens-color-brand-700)',

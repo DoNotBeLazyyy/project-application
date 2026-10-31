@@ -1,6 +1,5 @@
 import {
     DownloadSimpleIcon,
-    FileImageIcon,
     MagnifyingGlassPlusIcon,
     SpinnerIcon,
     TrashIcon
@@ -46,7 +45,7 @@ export default function ImageAttachmentCard({
                     }
                 }}
             >
-                {previewUrl ? (
+                {previewUrl && (
                     <>
                         <img
                             alt={attachment.file_name}
@@ -63,7 +62,8 @@ export default function ImageAttachmentCard({
                             <span className="font-semibold text-xs">Click to preview</span>
                         </div>
                     </>
-                ) : (
+                )}
+                {!previewUrl && (
                     <div className="flex flex-col gap-1.5 items-center justify-center p-3 text-(--mui-palette-text-secondary)">
                         <SpinnerIcon
                             className="animate-spin text-(--mui-palette-primary-main)"

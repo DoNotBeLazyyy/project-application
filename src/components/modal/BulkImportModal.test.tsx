@@ -1,6 +1,7 @@
-import BulkImportModal, { findErrorRow, getTargetEntityName } from '@components/modal/BulkImportModal';
+import BulkImportModal from '@components/modal/BulkImportModal';
 import UploadCsvModal from '@components/modal/UploadCsvModal';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { findErrorRow, getTargetEntityName } from '@utils/bulk-import.util';
 import { describe, expect, it, vi } from 'vitest';
 
 const MOCK_COLUMNS = [

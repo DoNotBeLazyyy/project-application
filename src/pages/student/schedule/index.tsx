@@ -2,8 +2,8 @@ import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import CommonModal from '@components/modal/CommonModal';
-import useBreakpoint from '@hooks/useBreakpoint';
-import { useHasRealChanges } from '@hooks/useHasRealChanges';
+import useBreakpoint from '@hooks/use-breakpoint';
+import { useHasRealChanges } from '@hooks/use-has-real-changes';
 import Tooltip from '@mui/material/Tooltip';
 import {
     CalendarBlank, Check, Clock, MapPin, ShieldCheck, User

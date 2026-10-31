@@ -1,5 +1,5 @@
-import useBreadcrumbs, { BreadcrumbItem } from '@hooks/useBreadcrumbs';
-import useBreakpoint from '@hooks/useBreakpoint';
+import useBreadcrumbs, { BreadcrumbItem } from '@hooks/use-breadcrumbs';
+import useBreakpoint from '@hooks/use-breakpoint';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { CaretRightIcon, DotsThreeIcon } from '@phosphor-icons/react';

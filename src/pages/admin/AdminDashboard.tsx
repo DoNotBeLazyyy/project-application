@@ -2,7 +2,7 @@ import StatCard from '@components/card/StatCard';
 import AnnouncementsFeedCard from '@components/dashboard/AnnouncementsFeedCard';
 import DashboardHeader from '@components/dashboard/DashboardHeader';
 import EventsFeedCard from '@components/dashboard/EventsFeedCard';
-import useDashboardFeeds from '@hooks/useDashboardFeeds';
+import useDashboardFeeds from '@hooks/use-dashboard-feeds';
 import { CalendarCheckIcon, ChalkboardTeacherIcon, GraduationCapIcon } from '@phosphor-icons/react';
 import { getAdminDashboardStats } from '@services/admin.service';
 import { AdminDashboardStats } from '@type/admin.type';

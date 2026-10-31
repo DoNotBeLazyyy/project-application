@@ -5,7 +5,7 @@ import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
-import { useFormDraft } from '@hooks/useFormDraft';
+import { useFormDraft } from '@hooks/use-form-draft';
 import { attendanceStatusVariant, formatSessionDate } from '@pages/faculty/sections/student-detail/studentDetailFormat';
 import { XIcon } from '@phosphor-icons/react';
 import { saveAttendanceRecords } from '@services/faculty.service';

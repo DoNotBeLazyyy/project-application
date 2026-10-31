@@ -1,5 +1,5 @@
 import CommonCard, { CommonCardProps } from '@components/card/CommonCard';
-import useBreakpoint from '@hooks/useBreakpoint';
+import useBreakpoint from '@hooks/use-breakpoint';
 import Dialog, { DialogOwnerState, DialogProps } from '@mui/material/Dialog';
 import { PaperProps } from '@mui/material/Paper';
 import { DialogCloseProps } from '@type/common/theme.type';
@@ -145,7 +145,7 @@ export default function CommonModal({
             fullScreen={isFullScreen}
             open={isModalOpen}
             {...props}
-            disableEscapeKeyDown={(props as any).disableEscapeKeyDown ?? disableEscapeKeyDown}
+            disableEscapeKeyDown={disableEscapeKeyDown}
             slotProps={{
                 ...slotProps,
                 paper: resolvedPaperSlot

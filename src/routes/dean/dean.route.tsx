@@ -16,17 +16,21 @@ export const deanRoutes: RouteObject[] = [
                 index: true
             },
             {
-                element: <Navigate
-                    replace
-                    to="/admin/departments"
-                />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/admin/departments"
+                    />
+                ),
                 path: 'department-management'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/admin/departments"
-                />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/admin/departments"
+                    />
+                ),
                 path: 'departments'
             },
             {
@@ -48,10 +52,12 @@ export const deanRoutes: RouteObject[] = [
                 path: 'program-management'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/dean/program-management"
-                />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/dean/program-management"
+                    />
+                ),
                 path: 'program-management/:programId'
             },
             {
@@ -61,10 +67,12 @@ export const deanRoutes: RouteObject[] = [
                 path: 'course-management'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/dean/program-management"
-                />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/dean/program-management"
+                    />
+                ),
                 path: 'curriculum-map-management'
             },
             {
@@ -86,10 +94,12 @@ export const deanRoutes: RouteObject[] = [
                 path: 'faculty-load/:facultyId'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/dean/faculty-load"
-                />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/dean/faculty-load"
+                    />
+                ),
                 path: 'schedule-conflicts'
             },
             {
@@ -117,24 +127,30 @@ export const deanRoutes: RouteObject[] = [
                 path: 'announcement-management/:id'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/dean/announcement-management"
-                />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/dean/announcement-management"
+                    />
+                ),
                 path: 'event-management'
             },
             {
-                element: <Navigate
-                    replace
-                    to="/dean/announcement-management/new?type=Event"
-                />,
+                element: (
+                    <Navigate
+                        replace
+                        to="/dean/announcement-management/new?type=Event"
+                    />
+                ),
                 path: 'event-management/new'
             },
             {
-                element: <CommunicationRedirect
-                    basePath="/dean/announcement-management"
-                    itemType="Event"
-                />,
+                element: (
+                    <CommunicationRedirect
+                        basePath="/dean/announcement-management"
+                        itemType="Event"
+                    />
+                ),
                 path: 'event-management/:id'
             },
             {

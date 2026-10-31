@@ -1,8 +1,8 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
-import { useHasRealChanges } from '@hooks/useHasRealChanges';
-import { useRoleTableConfig } from '@pages/admin/role-management/hooks/useRoleTableConfig';
+import { useHasRealChanges } from '@hooks/use-has-real-changes';
+import { useRoleTableConfig } from '@pages/admin/role-management/hooks/use-role-table-config';
 import RoleForm from '@pages/admin/role-management/RoleForm';
 import RoleGridCard from '@pages/admin/role-management/RoleGridCard';
 import {

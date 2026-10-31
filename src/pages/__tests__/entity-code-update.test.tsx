@@ -9,7 +9,11 @@ import { updateProgram } from '@services/program/program.service';
 import { updateRole } from '@services/role.service';
 import * as supabaseWrapper from '@services/supabase.wrapper';
 import { act, fireEvent, render } from '@testing-library/react';
-import { useForm } from 'react-hook-form';
+import { CourseTypeFormValues } from '@type/course/course-type.type';
+import { DepartmentFormValues } from '@type/department.type';
+import { ProgramLevelFormValues } from '@type/program/program-level.type';
+import { CreateRoleFormValues } from '@type/role.type';
+import { DefaultValues, useForm } from 'react-hook-form';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@services/user.service', () => ({
@@ -19,8 +23,8 @@ vi.mock('@services/user.service', () => ({
 
 describe('Entity Code Auto-Update on Name/Label Change', () => {
     describe('DepartmentForm', () => {
-        function TestWrapper({ isCreate, initialValues }: { isCreate: boolean; initialValues: any }) {
-            const methods = useForm({ defaultValues: initialValues });
+        function TestWrapper({ isCreate, initialValues }: { isCreate: boolean; initialValues: DefaultValues<DepartmentFormValues> & { id?: string } }) {
+            const methods = useForm<DepartmentFormValues>({ defaultValues: initialValues });
             return (
                 <DepartmentForm
                     control={methods.control}
@@ -32,10 +36,12 @@ describe('Entity Code Auto-Update on Name/Label Change', () => {
         }
 
         it('generates department code on create as name is typed', () => {
-            const { container } = render(<TestWrapper
-                initialValues={{ code: '', name: '' }}
-                isCreate={true}
-            />);
+            const { container } = render(
+                <TestWrapper
+                    initialValues={{ code: '', name: '' }}
+                    isCreate={true}
+                />
+            );
             const nameInput = container.querySelector('input[name="name"]') as HTMLInputElement;
             const codeInput = container.querySelector('input[name="code"]') as HTMLInputElement;
 
@@ -79,8 +85,8 @@ describe('Entity Code Auto-Update on Name/Label Change', () => {
     });
 
     describe('ProgramLevelForm', () => {
-        function TestWrapper({ isCreate, initialValues }: { isCreate: boolean; initialValues: any }) {
-            const methods = useForm({ defaultValues: initialValues });
+        function TestWrapper({ isCreate, initialValues }: { isCreate: boolean; initialValues: DefaultValues<ProgramLevelFormValues> & { id?: string } }) {
+            const methods = useForm<ProgramLevelFormValues>({ defaultValues: initialValues });
             return (
                 <ProgramLevelForm
                     control={methods.control}
@@ -120,8 +126,8 @@ describe('Entity Code Auto-Update on Name/Label Change', () => {
     });
 
     describe('CourseTypeForm', () => {
-        function TestWrapper({ isCreate, initialValues }: { isCreate: boolean; initialValues: any }) {
-            const methods = useForm({ defaultValues: initialValues });
+        function TestWrapper({ isCreate, initialValues }: { isCreate: boolean; initialValues: DefaultValues<CourseTypeFormValues> & { id?: string } }) {
+            const methods = useForm<CourseTypeFormValues>({ defaultValues: initialValues });
             return (
                 <CourseTypeForm
                     control={methods.control}
@@ -155,8 +161,8 @@ describe('Entity Code Auto-Update on Name/Label Change', () => {
     });
 
     describe('RoleForm', () => {
-        function TestWrapper({ isCreate, initialValues }: { isCreate: boolean; initialValues: any }) {
-            const methods = useForm({ defaultValues: initialValues });
+        function TestWrapper({ isCreate, initialValues }: { isCreate: boolean; initialValues: DefaultValues<CreateRoleFormValues> & { id?: string } }) {
+            const methods = useForm<CreateRoleFormValues>({ defaultValues: initialValues });
             return (
                 <RoleForm
                     control={methods.control}

@@ -6,7 +6,7 @@ import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import { CommonSelectOption } from '@components/select/CommonSelect';
-import { useObjectDraft } from '@hooks/useFormDraft';
+import { useObjectDraft } from '@hooks/use-form-draft';
 import { ArrowsClockwiseIcon } from '@phosphor-icons/react';
 import { getPrograms } from '@services/program/program.service';
 import { shiftStudentProgram } from '@services/records.service';
@@ -291,7 +291,7 @@ export default function AssignProgramModal({
                             name="isOverride"
                         />
                         <p className="text-xs text-(--mui-palette-text-secondary) m-0 ml-7">
-                            When unchecked, the student's year level will automatically update when they complete all required curriculum subjects. Check this if the Registrar needs to manually override or hold the year level.
+                            When unchecked, the student&apos;s year level will automatically update when they complete all required curriculum subjects. Check this if the Registrar needs to manually override or hold the year level.
                         </p>
                     </div>
 

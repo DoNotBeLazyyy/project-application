@@ -288,7 +288,7 @@ export default function SectionThresholdModal({
                                                 value={drafts[key] ?? ''}
                                                 variant="outlined"
                                                 onChange={(next) => setDrafts(function(previous) {
-                                                    return { ...previous, [key]: next as any };
+                                                    return { ...previous, [key]: next };
                                                 })}
                                             />
                                             <span className="text-(--mui-palette-text-secondary) text-sm whitespace-nowrap">

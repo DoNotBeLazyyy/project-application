@@ -28,7 +28,9 @@ export function useCourseOptions({ excludeIds, departmentId, includeOtherDepartm
                 : departmentId);
 
             if (result.data) {
-                const isOwn = (course: CourseOption) => !departmentId || !course.department_id || course.department_id === departmentId;
+                function isOwn(course: CourseOption) {
+                    return !departmentId || !course.department_id || course.department_id === departmentId;
+                }
                 const filtered = includeOtherDepartments
                     ? [...result.data.filter(isOwn), ...result.data.filter((course) => !isOwn(course))]
                     : result.data.filter(isOwn);
