@@ -227,3 +227,12 @@ Legend: **BUG** = broken behavior (fixed before moving on; the fix is noted) ·
   (function and the 273 existing notifications; migration `20261031150000`). Every other notification link was checked
   against the routes.
 - OK: the Dean's curriculum CSV import saved after "Save Program" (BSA now has the staged entry).
+
+## AI assistant (edge function v20), tested live
+- OK Dean: "Which sections still need a faculty, and are there schedule conflicts?" → uses the dean overview (none
+  unassigned, no conflicts, 9 faculty, 25 sections), 9 s.
+- OK Registrar: "What is waiting on me right now?" → knows today's date and that no grade releases are pending, 14 s.
+- OK Student: "What is due this week, am I on track for Latin honors?" → real GWA (1.89) and the gap to each honor,
+  plus the weakest subject, 4 s.
+- OK Admin: "Where do I add a holiday that suspends classes?" → Academic Years → Holidays & Exceptions step (the old guide
+  pointed to a retired Terms page), 5 s.
