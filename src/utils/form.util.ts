@@ -79,6 +79,18 @@ export function getFieldErrorMessage(errors: FieldErrors, name: string): string 
 
 export const FORM_ERROR_EVENT = 'app:form-error';
 
+// Philippine mobile number: 09XX XXX XXXX or +639XX XXX XXXX (spaces or dashes allowed)
+export const MOBILE_NUMBER_RULE = {
+    value: /^(\+63|0)9\d{2}[\s-]?\d{3}[\s-]?\d{4}$/,
+    message: 'Enter a valid mobile number (e.g. 0917 123 4567)'
+};
+
+// Philippine postal (ZIP) code: 4 digits
+export const POSTAL_CODE_RULE = {
+    value: /^\d{4}$/,
+    message: 'Postal code must be 4 digits'
+};
+
 export interface FormErrorEventDetail {
     count: number;
     message: string;
@@ -328,7 +340,38 @@ export function checkForMessage<T extends FieldValues>(
     }
 
     walk(errors, path);
-    return { firstError, count, list };
+
+    // Report errors in the order the fields appear on screen, not the order they registered
+    // (a rich-text editor registers before the inputs above it)
+    const ordered = orderByScreenPosition(list);
+    return { firstError: ordered[0] ?? firstError, count, list: ordered };
+}
+
+function findFieldElement(key: string): Element | null {
+    if (typeof document === 'undefined') {
+        return null;
+    }
+    try {
+        return document.querySelector(`[name="${key}"], [data-field-name~="${key}"], [id="${key}"]`);
+    }
+    catch {
+        return null;
+    }
+}
+
+function orderByScreenPosition<E extends { key: string }>(entries: E[]): E[] {
+    const located = entries
+        .map((entry) => ({ element: findFieldElement(entry.key), entry }))
+        .filter((item): item is { element: Element; entry: E } => item.element !== null)
+        .sort((a, b) => (a.element.compareDocumentPosition(b.element) & Node.DOCUMENT_POSITION_FOLLOWING
+            ? -1
+            : 1));
+
+    // Entries without an element on screen keep their original slots
+    let next = 0;
+    return entries.map((entry) => (findFieldElement(entry.key)
+        ? located[next++].entry
+        : entry));
 }
 
 export const DEFAULT_FORM_MODE = 'onSubmit' as const;

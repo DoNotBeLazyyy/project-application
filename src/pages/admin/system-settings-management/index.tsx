@@ -165,9 +165,14 @@ export default function SystemSettings() {
             name: 'institution_phone',
             rules: {
                 required: 'Institution phone is required',
-                validate: (v: any) => Boolean(v && String(v).trim()) || 'Institution phone cannot be empty or whitespace only'
+                validate: (v: any) => Boolean(v && String(v).trim()) || 'Institution phone cannot be empty or whitespace only',
+                pattern: {
+                    value: /^[+(0-9][0-9 ()-]{6,19}$/,
+                    message: 'Invalid phone number'
+                }
             },
-            type: 'text'
+            type: 'text',
+            placeholder: '(02) XXXX-XXXX'
         },
         {
             name: 'institution_mobile',

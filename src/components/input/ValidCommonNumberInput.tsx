@@ -2,7 +2,7 @@ import CommonNumberInput, { CommonNumberInputProps } from '@components/input/Com
 import {
     checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel
 } from '@utils/form.util';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export type ValidCommonNumberInputProps<T extends FieldValues = FieldValues> =
@@ -41,8 +41,12 @@ export default function ValidCommonNumberInput<T extends FieldValues = FieldValu
             : `${formatFieldLabel(name)} is required.`)
         : undefined;
 
+    // Take focus only right after a submit; fixing another field must not pull focus here
+    const focusedSubmitCountRef = useRef(formState.submitCount);
+
     useEffect(() => {
-        if (isFirstError && !props.disabled && !props.readOnly) {
+        if (isFirstError && !props.disabled && !props.readOnly && formState.submitCount !== focusedSubmitCountRef.current) {
+            focusedSubmitCountRef.current = formState.submitCount;
             const timer = setTimeout(() => {
                 const element = document.querySelector<HTMLInputElement>(`[name="${name}"]`);
                 if (element) {

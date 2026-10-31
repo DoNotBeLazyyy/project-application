@@ -2,7 +2,7 @@ import CommonMultiSelect, { CommonMultiSelectProps } from '@components/select/Co
 import {
     checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel
 } from '@utils/form.util';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export type ValidCommonMultiSelectProps<T extends FieldValues = FieldValues> =
@@ -43,8 +43,12 @@ export default function ValidCommonMultiSelect<T extends FieldValues = FieldValu
 
     const hasNoOptions = !props.options || props.options.length === 0;
 
+    // Take focus only right after a submit; fixing another field must not pull focus here
+    const focusedSubmitCountRef = useRef(formState.submitCount);
+
     useEffect(() => {
-        if (isFirstError && !props.disabled && !props.readOnly && !hasNoOptions) {
+        if (isFirstError && !props.disabled && !props.readOnly && !hasNoOptions && formState.submitCount !== focusedSubmitCountRef.current) {
+            focusedSubmitCountRef.current = formState.submitCount;
             const timer = setTimeout(() => {
                 const element = document.querySelector<HTMLElement>(`[name="${name}"]`);
                 if (element) {

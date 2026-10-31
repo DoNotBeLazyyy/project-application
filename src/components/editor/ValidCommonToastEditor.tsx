@@ -9,7 +9,7 @@ import {
     FormErrorEventDetail,
     formatFieldLabel
 } from '@utils/form.util';
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export type ValidCommonToastEditorProps<T extends FieldValues = FieldValues> =
@@ -66,8 +66,12 @@ export default function ValidCommonToastEditor<T extends FieldValues = FieldValu
             : `${formatFieldLabel(name)} is required.`)
         : undefined;
 
+    // Take focus only right after a submit; fixing another field must not pull focus here
+    const focusedSubmitCountRef = useRef(formState.submitCount);
+
     useEffect(() => {
-        if (isFirstError && !props.disabled) {
+        if (isFirstError && !props.disabled && formState.submitCount !== focusedSubmitCountRef.current) {
+            focusedSubmitCountRef.current = formState.submitCount;
             const timer = setTimeout(() => {
                 const container = document.querySelector<HTMLElement>(`[data-field-name~="${name}"], [name="${name}"], #${name}`);
                 const editor = container?.querySelector<HTMLElement>('.toastui-editor-contents, [contenteditable="true"], .ProseMirror');

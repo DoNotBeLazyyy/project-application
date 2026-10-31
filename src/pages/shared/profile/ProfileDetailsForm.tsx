@@ -4,6 +4,7 @@ import { CommonSelectOption } from '@components/select/CommonSelect';
 import { CIVIL_STATUS_OPTIONS, GENDER_OPTIONS } from '@pages/shared/profile/constants/profile.constant';
 import { ComponentPropsForm } from '@type/common.type';
 import { ProfileFormValues } from '@type/profile.type';
+import { MOBILE_NUMBER_RULE, POSTAL_CODE_RULE } from '@utils/form.util';
 import { Control } from 'react-hook-form';
 
 const YEAR_LEVEL_OPTIONS: CommonSelectOption[] = [
@@ -73,6 +74,7 @@ export default function ProfileDetailsForm({
         {
             label: 'Mobile Number',
             name: 'mobile_number',
+            rules: { pattern: MOBILE_NUMBER_RULE },
             type: 'text',
             fieldProps: { helperText: 'Reachable contact number.' }
         },
@@ -170,6 +172,7 @@ export default function ProfileDetailsForm({
         {
             label: 'Postal Code',
             name: 'postal_code',
+            rules: { pattern: POSTAL_CODE_RULE },
             type: 'text',
             fieldProps: { helperText: 'ZIP code.' }
         }

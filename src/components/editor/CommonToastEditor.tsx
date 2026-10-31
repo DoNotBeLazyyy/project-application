@@ -142,6 +142,8 @@ const CommonToastEditor = forwardRef<CommonToastEditorRef, CommonToastEditorProp
         }
 
         const editor = new Editor({
+            // Toast UI focuses itself by default, which scrolls the page past the fields above it
+            autofocus: false,
             el: containerRef.current,
             events: {
                 blur: () => {

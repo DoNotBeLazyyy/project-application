@@ -252,6 +252,17 @@ export default function AnnouncementForm({
                     fieldProps: { helperText: 'Leave empty to keep it visible indefinitely' },
                     label: 'Expires On',
                     name: 'expires_at' as const,
+                    rules: disabled
+                        ? undefined
+                        : {
+                            validate: (val: unknown) => {
+                                if (!val) return true;
+                                const expires = new Date(String(val));
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+                                return expires >= today || 'Expiry date cannot be in the past';
+                            }
+                        },
                     type: 'date' as const
                 },
                 {

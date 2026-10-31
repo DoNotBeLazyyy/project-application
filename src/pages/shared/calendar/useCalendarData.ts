@@ -20,6 +20,27 @@ const DAY_NAME_MAP: Record<number, DayOfWeek> = {
     6: 'Saturday'
 };
 
+function toDateKey(date: Date): string {
+    const month = String(date.getMonth() + 1)
+        .padStart(2, '0');
+    const day = String(date.getDate())
+        .padStart(2, '0');
+    return `${date.getFullYear()}-${month}-${day}`;
+}
+
+// A weekly class meets only inside its own term and not on days the calendar suspends classes
+function isClassDay(
+    date: Date,
+    termStart: string | null | undefined,
+    termEnd: string | null | undefined,
+    suspendedDays: Set<string>
+): boolean {
+    const key = toDateKey(date);
+    if (termStart && key < termStart.slice(0, 10)) return false;
+    if (termEnd && key > termEnd.slice(0, 10)) return false;
+    return !suspendedDays.has(key);
+}
+
 function parseTimeToHoursAndMinutes(timeStr: string): { hours: number; minutes: number } {
     const parts = timeStr.slice(0, 5).split(':').map(Number);
     return {
@@ -49,6 +70,7 @@ export function useCalendarData(currentDate: Date) {
         const rangeEnd = new Date(year, month + 2, 0, 23, 59, 59);
 
         const loadedEvents: UnifiedCalendarEvent[] = [];
+        const suspendedDays = new Set<string>();
 
         try {
             // 1. Fetch Campus Events via Event Feed
@@ -94,6 +116,15 @@ export function useCalendarData(currentDate: Date) {
                             const hStart = new Date(h.start_date);
                             const hEnd = new Date(h.end_date || h.start_date);
                             const isSuspension = h.exception_type === 'Suspension';
+
+                            if (h.affects_attendance) {
+                                const day = new Date(`${h.start_date.slice(0, 10)}T00:00:00`);
+                                const last = new Date(`${(h.end_date || h.start_date).slice(0, 10)}T00:00:00`);
+                                while (day <= last) {
+                                    suspendedDays.add(toDateKey(day));
+                                    day.setDate(day.getDate() + 1);
+                                }
+                            }
 
                             loadedEvents.push({
                                 id: `holiday-${h.id || h.title}-${h.start_date}`,
@@ -205,7 +236,7 @@ export function useCalendarData(currentDate: Date) {
                             const cursor = new Date(rangeStart);
                             while (cursor <= rangeEnd) {
                                 const dayName = DAY_NAME_MAP[cursor.getDay()];
-                                if (dayName === slot.day_of_week) {
+                                if (dayName === slot.day_of_week && isClassDay(cursor, sec.term_start_date, sec.term_end_date, suspendedDays)) {
                                     const classStart = new Date(
                                         cursor.getFullYear(),
                                         cursor.getMonth(),
@@ -284,6 +315,8 @@ export function useCalendarData(currentDate: Date) {
                     day_of_week: DayOfWeek;
                     time_start: string;
                     time_end: string;
+                    term_start_date: string | null;
+                    term_end_date: string | null;
                 }[]>('fn_get_calendar_section_schedules');
 
                 if (schedRes.data && Array.isArray(schedRes.data)) {
@@ -294,7 +327,7 @@ export function useCalendarData(currentDate: Date) {
                         const cursor = new Date(rangeStart);
                         while (cursor <= rangeEnd) {
                             const dayName = DAY_NAME_MAP[cursor.getDay()];
-                            if (dayName === slot.day_of_week) {
+                            if (dayName === slot.day_of_week && isClassDay(cursor, slot.term_start_date, slot.term_end_date, suspendedDays)) {
                                 const classStart = new Date(
                                     cursor.getFullYear(),
                                     cursor.getMonth(),

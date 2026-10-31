@@ -10,7 +10,7 @@ import { createMyStudentProfile } from '@services/profile.service';
 import { getPrograms } from '@services/program/program.service';
 import { useToastStore } from '@stores/toast.store';
 import { MyProfile } from '@type/profile.type';
-import { formErrors } from '@utils/form.util';
+import { formErrors, MOBILE_NUMBER_RULE, POSTAL_CODE_RULE } from '@utils/form.util';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -167,6 +167,7 @@ export default function StudentProfilePromptModal({
             disabled: isSubmitting,
             label: 'Mobile Number',
             name: 'mobile_number',
+            rules: { pattern: MOBILE_NUMBER_RULE },
             type: 'text'
         },
         {
@@ -224,6 +225,7 @@ export default function StudentProfilePromptModal({
             disabled: isSubmitting,
             label: 'Postal Code',
             name: 'postal_code',
+            rules: { pattern: POSTAL_CODE_RULE },
             type: 'text'
         }
     ];

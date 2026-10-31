@@ -3,7 +3,7 @@ import { ChangeEventInputTextarea, MakeOptional } from '@type/common.type';
 import {
     checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel
 } from '@utils/form.util';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export type ValidCommonTextareaProps<T extends FieldValues = FieldValues> = MakeOptional<CommonTextareaProps, 'value'> & UseControllerProps<T> & {
@@ -48,8 +48,12 @@ export default function ValidCommonTextarea<T extends FieldValues = FieldValues>
             : `${formatFieldLabel(name)} is required.`)
         : undefined;
 
+    // Take focus only right after a submit; fixing another field must not pull focus here
+    const focusedSubmitCountRef = useRef(formState.submitCount);
+
     useEffect(() => {
-        if (isFirstError && !props.disabled && !props.readOnly) {
+        if (isFirstError && !props.disabled && !props.readOnly && formState.submitCount !== focusedSubmitCountRef.current) {
+            focusedSubmitCountRef.current = formState.submitCount;
             const timer = setTimeout(() => {
                 const element = document.querySelector<HTMLTextAreaElement>(`[name="${name}"]`);
                 if (element) {

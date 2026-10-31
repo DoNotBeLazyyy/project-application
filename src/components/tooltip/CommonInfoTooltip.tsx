@@ -265,9 +265,15 @@ export default function CommonInfoTooltip({
                 placement={placement}
                 slotProps={{
                     // An error bubble sits over the field it describes; clicks must reach the input underneath
-                    popper: variant === 'error'
-                        ? { sx: { pointerEvents: 'none' } }
-                        : undefined,
+                    // Faded out while its field is scrolled out of view, instead of floating over the page
+                    popper: {
+                        sx: {
+                            '&[data-popper-reference-hidden]': { opacity: 0, pointerEvents: 'none' },
+                            ...(variant === 'error'
+                                ? { pointerEvents: 'none' }
+                                : {})
+                        }
+                    },
                     tooltip: {
                         sx: {
                             backgroundColor: background,
