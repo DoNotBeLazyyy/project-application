@@ -49,11 +49,13 @@ export default function ValidCommonTextarea<T extends FieldValues = FieldValues>
         : undefined;
 
     // Take focus only right after a submit; fixing another field must not pull focus here
-    const focusedSubmitCountRef = useRef(formState.submitCount);
+    const seenSubmitCountRef = useRef(formState.submitCount);
 
     useEffect(() => {
-        if (isFirstError && !props.disabled && !props.readOnly && formState.submitCount !== focusedSubmitCountRef.current) {
-            focusedSubmitCountRef.current = formState.submitCount;
+        const isNewSubmit = formState.submitCount !== seenSubmitCountRef.current;
+        seenSubmitCountRef.current = formState.submitCount;
+
+        if (isFirstError && !props.disabled && !props.readOnly && isNewSubmit) {
             const timer = setTimeout(() => {
                 const element = document.querySelector<HTMLTextAreaElement>(`[name="${name}"]`);
                 if (element) {

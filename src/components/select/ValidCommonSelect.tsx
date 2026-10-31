@@ -74,11 +74,13 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
     }
 
     // Take focus only right after a submit; fixing another field must not pull focus here
-    const focusedSubmitCountRef = useRef(formState.submitCount);
+    const seenSubmitCountRef = useRef(formState.submitCount);
 
     useEffect(() => {
-        if (isFirstError && !isNonInteractive && formState.submitCount !== focusedSubmitCountRef.current) {
-            focusedSubmitCountRef.current = formState.submitCount;
+        const isNewSubmit = formState.submitCount !== seenSubmitCountRef.current;
+        seenSubmitCountRef.current = formState.submitCount;
+
+        if (isFirstError && !isNonInteractive && isNewSubmit) {
             setIsOpen(true);
             const timer = setTimeout(() => {
                 const element = document.querySelector<HTMLElement>(`[name="${name}"]`);

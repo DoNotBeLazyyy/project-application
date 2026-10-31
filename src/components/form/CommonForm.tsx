@@ -7,7 +7,7 @@ import { classMerge } from '@utils/css.util';
 import {
     announceFormError, ensureSubmitValidationMode, focusAndOpenFirstErrorField, formatFieldLabel, getFieldErrorMessage
 } from '@utils/form.util';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import {
     Control, FieldErrors, FieldValues, useFormState
 } from 'react-hook-form';
@@ -162,9 +162,19 @@ export default function CommonForm<T extends FieldValues>({
         })?.name as string | undefined;
     }, [fields, errors]);
 
-    // Automatically focus and scroll to the first invalid field upon validation failure
+    // Automatically focus and scroll to the first invalid field upon validation failure. When the
+    // first error only moves on because the user fixed an earlier field, focus stays where they type
+    const previousFirstErrorRef = useRef<string | undefined>(undefined);
+    const previousSubmitCountRef = useRef(submitCount);
+
     useEffect(() => {
+        const previousFirstError = previousFirstErrorRef.current;
+        const isNewSubmit = submitCount !== previousSubmitCountRef.current;
+        previousFirstErrorRef.current = firstErrorField;
+        previousSubmitCountRef.current = submitCount;
+
         if (!firstErrorField) return;
+        if (previousFirstError && !isNewSubmit) return;
 
         focusAndOpenFirstErrorField(firstErrorField);
         announceFormError({
