@@ -255,7 +255,7 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
                                         transition: 'all 0.15s ease-in-out',
                                         '&:hover': {
                                             backgroundColor: 'var(--mui-tokens-color-brand-300)',
-                                            color: 'var(--mui-tokens-color-brand-950)'
+                                            color: 'var(--mui-palette-primary-contrastText)'
                                         }
                                     },
                                     '&.Mui-disabled': {

@@ -46,9 +46,9 @@ export default function ModalStepperHeader({
     }
 
     return (
-        <div ref={headerRef} className="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-900/60 px-3.5 sm:px-5 py-2.5 shrink-0 relative space-y-2">
+        <div ref={headerRef} className="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-900/60 px-2 py-1 sm:px-5 sm:py-2.5 shrink-0 relative space-y-2">
             <div
-                className={`w-full flex items-center justify-between gap-2.5 p-2.5 sm:p-3 rounded-xl bg-white dark:bg-zinc-800 border shadow-xs transition-all group text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20 select-none ${
+                className={`w-full flex items-center justify-between gap-2.5 p-1.5 sm:p-3 rounded-xl bg-white dark:bg-zinc-800 border shadow-xs transition-all group text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20 select-none ${
                     activeHasDiff
                         ? 'border-amber-300 dark:border-amber-700/80 hover:border-amber-400 dark:hover:border-amber-600'
                         : 'border-slate-200 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-500'
@@ -65,14 +65,14 @@ export default function ModalStepperHeader({
             >
                 <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                     <span
-                        className={`w-8 h-8 rounded-lg text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-xs ${
+                        className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-xs ${
                             activeHasDiff ? 'bg-amber-500 dark:bg-amber-600' : 'bg-blue-600'
                         }`}
                     >
                         {currentStep}
                     </span>
                     <div className="flex flex-col min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="hidden sm:flex items-center gap-2 flex-wrap">
                             <span
                                 className={`text-[11px] font-semibold uppercase tracking-wide ${
                                     activeHasDiff
@@ -98,6 +98,9 @@ export default function ModalStepperHeader({
                         </div>
                         <div className="flex items-center gap-1.5 min-w-0">
                             <span className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                                <span className="font-semibold sm:hidden text-blue-600 dark:text-blue-400">
+                                    {currentStep}/{steps.length} ·{' '}
+                                </span>
                                 {activeStepConfig?.title}
                             </span>
                             {activeStepConfig?.subtitle && (

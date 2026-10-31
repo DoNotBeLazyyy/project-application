@@ -14,7 +14,7 @@ export const toggleOverrides: Components<Omit<Theme, 'components'>> = {
                         transform: 'translateX(1.25rem)',
                         color: 'var(--mui-tokens-color-common-white)',
                         '& + .MuiSwitch-track': {
-                            backgroundColor: 'var(--mui-tokens-color-brand-900)',
+                            backgroundColor: 'var(--mui-palette-primary-main)',
                             opacity: 1
                         }
                     },

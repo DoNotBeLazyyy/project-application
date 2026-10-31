@@ -144,10 +144,10 @@ export default function SubjectDetailPage() {
 
     return (
         <CommonCard className="h-full w-full p-3 sm:p-5 flex flex-col">
-            <div className="flex flex-col gap-3.5 h-full min-h-0">
+            <div className="flex flex-col gap-2 h-full min-h-0 sm:gap-3.5">
                 {/* Mobile-First Subject Detail Header */}
                 <div className="flex flex-col gap-2 pb-2 border-b border-slate-200/80 dark:border-zinc-800">
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-nowrap items-center gap-2 min-w-0 sm:flex-wrap">
                         <button
                             type="button"
                             onClick={() => navigate('/student/subjects')}
@@ -162,14 +162,14 @@ export default function SubjectDetailPage() {
                         <span className="text-slate-400 text-sm hidden sm:inline">
                             /
                         </span>
-                        <h1 className="font-bold text-slate-900 dark:text-slate-100 text-base sm:text-lg tracking-tight leading-snug">
+                        <h1 className="font-bold leading-snug min-w-0 text-base text-slate-900 tracking-tight truncate dark:text-slate-100 sm:text-lg sm:whitespace-normal">
                             {subject?.course_code ? `${subject.course_code} — ` : ''}{subject?.course_title ?? (isSubjectMissing
                                 ? 'Subject not found'
                                 : 'Loading Subject...')}
                         </h1>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500">
+                    <div className="hidden flex-wrap items-center gap-2.5 text-xs text-slate-500 sm:flex">
                         {subject?.term_label && (
                             <span className="flex items-center gap-1 font-medium bg-slate-100 dark:bg-zinc-800 px-2.5 py-0.5 rounded-md">
                                 {subject.term_label}

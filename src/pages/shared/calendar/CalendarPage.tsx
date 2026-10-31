@@ -362,7 +362,7 @@ export default function CalendarPage() {
                         className={`px-2.5 py-1 rounded-full font-semibold border transition-all cursor-pointer ${
                             activeCategories.size === CALENDAR_CATEGORIES.length
                                 ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white'
-                                : 'bg-white dark:bg-neutral-800 text-(--mui-palette-text-secondary) border-(--mui-palette-divider) hover:bg-neutral-50'
+                                : 'bg-white dark:bg-neutral-800 text-(--mui-palette-text-secondary) border-(--mui-palette-divider) hover:bg-neutral-50 dark:hover:bg-neutral-700'
                         }`}
                         type="button"
                         onClick={handleSelectAllCategories}
@@ -382,7 +382,7 @@ export default function CalendarPage() {
                                 type="button"
                                 onClick={() => toggleCategory(cat.id)}
                             >
-                                <span className={`w-2 h-2 rounded-full ${isChecked ? cat.dotClass : 'bg-neutral-300'}`} />
+                                <span className={`w-2 h-2 rounded-full ${isChecked ? cat.dotClass : 'bg-neutral-300 dark:bg-neutral-600'}`} />
                                 {cat.label}
                             </button>
                         );

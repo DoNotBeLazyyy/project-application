@@ -140,7 +140,7 @@ export default function CommonBentoCard({
     return (
         <div
             className={classMerge(
-                'bg-white border rounded-2xl p-4.5 shadow-xs transition-all duration-200 flex flex-col justify-between select-none relative group h-full',
+                'bg-white border rounded-2xl p-3 sm:p-4.5 shadow-xs transition-all duration-200 flex flex-col justify-between select-none relative group h-full',
                 isSelected
                     ? 'border-blue-600 ring-2 ring-blue-600/25 shadow-[0_0_15px_rgba(37,99,235,0.2)]'
                     : 'border-slate-200/90 hover:border-slate-300 hover:shadow-md',
@@ -153,7 +153,7 @@ export default function CommonBentoCard({
         >
             <div>
                 {/* 1. Header: Checkbox + Code Pill + Status Pill + Three Dots */}
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-2 sm:mb-3">
                     <div className="flex gap-2 items-center min-w-0">
                         {hasCheckbox && (
                             <div
@@ -215,7 +215,7 @@ export default function CommonBentoCard({
 
                     {actionMenu && (
                         <div
-                            className="hover:bg-slate-100 hover:text-slate-600 p-1 rounded-lg shrink-0 text-slate-400 transition-colors"
+                            className="hover:bg-(--mui-palette-action-hover) hover:text-(--mui-palette-text-primary) p-1 rounded-lg shrink-0 text-slate-400 transition-colors"
                             onClick={function(e) {
                                 e.stopPropagation();
                             }}
@@ -226,7 +226,7 @@ export default function CommonBentoCard({
                 </div>
 
                 {/* 2. Hero Title & Optional Subtitle */}
-                <div className="mb-3">
+                <div className="mb-2 sm:mb-3">
                     <TruncatedText
                         as="h3"
                         className="font-bold leading-snug text-base text-slate-900 tracking-tight"
@@ -242,7 +242,7 @@ export default function CommonBentoCard({
 
                 {/* 3. Faculty In-Charge Card */}
                 {(faculty || facultyNotAssigned) && (
-                    <div className="bg-slate-50/90 border border-slate-100 flex gap-3 items-center mb-3 p-2.5 rounded-xl">
+                    <div className="bg-slate-50/90 border border-slate-100 flex gap-3 items-center mb-2 p-2 rounded-xl sm:mb-3 sm:p-2.5">
                         {faculty?.avatarUrl
                             ? (
                                 <img
@@ -256,7 +256,7 @@ export default function CommonBentoCard({
                                     className={classMerge(
                                         'h-9 w-9 rounded-full border border-white shadow-2xs shrink-0 flex items-center justify-center font-bold text-xs',
                                         faculty
-                                            ? 'bg-slate-200 text-slate-700'
+                                            ? 'bg-(--mui-palette-grey-200) text-(--mui-palette-text-primary)'
                                             : 'bg-slate-100 text-slate-400'
                                     )}
                                 >
@@ -298,14 +298,14 @@ export default function CommonBentoCard({
                                 ? 'grid-cols-1'
                                 : 'grid-cols-2',
                             (facts.length > 0 || progress || details.length > 0 || extraContent)
-                                ? 'mb-3'
+                                ? 'mb-2 sm:mb-3'
                                 : ''
                         )}
                     >
                         {metrics.map(function(metric, index) {
                             return (
                                 <div
-                                    className="bg-slate-50/90 border border-slate-100 p-2.5 rounded-xl"
+                                    className="bg-slate-50/90 border border-slate-100 p-2 rounded-xl sm:p-2.5"
                                     key={index}
                                 >
                                     <span className="block font-medium leading-none text-[10px] text-slate-400">
@@ -339,7 +339,7 @@ export default function CommonBentoCard({
                         className={classMerge(
                             'flex flex-wrap gap-2',
                             (progress || details.length > 0 || extraContent)
-                                ? 'mb-3.5'
+                                ? 'mb-2 sm:mb-3.5'
                                 : ''
                         )}
                     >
@@ -349,7 +349,7 @@ export default function CommonBentoCard({
                             return (
                                 <div
                                     className={classMerge(
-                                        'basis-28 border grow min-w-0 p-2.5 rounded-xl',
+                                        'basis-28 border grow min-w-0 p-2 rounded-xl sm:p-2.5',
                                         tone.container
                                     )}
                                     key={index}
@@ -419,7 +419,7 @@ export default function CommonBentoCard({
                         className={classMerge(
                             'flex flex-col gap-2',
                             (extraContent || footerMeta || primaryAction || secondaryAction)
-                                ? 'mb-3'
+                                ? 'mb-2 sm:mb-3'
                                 : ''
                         )}
                     >
@@ -428,7 +428,7 @@ export default function CommonBentoCard({
 
                             return (
                                 <div
-                                    className="bg-slate-50/90 border border-slate-100 p-2.5 rounded-xl"
+                                    className="bg-slate-50/90 border border-slate-100 p-2 rounded-xl sm:p-2.5"
                                     key={index}
                                 >
                                     <span className="block font-bold leading-none text-[10px] text-slate-400 tracking-wider uppercase">
@@ -457,7 +457,7 @@ export default function CommonBentoCard({
 
             {/* 6. Footer Row: Left Meta + Right Action Buttons (only when there is something to show) */}
             {(footerMeta || primaryAction || secondaryAction) && (
-                <div className="border-slate-100 border-t flex gap-2 items-center justify-between mt-auto pt-3.5">
+                <div className="border-slate-100 border-t flex gap-2 items-center justify-between mt-auto pt-2 sm:pt-3.5">
                     <div className="font-medium min-w-0 text-slate-400 text-xs truncate">
                         {footerMeta}
                     </div>
@@ -470,7 +470,7 @@ export default function CommonBentoCard({
                     >
                         {secondaryAction && (
                             <button
-                                className="bg-white border border-slate-200 cursor-pointer disabled:opacity-50 font-semibold hover:bg-slate-50 px-3 py-1 rounded-lg shadow-2xs text-slate-700 text-xs transition-colors"
+                                className="bg-white border border-slate-200 cursor-pointer disabled:opacity-50 font-semibold hover:bg-(--mui-palette-action-hover) px-3 py-1 rounded-lg shadow-2xs text-slate-700 text-xs transition-colors"
                                 disabled={secondaryAction.disabled}
                                 type="button"
                                 onClick={secondaryAction.onClick}
@@ -481,7 +481,7 @@ export default function CommonBentoCard({
 
                         {primaryAction && (
                             <button
-                                className="bg-blue-50 border border-blue-200 cursor-pointer disabled:opacity-50 font-bold hover:bg-blue-100 px-3 py-1 rounded-lg shadow-2xs text-blue-700 text-xs transition-colors"
+                                className="bg-blue-50 border border-blue-200 cursor-pointer disabled:opacity-50 font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 px-3 py-1 rounded-lg shadow-2xs text-blue-700 text-xs transition-colors"
                                 disabled={primaryAction.disabled}
                                 type="button"
                                 onClick={primaryAction.onClick}

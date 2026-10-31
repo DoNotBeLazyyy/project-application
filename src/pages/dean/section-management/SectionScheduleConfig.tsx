@@ -276,9 +276,9 @@ export default function SectionScheduleConfig({
                                                             style={
                                                                 isSelected
                                                                     ? {
-                                                                        backgroundColor: 'var(--mui-tokens-color-brand-600, #2563EB)',
-                                                                        borderColor: 'var(--mui-tokens-color-brand-700, #1D4ED8)',
-                                                                        color: '#FFFFFF'
+                                                                        backgroundColor: 'var(--mui-palette-primary-dark)',
+                                                                        borderColor: 'var(--mui-palette-primary-main)',
+                                                                        color: 'var(--mui-palette-primary-contrastText)'
                                                                     }
                                                                     : undefined
                                                             }

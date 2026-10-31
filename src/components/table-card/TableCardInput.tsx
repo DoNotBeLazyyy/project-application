@@ -82,7 +82,7 @@ export default function TableCardInput({
                         <InputAdornment position="start">
                             <button
                                 aria-label="Submit search"
-                                className="-ml-1 active:bg-slate-200 active:scale-95 bg-transparent cursor-pointer duration-200 flex focus-visible:ring-(--mui-palette-primary-main)/40 focus-visible:ring-2 focus:outline-hidden h-6.5 hover:bg-slate-100 hover:scale-110 hover:text-(--mui-palette-primary-dark) items-center justify-center rounded-full text-(--mui-palette-primary-main) transition-all w-6.5"
+                                className="-ml-1 active:bg-(--mui-palette-action-selected) active:scale-95 bg-transparent cursor-pointer duration-200 flex focus-visible:ring-(--mui-palette-primary-main)/40 focus-visible:ring-2 focus:outline-hidden h-6.5 hover:bg-(--mui-palette-action-hover) hover:scale-110 hover:text-(--mui-palette-primary-dark) items-center justify-center rounded-full text-(--mui-palette-primary-main) transition-all w-6.5"
                                 title="Click to search"
                                 type="button"
                                 onClick={onSearch}

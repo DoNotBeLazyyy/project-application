@@ -20,6 +20,16 @@ export const cardOverrides: ComponentTheme = {
                     gap: 'var(--mui-tokens-spacing-4)',
                     padding: 'var(--mui-tokens-spacing-4)'
                 },
+                // Phones: less chrome so the scrolling content gets most of the screen
+                [theme.breakpoints.down('sm')]: {
+                    gap: 'var(--mui-tokens-spacing-3)',
+                    padding: 'var(--mui-tokens-spacing-3)'
+                },
+                // The shadow is invisible on a dark page, so cards get an outline instead
+                '.dark &': {
+                    border: '1px solid var(--mui-palette-divider)',
+                    boxShadow: 'none'
+                },
                 '&.MuiDialog-paperFullScreen': {
                     borderRadius: 0,
                     height: '100%',

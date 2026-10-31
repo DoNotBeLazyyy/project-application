@@ -534,6 +534,21 @@ html.dark {
         background-color: #172036 !important;
     }
 
+    /* Light hover backgrounds without their own dark variant flash white in dark mode */
+    :is(
+        [class*="hover:bg-white"],
+        [class*="hover:bg-slate-50"], [class*="hover:bg-slate-100"], [class*="hover:bg-slate-200"],
+        [class*="hover:bg-gray-50"], [class*="hover:bg-gray-100"],
+        [class*="hover:bg-neutral-50"], [class*="hover:bg-neutral-100"],
+        [class*="hover:bg-blue-50"], [class*="hover:bg-blue-100"],
+        [class*="hover:bg-red-50"], [class*="hover:bg-amber-100"], [class*="hover:bg-amber-200"],
+        [class*="hover:bg-emerald-100"], [class*="hover:bg-emerald-200"],
+        [class*="hover:bg-rose-100"], [class*="hover:bg-rose-200"],
+        [class*="hover:bg-indigo-100"], [class*="hover:bg-indigo-200"]
+    ):not([class*="dark:hover:bg-"]):hover {
+        background-color: var(--mui-palette-action-hover) !important;
+    }
+
     /* Colored badge and pill backgrounds in dark mode */
     .bg-blue-50,
     .bg-blue-100,

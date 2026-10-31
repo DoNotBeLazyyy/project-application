@@ -32,7 +32,7 @@ export default function CommonNavbar({
         <div
             className={
                 classMerge(
-                    'flex items-center justify-between bg-(--mui-tokens-color-brand-950) px-(--mui-tokens-spacing-6) py-(--mui-tokens-spacing-4)',
+                    'flex items-center justify-between bg-(--mui-tokens-color-brand-950) px-3 py-1.5 md:px-(--mui-tokens-spacing-6) md:py-(--mui-tokens-spacing-4)',
                     className
                 )
             }

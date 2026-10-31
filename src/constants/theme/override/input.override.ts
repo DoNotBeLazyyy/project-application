@@ -289,7 +289,7 @@ export const inputOverrides: ComponentTheme = {
                 ...buildInputStateStyles(),
                 borderRadius: 'var(--mui-tokens-radius-md)',
                 '& .MuiInputAdornment-positionStart svg': {
-                    color: 'var(--mui-tokens-color-brand-950)'
+                    color: 'var(--mui-palette-primary-main)'
                 },
                 '& .MuiInputAdornment-positionEnd svg': {
                     color: 'var(--mui-tokens-color-neutral-900)'

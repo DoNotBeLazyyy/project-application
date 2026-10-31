@@ -124,3 +124,36 @@ html.dark .toastui-editor-defaultUI-toolbar {
     background-color: #0b132b !important;
     border-bottom-color: #1e293b !important;
 }
+
+/* Dark mode: code blocks, popups and both editing panes follow the page surface */
+html.dark .toastui-editor-contents pre,
+html.dark .toastui-editor-contents code {
+    background-color: var(--mui-palette-grey-100) !important;
+    color: var(--mui-palette-text-primary) !important;
+}
+
+html.dark .toastui-editor-contents,
+html.dark .toastui-editor-contents p,
+html.dark .toastui-editor-contents li,
+html.dark .toastui-editor-contents h1,
+html.dark .toastui-editor-contents h2,
+html.dark .toastui-editor-contents h3,
+html.dark .toastui-editor-contents h4 {
+    color: var(--mui-palette-text-primary);
+}
+
+html.dark .toastui-editor-popup,
+html.dark .toastui-editor-context-menu,
+html.dark .toastui-editor-dropdown-toolbar,
+html.dark .tui-colorpicker-container,
+html.dark .toastui-editor-ww-container,
+html.dark .toastui-editor-md-container {
+    background-color: var(--mui-palette-background-paper) !important;
+    border-color: var(--mui-palette-divider) !important;
+    color: var(--mui-palette-text-primary) !important;
+}
+
+/* Text colored near-black with the color tool would vanish on a dark surface */
+html.dark .toastui-editor-contents span[style*="color"] {
+    filter: brightness(1.6);
+}

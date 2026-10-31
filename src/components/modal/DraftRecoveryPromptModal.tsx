@@ -26,7 +26,7 @@ export default function DraftRecoveryPromptModal({
         <AlertPromptModal
             actionIconProps={{
                 icon: ClockCounterClockwiseIcon,
-                iconContainerClassName: 'bg-(--mui-tokens-color-200) text-(--mui-tokens-color-primary-main)'
+                iconContainerClassName: 'bg-(--mui-tokens-color-brand-100) text-(--mui-palette-primary-main)'
             }}
             formButtonsProps={{
                 cancelProps: {

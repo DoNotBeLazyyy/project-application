@@ -64,7 +64,7 @@ export const LIGHT_PALETTE: PaletteOptions = {
 export const DARK_PALETTE: PaletteOptions = {
     mode: 'dark',
     primary: {
-        main: '#5196F6',
+        main: '#3B82F6',
         light: '#81B5F3',
         dark: '#225DB4',
         contrastText: '#FFFFFF'

@@ -175,7 +175,7 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                         Simulated Cum. GWA
                     </span>
                     <div className="flex gap-2 items-baseline">
-                        <span className="font-bold text-(--mui-tokens-color-brand-950) text-2xl">
+                        <span className="font-bold text-(--mui-palette-primary-main) text-2xl">
                             {formatGwa(simulationResults.simulatedCumGwa)}
                         </span>
                         {isSimulating && simulationResults.delta !== 0 && (
@@ -199,7 +199,7 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                     <span className="text-(--mui-tokens-color-neutral-600) text-xs uppercase font-medium">
                         Simulated Term GWA
                     </span>
-                    <span className="font-bold text-(--mui-tokens-color-brand-950) text-2xl">
+                    <span className="font-bold text-(--mui-palette-primary-main) text-2xl">
                         {formatGwa(simulationResults.simulatedTermGwa)}
                     </span>
                     <span className="text-(--mui-tokens-color-neutral-600) text-xs">
@@ -213,7 +213,7 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                     </span>
                     <div className="flex gap-2 items-center">
                         <TrophyIcon className="text-(--mui-palette-warning-main)" size={20} weight="fill" />
-                        <span className="font-semibold text-(--mui-tokens-color-brand-950) text-base truncate">
+                        <span className="font-semibold text-(--mui-palette-text-primary) text-base truncate">
                             {highestQualifiedHonor ? highestQualifiedHonor.label : 'Dean’s List Candidate'}
                         </span>
                     </div>
@@ -284,7 +284,7 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                                     const currentVal = simulatedGrades[course.enrollment_id] || '1.25';
 
                                     return (
-                                        <tr key={course.enrollment_id} className="hover:bg-slate-50/50">
+                                        <tr key={course.enrollment_id} className="hover:bg-(--mui-palette-action-hover)">
                                             <td className="px-4 py-3 font-semibold text-(--mui-palette-text-primary) text-xs">
                                                 {course.course_code}
                                             </td>
@@ -316,7 +316,7 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
             {/* Tactical Advice Box */}
             <div className="bg-(--mui-tokens-color-brand-50) border border-(--mui-tokens-color-brand-100) p-4 rounded-lg flex items-start gap-3">
                 <SparkleIcon className="text-(--mui-tokens-color-brand-900) shrink-0 mt-0.5" size={20} weight="fill" />
-                <div className="flex flex-col gap-1 text-xs text-(--mui-tokens-color-brand-950)">
+                <div className="flex flex-col gap-1 text-xs text-(--mui-palette-text-primary)">
                     <span className="font-semibold text-sm">Simulator Tactical Insight</span>
                     <p className="m-0 leading-relaxed">
                         {highestQualifiedHonor ? (

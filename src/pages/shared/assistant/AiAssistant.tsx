@@ -110,7 +110,7 @@ function SuggestionList({ items, onSelect }: SuggestionListProps) {
         <div className="flex flex-col gap-2">
             {items.map((suggestion) => (
                 <button
-                    className="border border-(--mui-palette-divider) hover:bg-black/5 px-3 py-2 rounded-lg text-(--mui-palette-text-primary) text-left text-xs"
+                    className="border border-(--mui-palette-divider) hover:bg-(--mui-palette-action-hover) px-3 py-2 rounded-lg text-(--mui-palette-text-primary) text-left text-xs"
                     key={suggestion}
                     type="button"
                     onClick={function() {
@@ -214,8 +214,8 @@ export default function AiAssistant() {
     }
 
     const panel = (
-        <div className="bg-white flex flex-col h-full overflow-hidden w-full">
-            <div className="border-b border-slate-100 flex items-center justify-between px-4 py-3 shrink-0">
+        <div className="bg-(--mui-palette-background-paper) flex flex-col h-full overflow-hidden w-full">
+            <div className="border-b border-(--mui-palette-divider) flex items-center justify-between px-4 py-3 shrink-0">
                 <div className="flex flex-col">
                     <span className="font-semibold text-(--mui-palette-text-primary) text-sm">
                         AU-JAS Assistant
@@ -259,10 +259,10 @@ export default function AiAssistant() {
                         <p
                             className={
                                 item.role === 'user'
-                                    ? 'bg-(--mui-palette-primary-main) max-w-[85%] px-3 py-2 rounded-xl text-sm text-white whitespace-pre-wrap'
+                                    ? 'bg-(--mui-palette-primary-main) max-w-[85%] px-3 py-2 rounded-xl text-(--mui-palette-primary-contrastText) text-sm whitespace-pre-wrap'
                                     : item.isFailed
                                         ? 'bg-(--mui-palette-error-main)/10 max-w-[85%] px-3 py-2 rounded-xl text-(--mui-palette-error-main) text-sm whitespace-pre-wrap'
-                                        : 'bg-black/5 max-w-[85%] px-3 py-2 rounded-xl text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap'
+                                        : 'bg-(--mui-palette-action-hover) max-w-[85%] px-3 py-2 rounded-xl text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap'
                             }
                         >
                             {item.content}
@@ -286,7 +286,7 @@ export default function AiAssistant() {
                     </div>
                 )}
             </div>
-            <div className="border-slate-100 border-t flex gap-2 items-end px-4 py-3 shrink-0">
+            <div className="border-(--mui-palette-divider) border-t flex gap-2 items-end px-4 py-3 shrink-0">
                 <CommonInput
                     fullWidth
                     hasClearButton={false}
@@ -321,7 +321,7 @@ export default function AiAssistant() {
                 open={isOpen}
                 slotProps={{
                     paper: {
-                        className: 'w-[85vw] max-w-[360px] h-full border-0 bg-white'
+                        className: 'w-[85vw] max-w-[360px] h-full border-0 bg-(--mui-palette-background-paper)'
                     }
                 }}
                 variant="temporary"
@@ -338,7 +338,7 @@ export default function AiAssistant() {
             aria-label="AU-JAS Assistant Panel"
             className={
                 classMerge(
-                    'bg-white border-l border-slate-200 flex flex-col h-full overflow-hidden shrink-0 transition-[width,min-width] duration-300 ease-in-out',
+                    'bg-(--mui-palette-background-paper) border-l border-(--mui-palette-divider) flex flex-col h-full overflow-hidden shrink-0 transition-[width,min-width] duration-300 ease-in-out',
                     isOpen
                         ? 'min-w-96 w-96'
                         : 'border-l-0 min-w-0 w-0 invisible pointer-events-none'

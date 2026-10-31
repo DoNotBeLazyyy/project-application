@@ -105,8 +105,8 @@ export const buttonOverrides: ComponentTheme = {
                         boxShadow: 'none'
                     },
                     '&.Mui-disabled': {
-                        backgroundColor: 'var(--mui-tokens-color-neutral-400)',
-                        color: 'var(--mui-tokens-color-common-white)'
+                        backgroundColor: 'var(--mui-palette-action-disabledBackground)',
+                        color: 'var(--mui-palette-action-disabled)'
                     },
                     '&.is_loading.Mui-disabled': {
                         backgroundColor: 'var(--mui-palette-primary-main)',
@@ -205,8 +205,8 @@ export const buttonOverrides: ComponentTheme = {
                         boxShadow: 'none'
                     },
                     '&.Mui-disabled': {
-                        backgroundColor: 'var(--mui-tokens-color-neutral-400)',
-                        color: 'var(--mui-tokens-color-common-white)'
+                        backgroundColor: 'var(--mui-palette-action-disabledBackground)',
+                        color: 'var(--mui-palette-action-disabled)'
                     },
                     '&.is_loading.Mui-disabled': {
                         backgroundColor: 'var(--mui-tokens-color-red-500)',

@@ -481,24 +481,24 @@ export default function CommonTableCard<T extends FieldValues>({
                     position: 'relative',
                     zIndex: 1,
                     // Breathing room between the header content and the divider line/shadow
-                    pb: 2.5,
+                    pb: { xs: 1, md: 2.5 },
                     borderBottom: '1px solid var(--mui-palette-grey-100)',
                     // Negative spread == blur keeps the shadow strictly below the header
                     // (square full-width ends, no side bleed); the larger blur/offset make
                     // it soft. It falls directly onto the content — no white gap between.
                     boxShadow: '0 10px 10px -10px rgb(15 23 42 / 0.18)',
                     display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    alignItems: { xs: 'stretch', md: 'center' },
+                    flexDirection: 'row',
+                    alignItems: 'center',
                     justifyContent: 'space-between',
-                    gap: { xs: 1.5, md: 2 },
+                    gap: { xs: 1, md: 2 },
                     '& .MuiCardHeader-content': {
-                        width: { xs: '100%', md: 'auto' },
+                        flex: '1 1 auto',
                         minWidth: 0
                     },
                     '& .MuiCardHeader-action': {
-                        width: { xs: '100%', md: 'auto' },
-                        alignSelf: { xs: 'stretch', md: 'center' },
+                        flex: { xs: '0 1 60%', md: '0 1 auto' },
+                        alignSelf: 'center',
                         margin: 0
                     },
                     ...(cardHeaderProps?.sx as object)
@@ -642,7 +642,7 @@ export default function CommonTableCard<T extends FieldValues>({
                             width; the `calc` floor caps the count at 4; the `280px` floor
                             drops columns as the content area narrows (e.g. sidebar expanded). */}
                             <div
-                                className="gap-4 grid px-4"
+                                className="gap-2 grid px-0 sm:gap-4 sm:px-4"
                                 style={{
                                     gridTemplateColumns:
                                         'repeat(auto-fit, minmax(min(100%, max(280px, calc((100% - 3rem) / 4))), 1fr))'
@@ -721,7 +721,7 @@ export default function CommonTableCard<T extends FieldValues>({
 
             {!hasNoData && (enableInfiniteScroll
                 ? (
-                    <div className="border border-(--mui-palette-grey-100) flex gap-3 items-center justify-between mx-4 my-2 px-4 py-1.5 rounded-full">
+                    <div className="border border-(--mui-palette-grey-100) flex gap-2 items-center justify-between mx-0 my-1 px-2 py-0.5 rounded-full sm:gap-3 sm:mx-4 sm:my-2 sm:px-4 sm:py-1.5">
                         <button
                             aria-label="Scroll to top"
                             className="active:bg-(--mui-palette-primary-dark) bg-(--mui-palette-primary-main) cursor-pointer disabled:bg-(--mui-palette-grey-300) disabled:cursor-not-allowed duration-150 flex font-semibold gap-1.5 hover:bg-(--mui-palette-primary-dark) items-center px-3 py-1 rounded-full text-white text-xs transition-[background-color]"
@@ -730,16 +730,16 @@ export default function CommonTableCard<T extends FieldValues>({
                             onClick={scrollGridToTop}
                         >
                             <ArrowUpIcon size={14} weight="bold" />
-                            Scroll to top
+                            <span className="hidden sm:inline">Scroll to top</span>
                         </button>
                         <span className="font-medium text-(--mui-palette-text-secondary) text-right text-xs">
-                            Showing <span className="font-bold text-(--mui-palette-text-primary)">{shownCount}</span> of <span className="font-bold text-(--mui-palette-text-primary)">{pagination.totalElements}</span> records
+                            <span className="hidden sm:inline">Showing </span><span className="font-bold text-(--mui-palette-text-primary)">{shownCount}</span> of <span className="font-bold text-(--mui-palette-text-primary)">{pagination.totalElements}</span><span className="hidden sm:inline"> records</span>
                         </span>
                     </div>
                 )
                 : (
                     <CommonPagination
-                        className="flex items-center min-h-18 py-2"
+                        className="flex items-center min-h-12 py-1 sm:min-h-18 sm:py-2"
                         pagination={pagination}
                         onSetPagination={handleSetPagination}
                     />

@@ -7,8 +7,8 @@ export default function PageLoadingFallback() {
             role="status"
         >
             <div className="flex flex-col gap-4 items-center justify-center">
-                <div className="animate-spin border-4 border-slate-200 border-t-[#022179] h-12 rounded-full w-12" />
-                <span className="animate-pulse font-medium text-[#022179] text-sm tracking-wide">
+                <div className="animate-spin border-4 border-(--mui-palette-divider) border-t-(--mui-palette-primary-main) h-12 rounded-full w-12" />
+                <span className="animate-pulse font-medium text-(--mui-palette-primary-main) text-sm tracking-wide">
                     Loading content...
                 </span>
             </div>

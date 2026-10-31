@@ -43,7 +43,7 @@ export default function BentoCardActionMenu({ actions, ariaLabel }: BentoCardAct
     if (actions.length === 1) {
         return (
             <button
-                className="bg-white border border-slate-200 cursor-pointer font-semibold hover:bg-slate-50 px-3 py-1 rounded-lg shadow-2xs text-slate-700 text-xs transition-colors"
+                className="bg-white border border-slate-200 cursor-pointer font-semibold hover:bg-(--mui-palette-action-hover) px-3 py-1 rounded-lg shadow-2xs text-slate-700 text-xs transition-colors"
                 type="button"
                 onClick={actions[0].onClick}
             >

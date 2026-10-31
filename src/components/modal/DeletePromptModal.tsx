@@ -10,7 +10,7 @@ export default function DeletePromptModal({
         {...props}
         actionIconProps={{
             icon: TrashIcon,
-            iconContainerClassName: 'bg-(--mui-tokens-color-red-200) text-(--mui-tokens-color-red-500)',
+            iconContainerClassName: 'bg-(--mui-tokens-color-state-errorLight) text-(--mui-palette-error-main)',
             ...actionIconProps
         }}
         formButtonsProps={{

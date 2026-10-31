@@ -66,7 +66,7 @@ export const chipOverrides: ComponentTheme = {
                     marginRight: '2px',
                     transition: 'color 0.15s ease',
                     '&:hover': {
-                        color: 'var(--mui-tokens-color-brand-950)'
+                        color: 'var(--mui-palette-primary-dark)'
                     }
                 },
                 '&.Mui-disabled': {
