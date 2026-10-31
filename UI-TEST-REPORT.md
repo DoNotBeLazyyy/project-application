@@ -216,3 +216,14 @@ Legend: **BUG** = broken behavior (fixed before moving on; the fix is noted) ·
 - OK: unknown course rejected ("Course not found: NOPE-999"); valid row created with faculty, room and Tue/Thu schedule.
 - INCONSISTENCY: the CSV import doesn't check for faculty or room double-booking (the wizard does); clashes still appear on
   the Schedule Conflicts report.
+
+## Outage, 2026-10-31 around 13:30–15:00
+- The whole Supabase project stopped responding (even sign-in). The dashboard showed CPU at 90% on the free Nano size
+  (0.5 GB). The three scheduled jobs had slowed to 60 s+ per run and overlapped, which kept the CPU busy. The project was
+  restarted (with your go-ahead), and the jobs were made lighter: the expiry check now uses an index (924 ms → 22 ms) and
+  the special-grade flag job runs hourly instead of every 15 minutes (it takes ~10 s per run). Migration
+  `20261031140000_lighter_background_jobs`.
+- BUG (fixed): the "Grade Submission for Review" notification opened /registrar/grades, a 404. It now opens Grade Release
+  (function and the 273 existing notifications; migration `20261031150000`). Every other notification link was checked
+  against the routes.
+- OK: the Dean's curriculum CSV import saved after "Save Program" (BSA now has the staged entry).
