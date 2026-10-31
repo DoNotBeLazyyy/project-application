@@ -95,7 +95,8 @@ export function useCalendarData(currentDate: Date) {
                         allDay: Boolean(item.all_day),
                         category: 'event',
                         metadata: {
-                            audience: item.target_audience
+                            audience: item.target_audience,
+                            eventId: item.id
                         }
                     });
                 }

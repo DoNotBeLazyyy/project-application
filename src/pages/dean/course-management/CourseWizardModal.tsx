@@ -15,7 +15,7 @@ import {
 } from '@phosphor-icons/react';
 import { CourseFormValues } from '@type/course/course.type';
 import { useEffect, useState } from 'react';
-import { FieldErrors, UseFormReturn } from 'react-hook-form';
+import { FieldErrors, UseFormReturn, useWatch } from 'react-hook-form';
 import { formErrors } from '@utils/form.util';
 
 interface CourseWizardModalProps {
@@ -52,6 +52,16 @@ export default function CourseWizardModal({
         enabled: open && !readOnly && !isSaving,
         formId: `course-wizard-${courseId || 'new'}`
     });
+
+    // "Add at least one course type" is set by hand, so it is cleared by hand once a row exists
+    const courseTypeCount = (useWatch({ control, name: 'course_types' }) || []).length;
+    const hasCourseTypeListError = Boolean((methods.formState.errors.course_types as { message?: string } | undefined)?.message);
+
+    useEffect(() => {
+        if (courseTypeCount > 0 && hasCourseTypeListError) {
+            methods.clearErrors('course_types');
+        }
+    }, [courseTypeCount, hasCourseTypeListError, methods]);
 
     useEffect(() => {
         if (open) {

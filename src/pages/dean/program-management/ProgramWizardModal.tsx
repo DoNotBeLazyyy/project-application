@@ -295,7 +295,7 @@ export default function ProgramWizardModal({
     return (
         <CommonModal
             cardProps={{
-                className: 'w-full max-w-4xl p-0 overflow-hidden flex flex-col max-h-[92vh]'
+                className: 'w-full max-w-7xl p-0 overflow-hidden flex flex-col max-h-[92vh]'
             }}
             fullWidth
             maxWidth="lg"

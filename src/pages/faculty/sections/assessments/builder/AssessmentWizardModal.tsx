@@ -527,6 +527,7 @@ export default function AssessmentWizardModal({
             name: 'total_points',
             rules: {
                 required: 'Required',
+                deps: 'passing_points',
                 validate: (value) => Number(value) > 0 || 'Total points must be greater than 0.'
             },
             type: 'number',
@@ -597,7 +598,7 @@ export default function AssessmentWizardModal({
             fieldProps: { disablePast: !allowPastDates, helperText: 'Submission deadline; attempts after this are marked late.' },
             label: 'Due At',
             name: 'due_at',
-            rules: { validate: validateNotPast('Due date') },
+            rules: { deps: 'closes_at', validate: validateNotPast('Due date') },
             type: 'datetime'
         },
         {

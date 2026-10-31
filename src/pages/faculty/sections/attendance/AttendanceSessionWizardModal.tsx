@@ -331,7 +331,7 @@ export default function AttendanceSessionWizardModal({
     return (
         <CommonModal
             fullWidth
-            maxWidth="md"
+            maxWidth="lg"
             open={open}
             onClose={handleCloseModal}
         >

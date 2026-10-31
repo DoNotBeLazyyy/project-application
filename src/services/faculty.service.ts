@@ -1,6 +1,6 @@
 import { callRpc } from '@services/supabase.wrapper';
 import {
-    AttendanceRecord, AttendanceRecordUpdate, AttendanceSession, AttendanceSessionFormValues, FacultyEvaluationSummary, FacultyStudentGradeBreakdown, GradeCalculationResult, GradeSheetRow, GradingComponent, GradingComponentFormValues, GradingPeriod, MySectionListRow, SectionDetail, SectionStudent, StudentAttendanceRow, StudentEvaluation, StudentGradeBreakdown
+    AttendanceRecord, AttendanceRecordUpdate, AttendanceSession, AttendanceSessionFormValues, FacultyEvaluationSummary, FacultyStudentGradeBreakdown, GradeCalculationResult, GradeSheetRow, GradingComponent, GradingComponentFormValues, GradingPeriod, MySectionListRow, SectionDetail, SectionStudent, StudentAttendanceRow, StudentEvaluation
 } from '@type/faculty.type';
 import { SectionOverridableRule, SpecialGradeFlag, SpecialGradeFlagResolution } from '@type/grading-config.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
@@ -63,17 +63,6 @@ export async function getStudentAttendance(
         p_enrollment_id: enrollmentId
     });
 }
-
-export async function getStudentGradeBreakdown(
-    enrollmentId: string,
-    gradingPeriodId: string
-): Promise<ServiceResult<StudentGradeBreakdown>> {
-    return callRpc<StudentGradeBreakdown>('fn_get_student_grade_breakdown', {
-        p_enrollment_id: enrollmentId,
-        p_grading_period_id: gradingPeriodId
-    });
-}
-
 export async function listAttendanceSessions(
     sectionId: string
 ): Promise<ServiceResult<AttendanceSession[]>> {

@@ -1,3 +1,4 @@
+import CommunicationRedirect from '@pages/shared/announcement-management/CommunicationRedirect';
 import { lazyElement } from '@utils/lazy.util';
 import { Navigate, RouteObject } from 'react-router-dom';
 
@@ -71,7 +72,7 @@ export const registrarRoutes: RouteObject[] = [
                 path: 'event-management/new'
             },
             {
-                element: <Navigate replace to="/registrar/announcement-management" />,
+                element: <CommunicationRedirect basePath="/registrar/announcement-management" itemType="Event" />,
                 path: 'event-management/:id'
             },
             {

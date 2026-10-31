@@ -1,3 +1,4 @@
+import CommunicationRedirect from '@pages/shared/announcement-management/CommunicationRedirect';
 import { lazyElement } from '@utils/lazy.util';
 import { Navigate, RouteObject } from 'react-router-dom';
 
@@ -103,9 +104,7 @@ export const studentRoutes: RouteObject[] = [
                 path: 'announcement-management'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/shared/announcement-management/AnnouncementDetailPage');
-                }),
+                element: <CommunicationRedirect basePath="/student/announcement-management" itemType="Announcement" />,
                 path: 'announcement-management/:id'
             },
             {
@@ -115,9 +114,7 @@ export const studentRoutes: RouteObject[] = [
                 path: 'announcements'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/shared/announcement-management/AnnouncementDetailPage');
-                }),
+                element: <CommunicationRedirect basePath="/student/announcement-management" itemType="Announcement" />,
                 path: 'announcements/:id'
             },
             {
@@ -125,7 +122,7 @@ export const studentRoutes: RouteObject[] = [
                 path: 'event-management'
             },
             {
-                element: <Navigate replace to="/student/announcement-management" />,
+                element: <CommunicationRedirect basePath="/student/announcement-management" itemType="Event" />,
                 path: 'event-management/:id'
             }
         ]

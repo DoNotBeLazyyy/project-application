@@ -6,6 +6,20 @@ import { DialogCloseProps } from '@type/common/theme.type';
 import { classMerge } from '@utils/css.util';
 import { normalizeSx } from '@utils/theme.util';
 
+// The paper is a CommonCard, so MUI's own maxWidth rules never reach it: maxWidth maps to these
+// widths instead. A width class passed through cardProps.className still takes precedence.
+const MODAL_WIDTH: Record<string, string> = {
+    xs: 'w-full sm:max-w-md',
+    sm: 'w-full sm:max-w-xl',
+    md: 'w-full sm:max-w-3xl',
+    lg: 'w-full sm:max-w-5xl',
+    xl: 'w-full sm:max-w-7xl'
+};
+
+function hasOwnWidth(...classNames: (string | undefined)[]): boolean {
+    return classNames.some((className) => /(^|\s)(\w+:)*!?(max-)?w-/.test(className ?? ''));
+}
+
 export interface CommonModalProps extends DialogProps {
     // Props explicitly intended for the injected CommonCard component
     cardProps?: CommonCardProps;
@@ -79,6 +93,9 @@ export default function CommonModal({
             ...cardProps,
             ...resolvedProps,
             className: classMerge(
+                typeof props.maxWidth === 'string'
+                    && !hasOwnWidth(cardProps?.className, resolvedProps.className)
+                    && MODAL_WIDTH[props.maxWidth],
                 cardProps?.className,
                 resolvedProps.className,
                 isFullScreen && '!w-full !h-full !max-w-none !max-h-none !m-0 !rounded-none flex flex-col'

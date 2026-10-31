@@ -30,6 +30,8 @@ export interface UnifiedCalendarEvent {
         sectionId?: string;
         room?: string | null;
         audience?: string | null;
+        // Campus events open the shared event detail modal by this id
+        eventId?: string;
         targetUrl?: string;
         authorName?: string | null;
         rawStatus?: string | null;

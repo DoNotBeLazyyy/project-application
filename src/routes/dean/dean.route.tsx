@@ -1,3 +1,4 @@
+import CommunicationRedirect from '@pages/shared/announcement-management/CommunicationRedirect';
 import { lazyElement } from '@utils/lazy.util';
 import { Navigate, RouteObject } from 'react-router-dom';
 
@@ -109,7 +110,7 @@ export const deanRoutes: RouteObject[] = [
                 path: 'event-management/new'
             },
             {
-                element: <Navigate replace to="/dean/announcement-management" />,
+                element: <CommunicationRedirect basePath="/dean/announcement-management" itemType="Event" />,
                 path: 'event-management/:id'
             },
             {

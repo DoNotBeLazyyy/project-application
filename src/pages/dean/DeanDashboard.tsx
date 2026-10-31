@@ -163,7 +163,8 @@ export default function DeanDashboard() {
                                 key={section.section_id}
                                 type="button"
                                 onClick={function() {
-                                    navigate('/dean/section-management');
+                                    // Opens this section's edit wizard so a faculty can be assigned straight away
+                                    navigate(`/dean/section-management?editSectionId=${section.section_id}`);
                                 }}
                             >
                                 <div className="flex flex-col gap-0.5 min-w-0">

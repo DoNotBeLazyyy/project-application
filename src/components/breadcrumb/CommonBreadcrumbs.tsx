@@ -38,6 +38,14 @@ export default function CommonBreadcrumbs() {
     }
 
     function renderItemLink(item: BreadcrumbItem) {
+        if (!item.isLinkable) {
+            return (
+                <span className="font-semibold text-(--mui-palette-text-secondary) text-xs">
+                    {item.label}
+                </span>
+            );
+        }
+
         return (
             <Link
                 className="font-semibold hover:text-(--mui-palette-primary-dark) hover:underline text-(--mui-palette-primary-main) text-xs transition-colors"
@@ -120,6 +128,7 @@ export default function CommonBreadcrumbs() {
                                 </div>
                                 {intermediateItems.map((item, index) => (
                                     <MenuItem
+                                        disabled={!item.isLinkable}
                                         key={item.href}
                                         sx={{
                                             color: 'var(--mui-palette-primary-main)',

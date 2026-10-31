@@ -1,5 +1,5 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
-import GradeBreakdownModal from '@pages/faculty/sections/student-detail/GradeBreakdownModal';
+import StudentGradeBreakdownModal from '@pages/faculty/sections/grading/StudentGradeBreakdownModal';
 import { formatScore, gradeStatusVariant } from '@pages/faculty/sections/student-detail/studentDetailFormat';
 import { StudentEvaluationGrade } from '@type/faculty.type';
 import { useState } from 'react';
@@ -94,11 +94,15 @@ export default function StudentGradeTab({ enrollmentId, grades }: StudentGradeTa
                 )}
             </div>
 
-            <GradeBreakdownModal
-                enrollmentId={enrollmentId}
-                gradingPeriodId={selectedPeriodId}
-                onClose={() => setSelectedPeriodId(null)}
-            />
+            {/* The same breakdown the Gradebook opens */}
+            {selectedPeriodId && (
+                <StudentGradeBreakdownModal
+                    enrollmentId={enrollmentId}
+                    gradingPeriodId={selectedPeriodId}
+                    open={Boolean(selectedPeriodId)}
+                    onClose={() => setSelectedPeriodId(null)}
+                />
+            )}
         </div>
     );
 }

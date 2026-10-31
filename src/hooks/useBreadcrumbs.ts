@@ -7,9 +7,40 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 
 export interface BreadcrumbItem {
     href: string;
+    // False for a path prefix that is not a page of its own; it renders as plain text
+    isLinkable: boolean;
     isCurrent: boolean;
     isRoot: boolean;
     label: string;
+}
+
+// Tabs of a section / subject page that appear as their own path segment
+const TAB_SEGMENTS = new Set(['assessments', 'rubrics']);
+
+/**
+ * Where a crumb for a path prefix should lead. "…/sections/:id/assessments" is a tab of the
+ * section page, not a route, so it links to the tab; an assessment id under it, and a student's
+ * "grade/:enrollmentId", have no page and get no link.
+ */
+function resolveCrumbHref(segments: string[], index: number, currentPath: string): string | null {
+    const segment = segments[index];
+    const prevSegment = segments[index - 1];
+    const isLast = index === segments.length - 1;
+
+    if (TAB_SEGMENTS.has(segment) && UUID_PATTERN.test(prevSegment ?? '') && !isLast) {
+        const parentPath = currentPath.slice(0, currentPath.lastIndexOf('/'));
+        return `${parentPath}?tab=${segment}`;
+    }
+
+    if (!isLast && UUID_PATTERN.test(segment) && TAB_SEGMENTS.has(prevSegment ?? '')) {
+        return null;
+    }
+
+    if (!isLast && prevSegment === 'grade' && UUID_PATTERN.test(segment)) {
+        return null;
+    }
+
+    return currentPath;
 }
 
 function formatFallbackSegment(segment: string, prevSegment?: string): string {
@@ -77,8 +108,11 @@ export default function useBreadcrumbs(): BreadcrumbItem[] {
                 label = formatFallbackSegment(segment, prevSegment);
             }
 
+            const href = resolveCrumbHref(segments, index, currentPath);
+
             return {
-                href: currentPath,
+                href: href ?? currentPath,
+                isLinkable: href !== null,
                 isCurrent: isLast,
                 isRoot: isFirst,
                 label

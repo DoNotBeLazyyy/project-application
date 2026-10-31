@@ -17,7 +17,7 @@ import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import { changeMonthUtil } from '@utils/calendar.util';
 import { DateTime } from 'luxon';
 import { useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import CalendarActionMenu from './CalendarActionMenu';
 import { CalendarAgendaView } from './CalendarAgendaView';
 import { CalendarDayView } from './CalendarDayView';
@@ -34,6 +34,7 @@ import { useCalendarData } from './useCalendarData';
 
 export default function CalendarPage() {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const { pathname } = useLocation();
 
     const [currentDate, setCurrentDate] = useState<Date>(new Date());
@@ -121,6 +122,14 @@ export default function CalendarPage() {
     };
 
     const handleOpenEventModal = (event: UnifiedCalendarEvent) => {
+        // Campus events open the same detail modal as the dashboard, list and notifications
+        if (event.category === 'event' && event.metadata?.eventId) {
+            const nextParams = new URLSearchParams(searchParams);
+            nextParams.set('eventId', event.metadata.eventId);
+            setSearchParams(nextParams);
+            return;
+        }
+
         setSelectedEvent(event);
         setIsDetailModalOpen(true);
     };

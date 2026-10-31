@@ -945,7 +945,7 @@ export default function BulkImportModal<TPayload>({
             open={open}
             onClose={handleClose}
         >
-            <div className="max-w-full sm:w-3xl w-full flex-1 flex flex-col min-h-0">
+            <div className="max-w-full sm:w-5xl w-full flex-1 flex flex-col min-h-0">
                 {step === 'upload' && renderUploadStep()}
                 {step === 'preview' && renderPreviewStep()}
                 {step === 'results' && renderResultsStep()}

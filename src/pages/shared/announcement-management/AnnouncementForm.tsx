@@ -300,7 +300,7 @@ export default function AnnouncementForm({
                         name: 'start_at' as const,
                         rules: disabled
                             ? undefined
-                            : { required: 'Start date is required' },
+                            : { deps: 'end_at' as const, required: 'Start date is required' },
                         type: 'date' as const
                     }
                     : {
@@ -310,7 +310,7 @@ export default function AnnouncementForm({
                         name: 'start_at' as const,
                         rules: disabled
                             ? undefined
-                            : { required: 'Start date and time are required' },
+                            : { deps: 'end_at' as const, required: 'Start date and time are required' },
                         type: 'datetime' as const
                     },
                 isAllDay

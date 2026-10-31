@@ -19,7 +19,7 @@ export default function ChangePasswordForm({
         {
             label: 'Current Password',
             name: 'current_password',
-            rules: { required: 'Current password is required' },
+            rules: { deps: 'new_password', required: 'Current password is required' },
             type: 'password',
             fieldProps: { helperText: 'The password you use to sign in today.' }
         },
@@ -27,6 +27,7 @@ export default function ChangePasswordForm({
             label: 'New Password',
             name: 'new_password',
             rules: {
+                deps: 'confirm_password',
                 required: 'New password is required',
                 minLength: {
                     value: MIN_PASSWORD_LENGTH,
