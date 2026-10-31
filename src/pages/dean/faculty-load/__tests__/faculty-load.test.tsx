@@ -1,6 +1,7 @@
+import FacultyLoadManagement from '@pages/dean/faculty-load';
+import FacultyLoadWizardModal from '@pages/dean/faculty-load/FacultyLoadWizardModal';
 import { render } from '@testing-library/react';
 import { isChunkLoadError } from '@utils/lazy.util';
-import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { describe, it, expect, vi } from 'vitest';
 
@@ -99,8 +100,7 @@ describe('isChunkLoadError helper', () => {
 });
 
 describe('FacultyLoadModule', () => {
-    it('renders FacultyLoadManagement without crashing', async() => {
-        const FacultyLoadManagement = (await import('@pages/dean/faculty-load')).default;
+    it('renders FacultyLoadManagement without crashing', () => {
         const { container } = render(
             <BrowserRouter>
                 <FacultyLoadManagement />
@@ -108,10 +108,9 @@ describe('FacultyLoadModule', () => {
         );
         expect(container)
             .toBeDefined();
-    }, 30000);
+    });
 
-    it('renders FacultyLoadWizardModal gracefully even with assigned_sections response', async() => {
-        const FacultyLoadWizardModal = (await import('@pages/dean/faculty-load/FacultyLoadWizardModal')).default;
+    it('renders FacultyLoadWizardModal gracefully even with assigned_sections response', () => {
         const { container } = render(
             <BrowserRouter>
                 <FacultyLoadWizardModal
@@ -124,5 +123,5 @@ describe('FacultyLoadModule', () => {
         );
         expect(container)
             .toBeDefined();
-    }, 30000);
+    });
 });
