@@ -14,7 +14,7 @@ import TableCardControls from '@components/table-card/TableCardControls';
 import TableCardSelectionBar from '@components/table-card/TableCardSelectionBar';
 import CommonTable from '@components/table/CommonTable';
 import BentoCardActionMenu, { BentoCardAction } from '@components/card/BentoCardActionMenu';
-import { ArrowUpIcon, EyeIcon, PencilSimpleIcon, TrashIcon } from '@phosphor-icons/react';
+import { ArrowUpIcon, EyeIcon, TrashIcon } from '@phosphor-icons/react';
 import { ChangeEventInputTextarea, KeyboardEventDivElement } from '@type/common.type';
 import { SortStringDto } from '@type/http.type';
 import { CommonTableCardProps } from '@type/table-card.type';
@@ -380,22 +380,21 @@ export default function CommonTableCard<T extends FieldValues>({
         }
 
         // 7. Footer Meta (Term / AY / Dept)
-        const footerMeta = item['term_label' as keyof T]
+        const footerMetaCandidate = item['term_label' as keyof T]
             || item['term_name' as keyof T]
             || item['academic_year' as keyof T]
             || item['department_name' as keyof T];
+        // Skip it when a metric box already shows the same text (e.g. "Term")
+        const footerMeta = metrics.some((metric) => metric.value === String(footerMetaCandidate))
+            ? undefined
+            : footerMetaCandidate;
 
         const defaultActions: BentoCardAction[] = [];
+        // A row click opens the record (a page or its modal); one action covers it
         if (onRowClick) {
             defaultActions.push({
-                key: 'edit',
-                label: 'Edit',
-                icon: <PencilSimpleIcon size={18} weight="bold" />,
-                onClick: () => onRowClick(id)
-            });
-            defaultActions.push({
-                key: 'view',
-                label: 'View',
+                key: 'open',
+                label: 'Open',
                 icon: <EyeIcon size={18} weight="bold" />,
                 onClick: () => onRowClick(id)
             });
@@ -430,21 +429,13 @@ export default function CommonTableCard<T extends FieldValues>({
                 metrics={metrics}
                 primaryAction={onRowClick
                     ? {
-                        label: 'Edit',
+                        label: 'Open',
                         onClick: function() {
                             onRowClick(id);
                         }
                     }
                     : undefined}
                 progress={progress}
-                secondaryAction={onRowClick
-                    ? {
-                        label: 'Full Page',
-                        onClick: function() {
-                            onRowClick(id);
-                        }
-                    }
-                    : undefined}
                 status={statusVal}
                 title={titleVal}
                 onClick={onRowClick

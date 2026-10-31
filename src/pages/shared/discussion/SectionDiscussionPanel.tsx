@@ -21,7 +21,7 @@ import {
 import { createThread, listSectionThreads, uploadDiscussionFile } from '@services/discussion.service';
 import { useToastStore } from '@stores/toast.store';
 import { DiscussionAttachmentPayload, DiscussionThreadRow } from '@type/discussion.type';
-import { formatDate } from '@utils/date.util';
+import { formatShortDate } from '@utils/date.util';
 import { extractClipboardFiles } from '@utils/file.util';
 import { ClipboardEvent, useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
@@ -308,7 +308,7 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                                     </span>
                                     <span className="flex items-center gap-1 text-[11px]">
                                         <CalendarBlankIcon size={13} />
-                                        {formatDate(new Date(thread.created_at))}
+                                        {formatShortDate(thread.created_at)}
                                     </span>
                                 </div>
                             </div>

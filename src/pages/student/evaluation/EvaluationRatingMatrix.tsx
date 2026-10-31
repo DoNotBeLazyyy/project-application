@@ -197,6 +197,7 @@ export default function EvaluationRatingMatrix({
                                                             checked={String(field.value ?? '') === String(rating)}
                                                             disabled={disabled}
                                                             inputProps={{ 'aria-label': `${answer.question_text} — ${rating}` }}
+                                                            name={`rating-${answer.question_id}`}
                                                             size="small"
                                                             value={String(rating)}
                                                             onChange={function() {

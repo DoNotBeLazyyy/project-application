@@ -10,7 +10,7 @@ import {
 import { useAppStore } from '@stores/app.store';
 import { useToastStore } from '@stores/toast.store';
 import { DiscussionAttachmentPayload, DiscussionThreadDetail } from '@type/discussion.type';
-import { formatDate } from '@utils/date.util';
+import { formatShortDate } from '@utils/date.util';
 import { extractClipboardFiles } from '@utils/file.util';
 import {
     ChangeEvent, ClipboardEvent, KeyboardEvent, useEffect, useState
@@ -288,7 +288,7 @@ export default function DiscussionThreadView({
                 </p>
                 <DiscussionAttachmentList attachments={thread.attachments ?? []} />
                 <span className="text-(--mui-palette-text-disabled) text-xs">
-                    {thread.author_name} · {formatDate(new Date(thread.created_at))}
+                    {thread.author_name} · {formatShortDate(thread.created_at)}
                 </span>
             </div>
             <div className="flex flex-col gap-3">
@@ -320,7 +320,7 @@ export default function DiscussionThreadView({
                             <DiscussionAttachmentList attachments={post.attachments ?? []} />
                             <div className="flex items-center justify-between">
                                 <span className="text-(--mui-palette-text-disabled) text-xs">
-                                    {post.author_name} · {formatDate(new Date(post.created_at))}
+                                    {post.author_name} · {formatShortDate(post.created_at)}
                                 </span>
                                 <div className="flex gap-2 items-center">
                                     {canManageThread && (

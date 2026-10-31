@@ -111,16 +111,16 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
         const cumGwa = simulationResults.simulatedCumGwa;
         if (!cumGwa) return [];
 
-        const hasFailingGrade = Object.values(simulatedGrades).some((g) => parseFloat(g) >= 5.0)
-            || academic.failing_count > 0;
+        const hasSimulatedFailingGrade = Object.values(simulatedGrades).some((g) => parseFloat(g) >= 5.0);
 
         const uniqueTrajectories = trajectory.filter(function(item, idx, arr) {
             return arr.findIndex(function(t) { return t.code === item.code; }) === idx;
         });
 
         return uniqueTrajectories.map(function(item) {
-            const isQualified = !hasFailingGrade && cumGwa <= item.target_gwa;
-            const isBlocked = item.category === 'Honor' && hasFailingGrade;
+            // A failing grade on record (server flag) or a simulated 5.00 disqualifies the award
+            const isBlocked = item.is_blocked_by_failing || hasSimulatedFailingGrade;
+            const isQualified = !isBlocked && cumGwa <= item.target_gwa;
 
             return {
                 ...item,
@@ -128,7 +128,13 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                 is_blocked_by_failing: isBlocked
             };
         });
-    }, [simulationResults, simulatedGrades, academic, trajectory]);
+    }, [simulationResults, simulatedGrades, trajectory]);
+
+    const isEveryAwardBlocked = honorTrajectoryEval.length > 0
+        && honorTrajectoryEval.every((item) => item.is_blocked_by_failing);
+    const loosestTarget = honorTrajectoryEval.reduce<number | null>(function(max, item) {
+        return max === null || item.target_gwa > max ? item.target_gwa : max;
+    }, null);
 
     const highestQualifiedHonor = useMemo(function() {
         const qualified = honorTrajectoryEval.filter((h) => h.is_currently_qualified);
@@ -214,7 +220,7 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                     <div className="flex gap-2 items-center">
                         <TrophyIcon className="text-(--mui-palette-warning-main)" size={20} weight="fill" />
                         <span className="font-semibold text-(--mui-palette-text-primary) text-base truncate">
-                            {highestQualifiedHonor ? highestQualifiedHonor.label : 'Dean’s List Candidate'}
+                            {highestQualifiedHonor ? highestQualifiedHonor.label : 'No award yet'}
                         </span>
                     </div>
                 </div>
@@ -326,9 +332,21 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                                 <strong>{highestQualifiedHonor.label}</strong> honours!
                             </>
                         ) : (
-                            <>
-                                Aim for 1.25 or higher in remaining major subjects to elevate your Cumulative GWA to meet the 1.75 threshold for Dean’s List.
-                            </>
+                            isEveryAwardBlocked
+                                ? (
+                                    <>
+                                        A failing grade blocks every honor and scholarship. Focus on passing all of your
+                                        current subjects; ask your adviser about retaking the failed subject.
+                                    </>
+                                )
+                                : (
+                                    <>
+                                        Your simulated Cumulative GWA is <strong>{formatGwa(simulationResults.simulatedCumGwa)}</strong>.
+                                        {loosestTarget !== null && (
+                                            <> Bring it to <strong>{formatGwa(loosestTarget)}</strong> or better to reach the first award.</>
+                                        )}
+                                    </>
+                                )
                         )}
                     </p>
                 </div>

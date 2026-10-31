@@ -21,32 +21,29 @@ interface SubmissionListProps {
 
 export default function SubmissionList({ submissions, onSelect }: SubmissionListProps) {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
+        // Shares the page with the grading panel, so columns stay few: student (name + number),
+        // status (already says "Late"), score, and when it was submitted
         return [
             {
-                field: 'student_number',
-                flex: 1,
-                headerName: 'Student No.',
-                mobileCard: 'subtitle',
-                sortable: true
-            },
-            {
+                cellRenderer: (params: { data: SubmissionListRow }) => (
+                    <div className="flex flex-col h-full justify-center leading-tight min-w-0">
+                        <span className="font-medium truncate">{params.data.full_name}</span>
+                        <span className="text-(--mui-palette-text-secondary) text-xs truncate">
+                            {params.data.student_number}
+                            {params.data.attempt_number > 1
+                                ? ` · Attempt ${params.data.attempt_number}`
+                                : ''}
+                        </span>
+                    </div>
+                ),
                 field: 'full_name',
                 flex: 2,
-                headerName: 'Student Name',
+                headerName: 'Student',
+                minWidth: 150,
                 mobileCard: 'title',
                 sortable: true
             },
             {
-                field: 'attempt_number',
-                flex: 1,
-                headerName: 'Attempt',
-                sortable: false
-            },
-            {
-                field: 'status',
-                flex: 1,
-                headerName: 'Status',
-                sortable: false,
                 cellRenderer: (params: { data: SubmissionListRow }) => (
                     <div className="flex h-full items-center">
                         <CommonBadgeStatus
@@ -54,12 +51,18 @@ export default function SubmissionList({ submissions, onSelect }: SubmissionList
                             variant={STATUS_VARIANT_MAP[params.data.status]}
                         />
                     </div>
-                )
+                ),
+                field: 'status',
+                flex: 1,
+                headerName: 'Status',
+                minWidth: 110,
+                sortable: false
             },
             {
                 field: 'final_score',
                 flex: 1,
                 headerName: 'Score',
+                minWidth: 70,
                 sortable: false,
                 valueFormatter: (params) => params.value != null
                     ? String(params.value)
@@ -67,23 +70,14 @@ export default function SubmissionList({ submissions, onSelect }: SubmissionList
             },
             {
                 field: 'submitted_at',
-                flex: 2,
-                headerName: 'Submitted At',
+                flex: 1,
+                headerName: 'Submitted',
+                minWidth: 120,
                 sortable: true,
                 valueFormatter: (params) => params.value
-                    ? new Date(params.value)
-                        .toLocaleString()
+                    ? new Date(params.value as string)
+                        .toLocaleString('en-US', { day: 'numeric', hour: 'numeric', minute: '2-digit', month: 'short' })
                     : '—'
-            },
-            {
-                field: 'is_late',
-                flex: 1,
-                headerName: 'Late',
-                mobileCard: 'hidden',
-                sortable: false,
-                valueFormatter: (params) => params.value
-                    ? 'Yes'
-                    : 'No'
             }
         ];
     }, []);

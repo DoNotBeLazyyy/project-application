@@ -286,3 +286,38 @@ Legend: **BUG** = broken behavior (fixed before moving on; the fix is noted) ·
   the components (40.00%). "Passing Score 3%" showed the 1.00–5.00 passing grade as a percentage; now "Passing Grade 3.00".
 - INCONSISTENCY (relabelled): the roster's "Current GWA" was the GWA of the current term only, so it read N/A all term;
   now "Term GWA: Not yet released".
+- OK Discussions: thread posted; a student's reply shows up for the teacher.
+- BUG (fixed): the grading screen showed "No answer provided" for multiple-choice and true/false answers (they are stored
+  as a choice, not text); it now shows the option the student picked (migration `20261031230000`).
+- OK Manual grading: points for the short-answer and essay items plus overall feedback saved (19 / 20).
+- BUG (fixed): the submissions list beside the grading panel squeezed 7 columns into ~40% of the width, so every header
+  was cut off ("S…", "A…"); now Student (name, number, attempt), Status, Score, Submitted. "Late" showed a checkbox; the
+  status badge already says Late.
+- BUG (fixed): every card list (My Sections and others) had "Edit" and "Full Page" buttons and "Edit"/"View" menu items
+  that all did the same thing; now one "Open". The card footer no longer repeats the term already shown in the card.
+
+## Student (dominic.gonzales@au-jas.test)
+- OK Dashboard: the faculty's new quiz appears under Upcoming Assessments (the QA concern); announcements and events load.
+- BUG (fixed): "Grades to View" showed 100: every released period grade from every past term. It now counts this term's
+  released grades, matching "Enrolled Subjects" (migration `20261031190000`).
+- OK Take assessment: timer, required-answer check, auto-graded items, saved answers.
+- BUG (fixed): "Finish & Submit Assessment" submitted at once with no way back; it now asks to confirm first.
+- INCONSISTENCY (fixed): after grading, the result page showed a "Graded" badge next to "Pending Grading" and "awaiting
+  grading" (the score stays hidden until the quiz closes, by design). It now says the submission is graded and when the
+  score appears. "Opened" (the assessment's open date) is now "Available From".
+- OK Discussion reply posted. Dates on discussion cards, notifications and the announcement table showed "2026-10-31";
+  now "Oct 31, 2026" like the rest of the app.
+- BUG (fixed): My Grades, Faculty Evaluations and the teacher's section list sorted terms by name ("Summer" > "Second" >
+  "First"), so terms came out of order. Now newest term first (migrations `20261031200000`, `20261031210000`).
+- OK Learning Insight. BUG (fixed): the What-If simulator marked scholarships "Target" while the section above said a
+  failing grade blocks them; with no award reached it still said "Dean's List Candidate" and gave fixed advice. It now
+  uses the same blocked rule and says "No award yet" with advice based on the student's numbers.
+- OK Faculty evaluation: empty submit flags each question; submitted and locked. BUG (fixed): the message said "Your
+  grade is now available" even when nothing was released (migration `20261031220000`). The rating radios had no group
+  name (keyboard arrows moved across the whole form); each question is its own group now.
+- OK Curriculum checklist, Grade Report, Schedule (Saturday CC-106 lab hidden on the Oct 31 holiday), Calendar,
+  Announcements, subject tabs.
+- OK Profile: an invalid mobile number shows the error, the error clears as soon as it is fixed; change request
+  submitted and the dashboard shows "Profile Verification Pending Approval".
+- NOTE: year level reads "2nd Year" for this 2024 student in a 3rd-year section. By design: standing is based on the
+  completed curriculum, and this student has a failed subject.

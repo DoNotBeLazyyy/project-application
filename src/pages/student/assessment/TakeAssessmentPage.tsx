@@ -1,6 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
+import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
 import AssessmentQuestionCard from '@pages/student/assessment/AssessmentQuestionCard';
 import AssessmentTimer from '@pages/student/assessment/AssessmentTimer';
 import {
@@ -46,6 +47,7 @@ export default function TakeAssessmentPage() {
     const [currentPage, setCurrentPage] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isStarted, setIsStarted] = useState(false);
+    const [isConfirmSubmitOpen, setIsConfirmSubmitOpen] = useState(false);
     const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const methods = useForm<Record<string, string>>({ ...DEFAULT_FORM_OPTIONS, defaultValues: {} });
@@ -456,7 +458,8 @@ export default function TakeAssessmentPage() {
                             size="medium"
                             variant="contained"
                             onClick={function() {
-                                handleSubmit(false);
+                                // Final submission can't be undone, so check answers first and then confirm
+                                if (validateRequiredAnswers()) setIsConfirmSubmitOpen(true);
                             }}
                         >
                             {isSubmitting ? 'Submitting Responses...' : 'Finish & Submit Assessment'}
@@ -464,6 +467,29 @@ export default function TakeAssessmentPage() {
                     )}
                 </div>
             </div>
+
+            <ConfirmPromptModal
+                formButtonsProps={{
+                    cancelProps: {
+                        children: 'Keep Reviewing',
+                        disabled: isSubmitting,
+                        onClick: () => setIsConfirmSubmitOpen(false)
+                    },
+                    confirmProps: {
+                        children: isSubmitting ? 'Submitting...' : 'Submit Assessment',
+                        disabled: isSubmitting,
+                        loading: isSubmitting,
+                        onClick: async function() {
+                            await handleSubmit(false);
+                            setIsConfirmSubmitOpen(false);
+                        }
+                    }
+                }}
+                mainContent={{ title: 'Submit your answers?' }}
+                open={isConfirmSubmitOpen}
+                subContent={{ title: 'Once submitted, you can no longer change your answers for this attempt.' }}
+                onClose={() => setIsConfirmSubmitOpen(false)}
+            />
         </CommonCard>
     );
 }

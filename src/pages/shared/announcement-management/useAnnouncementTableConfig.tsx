@@ -5,7 +5,7 @@ import { PaperclipIcon, PushPinIcon } from '@phosphor-icons/react';
 import { AnnouncementAudience, CommunicationListRow } from '@type/announcement.type';
 import { BadgeStatusVariant } from '@type/common/badge.type';
 import { MobileCardColDef } from '@type/table.type';
-import { formatDate } from '@utils/date.util';
+import { formatShortDate } from '@utils/date.util';
 import { canManageCommunication } from '@utils/communication.util';
 import { useMemo } from 'react';
 
@@ -110,7 +110,7 @@ export function useAnnouncementTableConfig({
                 mobileCard: 'meta',
                 sortable: true,
                 valueFormatter: (params) => params.value
-                    ? formatDate(new Date(params.value as string))
+                    ? formatShortDate(params.value as string)
                     : '—'
             },
             {

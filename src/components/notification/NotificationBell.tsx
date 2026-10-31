@@ -10,7 +10,7 @@ import {
 import { supabase } from '@services/supabase.client';
 import { useAppStore } from '@stores/app.store';
 import { NotificationRow } from '@type/notification.type';
-import { formatDate } from '@utils/date.util';
+import { formatShortDate } from '@utils/date.util';
 import { resolveNotificationPath } from '@utils/notification.util';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -273,7 +273,7 @@ export default function NotificationBell() {
                                         {item.message}
                                     </span>
                                     <span className="text-(--mui-palette-text-secondary) opacity-70 text-xs">
-                                        {formatDate(new Date(item.created_at))}
+                                        {formatShortDate(item.created_at)}
                                     </span>
                                 </span>
                             </button>

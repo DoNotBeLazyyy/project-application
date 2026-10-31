@@ -412,7 +412,9 @@ export default function AssessmentResultPage() {
                                 ? 'Not attempted'
                                 : result.results_available
                                     ? `${formatScore(result.final_score)} / ${result.total_points}`
-                                    : 'Pending Grading'}
+                                    : result.status === 'Graded' || result.status === 'Returned'
+                                        ? 'Graded · hidden'
+                                        : 'Pending Grading'}
                         />
                         <ResultDetailTile
                             icon={<TargetIcon size={20} />}
@@ -439,7 +441,7 @@ export default function AssessmentResultPage() {
                             icon={<ClockIcon size={20} />}
                             iconBg="bg-slate-100 dark:bg-zinc-800"
                             iconColor="text-slate-600 dark:text-slate-300"
-                            label="Opened"
+                            label="Available From"
                             value={formatDateTime(result.opens_at)}
                         />
                         <ResultDetailTile
@@ -506,7 +508,12 @@ export default function AssessmentResultPage() {
                             icon="clock"
                             message={result.show_results_at
                                 ? `Results will be available on ${formatDateTime(result.show_results_at)}.`
-                                : 'Your submission is awaiting grading. Detailed results will appear here once released.'}
+                                : result.status === 'Graded' || result.status === 'Returned'
+                                    ? `Your submission has been graded. Your score will be shown after the assessment closes${
+                                        result.closes_at || result.due_at
+                                            ? ` on ${formatDateTime(result.closes_at ?? result.due_at)}`
+                                            : ''}.`
+                                    : 'Your submission is awaiting grading. Detailed results will appear here once released.'}
                         />
                     )}
 
