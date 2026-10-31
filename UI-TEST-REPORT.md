@@ -255,3 +255,6 @@ Legend: **BUG** = broken behavior (fixed before moving on; the fix is noted) ·
 - INCONSISTENCY: Grade Release uses a table while the other list pages use cards; Section Enrollments has an extra
   "Active academic term" card above the list.
 - NOT TESTED: approving a prerequisite or schedule override (it is the registrar's authorization to give).
+- OK Registrar Logs: list, 378 entries.
+- BUG (fixed): a reviewed profile request updates its original log card, so the card showed the request's submission date
+  next to "Performed By: Bernard Mercado". The card now shows when it was last acted on (reviewed_at).

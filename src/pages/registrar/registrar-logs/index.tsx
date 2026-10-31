@@ -94,8 +94,9 @@ export default function RegistrarLogsPage() {
                 value: item.performed_by_name || 'System'
             },
             {
+                // A reviewed request keeps its original log card, so show when it was last acted on
                 label: 'Date',
-                value: new Date(item.created_at).toLocaleString('en-PH', {
+                value: new Date(String(item.metadata?.reviewed_at ?? item.created_at)).toLocaleString('en-PH', {
                     day: 'numeric',
                     hour: 'numeric',
                     minute: '2-digit',
