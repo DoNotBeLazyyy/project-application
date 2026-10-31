@@ -383,8 +383,7 @@ export default function CommonTableCard<T extends FieldValues>({
         const footerMeta = item['term_label' as keyof T]
             || item['term_name' as keyof T]
             || item['academic_year' as keyof T]
-            || item['department_name' as keyof T]
-            || '1st Sem AY 25-26';
+            || item['department_name' as keyof T];
 
         const defaultActions: BentoCardAction[] = [];
         if (onRowClick) {
@@ -423,7 +422,9 @@ export default function CommonTableCard<T extends FieldValues>({
                     : undefined}
                 code={codeVal}
                 faculty={faculty}
-                footerMeta={String(footerMeta)}
+                footerMeta={footerMeta
+                    ? String(footerMeta)
+                    : undefined}
                 hasCheckbox={Boolean(tableProps.hasCheckbox || onDelete)}
                 isSelected={isSelected}
                 metrics={metrics}
