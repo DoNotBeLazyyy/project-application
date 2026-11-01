@@ -32,7 +32,18 @@ function shouldRedirectToLogin(status: number | undefined, error: unknown): bool
     return !isPostgresRpcError(error);
 }
 
-function handleAuthFailure(): void {
+/**
+ * A 401/403 does not always mean the login is gone: a 403 is usually a permissions problem.
+ * Only leave the page when Supabase confirms the login is invalid, and sign out for real so the
+ * login page does not restore the old login and send the user straight back to the dashboard.
+ */
+async function handleAuthFailure(): Promise<void> {
+    const { data, error } = await supabase.auth.getUser();
+    if (!error && data?.user) {
+        return;
+    }
+
+    await supabase.auth.signOut({ scope: 'local' });
     useAppStore.getState()
         .clearSession();
     window.location.href = '/login';
@@ -98,7 +109,7 @@ export async function callRpc<T>(
 
         if (error) {
             if (shouldRedirectToLogin(status, error)) {
-                handleAuthFailure();
+                await handleAuthFailure();
             }
             const parsed = parseServiceError(error);
             if (!isSilent) {
@@ -156,7 +167,7 @@ export async function callStorage<T>(
 
         if (result.error) {
             if (shouldRedirectToLogin(result.error.status ?? undefined, result.error)) {
-                handleAuthFailure();
+                await handleAuthFailure();
             }
             if (!isSilent) {
                 notify(result.error.message, 'error');
@@ -178,6 +189,11 @@ export async function callStorage<T>(
                 .hide();
         }
     }
+}
+
+function isUnauthorizedFunctionError(error: unknown): boolean {
+    return error instanceof FunctionsHttpError
+        && (error.context as Response | undefined)?.status === 401;
 }
 
 async function parseFunctionError(error: unknown): Promise<ServiceErrorProps> {
@@ -220,12 +236,21 @@ export async function callFunction<T>(
             .show();
     }
     try {
-        const { data, error } = await supabase.functions.invoke<T>(name, { body });
+        let { data, error } = await supabase.functions.invoke<T>(name, { body });
+
+        // An expired login token gets a 401 before the function does any work, so it is safe
+        // to refresh the login and send the same request once more.
+        if (isUnauthorizedFunctionError(error)) {
+            const { error: refreshError } = await supabase.auth.refreshSession();
+            if (!refreshError) {
+                ({ data, error } = await supabase.functions.invoke<T>(name, { body }));
+            }
+        }
 
         if (error) {
             const parsed = await parseFunctionError(error);
             if (shouldRedirectToLogin(parsed.status ?? undefined, parsed)) {
-                handleAuthFailure();
+                await handleAuthFailure();
             }
             if (!isSilent) {
                 notify(parsed.message, 'error');
@@ -281,7 +306,7 @@ export async function callSingle<T>(
         const { data, error, status } = await queryFn(supabase);
         if (error) {
             if (shouldRedirectToLogin(status, error)) {
-                handleAuthFailure();
+                await handleAuthFailure();
             }
             const parsed = parseServiceError(error);
             if (!isSilent) {
