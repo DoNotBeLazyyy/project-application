@@ -253,11 +253,11 @@ BEGIN
         END IF;
 
         -- Check the format first so a bad value never reaches the cast.
-        IF CASE
+        IF (CASE
             WHEN (v_program->>'years_duration') ~ '^\s*[0-9]{1,3}\s*$'
                 THEN btrim(v_program->>'years_duration')::INTEGER NOT BETWEEN 1 AND 6
             ELSE TRUE
-        END THEN
+        END) THEN
             v_errors := v_errors || jsonb_build_object(
                 'row', v_row_num,
                 'code', v_program->>'code',

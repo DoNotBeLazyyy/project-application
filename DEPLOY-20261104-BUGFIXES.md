@@ -1,6 +1,6 @@
 # Deploying the 2026-11-04 and 2026-11-06 bug fixes
 
-None of this has been applied yet. Do it in this order, then run the test guide (`QA-BREAK-IT-TEST-GUIDE.md`).
+**Applied 2026-11-12:** backup in `backups/20261112-pre-bugfix/` (database dump plus the previous `admin-user-provision`), all 33 migrations applied in order, edge function redeployed. Migration 30 needed a fix first: its `IF CASE ... END THEN` became `IF (CASE ... END) THEN`. Without the brackets PL/pgSQL ends the condition at the first `THEN`. Next: run the test guide (`QA-BREAK-IT-TEST-GUIDE.md`).
 
 ## 1. Back up the database first
 Take a fresh dump the same way as `backups/20261030-pre-bugfix/` before applying anything.
