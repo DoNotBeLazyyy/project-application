@@ -76,7 +76,7 @@ export default function StudentsTab({ sectionId }: StudentsTabProps) {
                             />
                         );
                     }
-                    if (student.gwa !== null && student.gwa !== undefined && student.gwa <= 1.75) {
+                    if (student.is_deans_list_candidate) {
                         return (
                             <CommonBadgeStatus
                                 label="Dean's List Candidate"
@@ -131,7 +131,7 @@ export default function StudentsTab({ sectionId }: StudentsTabProps) {
                     }
                 }}
                 renderGridCard={(student, isSelected, onToggleSelect) => {
-                    const isDeansList = student.gwa !== null && student.gwa !== undefined && student.gwa <= 1.75;
+                    const isDeansList = Boolean(student.is_deans_list_candidate);
                     const isAtRisk = student.risk_level === 'High' || student.risk_level === 'Moderate';
 
                     const statusLabel = isAtRisk

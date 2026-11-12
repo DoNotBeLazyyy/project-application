@@ -52,9 +52,7 @@ vi.mock('@services/faculty-load.service', () => ({
                 ],
                 conflicts: []
             }
-        }),
-    saveFacultyLoadAssignments: vi.fn()
-        .mockResolvedValue({ data: { success: true } })
+        })
 }));
 
 vi.mock('@services/term/term.service', () => ({
@@ -117,7 +115,6 @@ describe('FacultyLoadModule', () => {
                     facultyId="fac-1"
                     open={true}
                     onClose={vi.fn()}
-                    onSuccess={vi.fn()}
                 />
             </BrowserRouter>
         );

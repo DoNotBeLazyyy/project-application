@@ -1,3 +1,4 @@
+import { getVisibleHours } from '@pages/shared/calendar/calendar-hours';
 import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from '@pages/shared/calendar/calendar.types';
 import {
     ClockIcon,
@@ -10,8 +11,6 @@ interface CalendarDayViewProps {
     events: UnifiedCalendarEvent[];
     onSelectEvent: (event: UnifiedCalendarEvent) => void;
 }
-
-const HOURS = Array.from({ length: 15 }, (_, i) => i + 7); // 7 AM to 9 PM
 
 function isSameDay(d1: Date, d2: Date): boolean {
     return (
@@ -48,6 +47,8 @@ export function CalendarDayView({
         return events.filter((ev) => !ev.allDay && isSameDay(ev.start, date));
     }, [events, date]);
 
+    const hours = useMemo(() => getVisibleHours(timedEvents), [timedEvents]);
+
     return (
         <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xs overflow-hidden flex flex-col flex-1 min-h-0">
             {/* All-Day Events Section */}
@@ -83,7 +84,7 @@ export function CalendarDayView({
 
             {/* Hourly Schedule Timeline */}
             <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-neutral-200/60 dark:divide-neutral-800/60">
-                {HOURS.map((hour) => {
+                {hours.map((hour) => {
                     const hourLabel = `${hour % 12 === 0
                         ? 12
                         : hour % 12}:00 ${hour >= 12

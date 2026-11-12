@@ -7,7 +7,6 @@ import { getAnnouncementSectionOptions } from '@services/announcement.service';
 import { useAppStore } from '@stores/app.store';
 import { AnnouncementAudience, CommunicationFormValues, CommunicationItemType } from '@type/announcement.type';
 import { ComponentPropsForm } from '@type/common.type';
-import { getRoleFromPath } from '@utils/role-path.util';
 import { useEffect, useRef, useState } from 'react';
 import { Control, useController, useWatch } from 'react-hook-form';
 
@@ -46,7 +45,7 @@ export default function AnnouncementForm({
     ...formProps
 }: AnnouncementFormProps) {
     const activeRole = useAppStore((s) => s.activeRole);
-    const isFacultyOnly = activeRole === 'Faculty' || (typeof window !== 'undefined' && getRoleFromPath(window.location.pathname) === 'Faculty');
+    const isFacultyOnly = activeRole === 'Faculty';
     const [sectionOptions, setSectionOptions] = useState<CommonSelectOption[]>([]);
     const hasAutoSelectedRef = useRef(false);
 

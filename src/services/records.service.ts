@@ -10,9 +10,10 @@ import { ServiceResult } from '@type/service.type';
 export async function getCurriculumAudit(
     studentId?: string
 ): Promise<ServiceResult<CurriculumAudit>> {
+    // Silent: "no program yet" comes back as a failure, and the page shows its own states
     return callRpc<CurriculumAudit>('fn_get_curriculum_audit', {
         p_student_id: studentId ?? null
-    });
+    }, { silent: true });
 }
 
 export async function getStudentTranscript(
@@ -87,4 +88,4 @@ export async function removeCreditedCourse(
         p_credited_id: creditedId,
         p_reason: reason || null
     });
-}
+}

@@ -1,6 +1,6 @@
 import RoleShell from '@components/layout/RoleShell';
 import {
-    BuildingsIcon, CalendarDotsIcon, CalendarIcon, ClipboardTextIcon, ClockCounterClockwiseIcon, GearIcon, HouseIcon, MegaphoneIcon, UserCheckIcon, UsersIcon
+    BuildingsIcon, CalendarDotsIcon, CalendarIcon, ClipboardTextIcon, ClockCounterClockwiseIcon, GearIcon, HouseIcon, IdentificationBadgeIcon, MegaphoneIcon, UserCheckIcon, UsersIcon
 } from '@phosphor-icons/react';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo } from 'react';
@@ -80,6 +80,12 @@ export default function AdminLayout() {
             {
                 sectionLabel: 'SYSTEM & SECURITY',
                 items: [
+                    {
+                        icon: <IdentificationBadgeIcon size={18} />,
+                        isActive: pathname.startsWith('/admin/roles'),
+                        label: 'Roles',
+                        onClick: () => navigate('/admin/roles')
+                    },
                     {
                         icon: <ClockCounterClockwiseIcon size={18} />,
                         isActive: pathname.startsWith('/admin/audit-logs'),

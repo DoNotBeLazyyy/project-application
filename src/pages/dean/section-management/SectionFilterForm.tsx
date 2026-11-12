@@ -1,11 +1,9 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import { CommonSelectOption } from '@components/select/CommonSelect';
+import { useTermOptions } from '@hooks/use-term-options';
 import { useProgramOptions } from '@pages/dean/program-management/use-program-options';
-import { getTerms } from '@services/section.service';
 import { ComponentPropsForm } from '@type/common.type';
 import { SectionFilterValues, SectionStatus } from '@type/section.type';
-import { useEffect, useState } from 'react';
 import { Control } from 'react-hook-form';
 
 const STATUS_OPTIONS: { label: string; value: SectionStatus }[] = [
@@ -24,25 +22,8 @@ export default function SectionFilterForm({
     control,
     ...formProps
 }: SectionFilterFormProps) {
-    const [termOptions, setTermOptions] = useState<CommonSelectOption[]>([]);
+    const { termOptions } = useTermOptions();
     const { programOptions } = useProgramOptions();
-
-    useEffect(function() {
-        async function fetchTerms() {
-            const result = await getTerms();
-
-            if (result.data) {
-                setTermOptions(
-                    result.data.map((term) => ({
-                        label: term.label,
-                        value: term.id
-                    }))
-                );
-            }
-        }
-
-        fetchTerms();
-    }, []);
 
     const fields: FormFieldConfig<SectionFilterValues>[] = [
         {

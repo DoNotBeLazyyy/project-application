@@ -1,4 +1,4 @@
-import { callRpc } from '@services/supabase.wrapper';
+import { callRpc, CallRpcOptions } from '@services/supabase.wrapper';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import {
     AcademicYearCalendarDetails,
@@ -49,7 +49,8 @@ export async function getAcademicYearCalendarDetails(
 }
 
 export async function saveAcademicYearCalendar(
-    payload: SaveAcademicYearCalendarPayload
+    payload: SaveAcademicYearCalendarPayload,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<{ success: boolean; message: string; school_year_id: string; has_real_change?: boolean }>> {
     const params: Record<string, unknown> = {
         p_code: payload.p_code,
@@ -71,7 +72,8 @@ export async function saveAcademicYearCalendar(
 
     return callRpc<{ success: boolean; message: string; school_year_id: string; has_real_change?: boolean }>(
         'fn_save_academic_year_calendar',
-        params
+        params,
+        options
     );
 }
 
@@ -107,4 +109,17 @@ export async function bulkDeleteSchoolYears(
 export async function getSchoolYears(): Promise<ServiceResult<SchoolYearOption[]>> {
     return callRpc<SchoolYearOption[]>('fn_get_school_years');
 }
-
+
+/**
+ * Removes term types the wizard just created when the academic year save did not finish.
+ * The server only removes fresh types this admin made that no term uses.
+ */
+export async function discardUnusedTermTypes(
+    termTypeIds: string[]
+): Promise<ServiceResult<{ success: boolean; count: number }>> {
+    return callRpc<{ success: boolean; count: number }>(
+        'fn_discard_unused_term_types',
+        { p_term_type_ids: termTypeIds },
+        { silent: true }
+    );
+}

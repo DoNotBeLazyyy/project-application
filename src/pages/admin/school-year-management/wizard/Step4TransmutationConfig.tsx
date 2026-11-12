@@ -4,6 +4,8 @@ import ValidCommonInput from '@components/input/ValidCommonInput';
 import ValidCommonNumberInput from '@components/input/ValidCommonNumberInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonSelect from '@components/select/CommonSelect';
+import { HISTORY_DIFF_HIGHLIGHT_CLASS, HistoryDiffMarks } from '@pages/admin/school-year-management/wizard/academic-year-history';
+import HistoryDiffBadge from '@pages/admin/school-year-management/wizard/HistoryDiffBadge';
 import SpecialGradeRuleFields from '@pages/admin/school-year-management/wizard/SpecialGradeRuleFields';
 import {
     isSpecialGradeRow,
@@ -24,12 +26,15 @@ import {
 
 interface Step4TransmutationConfigProps {
     control: Control<AcademicYearWizardFormValues>;
+    /** Differences to highlight while comparing saved versions (history view only). */
+    diffMarks?: HistoryDiffMarks;
     disabled?: boolean;
     setValue: UseFormSetValue<AcademicYearWizardFormValues>;
 }
 
 export default function Step4TransmutationConfig({
     control,
+    diffMarks,
     disabled = false,
     setValue
 }: Step4TransmutationConfigProps) {
@@ -123,9 +128,13 @@ export default function Step4TransmutationConfig({
                     const row = rows[index] || field;
                     const isCond = Boolean(row.is_conditional || isSpecialGradeRow(row));
 
+                    const diffMark = diffMarks?.[`row:${index}`];
+
                     return (
                         <div
-                            className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700/60 shadow-xs space-y-4 transition-all"
+                            className={`p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-800/90 border shadow-xs space-y-4 transition-all ${diffMark
+                                ? HISTORY_DIFF_HIGHLIGHT_CLASS
+                                : 'border-slate-200 dark:border-zinc-700/60'}`}
                             key={field.id}
                         >
                             {/* Row 1: Header with Action Buttons */}
@@ -139,6 +148,7 @@ export default function Step4TransmutationConfig({
                                             ? `Grade: ${row.label}`
                                             : `Grade Rung #${index + 1}`}
                                     </span>
+                                    <HistoryDiffBadge mark={diffMark} />
                                     {row.description && (
                                         <span className="text-xs text-slate-500 dark:text-slate-400 truncate hidden sm:inline">
                                             ({row.description})

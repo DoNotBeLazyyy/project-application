@@ -1,6 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
+import { TransmutationStep, useTransmutationScale } from '@pages/student/grade/use-transmutation-scale';
 import {
     ArrowCounterClockwiseIcon,
     CalculatorIcon,
@@ -8,6 +9,7 @@ import {
     TrophyIcon
 } from '@phosphor-icons/react';
 import { InsightAcademic, InsightCourse, InsightTrajectory } from '@type/analytics.type';
+import { formatGwa } from '@utils/grade-display.util';
 import { useMemo, useState } from 'react';
 
 interface WhatIfGradeSimulatorProps {
@@ -16,35 +18,60 @@ interface WhatIfGradeSimulatorProps {
     trajectory: InsightTrajectory[];
 }
 
-const GRADE_OPTIONS: CommonSelectOption[] = [
-    { label: '1.00 (99–100% · Excellent)', value: '1.00' },
-    { label: '1.25 (96–98% · Superior)', value: '1.25' },
-    { label: '1.50 (93–95% · Very Good)', value: '1.50' },
-    { label: '1.75 (90–92% · Good)', value: '1.75' },
-    { label: '2.00 (87–89% · Meritorious)', value: '2.00' },
-    { label: '2.25 (84–86% · Satisfactory)', value: '2.25' },
-    { label: '2.50 (81–83% · Fair)', value: '2.50' },
-    { label: '2.75 (78–80% · Passing)', value: '2.75' },
-    { label: '3.00 (75–77% · Conditional)', value: '3.00' },
-    { label: '5.00 (Below 75% · Failed)', value: '5.00' }
-];
+// Used only when the configured grading table cannot be read
+const FALLBACK_GRADES = [1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 5];
+// Used only when an older server does not send course units
+const FALLBACK_COURSE_UNITS = 3;
+const NOT_SET_VALUE = '';
+const NOT_SET_OPTION: CommonSelectOption = { label: 'Not set (left out)', value: NOT_SET_VALUE };
 
-function formatGwa(val: number | null): string {
-    return val !== null && val !== undefined
-        ? val.toFixed(2)
-        : '—';
+/**
+ * Builds the grade choices from the configured transmutation table.
+ */
+function buildGradeOptions(steps: TransmutationStep[]): CommonSelectOption[] {
+    if (steps.length === 0) {
+        return [NOT_SET_OPTION, ...FALLBACK_GRADES.map((grade) => ({ label: grade.toFixed(2), value: grade.toFixed(2) }))];
+    }
+
+    return [
+        NOT_SET_OPTION,
+        ...steps.map(function(step) {
+            const range = step.maxPercentage === null
+                ? `${step.minPercentage}%+`
+                : `${step.minPercentage}–${step.maxPercentage}%`;
+            const description = step.description
+                ? ` · ${step.description}`
+                : '';
+
+            return { label: `${step.grade.toFixed(2)} (${range}${description})`, value: step.grade.toFixed(2) };
+        })
+    ];
+}
+
+/**
+ * Real units of a course, or the fallback when the server did not send them.
+ */
+function getCourseUnits(course: InsightCourse): number {
+    const units = Number(course.units);
+
+    return Number.isFinite(units) && units > 0
+        ? units
+        : FALLBACK_COURSE_UNITS;
 }
 
 export default function WhatIfGradeSimulator({ academic, courses, trajectory }: WhatIfGradeSimulatorProps) {
     const [isSimulating, setIsSimulating] = useState(false);
+    const { steps } = useTransmutationScale();
+    const gradeOptions = useMemo(() => buildGradeOptions(steps), [steps]);
 
     // Initial state map: enrollment_id -> simulated transmuted grade
     const initialSimMap = useMemo(function() {
         const map: Record<string, string> = {};
         courses.forEach(function(course) {
+            // Start from the real grade; a course without one stays out until a grade is picked
             map[course.enrollment_id] = course.released_grade
                 ? course.released_grade.toFixed(2)
-                : '1.25';
+                : NOT_SET_VALUE;
         });
 
         return map;
@@ -81,28 +108,45 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
 
         let termTotalWeighted = 0;
         let termTotalUnits = 0;
+        // This term's released grades are already inside the cumulative GWA
+        let releasedWeighted = 0;
+        let releasedUnits = 0;
 
         courses.forEach(function(c) {
-            const gradeVal = parseFloat(simulatedGrades[c.enrollment_id] || '1.25');
-            const courseUnits = 3.0; // standard subject unit load
+            const courseUnits = getCourseUnits(c);
+
+            if (c.released_grade) {
+                releasedWeighted += c.released_grade * courseUnits;
+                releasedUnits += courseUnits;
+            }
+
+            const gradeVal = parseFloat(simulatedGrades[c.enrollment_id] ?? NOT_SET_VALUE);
+            if (Number.isNaN(gradeVal)) return;
+
             termTotalWeighted += gradeVal * courseUnits;
             termTotalUnits += courseUnits;
         });
 
-        const simTermGwa = termTotalUnits > 0
-            ? termTotalWeighted / termTotalUnits
+        if (termTotalUnits === 0) {
+            return {
+                simulatedTermGwa: academic.term_gwa,
+                simulatedCumGwa: academic.cumulative_gwa,
+                delta: 0
+            };
+        }
+
+        const simTermGwa = termTotalWeighted / termTotalUnits;
+
+        // Cumulative: take this term's released grades out, then add the simulated ones
+        const gwaUnits = Number(academic.gwa_units ?? academic.earned_units ?? 0);
+        const currentCum = academic.cumulative_gwa ?? 0;
+        const pastUnits = Math.max(gwaUnits - releasedUnits, 0);
+        const pastWeighted = pastUnits > 0
+            ? Math.max(currentCum * gwaUnits - releasedWeighted, 0)
             : 0;
 
-        // Cumulative Calculation
-        const currentCum = academic.cumulative_gwa || simTermGwa;
-        const currentEarnedUnits = academic.earned_units || 0;
-
-        const totalCumWeighted = (currentCum * currentEarnedUnits) + termTotalWeighted;
-        const totalCumUnits = currentEarnedUnits + termTotalUnits;
-
-        const simCumGwa = totalCumUnits > 0
-            ? totalCumWeighted / totalCumUnits
-            : currentCum;
+        const totalCumUnits = pastUnits + termTotalUnits;
+        const simCumGwa = (pastWeighted + termTotalWeighted) / totalCumUnits;
         const delta = academic.cumulative_gwa
             ? simCumGwa - academic.cumulative_gwa
             : 0;
@@ -120,7 +164,7 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
         if (!cumGwa) return [];
 
         const hasSimulatedFailingGrade = Object.values(simulatedGrades)
-            .some((g) => parseFloat(g) >= 5.0);
+            .some((g) => parseFloat(g) > 3.0);
 
         const uniqueTrajectories = trajectory.filter(function(item, idx, arr) {
             return arr.findIndex(function(t) {
@@ -326,7 +370,11 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                             </thead>
                             <tbody className="divide-y divide-(--mui-palette-divider)">
                                 {courses.map(function(course) {
-                                    const currentVal = simulatedGrades[course.enrollment_id] || '1.25';
+                                    const currentVal = simulatedGrades[course.enrollment_id] ?? NOT_SET_VALUE;
+                                    // A released grade between two steps still needs to show in the select
+                                    const rowOptions = gradeOptions.some((option) => option.value === currentVal)
+                                        ? gradeOptions
+                                        : [...gradeOptions, { label: `${currentVal} (actual)`, value: currentVal }];
 
                                     return (
                                         <tr
@@ -346,7 +394,7 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                                             </td>
                                             <td className="px-4 py-2">
                                                 <CommonSelect
-                                                    options={GRADE_OPTIONS}
+                                                    options={rowOptions}
                                                     size="small"
                                                     value={currentVal}
                                                     onChange={function(e) {

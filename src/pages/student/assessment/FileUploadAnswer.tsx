@@ -1,6 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import { ArrowLineUpIcon, FileIcon, TrashIcon } from '@phosphor-icons/react';
-import { getFileUrl } from '@services/storage.service';
+import { deleteFile, getFileUrl } from '@services/storage.service';
 import { saveStudentAnswerFiles, uploadSubmissionFile } from '@services/student-portal.service';
 import { StudentQuestion, SubmissionFileAttachment } from '@type/student-portal.type';
 import { useRef, useState } from 'react';
@@ -8,16 +8,6 @@ import { useRef, useState } from 'react';
 interface FileUploadAnswerProps {
     question: StudentQuestion;
     submissionId: string;
-}
-
-function isTypeAllowed(fileName: string, allowed: string[] | null): boolean {
-    if (!allowed || allowed.length === 0) return true;
-    const lower = fileName.toLowerCase();
-    return allowed.some(function(ext) {
-        const normalized = ext.toLowerCase()
-            .replace(/^\./, '');
-        return lower.endsWith(`.${normalized}`);
-    });
 }
 
 export default function FileUploadAnswer({
@@ -32,13 +22,18 @@ export default function FileUploadAnswer({
     const [errorText, setErrorText] = useState('');
 
     const maxCount = question.max_file_count ?? 1;
-    const maxBytes = question.max_file_size_mb
-        ? question.max_file_size_mb * 1024 * 1024
-        : null;
 
-    async function persist(next: SubmissionFileAttachment[]) {
+    /**
+     * Saves the file list as the answer.
+     *
+     * @param next - The files the answer should hold.
+     * @returns Whether the save worked.
+     */
+    async function persist(next: SubmissionFileAttachment[]): Promise<boolean> {
         setFiles(next);
-        await saveStudentAnswerFiles(submissionId, question.id, next);
+        const result = await saveStudentAnswerFiles(submissionId, question.id, next);
+
+        return !result.error;
     }
 
     async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -55,25 +50,16 @@ export default function FileUploadAnswer({
             return;
         }
 
-        for (const file of selected) {
-            if (!isTypeAllowed(file.name, question.allowed_file_types)) {
-                setErrorText(`${file.name} is not an allowed file type.`);
-                return;
-            }
-
-            if (maxBytes && file.size > maxBytes) {
-                setErrorText(`${file.name} exceeds the ${question.max_file_size_mb}MB limit.`);
-                return;
-            }
-        }
-
         setIsBusy(true);
 
         try {
             const uploaded: SubmissionFileAttachment[] = [];
 
             for (const file of selected) {
-                const result = await uploadSubmissionFile(submissionId, question.id, file);
+                const result = await uploadSubmissionFile(submissionId, question.id, file, {
+                    allowedExtensions: question.allowed_file_types ?? undefined,
+                    maxSizeMb: question.max_file_size_mb ?? undefined
+                });
                 if (result.error || !result.data) {
                     setErrorText(result.error?.message ?? `Failed to upload ${file.name}.`);
                     return;
@@ -93,7 +79,12 @@ export default function FileUploadAnswer({
         setIsBusy(true);
 
         try {
-            await persist(files.filter((f) => f.path !== path));
+            const isSaved = await persist(files.filter((f) => f.path !== path));
+
+            // Only drop the stored file once the answer no longer points to it
+            if (isSaved) {
+                await deleteFile('submissions', path);
+            }
         }
         finally {
             setIsBusy(false);

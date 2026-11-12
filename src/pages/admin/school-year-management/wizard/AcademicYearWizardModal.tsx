@@ -6,6 +6,7 @@ import ModalStepperHeader from '@components/modal/ModalStepperHeader';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import { useFormDraft } from '@hooks/use-form-draft';
 import AcademicYearHistoryModal from '@pages/admin/school-year-management/history/AcademicYearHistoryModal';
+import { buildAcademicYearCalendarPayload, ResolvedWizardTerm } from '@pages/admin/school-year-management/wizard/academic-year-payload';
 import AcademicYearSchedulePreviewModal from '@pages/admin/school-year-management/wizard/AcademicYearSchedulePreviewModal';
 import Step1SchoolYearInfo from '@pages/admin/school-year-management/wizard/Step1SchoolYearInfo';
 import Step2TermsConfig from '@pages/admin/school-year-management/wizard/Step2TermsConfig';
@@ -19,6 +20,8 @@ import {
     DEFAULT_TRANSMUTATION_ROWS,
     ExistingSchoolYearComparison,
     isSpecialGradeRow,
+    parseYearFromDate,
+    shiftCalendarDatesByYears,
     SourceSchoolYearInfo,
     toCalendarExceptionType,
     validateCalendarExceptions,
@@ -41,22 +44,18 @@ import {
     XIcon
 } from '@phosphor-icons/react';
 import {
+    discardUnusedTermTypes,
     getAcademicYearCalendarDetails,
     getSchoolYears,
     saveAcademicYearCalendar
 } from '@services/school-year.service';
 import { createTermType, getTermTypes } from '@services/term/term-type.service';
 import { useToastStore } from '@stores/toast.store';
-import {
-    AcademicYearWizardFormValues,
-    SaveAcademicYearCalendarPayload,
-    SchoolYearOption
-} from '@type/school-year.type';
-import { ensureUniqueCode, generateAcademicThresholdCode } from '@utils/entity-code.util';
+import { AcademicYearWizardFormValues, SchoolYearOption } from '@type/school-year.type';
 import {
     announceFormError, DEFAULT_FORM_OPTIONS, ensureSubmitValidationMode, focusAndOpenFirstErrorField, validateStepFields
 } from '@utils/form.util';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Path, useForm } from 'react-hook-form';
 
 interface AcademicYearWizardModalProps {
@@ -102,6 +101,8 @@ export default function AcademicYearWizardModal({
     const [sourceSchoolYear, setSourceSchoolYear] = useState<SourceSchoolYearInfo | null>(null);
     const [availableSourceYears, setAvailableSourceYears] = useState<SchoolYearOption[]>([]);
     const [existingSchoolYears, setExistingSchoolYears] = useState<ExistingSchoolYearComparison[]>([]);
+    // Years already added to copied dates in a duplicate, so a later change only moves them by the difference
+    const appliedYearOffsetRef = useRef(0);
 
     const defaultValues = DEFAULT_WIZARD_FORM_VALUES;
 
@@ -128,7 +129,12 @@ export default function AcademicYearWizardModal({
     const draftGuard = useFormDraft({
         control,
         enabled: open && !isReadOnly && !isLoading,
-        formId: `academic-year-wizard-${schoolYearId || 'new'}`
+        // Create and Duplicate keep separate drafts so one never restores into the other
+        formId: schoolYearId
+            ? `academic-year-wizard-${schoolYearId}`
+            : duplicateSchoolYearId
+                ? `academic-year-wizard-duplicate-${duplicateSchoolYearId}`
+                : 'academic-year-wizard-new'
     });
 
     async function loadAndDuplicateSchoolYear(sourceId: string) {
@@ -145,13 +151,14 @@ export default function AcademicYearWizardModal({
                     end_date: data.end_date
                 });
                 const cloned = cloneSchoolYearForDuplication(data);
+                appliedYearOffsetRef.current = 0;
                 reset({
                     ...defaultValues,
                     ...cloned
                 });
                 useToastStore.getState()
                     .showToast(
-                        `Duplicated configuration from ${data.label}. Please specify a new Academic Year Code, Label, and Dates.`,
+                        `Duplicated configuration from ${data.label}. Please specify a new Academic Year Code, Label, and Dates; copied dates will move to the new year.`,
                         'info'
                     );
             }
@@ -163,6 +170,7 @@ export default function AcademicYearWizardModal({
 
     function handleClearDuplication() {
         setSourceSchoolYear(null);
+        appliedYearOffsetRef.current = 0;
         reset(defaultValues);
     }
 
@@ -303,7 +311,40 @@ export default function AcademicYearWizardModal({
             existingSchoolYears,
             schoolYearId
         );
-        return applyValidationResult({ ...result, fieldPath: result.field });
+        const isStepValid = applyValidationResult({ ...result, fieldPath: result.field });
+        if (isStepValid) {
+            moveDuplicatedDatesToNewYear();
+        }
+        return isStepValid;
+    }
+
+    /**
+     * In a duplicate, copied term, grading period and holiday dates still belong to the source year.
+     * Move them by the year difference (same month and day) once the new start date is known.
+     */
+    function moveDuplicatedDatesToNewYear() {
+        if (!sourceSchoolYear || schoolYearId) {
+            return;
+        }
+        const sourceYear = parseYearFromDate(sourceSchoolYear.start_date);
+        const newYear = parseYearFromDate(getValues('start_date'));
+        if (sourceYear === null || newYear === null) {
+            return;
+        }
+        const yearOffset = newYear - sourceYear;
+        const yearsToMove = yearOffset - appliedYearOffsetRef.current;
+        if (yearsToMove === 0) {
+            return;
+        }
+        const shifted = shiftCalendarDatesByYears(getValues('terms') || [], getValues('holidays') || [], yearsToMove);
+        setValue('terms', shifted.terms, { shouldDirty: true });
+        setValue('holidays', shifted.holidays, { shouldDirty: true });
+        appliedYearOffsetRef.current = yearOffset;
+        useToastStore.getState()
+            .showToast(
+                `Copied term, grading period, and holiday dates were moved to ${newYear}. Please review them.`,
+                'info'
+            );
     }
 
     // Validation for Step 2 (Terms & Windows)
@@ -352,7 +393,11 @@ export default function AcademicYearWizardModal({
     };
 
     async function handleNext() {
-        if (currentStep < WIZARD_STEPS.length && await STEP_VALIDATORS[currentStep]()) {
+        if (currentStep >= WIZARD_STEPS.length) {
+            return;
+        }
+        // Viewing is read-only, so there is nothing to check before moving on
+        if (isReadOnly || await STEP_VALIDATORS[currentStep]()) {
             setCurrentStep(currentStep + 1);
         }
     }
@@ -408,7 +453,20 @@ export default function AcademicYearWizardModal({
 
         let nextSequence = existingTermTypes.reduce((max, tt) => Math.max(max, Number(tt.sequence) || 0), 0) + 1;
         const createdTypeIds: Record<string, string> = {};
-        const mappedTerms: (typeof values.terms[number] & { term_type_id: string; term_type_label: string })[] = [];
+        const mappedTerms: ResolvedWizardTerm[] = [];
+
+        // New term types must exist before the save; remove them again if the save does not finish
+        async function stopSaving(message?: string) {
+            const newTypeIds = Object.values(createdTypeIds);
+            if (newTypeIds.length > 0) {
+                await discardUnusedTermTypes(newTypeIds);
+            }
+            setIsSaving(false);
+            if (message) {
+                useToastStore.getState()
+                    .showToast(message, 'error');
+            }
+        }
 
         for (let tIdx = 0; tIdx < (values.terms || []).length; tIdx++) {
             const t = values.terms[tIdx];
@@ -428,13 +486,9 @@ export default function AcademicYearWizardModal({
                     sequence: String(nextSequence++)
                 });
 
+                // createTermType already shows its own error message
                 if (createRes.error) {
-                    setIsSaving(false);
-                    useToastStore.getState()
-                        .showToast(
-                            `Failed to register Term Type "${cleanLabel}": ${createRes.error.message}`,
-                            'error'
-                        );
+                    await stopSaving();
                     return;
                 }
 
@@ -444,29 +498,17 @@ export default function AcademicYearWizardModal({
                     (item) => item.label.trim()
                         .toLowerCase() === lowerLabel
                 );
-                if (matched) {
-                    typeId = matched.id;
-                    createdTypeIds[lowerLabel] = matched.id;
-                    termTypeMap.set(lowerLabel, matched.id);
-                }
-                else {
-                    setIsSaving(false);
-                    useToastStore.getState()
-                        .showToast(
-                            `Could not resolve Term Type "${cleanLabel}". Please select an existing term type.`,
-                            'error'
-                        );
+                if (!matched) {
+                    await stopSaving(`Could not resolve Term Type "${cleanLabel}". Please select an existing term type.`);
                     return;
                 }
+                typeId = matched.id;
+                createdTypeIds[lowerLabel] = matched.id;
+                termTypeMap.set(lowerLabel, matched.id);
             }
 
             if (!typeId || typeId === '00000000-0000-0000-0000-000000000000') {
-                setIsSaving(false);
-                useToastStore.getState()
-                    .showToast(
-                        `Term #${tIdx + 1} (${cleanLabel}) is missing a valid term type. Please select a valid term type.`,
-                        'error'
-                    );
+                await stopSaving(`Term #${tIdx + 1} (${cleanLabel}) is missing a valid term type. Please select a valid term type.`);
                 return;
             }
 
@@ -477,138 +519,19 @@ export default function AcademicYearWizardModal({
             });
         }
 
-        const payload: SaveAcademicYearCalendarPayload = {
-            p_code: values.code.trim(),
-            p_end_date: values.end_date,
-            p_evaluation_scope: values.evaluation_scope || 'Period',
-            p_is_active: Boolean(values.is_active),
-            p_label: values.label.trim(),
-            p_max_units_per_term: values.max_units_per_term
-                ? Number(values.max_units_per_term)
-                : 24,
-            p_school_year_id: values.id || null,
-            p_start_date: values.start_date,
-            p_terms: mappedTerms.map((t) => ({
-                id: t.id,
-                term_type_id: t.term_type_id,
-                start_date: t.start_date,
-                end_date: t.end_date,
-                enrollment_start_date: t.enrollment_start_date || null,
-                enrollment_end_date: t.enrollment_end_date || null,
-                grading_deadline: t.grading_deadline || null,
-                status: t.status || 'Upcoming',
-                evaluation_scope: t.evaluation_scope || values.evaluation_scope || 'Period',
-                grading_periods: (t.grading_periods || []).map((gp, idx) => ({
-                    id: gp.id,
-                    name: gp.name.trim(),
-                    sequence: gp.sequence || (idx + 1),
-                    start_date: gp.start_date || null,
-                    end_date: gp.end_date || null,
-                    weight: Number(gp.weight) || 0,
-                    major_exam_start_date: gp.major_exam_start_date || null,
-                    major_exam_end_date: gp.major_exam_end_date || null,
-                    grade_encoding_start_date: gp.grade_encoding_start_date || null,
-                    grade_encoding_end_date: gp.grade_encoding_end_date || null,
-                    components: (gp.components || []).map((c) => ({
-                        id: c.id,
-                        name: (c.name || '').trim(),
-                        weight: Number(c.weight) || 0
-                    }))
-                }))
-            })),
-            p_thresholds: (() => {
-                const existingCodes: string[] = [];
-                return (values.thresholds || []).map((th, idx) => {
-                    const labelTrimmed = (th.label || '').trim() || `Threshold #${idx + 1}`;
-                    const rawCode = (th.code && !th.code.startsWith('custom_threshold_'))
-                        ? th.code.trim()
-                        : generateAcademicThresholdCode(labelTrimmed, existingCodes);
-                    const finalCode = ensureUniqueCode(rawCode, existingCodes);
-                    existingCodes.push(finalCode);
-                    return {
-                        id: th.id,
-                        category: th.category || 'Honor',
-                        code: finalCode,
-                        label: labelTrimmed,
-                        min_gwa:
-                            th.min_gwa !== null && th.min_gwa !== undefined && th.min_gwa !== ''
-                                ? Number(th.min_gwa)
-                                : null,
-                        max_gwa: Number(th.max_gwa),
-                        min_subject_grade:
-                            th.min_subject_grade !== null
-                            && th.min_subject_grade !== undefined
-                            && th.min_subject_grade !== ''
-                                ? Number(th.min_subject_grade)
-                                : null,
-                        requires_no_failing: Boolean(th.requires_no_failing),
-                        scholarship_discount_pct:
-                            th.scholarship_discount_pct !== null
-                            && th.scholarship_discount_pct !== undefined
-                            && th.scholarship_discount_pct !== ''
-                                ? Number(th.scholarship_discount_pct)
-                                : null,
-                        sort_order: th.sort_order || idx + 1,
-                        is_active: Boolean(th.is_active)
-                    };
-                });
-            })(),
-            p_transmutation_rows: (values.transmutation_rows || []).map((r, idx) => {
-                const isSpecial = isSpecialGradeRow(r);
-                return {
-                    id: r.id,
-                    label: (r.label || '').trim() || `Row #${idx + 1}`,
-                    min_percentage: isSpecial
-                        ? 0
-                        : (r.min_percentage !== null && r.min_percentage !== undefined && r.min_percentage !== ''
-                            ? Number(r.min_percentage)
-                            : 0),
-                    max_percentage: isSpecial
-                        ? 0
-                        : (r.max_percentage !== null && r.max_percentage !== undefined && r.max_percentage !== ''
-                            ? Number(r.max_percentage)
-                            : 0),
-                    transmuted_grade:
-                        !isSpecial
-                        && r.transmuted_grade !== null
-                        && r.transmuted_grade !== undefined
-                        && r.transmuted_grade !== ''
-                            ? Number(r.transmuted_grade)
-                            : null,
-                    is_passing: Boolean(r.is_passing),
-                    special_code: r.special_code
-                        ? r.special_code.trim()
-                        : null,
-                    description: r.description
-                        ? r.description.trim()
-                        : null,
-                    is_auto_detected: isSpecial && Boolean(r.is_auto_detected),
-                    conditions: isSpecial && r.is_auto_detected
-                        ? (r.conditions ?? null)
-                        : null
-                };
-            }),
-            p_holidays: (values.holidays || []).map((h) => ({
-                id: h.id,
-                title: (h.title || '').trim(),
-                exception_type: toCalendarExceptionType(h.exception_type) || 'Holiday',
-                start_date: h.start_date,
-                end_date: h.end_date,
-                affects_attendance: Boolean(h.affects_attendance),
-                description: h.description
-                    ? h.description.trim()
-                    : null
-            }))
-        };
+        const payload = buildAcademicYearCalendarPayload(values, mappedTerms);
 
         const res = await saveAcademicYearCalendar(payload);
-        setIsSaving(false);
 
-        if (!res.error) {
-            draftGuard.clearDraft();
-            onSuccess();
-            onClose();
+        if (res.error) {
+            await stopSaving();
+            return;
         }
+
+        setIsSaving(false);
+        draftGuard.clearDraft();
+        onSuccess();
+        onClose();
     }
 
     function handleRequestClose() {
@@ -864,6 +787,7 @@ export default function AcademicYearWizardModal({
 
             {/* History Modal */}
             <AcademicYearHistoryModal
+                hasUnsavedChanges={!isReadOnly && draftGuard.hasRealChanges}
                 open={isHistoryModalOpen}
                 schoolYearId={schoolYearId}
                 schoolYearLabel={watch('label')}

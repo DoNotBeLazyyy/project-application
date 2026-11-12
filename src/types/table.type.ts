@@ -1,4 +1,3 @@
-import { TableActionConfig } from '@components/table/use-table-configs';
 import { BooleanFunction } from '@type/common.type';
 import { SortStringDto } from '@type/http.type';
 import { ColDef } from 'ag-grid-community';
@@ -33,7 +32,7 @@ export interface MobileCardPlan {
     title?: MobileCardColDef;
 }
 
-export interface CommonTableProps<TData = unknown> extends Omit<AgGridReactProps, 'columnDefs'> {
+export interface CommonTableProps extends Omit<AgGridReactProps, 'columnDefs'> {
     containerClassName?: string;
     hasAction?: boolean;
     hasCheckbox?: boolean;
@@ -41,7 +40,6 @@ export interface CommonTableProps<TData = unknown> extends Omit<AgGridReactProps
     isDeselectedOnBlur?: boolean;
     isMobileCardDisabled?: boolean;
     leadingColumnDefs?: MobileCardColDef[];
-    tableActionConfig?: TableActionConfig<TData>;
     trailingColumnDefs?: MobileCardColDef[];
     onConfirmSort?: BooleanFunction;
     onSetSort?: (sort: SortStringDto[]) => void;

@@ -3,8 +3,8 @@ import EventsFeedCard from '@components/dashboard/EventsFeedCard';
 import AnnouncementForm from '@pages/shared/announcement-management/AnnouncementForm';
 import CommunicationGridCard from '@pages/shared/announcement-management/CommunicationGridCard';
 import AnnouncementManagement from '@pages/shared/announcement-management/index';
-import { useAnnouncementTableConfig } from '@pages/shared/announcement-management/use-announcement-table-config';
-import { render, screen, fireEvent, renderHook } from '@testing-library/react';
+import { useAppStore } from '@stores/app.store';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { AnnouncementFeedRow, CommunicationFormValues, CommunicationListRow } from '@type/announcement.type';
 import { EventFeedRow } from '@type/event.type';
 import { useForm } from 'react-hook-form';
@@ -110,82 +110,6 @@ describe('Announcement & Communication Module Tests', () => {
         });
     });
 
-    describe('useAnnouncementTableConfig', () => {
-        it('configures view-only options when isViewingOnly is true', () => {
-            const { result } = renderHook(() =>
-                useAnnouncementTableConfig({
-                    isViewingOnly: true,
-                    onView: vi.fn()
-                }));
-
-            const tableConfig = result.current.tableActionConfig(vi.fn());
-            const options = tableConfig.menuOptions
-                ? tableConfig.menuOptions(mockRow)
-                : [];
-            expect(options)
-                .toHaveLength(1);
-            expect(options[0].preset)
-                .toBe('view');
-            expect(tableConfig.onEditClick)
-                .toBeUndefined();
-        });
-
-        it('configures edit and delete options when in management mode for authorized user', () => {
-            const { result } = renderHook(() =>
-                useAnnouncementTableConfig({
-                    currentUserId: 'admin-id',
-                    currentUserRole: 'Admin',
-                    isViewingOnly: false,
-                    onEdit: vi.fn(),
-                    onView: vi.fn()
-                }));
-
-            const tableConfig = result.current.tableActionConfig(vi.fn());
-            const options = tableConfig.menuOptions
-                ? tableConfig.menuOptions(mockRow)
-                : [];
-            expect(options.length)
-                .toBeGreaterThanOrEqual(3);
-            const presets = options.map((o) => o.preset);
-            expect(presets)
-                .toContain('view');
-            expect(presets)
-                .toContain('edit');
-            expect(presets)
-                .toContain('delete');
-        });
-
-        it('restricts to view only if user does not own and is not authorized to manage the item', () => {
-            const { result } = renderHook(() =>
-                useAnnouncementTableConfig({
-                    currentUserId: 'dean-user-1',
-                    currentUserRole: 'Dean',
-                    isViewingOnly: false,
-                    onEdit: vi.fn(),
-                    onView: vi.fn()
-                }));
-
-            const adminRow: CommunicationListRow = {
-                ...mockRow,
-                created_by: 'admin-id',
-                created_by_role: 'Admin'
-            };
-
-            const tableConfig = result.current.tableActionConfig(vi.fn());
-            const options = tableConfig.menuOptions
-                ? tableConfig.menuOptions(adminRow)
-                : [];
-            expect(options)
-                .toHaveLength(1);
-            expect(options[0].preset)
-                .toBe('view');
-            expect(tableConfig.onEditClick)
-                .toBeDefined();
-            expect(tableConfig.onEditClick?.(adminRow))
-                .toBeUndefined();
-        });
-    });
-
     describe('Dashboard Feed Cards with "View all" Navigation', () => {
         it('renders View all button on AnnouncementsFeedCard and clicking triggers navigation', () => {
             const mockAnnouncements: AnnouncementFeedRow[] = [{
@@ -239,6 +163,8 @@ describe('Announcement & Communication Module Tests', () => {
 
     describe('AnnouncementManagement Page Role Toggles', () => {
         it('renders toggle inside three-dots menu for management role (Admin) and allows mode switching', () => {
+            // The page reads the signed-in role from the store, not the URL
+            useAppStore.setState({ activeRole: 'Admin' });
             render(
                 <MemoryRouter initialEntries={['/admin/announcement-management?mode=viewing']}>
                     <AnnouncementManagement />
@@ -261,6 +187,7 @@ describe('Announcement & Communication Module Tests', () => {
         });
 
         it('does not render management toggle for Student role (always viewing mode)', () => {
+            useAppStore.setState({ activeRole: 'Student' });
             render(
                 <MemoryRouter initialEntries={['/student/announcement-management']}>
                     <AnnouncementManagement />

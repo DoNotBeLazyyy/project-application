@@ -105,7 +105,16 @@ export interface AnnouncementFeedRow {
     author_name: string | null;
     attachment_count?: number;
     attachments?: AttachmentInputDto[];
+    // Number of sections the item targets, when the feed sends it
+    section_count?: number;
     total_count: number;
+}
+
+// What the server returns after an announcement and event swap types
+export interface ConvertedCommunicationItem {
+    id: string;
+    message?: string;
+    success: boolean;
 }
 
 export interface AnnouncementSectionOption {

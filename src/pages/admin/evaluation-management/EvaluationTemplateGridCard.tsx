@@ -74,6 +74,8 @@ export default function EvaluationTemplateGridCard({
                     ariaLabel="Evaluation section actions"
                 />
             )}
+            // No bulk action exists for this list, so cards cannot be selected
+            hasCheckbox={false}
             isSelected={isSelected}
             metrics={[
                 { label: 'Questions', value: String(row.question_count) },

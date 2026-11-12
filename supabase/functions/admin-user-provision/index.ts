@@ -21,6 +21,17 @@ function success(data: Record<string, unknown>, message?: string): Response {
     return jsonResponse({ success: true, message, ...data }, 200);
 }
 
+// Supabase free plan sends only a few auth emails per hour; say so plainly per row
+function describeInviteError(message: string): string {
+    if (/rate limit/i.test(message)) {
+        return 'Email rate limit reached. Supabase allows only a few invitation emails per hour on the free plan. Try this row again later.';
+    }
+    return message;
+}
+
+// Stop starting new invites before the edge function wall-clock limit is reached
+const BULK_TIME_BUDGET_MS = 100_000;
+
 interface UserInvitePayload {
     email: string;
     first_name: string;
@@ -115,7 +126,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
         });
 
         if (inviteError) {
-            return failure(inviteError.message, 400);
+            return failure(describeInviteError(inviteError.message), 400);
         }
 
         const authId = inviteData.user.id;
@@ -147,13 +158,18 @@ Deno.serve(async (request: Request): Promise<Response> => {
 
         const normalizedEmail = email.trim().toLowerCase();
 
-        // If resending invite, ensure user in public.users is not stuck in Inactive status
+        // A deactivated account must be reactivated on purpose, not by a new invite
         if (action === 'resend_invite') {
-            await adminClient
+            const { data: targetUser } = await adminClient
                 .from('users')
-                .update({ status: 'Invited', updated_at: new Date().toISOString() })
+                .select('status')
                 .ilike('email', normalizedEmail)
-                .eq('status', 'Inactive');
+                .is('deleted_at', null)
+                .maybeSingle();
+
+            if (targetUser?.status === 'Inactive') {
+                return failure('Reactivate this user first.', 400);
+            }
         }
 
         const { error: resetError } = await adminClient.auth.resetPasswordForEmail(normalizedEmail, {
@@ -187,7 +203,21 @@ Deno.serve(async (request: Request): Promise<Response> => {
         }[] = [];
         const errors: string[] = [];
 
+        const startedAt = Date.now();
+        let stopReason: string | null = null;
+
         for (const user of users) {
+            // Once the email limit is hit or time runs short, the rest would fail too
+            if (stopReason) {
+                errors.push(`${user.email}: Not sent. ${stopReason}`);
+                continue;
+            }
+            if (Date.now() - startedAt > BULK_TIME_BUDGET_MS) {
+                stopReason = 'The import ran out of time. Import the remaining rows again.';
+                errors.push(`${user.email}: Not sent. ${stopReason}`);
+                continue;
+            }
+
             try {
                 const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(
                     user.email,
@@ -201,7 +231,10 @@ Deno.serve(async (request: Request): Promise<Response> => {
                 );
 
                 if (inviteError) {
-                    errors.push(`${user.email}: ${inviteError.message}`);
+                    errors.push(`${user.email}: ${describeInviteError(inviteError.message)}`);
+                    if (/rate limit/i.test(inviteError.message)) {
+                        stopReason = 'Email rate limit reached. Try these rows again later.';
+                    }
                     continue;
                 }
 
@@ -215,7 +248,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
             }
             catch (err: unknown) {
                 const msg = err instanceof Error ? err.message : 'Unknown error during invitation';
-                errors.push(`${user.email}: ${msg}`);
+                errors.push(`${user.email}: ${describeInviteError(msg)}`);
             }
         }
 
@@ -258,6 +291,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
 
         let emailChanged = false;
         let isInvitedOrUnactivated = false;
+        let isInactive = false;
         const newEmail = email ? email.trim() : null;
 
         if (newEmail) {
@@ -271,31 +305,17 @@ Deno.serve(async (request: Request): Promise<Response> => {
                     .eq('id', user_id)
                     .single();
 
-                const isInvited = !publicUser?.status || publicUser?.status === 'Invited' || publicUser?.status === 'Inactive';
+                isInactive = publicUser?.status === 'Inactive';
+                const isInvited = !publicUser?.status || publicUser?.status === 'Invited' || isInactive;
                 const hasNeverSignedIn = !existingAuthData?.user?.last_sign_in_at;
                 isInvitedOrUnactivated = isInvited || hasNeverSignedIn;
             }
-
-            const { error: updateAuthError } = await adminClient.auth.admin.updateUserById(user_id, {
-                email: newEmail,
-                email_confirm: true
-            });
-
-            if (updateAuthError) {
-                return failure(updateAuthError.message, 400);
-            }
-
-            // Sync user metadata
-            if (first_name || last_name) {
-                await adminClient.auth.admin.updateUserById(user_id, {
-                    user_metadata: {
-                        first_name: first_name.trim(),
-                        last_name: last_name.trim()
-                    }
-                });
-            }
         }
 
+        // Keep the current values so the database change can be undone if the login update fails
+        const { data: previousUser } = await userClient.rpc('fn_get_user_by_id', { p_user_id: user_id });
+
+        // fn_update_user checks duplicate emails and role rules, so it runs before the login email changes
         const { data: updateData, error: updateError } = await userClient.rpc('fn_update_user', {
             p_user_id: user_id,
             p_first_name: first_name,
@@ -314,9 +334,44 @@ Deno.serve(async (request: Request): Promise<Response> => {
             return failure(resObj.message || 'Failed to update user.', 400);
         }
 
+        const { error: updateAuthError } = await adminClient.auth.admin.updateUserById(user_id, {
+            ...(newEmail
+                ? { email: newEmail, email_confirm: true }
+                : {}),
+            user_metadata: {
+                first_name: first_name.trim(),
+                last_name: last_name.trim()
+            }
+        });
+
+        if (updateAuthError) {
+            const previous = previousUser as {
+                department_id?: string | null;
+                email?: string;
+                first_name?: string;
+                last_name?: string;
+                role_codes?: string[];
+            } | null;
+
+            // Put the old values back so the profile and the login stay in step
+            if (previous?.email) {
+                await userClient.rpc('fn_update_user', {
+                    p_user_id: user_id,
+                    p_first_name: previous.first_name,
+                    p_last_name: previous.last_name,
+                    p_role_codes: previous.role_codes ?? [],
+                    p_email: previous.email,
+                    p_department_id: previous.department_id || null
+                });
+            }
+
+            return failure(`The login email could not be updated, so no changes were saved: ${updateAuthError.message}`, 400);
+        }
+
         // When email was changed, automatically send the invite / setup link to the new email
         if (emailChanged && newEmail) {
-            if (isInvitedOrUnactivated) {
+            // A deactivated user stays deactivated when only the email changes
+            if (isInvitedOrUnactivated && !isInactive) {
                 await adminClient
                     .from('users')
                     .update({ status: 'Invited', updated_at: new Date().toISOString() })

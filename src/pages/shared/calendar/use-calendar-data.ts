@@ -6,9 +6,7 @@ import { callRpc } from '@services/supabase.wrapper';
 import { useAppStore } from '@stores/app.store';
 import { UserRole } from '@type/app.type';
 import { DayOfWeek } from '@type/student-portal.type';
-import { getRoleFromPath } from '@utils/role-path.util';
-import { useCallback, useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const DAY_NAME_MAP: Record<number, DayOfWeek> = {
     0: 'Sunday',
@@ -41,6 +39,19 @@ function isClassDay(
     return !suspendedDays.has(key);
 }
 
+/**
+ * Reads a plain "YYYY-MM-DD" date as local midnight. `new Date('2026-06-01')` is UTC
+ * midnight, which lands on the previous day in time zones west of UTC and does not
+ * match holidays and class days, which use local dates. Full timestamps are read as is.
+ */
+export function parseCalendarDate(value: string): Date {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+
+    return match
+        ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+        : new Date(value);
+}
+
 function parseTimeToHoursAndMinutes(timeStr: string): { hours: number; minutes: number } {
     const parts = timeStr.slice(0, 5)
         .split(':')
@@ -55,21 +66,31 @@ function parseTimeToHoursAndMinutes(timeStr: string): { hours: number; minutes: 
     };
 }
 
-export function useCalendarData(currentDate: Date) {
-    const { pathname } = useLocation();
+const LOAD_FAILED_MESSAGE = 'Some calendar items could not be loaded.';
+
+/**
+ * Loads every calendar item for the month of `focusDate`, one month either side.
+ * Only the latest request may update the state, so fast Prev/Next clicks cannot show an
+ * older month's data last.
+ */
+export function useCalendarData(focusDate: Date) {
     const activeRole = useAppStore((s) => s.activeRole);
-    const role: UserRole = activeRole || (getRoleFromPath(pathname) as UserRole) || 'Student';
+    const role: UserRole = activeRole || 'Student';
 
     const [events, setEvents] = useState<UnifiedCalendarEvent[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const requestIdRef = useRef(0);
+
+    // Reload only when the month changes, not on every day picked inside it
+    const year = focusDate.getFullYear();
+    const month = focusDate.getMonth();
 
     const loadData = useCallback(async() => {
+        requestIdRef.current += 1;
+        const requestId = requestIdRef.current;
         setIsLoading(true);
         setError(null);
-
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
 
         // Buffer: 1 month before and after to cover month boundary slots
         const rangeStart = new Date(year, month - 1, 1);
@@ -77,6 +98,7 @@ export function useCalendarData(currentDate: Date) {
 
         const loadedEvents: UnifiedCalendarEvent[] = [];
         const suspendedDays = new Set<string>();
+        let hasFailedPart = false;
 
         try {
             // 1. Fetch Campus Events via Event Feed
@@ -85,6 +107,8 @@ export function useCalendarData(currentDate: Date) {
                 rangeEnd.toISOString(),
                 role
             );
+
+            if (eventsRes.error) hasFailedPart = true;
 
             if (eventsRes.data) {
                 for (const item of eventsRes.data) {
@@ -113,17 +137,19 @@ export function useCalendarData(currentDate: Date) {
             // 2. Fetch Active Academic Year and Calendar Milestones/Holidays
             const schoolYearsRes = await listSchoolYears(1, 1, '', [], { is_active: 'true', year: '' });
             const activeSy = schoolYearsRes.data?.content?.[0];
+            if (schoolYearsRes.error) hasFailedPart = true;
 
             if (activeSy?.id) {
                 const detailsRes = await getAcademicYearCalendarDetails(activeSy.id);
                 const details = detailsRes.data;
+                if (detailsRes.error) hasFailedPart = true;
 
                 if (details) {
                     // Holidays & Exceptions
                     if (details.holidays && Array.isArray(details.holidays)) {
                         for (const h of details.holidays) {
-                            const hStart = new Date(h.start_date);
-                            const hEnd = new Date(h.end_date || h.start_date);
+                            const hStart = parseCalendarDate(h.start_date);
+                            const hEnd = parseCalendarDate(h.end_date || h.start_date);
                             const isSuspension = h.exception_type === 'Suspension';
 
                             if (h.affects_attendance) {
@@ -163,8 +189,8 @@ export function useCalendarData(currentDate: Date) {
                                     id: `term-start-${term.id || termLabel}`,
                                     title: `${termLabel} Begins`,
                                     description: `Commencement of classes for ${termLabel} (${details.label})`,
-                                    start: new Date(term.start_date),
-                                    end: new Date(term.start_date),
+                                    start: parseCalendarDate(term.start_date),
+                                    end: parseCalendarDate(term.start_date),
                                     allDay: true,
                                     category: 'academic'
                                 });
@@ -175,8 +201,8 @@ export function useCalendarData(currentDate: Date) {
                                     id: `term-end-${term.id || termLabel}`,
                                     title: `${termLabel} Concludes`,
                                     description: `Official conclusion of ${termLabel} (${details.label})`,
-                                    start: new Date(term.end_date),
-                                    end: new Date(term.end_date),
+                                    start: parseCalendarDate(term.end_date),
+                                    end: parseCalendarDate(term.end_date),
                                     allDay: true,
                                     category: 'academic'
                                 });
@@ -188,8 +214,8 @@ export function useCalendarData(currentDate: Date) {
                                     id: `term-enrollment-${term.id || termLabel}`,
                                     title: `${termLabel} Enrollment Window`,
                                     description: `Course and section registration period for ${termLabel}`,
-                                    start: new Date(term.enrollment_start_date),
-                                    end: new Date(term.enrollment_end_date),
+                                    start: parseCalendarDate(term.enrollment_start_date),
+                                    end: parseCalendarDate(term.enrollment_end_date),
                                     allDay: true,
                                     category: 'academic'
                                 });
@@ -201,8 +227,8 @@ export function useCalendarData(currentDate: Date) {
                                     id: `term-grade-deadline-${term.id || termLabel}`,
                                     title: `Grade Submission Deadline (${termLabel})`,
                                     description: 'Final institutional deadline for faculty to submit grade sheets',
-                                    start: new Date(term.grading_deadline),
-                                    end: new Date(term.grading_deadline),
+                                    start: parseCalendarDate(term.grading_deadline),
+                                    end: parseCalendarDate(term.grading_deadline),
                                     allDay: true,
                                     category: 'academic'
                                 });
@@ -216,8 +242,8 @@ export function useCalendarData(currentDate: Date) {
                                             id: `exam-${gp.id || gp.name}`,
                                             title: `${gp.name} Examinations`,
                                             description: `Major examination schedule for ${gp.name} (${termLabel})`,
-                                            start: new Date(gp.major_exam_start_date),
-                                            end: new Date(gp.major_exam_end_date || gp.major_exam_start_date),
+                                            start: parseCalendarDate(gp.major_exam_start_date),
+                                            end: parseCalendarDate(gp.major_exam_end_date || gp.major_exam_start_date),
                                             allDay: true,
                                             category: 'academic'
                                         });
@@ -235,6 +261,7 @@ export function useCalendarData(currentDate: Date) {
                     getStudentSchedule(),
                     getStudentDashboard()
                 ]);
+                if (scheduleRes.error || dashRes.error) hasFailedPart = true;
 
                 // Project weekly class timetable across visible window
                 if (scheduleRes.data && Array.isArray(scheduleRes.data)) {
@@ -332,6 +359,7 @@ export function useCalendarData(currentDate: Date) {
                     term_start_date: string | null;
                     term_end_date: string | null;
                 }[]>('fn_get_calendar_section_schedules');
+                if (schedRes.error) hasFailedPart = true;
 
                 if (schedRes.data && Array.isArray(schedRes.data)) {
                     for (const slot of schedRes.data) {
@@ -394,6 +422,7 @@ export function useCalendarData(currentDate: Date) {
                     course_code: string;
                     course_title: string;
                 }[]>('fn_get_calendar_due_activities');
+                if (dueRes.error) hasFailedPart = true;
 
                 if (dueRes.data && Array.isArray(dueRes.data)) {
                     for (const a of dueRes.data) {
@@ -422,18 +451,18 @@ export function useCalendarData(currentDate: Date) {
                 }
             }
 
+            if (requestId !== requestIdRef.current) return;
             setEvents(loadedEvents);
+            if (hasFailedPart) setError(LOAD_FAILED_MESSAGE);
         }
-        catch (err: unknown) {
-            const message = err instanceof Error
-                ? err.message
-                : 'Failed to load calendar data';
-            setError(message);
+        catch {
+            if (requestId !== requestIdRef.current) return;
+            setError(LOAD_FAILED_MESSAGE);
         }
         finally {
-            setIsLoading(false);
+            if (requestId === requestIdRef.current) setIsLoading(false);
         }
-    }, [currentDate, role]);
+    }, [year, month, role]);
 
     useEffect(() => {
         loadData();

@@ -1,6 +1,16 @@
-export const YEAR_LEVEL_OPTIONS = [
-    { label: '1st Year', value: '1' },
-    { label: '2nd Year', value: '2' },
-    { label: '3rd Year', value: '3' },
-    { label: '4th Year', value: '4' }
-];
+import { CommonSelectOption } from '@components/select/CommonSelect';
+
+// Year levels the system supports; curriculum maps and programs go up to 6th year
+const YEAR_LEVEL_LABELS = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year', '6th Year'];
+
+// Year level choices with number values, for fields saved as a number
+export const YEAR_LEVEL_OPTIONS: CommonSelectOption[] = YEAR_LEVEL_LABELS.map((label, index) => ({
+    label,
+    value: index + 1
+}));
+
+// The same choices with text values, for forms and filters that keep values as text
+export const YEAR_LEVEL_TEXT_OPTIONS: CommonSelectOption[] = YEAR_LEVEL_LABELS.map((label, index) => ({
+    label,
+    value: String(index + 1)
+}));

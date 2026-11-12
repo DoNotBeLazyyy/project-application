@@ -1,6 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
+import StatCard from '@components/card/StatCard';
 import { formatScore } from '@pages/faculty/sections/student-detail/studentDetailFormat';
 import GradeBreakdownComponentPanel from '@pages/student/grade/GradeBreakdownComponentPanel';
 import {
@@ -15,40 +16,9 @@ import {
 } from '@phosphor-icons/react';
 import { getMyGradeBreakdown } from '@services/student-portal.service';
 import { MyGradeBreakdown } from '@type/student-portal.type';
-import { ReactNode, useEffect, useState } from 'react';
+import { formatGrade } from '@utils/grade-display.util';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-
-interface GradeMetricCardProps {
-    hint: string;
-    icon: ReactNode;
-    iconBg: string;
-    iconColor: string;
-    label: string;
-    value: string;
-}
-
-function GradeMetricCard({ hint, icon, iconBg, iconColor, label, value }: GradeMetricCardProps) {
-    return (
-        <div className="bg-slate-50/70 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 flex items-center gap-3.5 p-3.5 sm:p-4 rounded-2xl shadow-2xs transition-all min-w-0">
-            <div className={`flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>
-                <span className={`flex items-center justify-center ${iconColor}`}>
-                    {icon}
-                </span>
-            </div>
-            <div className="flex flex-col gap-0.5 min-w-0 text-left">
-                <span className="font-bold text-xl sm:text-2xl text-slate-900 dark:text-slate-100 truncate tracking-tight">
-                    {value}
-                </span>
-                <span className="font-medium text-xs sm:text-sm text-slate-700 dark:text-slate-300 truncate">
-                    {label}
-                </span>
-                <span className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">
-                    {hint}
-                </span>
-            </div>
-        </div>
-    );
-}
 
 export default function GradeBreakdownPage() {
     const { enrollmentId = '', gradingPeriodId = '' } = useParams<{ enrollmentId: string; gradingPeriodId: string }>();
@@ -88,20 +58,12 @@ export default function GradeBreakdownPage() {
     }
 
     const transmutedDisplay = breakdown
-        ? breakdown.special_grade
-            ?? (breakdown.transmuted_grade !== null
-                ? String(breakdown.transmuted_grade)
-                : '—')
+        ? formatGrade(breakdown.transmuted_grade, breakdown.special_grade)
         : '—';
     const isPassing = breakdown?.transmuted_grade !== null
         && breakdown?.transmuted_grade !== undefined
         && breakdown.passing_grade !== null
         && breakdown.transmuted_grade <= breakdown.passing_grade;
-    const weightedTotal = breakdown
-        ? breakdown.components.reduce(function(total, component) {
-            return total + component.weighted_score;
-        }, 0)
-        : 0;
 
     return (
         <CommonCard
@@ -186,7 +148,7 @@ export default function GradeBreakdownPage() {
                 <>
                     {/* Metric Cards Grid */}
                     <div className="gap-3 sm:gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                        <GradeMetricCard
+                        <StatCard
                             hint="Weighted average of all components"
                             icon={<CalculatorIcon size={24} />}
                             iconBg="bg-blue-50 dark:bg-blue-950/60"
@@ -194,7 +156,7 @@ export default function GradeBreakdownPage() {
                             label="Raw Grade"
                             value={formatScore(breakdown.raw_grade)}
                         />
-                        <GradeMetricCard
+                        <StatCard
                             hint="After faculty adjustments"
                             icon={<CheckCircleIcon size={24} />}
                             iconBg="bg-emerald-50 dark:bg-emerald-950/60"
@@ -202,7 +164,7 @@ export default function GradeBreakdownPage() {
                             label="Final Grade"
                             value={formatScore(breakdown.final_grade)}
                         />
-                        <GradeMetricCard
+                        <StatCard
                             hint={breakdown.passing_grade !== null
                                 ? `Passing is ${breakdown.passing_grade} or lower`
                                 : 'Converted to grading scale'}
@@ -212,7 +174,7 @@ export default function GradeBreakdownPage() {
                             label="Transmuted"
                             value={transmutedDisplay}
                         />
-                        <GradeMetricCard
+                        <StatCard
                             hint="Share of term grade"
                             icon={<TrendUpIcon size={24} />}
                             iconBg="bg-amber-50 dark:bg-amber-950/60"
@@ -277,7 +239,7 @@ export default function GradeBreakdownPage() {
                                 How this grade was computed
                             </span>
                             <span className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                                {`Each component score is calculated from your earned assessment points against total component points, scaled by the component weight (summing to ${formatScore(Number(weightedTotal.toFixed(2)))} of ${breakdown.total_component_weight} total component points) to yield your Raw Grade.`}
+                                {`Each component score is calculated from your earned assessment points against total component points and scaled by the component weight (${breakdown.total_component_weight} total component points). Together they give your Raw Grade of ${formatScore(breakdown.raw_grade)}.`}
                             </span>
                             <span className="text-slate-500 dark:text-slate-500 leading-relaxed">
                                 Your raw grade percentage is then converted into the official transmuted grade based on the institutional grading table. Assessments without submissions or scores receive 0 points toward the released component grade.

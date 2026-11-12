@@ -24,6 +24,10 @@ const SORT_COLUMNS: SortColumn[] = [
 ];
 
 const FILTER_FORM_ID = 'filter-school-year-form';
+const EMPTY_FILTERS: SchoolYearFilterValues = {
+    is_active: 'All',
+    year: ''
+};
 
 export default function SchoolYearManagement() {
     const [activeFilters, setActiveFilters] = useState<SchoolYearFilterValues | null>(null);
@@ -41,12 +45,7 @@ export default function SchoolYearManagement() {
     const [historySchoolYearId, setHistorySchoolYearId] = useState<string | null>(null);
     const [historySchoolYearLabel, setHistorySchoolYearLabel] = useState<string>('');
 
-    const filterMethods = useForm<SchoolYearFilterValues>({
-        defaultValues: {
-            is_active: 'All',
-            year: ''
-        }
-    });
+    const filterMethods = useForm<SchoolYearFilterValues>({ defaultValues: EMPTY_FILTERS });
 
     function triggerRefresh() {
         setRefreshKey((prev) => prev + 1);
@@ -99,13 +98,7 @@ export default function SchoolYearManagement() {
         setHistorySchoolYearLabel('');
     }
 
-    const { columnDefs, tableActionConfig } = useSchoolYearTableConfig({
-        onDuplicate: handleOpenDuplicate,
-        onEdit: handleOpenUpdate,
-        onOpenHistory: handleOpenHistory,
-        onRequestDeleteRow: function() {},
-        onView: handleOpenView
-    });
+    const { columnDefs } = useSchoolYearTableConfig();
 
     async function fetchSchoolYears(
         page: number,
@@ -118,10 +111,11 @@ export default function SchoolYearManagement() {
 
     function handleFilterSubmit(values: SchoolYearFilterValues) {
         setActiveFilters(values);
+        setIsFilterOpen(false);
     }
 
     function handleFilterReset() {
-        filterMethods.reset();
+        filterMethods.reset(EMPTY_FILTERS);
         setActiveFilters(null);
     }
 
@@ -163,6 +157,8 @@ export default function SchoolYearManagement() {
                     onReset: handleFilterReset,
                     open: isFilterOpen,
                     onClose: function() {
+                        // Closing without applying drops the unapplied values
+                        filterMethods.reset(activeFilters || EMPTY_FILTERS);
                         setIsFilterOpen(false);
                     }
                 }}
@@ -181,7 +177,6 @@ export default function SchoolYearManagement() {
                     );
                 }}
                 sortColumns={SORT_COLUMNS}
-                tableActionConfig={tableActionConfig}
                 tableProps={{
                     hasCheckbox: true,
                     leadingColumnDefs: columnDefs

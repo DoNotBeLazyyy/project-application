@@ -1,14 +1,9 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
+import { formatActionLabel } from '@pages/registrar/registrar-logs/utils/registrar-log.util';
 import { RegistrarLogRow } from '@type/registrar-verification.type';
 import { MobileCardColDef } from '@type/table.type';
 import { ICellRendererParams } from 'ag-grid-community';
 import { useMemo } from 'react';
-
-function formatActionLabel(action: string): string {
-    return action
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, (c) => c.toUpperCase());
-}
 
 export function useRegistrarLogTableConfig() {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {

@@ -3,6 +3,7 @@ import {
     AcademicYearCalendarDetails,
     AcademicYearWizardFormValues,
     CalendarExceptionType,
+    WizardCalendarExceptionItem,
     WizardTermItem,
     WizardThresholdItem,
     WizardTransmutationRow
@@ -346,6 +347,15 @@ export function validateTerms(
             errorsList.push({
                 message: `Term #${i + 1} (${termName || `Term #${i + 1}`}) end date (${t.end_date}) cannot be after the school year end date (${syEndDate}).`,
                 fieldPath: `terms.${i}.end_date`,
+                termIndex: i
+            });
+        }
+
+        // Grades for a term cannot be due before the term has started
+        if (t.grading_deadline && t.start_date && new Date(t.grading_deadline) < new Date(t.start_date)) {
+            errorsList.push({
+                message: `Grading Deadline (${t.grading_deadline}) cannot be before the start of ${termName || `Term #${i + 1}`} (${t.start_date}).`,
+                fieldPath: `terms.${i}.grading_deadline`,
                 termIndex: i
             });
         }
@@ -722,6 +732,63 @@ export interface SourceSchoolYearInfo {
     end_date: string;
 }
 
+/**
+ * Moves a YYYY-MM-DD date by whole years, keeping the month and day.
+ * Feb 29 becomes Feb 28 when the target year has no leap day. Empty values stay empty.
+ */
+export function shiftDateByYears(value: string | null | undefined, years: number): string {
+    if (!value) {
+        return value ?? '';
+    }
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+    if (!match || years === 0) {
+        return value;
+    }
+    const year = Number(match[1]) + years;
+    const month = Number(match[2]);
+    const lastDay = new Date(Date.UTC(year, month, 0))
+        .getUTCDate();
+    const day = Math.min(Number(match[3]), lastDay);
+    return `${String(year)
+        .padStart(4, '0')}-${match[2]}-${String(day)
+        .padStart(2, '0')}`;
+}
+
+/**
+ * Moves every term, grading period and holiday date by whole years.
+ * Used when a duplicated year gets its new dates, so copied dates land in the new year.
+ */
+export function shiftCalendarDatesByYears(
+    terms: WizardTermItem[],
+    holidays: WizardCalendarExceptionItem[],
+    years: number
+): { terms: WizardTermItem[]; holidays: WizardCalendarExceptionItem[] } {
+    return {
+        terms: terms.map((t) => ({
+            ...t,
+            start_date: shiftDateByYears(t.start_date, years),
+            end_date: shiftDateByYears(t.end_date, years),
+            enrollment_start_date: shiftDateByYears(t.enrollment_start_date, years),
+            enrollment_end_date: shiftDateByYears(t.enrollment_end_date, years),
+            grading_deadline: shiftDateByYears(t.grading_deadline, years),
+            grading_periods: (t.grading_periods || []).map((gp) => ({
+                ...gp,
+                start_date: shiftDateByYears(gp.start_date, years),
+                end_date: shiftDateByYears(gp.end_date, years),
+                major_exam_start_date: shiftDateByYears(gp.major_exam_start_date, years),
+                major_exam_end_date: shiftDateByYears(gp.major_exam_end_date, years),
+                grade_encoding_start_date: shiftDateByYears(gp.grade_encoding_start_date, years),
+                grade_encoding_end_date: shiftDateByYears(gp.grade_encoding_end_date, years)
+            }))
+        })),
+        holidays: holidays.map((h) => ({
+            ...h,
+            start_date: shiftDateByYears(h.start_date, years),
+            end_date: shiftDateByYears(h.end_date, years)
+        }))
+    };
+}
+
 export function cloneSchoolYearForDuplication(
     details: AcademicYearCalendarDetails
 ): Partial<AcademicYearWizardFormValues> {
@@ -791,6 +858,17 @@ export function cloneSchoolYearForDuplication(
         is_active: Boolean(th.is_active)
     }));
 
+    // Holidays are copied too; their dates move with the terms once the new dates are set
+    const clonedHolidays: WizardCalendarExceptionItem[] = (details.holidays || []).map((h) => ({
+        id: undefined,
+        title: h.title,
+        exception_type: toCalendarExceptionType(h.exception_type) || 'Holiday',
+        start_date: h.start_date || '',
+        end_date: h.end_date || '',
+        affects_attendance: Boolean(h.affects_attendance),
+        description: h.description ?? ''
+    }));
+
     return {
         id: null,
         code: '',
@@ -800,6 +878,7 @@ export function cloneSchoolYearForDuplication(
         is_active: false,
         max_units_per_term: details.max_units_per_term || 24,
         evaluation_scope: details.evaluation_scope || 'Period',
+        holidays: clonedHolidays,
         terms: clonedTerms,
         transmutation_rows: clonedTransmutation,
         thresholds: clonedThresholds

@@ -124,19 +124,9 @@ export default function DepartmentForm({
                 setValue('code', '', { shouldValidate: false, shouldDirty: false });
             }
         }
-        else {
-            if (watchedName !== initialNameRef.current) {
-                const generated = generateDepartmentCode(watchedName || '');
-                if (generated) {
-                    setValue('code', generated, { shouldValidate: true, shouldDirty: true });
-                }
-                else if (!watchedName?.trim()) {
-                    setValue('code', '', { shouldValidate: false, shouldDirty: true });
-                }
-            }
-            else if (initialCodeRef.current !== null && watchedCode !== initialCodeRef.current) {
-                setValue('code', initialCodeRef.current, { shouldValidate: true, shouldDirty: false });
-            }
+        // An existing department keeps its code when renamed; codes are only generated on create
+        else if (initialCodeRef.current && watchedCode !== initialCodeRef.current) {
+            setValue('code', initialCodeRef.current, { shouldValidate: true, shouldDirty: false });
         }
     }, [watchedName, disabled, isCreate, setValue, watchedCode]);
 

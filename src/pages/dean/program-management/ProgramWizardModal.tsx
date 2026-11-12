@@ -185,15 +185,16 @@ export default function ProgramWizardModal({
                 : {
                     required: 'Number of years is required',
                     min: { value: 1, message: 'Must be at least 1 year' },
-                    max: { value: 8, message: 'Cannot exceed 8 years' },
+                    // Curriculum year levels go up to 6
+                    max: { value: 6, message: 'Cannot exceed 6 years' },
                     validate: (val: unknown) => Number.isInteger(Number(val)) || 'Duration must be a whole number of years'
                 },
             type: 'number',
             fieldProps: {
-                helperText: 'Standard duration in years (1-8)',
+                helperText: 'Standard duration in years (1-6)',
                 maxDecimals: 0,
                 min: 1,
-                max: 8
+                max: 6
             }
         },
         {

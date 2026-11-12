@@ -4,7 +4,7 @@ import useBreakpoint from '@hooks/use-breakpoint';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import { PaperPlaneRightIcon, XIcon } from '@phosphor-icons/react';
-import { askAssistant } from '@services/assistant.service';
+import { askAssistant, loadAssistantChat, saveAssistantChat } from '@services/assistant.service';
 import { useAppStore } from '@stores/app.store';
 import { useAssistantStore } from '@stores/assistant.store';
 import { AssistantMessage, AssistantTurn } from '@type/assistant.type';
@@ -128,11 +128,16 @@ export default function AiAssistant() {
     const { pathname } = useLocation();
     const { isMobile } = useBreakpoint();
     const activeRole = useAppStore((s) => s.activeRole);
+    const userId = useAppStore((s) => s.userProfile?.id ?? null);
     const isOpen = useAssistantStore((s) => s.isOpen);
     const toggleOpen = useAssistantStore((s) => s.toggleOpen);
     const [isSending, setIsSending] = useState(false);
     const [draft, setDraft] = useState('');
-    const [messages, setMessages] = useState<AssistantMessage[]>([]);
+    const [messages, setMessages] = useState<AssistantMessage[]>(() => userId
+        ? loadAssistantChat(userId)
+        : []);
+    // The user whose chat is in `messages`, so a new sign-in never saves over another chat
+    const [chatUserId, setChatUserId] = useState<string | null>(userId);
     const [usedSuggestions, setUsedSuggestions] = useState<string[]>([]);
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const role = activeRole ?? '';
@@ -153,6 +158,23 @@ export default function AiAssistant() {
         setUsedSuggestions([]);
     }, [activeRole]);
 
+    // Load the saved chat when a different user signs in
+    useEffect(function() {
+        if (userId === chatUserId) return;
+
+        setMessages(userId
+            ? loadAssistantChat(userId)
+            : []);
+        setChatUserId(userId);
+    }, [userId, chatUserId]);
+
+    // Keep the chat so a page refresh does not lose it
+    useEffect(function() {
+        if (chatUserId) {
+            saveAssistantChat(chatUserId, messages);
+        }
+    }, [chatUserId, messages]);
+
     function handleSuggestionSelect(suggestion: string) {
         setUsedSuggestions((prev) => prev.includes(suggestion)
             ? prev
@@ -171,8 +193,9 @@ export default function AiAssistant() {
             .filter((item) => !item.isFailed)
             .map((item) => ({ role: item.role, content: item.content }));
 
+        const questionId = createMessageId();
         setMessages((prev) => [...prev, {
-            id: createMessageId(), role: 'user', content: trimmed
+            id: questionId, role: 'user', content: trimmed
         }]);
         setDraft('');
         setIsSending(true);
@@ -190,18 +213,35 @@ export default function AiAssistant() {
         const reply = result.data?.reply;
 
         if (!reply) {
-            setMessages((prev) => [...prev, {
-                id: createMessageId(),
-                role: 'assistant',
-                content: result.error?.message ?? 'The assistant could not answer that. Please try again.',
-                isFailed: true
-            }]);
+            // Mark the question as failed too, so the next request does not send two user
+            // turns in a row; it stays visible with a Retry action
+            setMessages((prev) => [
+                ...prev.map((item) => item.id === questionId
+                    ? { ...item, isFailed: true }
+                    : item),
+                {
+                    id: createMessageId(),
+                    role: 'assistant',
+                    content: result.error?.message ?? 'The assistant could not answer that. Please try again.',
+                    isFailed: true
+                }
+            ]);
             return;
         }
 
         setMessages((prev) => [...prev, {
             id: createMessageId(), role: 'assistant', content: reply
         }]);
+    }
+
+    /**
+     * Sends a failed question again after removing it and its error from the chat.
+     */
+    function handleRetry(failedQuestion: AssistantMessage, failedReply: AssistantMessage) {
+        if (isSending) return;
+
+        setMessages((prev) => prev.filter((item) => item.id !== failedQuestion.id && item.id !== failedReply.id));
+        handleSend(failedQuestion.content);
     }
 
     function handleComposerKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -251,28 +291,47 @@ export default function AiAssistant() {
                         />
                     </>
                 )}
-                {messages.map((item) => (
-                    <div
-                        className={
-                            item.role === 'user'
-                                ? 'flex justify-end'
-                                : 'flex justify-start'
-                        }
-                        key={item.id}
-                    >
-                        <p
+                {messages.map((item, index) => {
+                    const previous = messages[index - 1];
+                    const failedQuestion = item.role === 'assistant' && item.isFailed && previous?.role === 'user' && previous.isFailed
+                        ? previous
+                        : null;
+
+                    return (
+                        <div
                             className={
                                 item.role === 'user'
-                                    ? 'bg-(--mui-palette-primary-main) max-w-[85%] px-3 py-2 rounded-xl text-(--mui-palette-primary-contrastText) text-sm whitespace-pre-wrap'
-                                    : item.isFailed
-                                        ? 'bg-(--mui-palette-error-main)/10 max-w-[85%] px-3 py-2 rounded-xl text-(--mui-palette-error-main) text-sm whitespace-pre-wrap'
-                                        : 'bg-(--mui-palette-action-hover) max-w-[85%] px-3 py-2 rounded-xl text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap'
+                                    ? 'flex justify-end'
+                                    : 'flex flex-col gap-1 items-start'
                             }
+                            key={item.id}
                         >
-                            {item.content}
-                        </p>
-                    </div>
-                ))}
+                            <p
+                                className={
+                                    item.role === 'user'
+                                        ? 'bg-(--mui-palette-primary-main) max-w-[85%] px-3 py-2 rounded-xl text-(--mui-palette-primary-contrastText) text-sm whitespace-pre-wrap'
+                                        : item.isFailed
+                                            ? 'bg-(--mui-palette-error-main)/10 max-w-[85%] px-3 py-2 rounded-xl text-(--mui-palette-error-main) text-sm whitespace-pre-wrap'
+                                            : 'bg-(--mui-palette-action-hover) max-w-[85%] px-3 py-2 rounded-xl text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap'
+                                }
+                            >
+                                {item.content}
+                            </p>
+                            {failedQuestion && (
+                                <CommonButton
+                                    disabled={isSending}
+                                    size="small"
+                                    variant="text"
+                                    onClick={function() {
+                                        handleRetry(failedQuestion, item);
+                                    }}
+                                >
+                                    Retry
+                                </CommonButton>
+                            )}
+                        </div>
+                    );
+                })}
                 {isSending && (
                     <span className="text-(--mui-palette-text-secondary) text-xs">
                         Thinking...

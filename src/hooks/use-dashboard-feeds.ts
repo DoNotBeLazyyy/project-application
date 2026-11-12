@@ -1,11 +1,10 @@
 import { listMyAnnouncementsFeed } from '@services/announcement.service';
 import { listMyEventsFeed } from '@services/event.service';
 import { supabase } from '@services/supabase.client';
+import { useAppStore } from '@stores/app.store';
 import { AnnouncementFeedRow } from '@type/announcement.type';
 import { EventFeedRow } from '@type/event.type';
-import { getRoleFromPath } from '@utils/role-path.util';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 
 const ANNOUNCEMENT_LIMIT = 5;
 const EVENT_WINDOW_DAYS = 30;
@@ -20,8 +19,7 @@ interface UseDashboardFeedsResult {
 }
 
 export default function useDashboardFeeds(): UseDashboardFeedsResult {
-    const { pathname } = useLocation();
-    const currentRole = getRoleFromPath(pathname);
+    const currentRole = useAppStore((s) => s.activeRole);
 
     const [announcements, setAnnouncements] = useState<AnnouncementFeedRow[]>([]);
     const [announcementsError, setAnnouncementsError] = useState<string | null>(null);

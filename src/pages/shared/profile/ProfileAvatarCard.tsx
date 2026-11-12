@@ -93,11 +93,11 @@ export default function ProfileAvatarCard({
             return;
         }
 
-        await removeStoredAvatars(path);
-
         const result = await updateMyAvatar(`${uploaded.data.url}?v=${Date.now()}`);
 
         if (!result.error) {
+            // Old photos go only after the profile points at the new one
+            await removeStoredAvatars(path);
             await initAuthSession();
             onChanged();
         }
@@ -108,11 +108,11 @@ export default function ProfileAvatarCard({
     async function handleRemove() {
         setIsRemoving(true);
 
-        await removeStoredAvatars(null);
-
+        // Clear the profile first; if that fails the photo files are still there
         const result = await updateMyAvatar(null);
 
         if (!result.error) {
+            await removeStoredAvatars(null);
             await initAuthSession();
             onChanged();
         }

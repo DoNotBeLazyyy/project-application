@@ -55,7 +55,8 @@ export default function AttendanceSessionList({
                     : (
                         sessions.map((session) => {
                             const isSelected = selectedSessionId === session.id;
-                            const dateObj = new Date(session.session_date);
+                            // Parse as a local date; new Date('YYYY-MM-DD') reads it as UTC midnight
+                            const dateObj = new Date(`${session.session_date.slice(0, 10)}T00:00:00`);
                             const weekday = dateObj.toLocaleDateString(undefined, { weekday: 'short' });
                             const formattedDate = dateObj.toLocaleDateString(undefined, {
                                 month: 'short',

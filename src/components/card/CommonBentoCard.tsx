@@ -36,7 +36,7 @@ export interface BentoCardProgress {
     total: number;
 }
 
-export interface BentoCardAction {
+export interface BentoCardButtonAction {
     disabled?: boolean;
     label: string;
     onClick: (event?: MouseEventButtonElement) => void;
@@ -64,9 +64,9 @@ export interface CommonBentoCardProps {
     hasCheckbox?: boolean;
     isSelected?: boolean;
     metrics?: BentoCardMetric[];
-    primaryAction?: BentoCardAction;
+    primaryAction?: BentoCardButtonAction;
     progress?: BentoCardProgress;
-    secondaryAction?: BentoCardAction;
+    secondaryAction?: BentoCardButtonAction;
     /** How the selection affordance renders: a checkbox (default) or a "Select" button. */
     selectVariant?: 'checkbox' | 'button';
     status?: string;

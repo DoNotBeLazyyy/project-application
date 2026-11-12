@@ -245,14 +245,18 @@ export async function bulkCreateCourses(
     const result = await callRpc<{
         provisioned_count: number;
         errors: { row: number; code: string; message: string }[];
+        warnings?: { row: number; code: string; message: string }[];
     }>('fn_bulk_create_courses', { p_courses: normalizedCourses });
 
     if (result.error) {
         return { provisioned_count: 0, errors: [result.error.message] };
     }
 
+    // Rows saved with a prerequisite problem are successes with a warning, not errors
     return {
         provisioned_count: result.data?.provisioned_count ?? 0,
+        warnings: (result.data?.warnings ?? []).map((warning) =>
+            `Row ${warning.row} (${warning.code || 'unknown'}): ${warning.message}`),
         errors: (result.data?.errors ?? []).map((error) =>
             `Row ${error.row} (${error.code || 'unknown'}): ${error.message}`)
     };

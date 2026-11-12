@@ -3,23 +3,33 @@ import BulkImportModal from '@components/modal/BulkImportModal';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import { useHasRealChanges } from '@hooks/use-has-real-changes';
-import { CREATE_FORM_ID, FILTER_FORM_ID, SORT_COLUMNS } from '@pages/admin/user-management/constants/admin-user.constant';
+import { CREATE_FORM_ID, USER_FILTER_FORM_ID, USER_SORT_COLUMNS } from '@pages/admin/user-management/constants/admin-user.constant';
 import CreateUserForm from '@pages/admin/user-management/forms/CreateUserForm';
 import FilterUserForm from '@pages/admin/user-management/forms/FilterUserForm';
 import UserForm from '@pages/admin/user-management/forms/UserForm';
-import { handleResendInvite, handleResetPassword, useUserTableConfig } from '@pages/admin/user-management/hooks/use-user-table-config';
+import { useUserTableConfig } from '@pages/admin/user-management/hooks/use-user-table-config';
 import UserGridCard from '@pages/admin/user-management/UserGridCard';
 import { ArrowCounterClockwiseIcon, ProhibitIcon } from '@phosphor-icons/react';
 import {
-    bulkProvisionUsers, deactivateUsers, getUserById, inviteSingleUser, listUsers, reactivateUsers, updateUser
+    bulkProvisionUsers,
+    deactivateUsers,
+    getUserById,
+    inviteSingleUser,
+    listUsers,
+    reactivateUsers,
+    resendInvite,
+    resetUserPassword,
+    updateUser
 } from '@services/user.service';
+import { useAppStore } from '@stores/app.store';
+import { useToastStore } from '@stores/toast.store';
 import { UserRole } from '@type/app.type';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { SortStringDto } from '@type/http.type';
 import {
     AddUserFormValues, InviteUserParams, UpdateUserFormValues, UserFilterValues, UserListRow
 } from '@type/user.type';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSearchParams } from 'react-router-dom';
 
@@ -87,6 +97,10 @@ export default function UserManagement() {
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [isBulkReactivating, setIsBulkReactivating] = useState(false);
+    const [busyUserIds, setBusyUserIds] = useState<Set<string>>(new Set());
+    const busyUserIdsRef = useRef<Set<string>>(new Set());
+    const currentUserId = useAppStore((state) => state.session?.user?.id || state.userProfile?.id || null);
 
     const createMethods = useForm<AddUserFormValues>({
         defaultValues: {
@@ -185,27 +199,89 @@ export default function UserManagement() {
         updateMethods.reset();
     }
 
-    async function handleReactivateSingle(id: string) {
-        const result = await reactivateUsers([id]);
-        if (!result.error) {
-            setActiveFilters((prev) => ({ ...prev } as UserFilterValues));
+    /**
+     * Runs one action for a user and ignores repeat clicks until it finishes.
+     */
+    const runUserAction = useCallback(async function(id: string, action: () => Promise<void>) {
+        if (busyUserIdsRef.current.has(id)) {
+            return;
         }
+        busyUserIdsRef.current = new Set(busyUserIdsRef.current)
+            .add(id);
+        setBusyUserIds(busyUserIdsRef.current);
+        try {
+            await action();
+        }
+        finally {
+            const next = new Set(busyUserIdsRef.current);
+            next.delete(id);
+            busyUserIdsRef.current = next;
+            setBusyUserIds(next);
+        }
+    }, []);
+
+    const isUserBusy = useCallback(function(id: string) {
+        return busyUserIds.has(id);
+    }, [busyUserIds]);
+
+    const handleReactivateSingle = useCallback(function(id: string) {
+        return runUserAction(id, async function() {
+            const result = await reactivateUsers([id]);
+            if (!result.error) {
+                setActiveFilters((prev) => ({ ...prev } as UserFilterValues));
+            }
+        });
+    }, [runUserAction]);
+
+    // The server message is toasted by the service call, so no extra toast here
+    const handleResendInviteRow = useCallback(function(row: UserListRow) {
+        return runUserAction(row.id, async function() {
+            await resendInvite(row.email);
+        });
+    }, [runUserAction]);
+
+    const handleResetPasswordRow = useCallback(function(row: UserListRow) {
+        return runUserAction(row.id, async function() {
+            await resetUserPassword(row.email);
+        });
+    }, [runUserAction]);
+
+    /**
+     * Deactivates users, but never the admin who is signed in.
+     */
+    async function handleDeactivate(ids: string[]) {
+        if (currentUserId && ids.includes(currentUserId)) {
+            const message = 'You cannot deactivate your own account.';
+            useToastStore.getState()
+                .showToast(message, 'error');
+            return {
+                data: null,
+                error: {
+                    code: null, message, status: null
+                }
+            };
+        }
+        return deactivateUsers(ids);
     }
 
     async function handleBulkReactivate(ids: string[], clearSelection: VoidFunction) {
-        const result = await reactivateUsers(ids);
-        if (!result.error) {
-            clearSelection();
-            setActiveFilters((prev) => ({ ...prev } as UserFilterValues));
+        if (isBulkReactivating) {
+            return;
+        }
+        setIsBulkReactivating(true);
+        try {
+            const result = await reactivateUsers(ids);
+            if (!result.error) {
+                clearSelection();
+                setActiveFilters((prev) => ({ ...prev } as UserFilterValues));
+            }
+        }
+        finally {
+            setIsBulkReactivating(false);
         }
     }
 
-    const { columnDefs, tableActionConfig } = useUserTableConfig({
-        onRequestDeleteRow: function() {},
-        onEdit: handleOpenUpdate,
-        onView: handleOpenView,
-        onReactivate: handleReactivateSingle
-    });
+    const { columnDefs } = useUserTableConfig();
 
     async function fetchUsers(
         page: number,
@@ -342,16 +418,20 @@ export default function UserManagement() {
                         }
                     },
                     confirmText: 'Apply Filters',
-                    formId: FILTER_FORM_ID,
+                    formId: USER_FILTER_FORM_ID,
                     formContent: (
                         <FilterUserForm
                             control={filterMethods.control}
-                            id={FILTER_FORM_ID}
+                            id={USER_FILTER_FORM_ID}
                             onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
                         />
                     ),
                     open: isFilterOpen,
                     onClose: function() {
+                        // Closing without applying drops the unapplied values
+                        if (activeFilters) {
+                            filterMethods.reset(activeFilters);
+                        }
                         setIsFilterOpen(false);
                     },
                     onReset: handleFilterReset
@@ -359,13 +439,15 @@ export default function UserManagement() {
                 renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
                     return (
                         <UserGridCard
+                            isBusy={isUserBusy(item.id)}
                             isSelected={isSelected}
+                            isSelf={item.id === currentUserId}
                             row={item}
                             onEdit={handleOpenUpdate}
                             onReactivate={handleReactivateSingle}
                             onRequestDelete={onRequestDeleteRow}
-                            onResendInvite={handleResendInvite}
-                            onResetPassword={handleResetPassword}
+                            onResendInvite={handleResendInviteRow}
+                            onResetPassword={handleResetPasswordRow}
                             onToggleSelect={onToggleSelect}
                             onView={handleOpenView}
                         />
@@ -383,6 +465,7 @@ export default function UserManagement() {
                     extraActions: (selectedIds, clearSelection) => (
                         <CommonButton
                             color="success"
+                            disabled={isBulkReactivating}
                             size="small"
                             startIcon={(
                                 <ArrowCounterClockwiseIcon
@@ -398,8 +481,7 @@ export default function UserManagement() {
                         </CommonButton>
                     )
                 }}
-                sortColumns={SORT_COLUMNS}
-                tableActionConfig={tableActionConfig}
+                sortColumns={USER_SORT_COLUMNS}
                 tableProps={{
                     hasCheckbox: true,
                     leadingColumnDefs: columnDefs
@@ -472,9 +554,9 @@ export default function UserManagement() {
                 onCreate={function() {
                     setIsCreateOpen(true);
                 }}
-                onDelete={deactivateUsers}
+                onDelete={handleDeactivate}
                 onDeleteRow={function(id) {
-                    return deactivateUsers([id]);
+                    return handleDeactivate([id]);
                 }}
                 onFetch={fetchUsers}
                 onFilter={() => setIsFilterOpen(true)}

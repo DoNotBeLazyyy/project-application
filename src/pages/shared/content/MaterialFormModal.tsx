@@ -6,12 +6,11 @@ import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import { useObjectDraft } from '@hooks/use-form-draft';
-import { isBlankText, MATERIAL_URL_PATTERN } from '@pages/shared/content/content-form.constant';
+import { getEmptyFileError, isBlankText, MATERIAL_URL_PATTERN } from '@pages/shared/content/content-form.constant';
 import { UploadSimpleIcon } from '@phosphor-icons/react';
 import { createMaterial, MATERIAL_TYPE_OPTIONS, updateMaterial } from '@services/content.service';
-import { uploadFile } from '@services/storage.service';
+import { deleteFile, uploadFileToFolder } from '@services/storage.service';
 import { CourseMaterial, MaterialType } from '@type/content.type';
-import { generateId } from '@utils/uuid.util';
 import {
     ChangeEvent, useEffect, useMemo, useRef, useState
 } from 'react';
@@ -182,6 +181,13 @@ export default function MaterialFormModal({
 
     function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
         const selected = e.target.files?.[0] ?? null;
+        const emptyError = getEmptyFileError(selected);
+        if (emptyError) {
+            setFile(null);
+            setFileError(emptyError);
+            e.target.value = '';
+            return;
+        }
         setFile(selected);
         if (selected) {
             setFileError(null);
@@ -248,13 +254,18 @@ export default function MaterialFormModal({
             return;
         }
 
-        const path = `${sectionId}/${moduleId}/${generateId()}-${file.name}`;
-        const uploadResult = await uploadFile({
-            bucket: 'materials', file, path
+        const uploadResult = await uploadFileToFolder({
+            bucket: 'materials',
+            file,
+            folder: `${sectionId}/${moduleId}`
         });
 
-        if (uploadResult.error) {
+        if (!uploadResult.data) {
             setIsSaving(false);
+            // Storage errors are already shown; a refused file is shown under the picker
+            if (uploadResult.error?.code === 'INVALID_FILE') {
+                setFileError(uploadResult.error.message);
+            }
             return;
         }
 
@@ -262,16 +273,20 @@ export default function MaterialFormModal({
             description,
             fileName: file.name,
             fileSizeBytes: file.size,
-            fileUrl: path,
+            fileUrl: uploadResult.data.file_path,
             materialType: values.materialType,
-            mimeType: file.type || null,
+            mimeType: uploadResult.data.mime_type,
             moduleId,
             title
         });
 
         setIsSaving(false);
 
-        if (!result.error) {
+        if (result.error) {
+            // The record was not saved, so the uploaded file is not needed
+            await deleteFile('materials', uploadResult.data.file_path);
+        }
+        else {
             finishSave();
         }
     }

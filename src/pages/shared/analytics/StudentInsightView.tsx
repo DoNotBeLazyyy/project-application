@@ -6,6 +6,7 @@ import WhatIfGradeSimulator from '@pages/shared/analytics/WhatIfGradeSimulator';
 import { ChartLineUpIcon, TargetIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { getStudentInsight } from '@services/analytics.service';
 import { InsightCourse, InsightTrajectory, RiskLevel, StudentInsight } from '@type/analytics.type';
+import { formatGwa } from '@utils/grade-display.util';
 import { useEffect, useState } from 'react';
 
 const RISK_VARIANT_MAP: Record<RiskLevel, 'success' | 'error' | 'warning'> = {
@@ -22,13 +23,6 @@ function formatPct(value: number | null): string {
     return value !== null && value !== undefined
         ? `${Number(value)
             .toFixed(1)}%`
-        : '—';
-}
-
-function formatGwa(value: number | null): string {
-    return value !== null && value !== undefined
-        ? Number(value)
-            .toFixed(2)
         : '—';
 }
 

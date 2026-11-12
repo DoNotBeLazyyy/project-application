@@ -8,7 +8,7 @@ import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
-import { useObjectDraft } from '@hooks/use-form-draft';
+import { useFormDraft } from '@hooks/use-form-draft';
 import InputAdornment from '@mui/material/InputAdornment';
 import Tooltip from '@mui/material/Tooltip';
 import {
@@ -23,10 +23,9 @@ import {
     TrashIcon
 } from '@phosphor-icons/react';
 import { creditStudentCourse, getStudentCurriculumForCrediting, removeCreditedCourse } from '@services/records.service';
-import { useToastStore } from '@stores/toast.store';
 import { CreditedCourseRow, StudentCurriculumCreditingResponse } from '@type/records.type';
 import { useEffect, useMemo, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 interface CreditFormValues {
     previousSchool: string;
@@ -181,39 +180,15 @@ export default function CreditTransfereeCoursesModal({
         };
     }
 
-    const defaultCreditFormValues = useMemo(() => toCreditFormValues(activeCourse), [activeCourse, rememberedSchool]);
+    const creditForm = useForm<CreditFormValues>({ defaultValues: toCreditFormValues(null) });
 
-    const creditForm = useForm<CreditFormValues>({ defaultValues: defaultCreditFormValues });
-    const watchedCreditValues = useWatch({ control: creditForm.control });
-
-    const currentCreditFormValues = useMemo<CreditFormValues>(() => ({
-        previousSchool: watchedCreditValues.previousSchool ?? '',
-        previousCourseCode: watchedCreditValues.previousCourseCode ?? '',
-        previousCourseTitle: watchedCreditValues.previousCourseTitle ?? '',
-        gradeDisplay: watchedCreditValues.gradeDisplay ?? '',
-        gradeNumeric: watchedCreditValues.gradeNumeric ?? null,
-        unitsCredited: watchedCreditValues.unitsCredited ?? null,
-        remarks: watchedCreditValues.remarks ?? ''
-    }), [watchedCreditValues]);
-
-    const creditDraftGuard = useObjectDraft({
+    // handleOpenCreditForm resets the form to the course's values before this turns on
+    const creditDraftGuard = useFormDraft({
+        control: creditForm.control,
+        enabled: isFormOpen && Boolean(activeCourse),
         formId: activeCourse?.course_id
             ? `credit-transferee-course-${studentId ?? 'student'}-${activeCourse.course_id}`
-            : `credit-transferee-course-${studentId ?? 'student'}`,
-        values: currentCreditFormValues,
-        defaultValues: defaultCreditFormValues,
-        onRestore: (restored) => {
-            creditForm.reset({
-                previousSchool: restored.previousSchool ?? '',
-                previousCourseCode: restored.previousCourseCode ?? '',
-                previousCourseTitle: restored.previousCourseTitle ?? '',
-                gradeDisplay: restored.gradeDisplay ?? 'Passed',
-                gradeNumeric: restored.gradeNumeric ?? null,
-                unitsCredited: restored.unitsCredited ?? 3.0,
-                remarks: restored.remarks ?? ''
-            }, { keepDefaultValues: true });
-        },
-        enabled: isFormOpen && Boolean(activeCourse)
+            : `credit-transferee-course-${studentId ?? 'student'}`
     });
 
     // Revocation prompt state
@@ -225,12 +200,9 @@ export default function CreditTransfereeCoursesModal({
         setIsLoading(true);
         const res = await getStudentCurriculumForCrediting(studentId);
         setIsLoading(false);
+        // callRpc already shows the error
         if (res.data) {
             setData(res.data);
-        }
-        else if (res.error) {
-            useToastStore.getState()
-                .showToast(res.error.message || 'Failed to load curriculum', 'error');
         }
     }
 
@@ -303,17 +275,12 @@ export default function CreditTransfereeCoursesModal({
 
         setIsSaving(false);
 
+        // callRpc already shows the server's success or error message
         if (res.data?.success) {
-            useToastStore.getState()
-                .showToast(res.data.message || 'Course credited successfully!', 'success');
             setRememberedSchool(values.previousSchool.trim());
             handleCloseCreditForm();
             loadCurriculum();
             onSuccess?.();
-        }
-        else {
-            useToastStore.getState()
-                .showToast(res.error?.message || res.data?.message || 'Failed to credit course.', 'error');
         }
     }
 
@@ -324,16 +291,11 @@ export default function CreditTransfereeCoursesModal({
         const res = await removeCreditedCourse(courseToRevoke.credited_id, 'Revoked by Registrar');
         setIsRevoking(false);
 
+        // callRpc already shows the server's success or error message
         if (res.data?.success) {
-            useToastStore.getState()
-                .showToast(res.data.message || 'Course credit revoked.', 'success');
             setCourseToRevoke(null);
             loadCurriculum();
             onSuccess?.();
-        }
-        else {
-            useToastStore.getState()
-                .showToast(res.error?.message || 'Failed to revoke course credit.', 'error');
         }
     }
 

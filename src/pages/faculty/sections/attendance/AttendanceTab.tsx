@@ -1,4 +1,5 @@
 import DeletePromptModal from '@components/modal/DeletePromptModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import AttendanceRecordList from '@pages/faculty/sections/attendance/AttendanceRecordList';
 import AttendanceSessionList from '@pages/faculty/sections/attendance/AttendanceSessionList';
 import AttendanceSessionWizardModal from '@pages/faculty/sections/attendance/AttendanceSessionWizardModal';
@@ -29,6 +30,7 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
     const [draftRecords, setDraftRecords] = useState<AttendanceRecordUpdate[]>([]);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [mobileView, setMobileView] = useState<'sessions' | 'records'>('sessions');
+    const [pendingSession, setPendingSession] = useState<AttendanceSession | null>(null);
 
     const isDirty = useMemo(() => {
         if (draftRecords.length === 0 || records.length === 0) return false;
@@ -69,6 +71,24 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
                 }))
             );
         }
+    }
+
+    /**
+     * Switching sessions throws away unsaved marks, so ask first when there are any.
+     */
+    async function handleSessionClick(session: AttendanceSession) {
+        if (isDirty && session.id !== selectedSession?.id) {
+            setPendingSession(session);
+            return;
+        }
+        await handleSelectSession(session);
+    }
+
+    function handleDiscardAndSwitch() {
+        if (pendingSession) {
+            handleSelectSession(pendingSession);
+        }
+        setPendingSession(null);
     }
 
     async function handleSessionCreated(newSession?: AttendanceSession) {
@@ -139,7 +159,7 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
                     sessions={sessions}
                     onCreateOpen={() => setIsCreateOpen(true)}
                     onDelete={async(sessionId: string) => setPendingDeleteId(sessionId)}
-                    onSelectSession={handleSelectSession}
+                    onSelectSession={handleSessionClick}
                 />
             </div>
 
@@ -194,6 +214,13 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
                 open={Boolean(pendingDeleteId)}
                 subContent={{ title: 'All attendance marked for this date will be removed.' }}
                 onClose={() => setPendingDeleteId(null)}
+            />
+
+            <DiscardChangesPromptModal
+                open={Boolean(pendingSession)}
+                subtitle="You have unsaved attendance marks for this session. Switching to another session will discard them."
+                onContinueEditing={() => setPendingSession(null)}
+                onDiscard={handleDiscardAndSwitch}
             />
 
             {/* Attendance Stepper Wizard Modal */}

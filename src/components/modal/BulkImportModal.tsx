@@ -5,7 +5,7 @@ import CommonTable from '@components/table/CommonTable';
 import {
     ArrowLineDownIcon, ArrowLineUpIcon, CheckCircleIcon, WarningCircleIcon, XCircleIcon
 } from '@phosphor-icons/react';
-import { BulkImportError, CsvTemplateColumn, DetailedBulkImportResult } from '@type/bulk-import.type';
+import { BulkImportError, BulkImportResult, CsvTemplateColumn, DetailedBulkImportResult } from '@type/bulk-import.type';
 import { findErrorRow, getTargetEntityName } from '@utils/bulk-import.util';
 import { classMerge } from '@utils/css.util';
 import {
@@ -145,8 +145,8 @@ interface BulkImportModalProps<TPayload> {
     entityName?: string;
     templateDownloadFilename?: string;
     onClose: VoidFunction;
-    onBulkImport?: (rows: TPayload[]) => Promise<DetailedBulkImportResult | { provisioned_count: number; errors: string[] }>;
-    onImport?: (rows: TPayload[]) => Promise<DetailedBulkImportResult | { provisioned_count: number; errors: string[] }>;
+    onBulkImport?: (rows: TPayload[]) => Promise<DetailedBulkImportResult | BulkImportResult>;
+    onImport?: (rows: TPayload[]) => Promise<DetailedBulkImportResult | BulkImportResult>;
     onMapRow?: (row: ParsedRow) => TPayload;
     onSuccess?: VoidFunction;
 }
@@ -284,7 +284,7 @@ export default function BulkImportModal<TPayload>({
             const text = typeof event.target?.result === 'string'
                 ? event.target.result
                 : '';
-            const { missingHeaders, missingValues, rows, unknownHeaders } = parseCsv(text);
+            const { missingHeaders, missingValues, rows, skippedExampleRow, unknownHeaders } = parseCsv(text);
 
             if (missingHeaders.length) {
                 setParseError(`These required columns are missing from the file header: ${missingHeaders.join(', ')}. Download the CSV template and keep its header row unchanged.`);
@@ -302,12 +302,23 @@ export default function BulkImportModal<TPayload>({
             }
 
             if (!rows.length) {
-                setParseError('The CSV file appears to be empty or has no data rows.');
+                setParseError(skippedExampleRow
+                    ? 'This file only has the example row from the template. Replace it with your own rows and upload again.'
+                    : 'The CSV file has no data rows.');
                 return;
             }
 
+            const warnings: string[] = [];
+            if (skippedExampleRow) {
+                warnings.push('Row 2 was left out because it is the example row from the template.');
+            }
+
             if (unknownHeaders.length) {
-                setParseWarning(`These columns were not recognized and will be ignored: ${unknownHeaders.join(', ')}.`);
+                warnings.push(`These columns were not recognized and will be ignored: ${unknownHeaders.join(', ')}.`);
+            }
+
+            if (warnings.length) {
+                setParseWarning(warnings.join(' '));
             }
 
             setParsedRows(rows);
@@ -335,6 +346,7 @@ export default function BulkImportModal<TPayload>({
                 : {
                     provisioned_count: rawResult.provisioned_count,
                     errors: rawResult.errors,
+                    warnings: rawResult.warnings,
                     structuredErrors: rawResult.errors.map((err, i) => ({
                         row: findErrorRow(err, parsedRows) ?? i + 1,
                         code: 'IMPORT_ERROR',
@@ -511,7 +523,7 @@ export default function BulkImportModal<TPayload>({
                     )
                     : (
                         <div className="h-64">
-                            <CommonTable<ParsedRow>
+                            <CommonTable
                                 leadingColumnDefs={previewColumnDefs}
                                 rowData={parsedRows}
                             />
@@ -864,7 +876,7 @@ export default function BulkImportModal<TPayload>({
                             : structuredErrors.length > 0
                                 ? (
                                     <div className="h-48">
-                                        <CommonTable<BulkImportError>
+                                        <CommonTable
                                             leadingColumnDefs={errorColumnDefs}
                                             rowData={structuredErrors}
                                         />
@@ -1010,6 +1022,16 @@ export default function BulkImportModal<TPayload>({
             <div className="max-w-full sm:w-5xl w-full flex-1 flex flex-col min-h-0">
                 {step === 'upload' && renderUploadStep()}
                 {step === 'preview' && renderPreviewStep()}
+                {step === 'results' && Boolean(result?.warnings?.length) && (
+                    <div className="bg-(--mui-palette-warning-light)/10 border border-(--mui-palette-warning-main) mb-3 px-3 py-2 rounded-lg text-sm">
+                        <p className="font-semibold mb-1">Saved with warnings</p>
+                        <ul className="list-disc pl-5">
+                            {result?.warnings?.map((warning) => (
+                                <li key={warning}>{warning}</li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
                 {step === 'results' && renderResultsStep()}
             </div>
         </CommonModal>

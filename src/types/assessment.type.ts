@@ -123,6 +123,8 @@ export interface QuestionFormValues {
 }
 
 export interface QuestionChoiceFormValue {
+    // Saved choice id; empty for a new choice
+    id?: string;
     choice_text: string;
     is_correct: boolean;
 }

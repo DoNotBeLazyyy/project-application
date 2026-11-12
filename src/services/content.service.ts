@@ -1,4 +1,4 @@
-import { callRpc } from '@services/supabase.wrapper';
+import { callRpc, CallRpcOptions } from '@services/supabase.wrapper';
 import { CreateMaterialPayload, MaterialType, SectionContent, TeachingSection } from '@type/content.type';
 import { ServiceResult } from '@type/service.type';
 
@@ -31,25 +31,29 @@ export async function getSectionContent(
 export async function createModule(
     sectionId: string,
     title: string,
-    description: string | null
-): Promise<ServiceResult<null>> {
-    return callRpc<null>('fn_create_module', {
+    description: string | null,
+    isPublished = true,
+    options?: CallRpcOptions
+): Promise<ServiceResult<{ id: string }>> {
+    return callRpc<{ id: string }>('fn_create_module', {
         p_description: description,
+        p_is_published: isPublished,
         p_section_id: sectionId,
         p_title: title
-    });
+    }, options);
 }
 
 export async function updateModule(
     moduleId: string,
     title: string,
-    description: string | null
+    description: string | null,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_update_module', {
         p_description: description,
         p_module_id: moduleId,
         p_title: title
-    });
+    }, options);
 }
 
 export async function deleteModule(
@@ -62,16 +66,18 @@ export async function deleteModule(
 
 export async function setModulePublished(
     moduleId: string,
-    isPublished: boolean
+    isPublished: boolean,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_set_module_published', {
         p_is_published: isPublished,
         p_module_id: moduleId
-    });
+    }, options);
 }
 
 export async function createMaterial(
-    payload: CreateMaterialPayload
+    payload: CreateMaterialPayload,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_create_material', {
         p_description: payload.description ?? null,
@@ -83,7 +89,7 @@ export async function createMaterial(
         p_mime_type: payload.mimeType ?? null,
         p_module_id: payload.moduleId,
         p_title: payload.title
-    });
+    }, options);
 }
 
 export async function updateMaterial(
@@ -101,11 +107,12 @@ export async function updateMaterial(
 }
 
 export async function deleteMaterial(
-    materialId: string
+    materialId: string,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_delete_material', {
         p_material_id: materialId
-    });
+    }, options);
 }
 
 export async function setMaterialPublished(

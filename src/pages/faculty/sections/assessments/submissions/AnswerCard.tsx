@@ -1,9 +1,8 @@
 import LinkifiedText from '@components/text/LinkifiedText';
+import { getPointsError, MANUAL_GRADE_TYPES } from '@pages/faculty/sections/assessments/submissions/answerPoints';
 import { getFileUrl } from '@services/storage.service';
 import { GradeAnswerUpdate, SubmissionAnswer } from '@type/assessment.type';
 import { stripLeadingZeros } from '@utils/input.util';
-
-const MANUAL_GRADE_TYPES = ['Essay', 'Short Answer', 'Fill in the Blank', 'File Upload'];
 
 async function openSubmissionFile(path: string) {
     const result = await getFileUrl('submissions', path);
@@ -26,6 +25,9 @@ export default function AnswerCard({
     onPointsChange
 }: AnswerCardProps) {
     const isManual = MANUAL_GRADE_TYPES.includes(answer.question_type);
+    const pointsError = draftAnswer
+        ? getPointsError(draftAnswer.points_earned, answer.points)
+        : '';
 
     return (
         <div className="border border-(--mui-palette-divider) flex flex-col gap-3 p-4 rounded-lg">
@@ -104,22 +106,34 @@ export default function AnswerCard({
                             Points Earned
                         </label>
                         <input
-                            className="border border-(--mui-palette-divider) focus:border-(--mui-palette-primary-main) outline-none px-2 py-1 rounded text-sm transition-colors w-20"
+                            aria-invalid={Boolean(pointsError)}
+                            className={`border ${pointsError
+                                ? 'border-(--mui-palette-error-main)'
+                                : 'border-(--mui-palette-divider)'} focus:border-(--mui-palette-primary-main) outline-none px-2 py-1 rounded text-sm transition-colors w-20`}
                             max={answer.points}
                             min={0}
                             step={0.01}
                             type="number"
-                            value={draftAnswer.points_earned}
+                            value={Number.isNaN(draftAnswer.points_earned)
+                                ? ''
+                                : draftAnswer.points_earned}
                             onChange={function(e) {
                                 const val = stripLeadingZeros(e.target.value);
                                 e.target.value = val;
-                                onPointsChange(answer.id, Number(val));
+                                onPointsChange(answer.id, val.trim() === ''
+                                    ? Number.NaN
+                                    : Number(val));
                             }}
                         />
                         <span className="text-(--mui-palette-text-secondary) text-xs">
                             / {answer.points} pts
                         </span>
                     </div>
+                    {pointsError && (
+                        <span className="text-(--mui-palette-error-main) text-xs">
+                            {pointsError}
+                        </span>
+                    )}
                     <div className="flex flex-col gap-1">
                         <label className="font-medium text-(--mui-palette-text-secondary) text-xs">
                             Grader Notes

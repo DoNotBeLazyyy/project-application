@@ -1,11 +1,10 @@
-import { supabase } from '@services/supabase.client';
-import { callRpc, callStorage } from '@services/supabase.wrapper';
+import { deleteFile, getFileUrl, uploadFileToFolder } from '@services/storage.service';
+import { CallRpcOptions, callRpc } from '@services/supabase.wrapper';
 import {
     AssessmentFormValues, AssessmentListRow, AssessmentQuestion, GradeAnswerUpdate, QuestionBulkRow, QuestionFormValues, SubmissionForGrading, SubmissionListRow
 } from '@type/assessment.type';
 import { BulkImportError, DetailedBulkImportResult } from '@type/bulk-import.type';
 import { ServiceResult } from '@type/service.type';
-import { parseServiceError } from '@utils/error.util';
 
 export async function listAssessments(
     sectionId: string
@@ -25,7 +24,8 @@ export async function getAssessmentById(
 
 export async function createAssessment(
     sectionId: string,
-    params: AssessmentFormValues
+    params: AssessmentFormValues,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<{ id: string }>> {
     return callRpc<{ id: string }>('fn_create_assessment', {
         p_section_id:             sectionId,
@@ -57,12 +57,13 @@ export async function createAssessment(
                 ? Number(params.questions_per_page)
                 : null,
         p_allow_student_review:   params.allow_student_review
-    });
+    }, options);
 }
 
 export async function updateAssessment(
     assessmentId: string,
-    params: AssessmentFormValues
+    params: AssessmentFormValues,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_update_assessment', {
         p_assessment_id:          assessmentId,
@@ -94,7 +95,7 @@ export async function updateAssessment(
                 ? Number(params.questions_per_page)
                 : null,
         p_allow_student_review:   params.allow_student_review
-    });
+    }, options);
 }
 
 export async function publishAssessment(
@@ -131,52 +132,59 @@ export async function duplicateAssessmentToSections(
     });
 }
 
+/**
+ * Uploads an assessment attachment and saves its record. If the record cannot be saved,
+ * the uploaded file is deleted again.
+ *
+ * @param assessmentId - The assessment the file belongs to.
+ * @param file - The chosen file.
+ * @returns An error when the file was refused, the upload failed, or the record failed.
+ */
 export async function uploadAssessmentAttachment(
     assessmentId: string,
     file: File
 ): Promise<ServiceResult<null>> {
-    const path = `assessments/${assessmentId}/${Date.now()}_${file.name}`;
-
-    const uploadResult = await callStorage(async function() {
-        const { error } = await supabase.storage
-            .from('materials')
-            .upload(path, file, { upsert: false });
-
-        if (error) {
-            return { data: null, error: parseServiceError(error) };
-        }
-
-        return { data: null, error: null };
+    const upload = await uploadFileToFolder({
+        bucket: 'materials',
+        file,
+        folder: `assessments/${assessmentId}`
     });
 
-    if (uploadResult.error) {
-        return uploadResult;
+    if (!upload.data) {
+        return { data: null, error: upload.error };
     }
 
-    return callRpc<null>('fn_create_assessment_attachment', {
+    const result = await callRpc<null>('fn_create_assessment_attachment', {
         p_assessment_id:    assessmentId,
         p_file_name:        file.name,
-        p_file_url:         path,
+        p_file_url:         upload.data.file_path,
         p_file_size_bytes:  file.size,
-        p_mime_type:        file.type,
+        p_mime_type:        upload.data.mime_type,
         p_sequence:         1
     });
+
+    if (result.error) {
+        await deleteFile('materials', upload.data.file_path);
+    }
+
+    return result;
 }
 
+/**
+ * Gets a link to an assessment attachment, read the same way as every other
+ * 'materials' file (see storage.service).
+ *
+ * @param filePath - The stored path of the attachment.
+ * @returns The file URL.
+ */
 export async function getAttachmentSignedUrl(
     filePath: string
 ): Promise<ServiceResult<string>> {
-    return callStorage(async function() {
-        const { data, error } = await supabase.storage
-            .from('materials')
-            .createSignedUrl(filePath, 3600);
+    const result = await getFileUrl('materials', filePath);
 
-        if (error) {
-            return { data: null, error: parseServiceError(error) };
-        }
-
-        return { data: data.signedUrl, error: null };
-    }, { background: true });
+    return result.data
+        ? { data: result.data.url, error: null }
+        : { data: null, error: result.error };
 }
 
 export async function deleteAssessmentAttachment(
@@ -200,10 +208,10 @@ export async function upsertQuestion(
     questionId: string | null,
     params: QuestionFormValues,
     sequence: number
-): Promise<ServiceResult<{ id: string }>> {
+): Promise<ServiceResult<{ id: string; rescored_submissions?: number }>> {
     const needsChoices = ['Multiple Choice', 'True or False', 'Matching'].includes(params.question_type);
 
-    return callRpc<{ id: string }>('fn_upsert_question', {
+    return callRpc<{ id: string; rescored_submissions?: number }>('fn_upsert_question', {
         p_assessment_id:       assessmentId,
         p_question_id:         questionId || null,
         p_question_text:       params.question_text,
@@ -224,7 +232,11 @@ export async function upsertQuestion(
             ? Number(params.max_file_count)
             : null,
         p_choices:             needsChoices
-            ? params.choices.map((c) => ({ choice_text: c.choice_text, is_correct: c.is_correct }))
+            ? params.choices.map((c) => ({
+                choice_text: c.choice_text,
+                id: c.id || null,
+                is_correct: c.is_correct
+            }))
             : null
     });
 }

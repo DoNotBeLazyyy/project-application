@@ -1,6 +1,77 @@
 import { callFunction } from '@services/supabase.wrapper';
-import { AssistantReply, AssistantTurn } from '@type/assistant.type';
+import { AssistantMessage, AssistantReply, AssistantTurn } from '@type/assistant.type';
 import { ServiceResult } from '@type/service.type';
+
+// Chat history is kept per browser tab, under this prefix plus the user id
+export const ASSISTANT_CHAT_STORAGE_PREFIX = 'au-jas-assistant-chat:';
+
+// Older turns are dropped so the saved chat stays small
+const MAX_SAVED_MESSAGES = 50;
+
+/**
+ * Reads the saved chat for a user. Bad or blocked storage gives an empty chat.
+ *
+ * @param userId - The signed-in user.
+ * @returns The saved messages, oldest first.
+ */
+export function loadAssistantChat(userId: string): AssistantMessage[] {
+    try {
+        const raw = sessionStorage.getItem(`${ASSISTANT_CHAT_STORAGE_PREFIX}${userId}`);
+        const parsed: unknown = raw
+            ? JSON.parse(raw)
+            : [];
+
+        return Array.isArray(parsed)
+            ? (parsed as AssistantMessage[]).filter((item) => typeof item?.content === 'string' && typeof item?.id === 'string')
+            : [];
+    }
+    catch {
+        return [];
+    }
+}
+
+/**
+ * Saves the chat for a user, so a page refresh keeps the conversation.
+ *
+ * @param userId - The signed-in user.
+ * @param messages - The whole chat, oldest first.
+ */
+export function saveAssistantChat(userId: string, messages: AssistantMessage[]): void {
+    try {
+        const key = `${ASSISTANT_CHAT_STORAGE_PREFIX}${userId}`;
+
+        if (messages.length === 0) {
+            sessionStorage.removeItem(key);
+            return;
+        }
+
+        sessionStorage.setItem(key, JSON.stringify(messages.slice(-MAX_SAVED_MESSAGES)));
+    }
+    catch {
+        // Storage can be full or blocked; the chat still works without it
+    }
+}
+
+/**
+ * Removes every saved chat in this tab. Called on sign out.
+ */
+export function clearAssistantChats(): void {
+    try {
+        const keys: string[] = [];
+
+        for (let index = 0; index < sessionStorage.length; index += 1) {
+            const key = sessionStorage.key(index);
+            if (key?.startsWith(ASSISTANT_CHAT_STORAGE_PREFIX)) {
+                keys.push(key);
+            }
+        }
+
+        keys.forEach((key) => sessionStorage.removeItem(key));
+    }
+    catch {
+        // Storage can be blocked; nothing to clear then
+    }
+}
 
 export async function askAssistant(
     message: string,

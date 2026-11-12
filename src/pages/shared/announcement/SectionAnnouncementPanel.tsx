@@ -12,10 +12,14 @@ import {
 } from '@phosphor-icons/react';
 import { deleteAnnouncement, listSectionAnnouncements } from '@services/announcement.service';
 import { supabase } from '@services/supabase.client';
+import { useAppStore } from '@stores/app.store';
 import { AnnouncementFeedRow } from '@type/announcement.type';
 import { formatShortDate } from '@utils/date.util';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+
+// fn_list_section_announcements also returns who posted each item
+type SectionAnnouncementRow = AnnouncementFeedRow & { created_by?: string | null };
 
 interface SectionAnnouncementPanelProps {
     canManage?: boolean;
@@ -23,13 +27,14 @@ interface SectionAnnouncementPanelProps {
 }
 
 export default function SectionAnnouncementPanel({ canManage = true, sectionId }: SectionAnnouncementPanelProps) {
-    const [announcements, setAnnouncements] = useState<AnnouncementFeedRow[]>([]);
+    const [announcements, setAnnouncements] = useState<SectionAnnouncementRow[]>([]);
     const [selectedAnnouncement, setSelectedAnnouncement] = useState<AnnouncementFeedRow | null>(null);
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const announcementBasePath = useAnnouncementBasePath();
     const location = useLocation();
     const navigate = useNavigate();
+    const currentUserId = useAppStore((s) => s.userProfile?.id || s.session?.user?.id);
 
     async function loadAnnouncements() {
         const result = await listSectionAnnouncements(sectionId);
@@ -164,7 +169,8 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
                                                 )}
                                             </div>
 
-                                            {canManage && (
+                                            {/* fn_delete_announcement only lets the poster delete, so admin/dean posts show no delete here */}
+                                            {canManage && Boolean(currentUserId) && item.created_by === currentUserId && (
                                                 <button
                                                     className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
                                                     title="Delete Announcement"

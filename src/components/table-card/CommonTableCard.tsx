@@ -5,7 +5,6 @@ import CommonCard from '@components/card/CommonCard';
 import CommonEmptyState from '@components/empty/CommonEmptyState';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import TableModals from '@components/modal/TableModals';
-import UploadCsvModal from '@components/modal/UploadCsvModal';
 import CommonPagination from '@components/pagination/CommonPagination';
 import CommonTable from '@components/table/CommonTable';
 import { useInfiniteScrollSentinel } from '@components/table-card/hooks/use-infinite-scroll-sentinel';
@@ -14,12 +13,13 @@ import { useTableData } from '@components/table-card/hooks/use-table-data';
 import { useTableSelection } from '@components/table-card/hooks/use-table-selection';
 import TableCardControls from '@components/table-card/TableCardControls';
 import TableCardSelectionBar from '@components/table-card/TableCardSelectionBar';
+import { DEFAULT_PAGINATION } from '@constants/table.constant';
 import { ArrowUpIcon, EyeIcon, TrashIcon } from '@phosphor-icons/react';
 import { ChangeEventInputTextarea, KeyboardEventDivElement } from '@type/common.type';
 import { SortStringDto } from '@type/http.type';
 import { CommonTableCardProps } from '@type/table-card.type';
 import { formatMobileCardValue, resolveMobileCardPlan } from '@utils/table.util';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { FieldValues } from 'react-hook-form';
 
 export default function CommonTableCard<T extends FieldValues>({
@@ -28,20 +28,16 @@ export default function CommonTableCard<T extends FieldValues>({
     createModalProps,
     deleteModalProps,
     dependencies = [],
-    enableInfiniteScroll = true,
     filterModalProps,
-    infoContent,
     modeToggle,
     renderGridCard,
     selectionBarProps,
     showSubheader = false,
     showViewToggle = false,
     sortColumns,
-    tableActionConfig,
     tableProps,
     uniqueIdKey,
     updateModalProps,
-    uploadCsvModalProps,
     viewModalProps,
     viewMode = 'grid',
     onCreate,
@@ -107,9 +103,22 @@ export default function CommonTableCard<T extends FieldValues>({
     const lastVisibleRow = useLastVisibleRow({
         root: scrollRootRef,
         rowCount: internalRowData.length,
-        enabled: enableInfiniteScroll && activeViewMode === 'grid'
+        enabled: activeViewMode === 'grid'
     });
     const shownCount = lastVisibleRow || internalRowData.length;
+
+    /**
+     * Switches between cards and table. Cards load more on scroll while the table
+     * pages, so the list restarts from page 1 in the new mode.
+     */
+    function handleToggleViewMode(mode: 'table' | 'grid') {
+        if (mode === activeViewMode) {
+            return;
+        }
+        setActiveViewMode(mode);
+        setGridSelectedIds(new Set());
+        loadData(1, DEFAULT_PAGINATION.rowsPerPage, activeSearch, internalSort);
+    }
 
     function handleGridScroll() {
         setCanScrollUp((scrollRootRef.current?.scrollTop ?? 0) > 0);
@@ -122,12 +131,6 @@ export default function CommonTableCard<T extends FieldValues>({
     const handleRequestDeleteRow = useCallback(function(id: string) {
         triggerDeletePrompt([id]);
     }, []);
-
-    const resolvedTableActionConfig = useMemo(() => {
-        return typeof tableActionConfig === 'function'
-            ? tableActionConfig(handleRequestDeleteRow)
-            : tableActionConfig;
-    }, [tableActionConfig, handleRequestDeleteRow]);
 
     const hasFilter = Boolean(filterModalProps);
     const hasSort = Boolean(sortColumns?.length);
@@ -166,6 +169,29 @@ export default function CommonTableCard<T extends FieldValues>({
         setIsDeletePromptOpen(true);
     }
 
+    /**
+     * Reloads the list after a delete. Cards reload from the top, covering every
+     * card that was already loaded, so none vanish until a refresh.
+     */
+    function reloadAfterDelete() {
+        if (activeViewMode === 'grid') {
+            loadData(
+                1,
+                Math.max(pagination.rowsPerPage, internalRowData.length),
+                activeSearch,
+                internalSort
+            );
+            return;
+        }
+
+        loadData(
+            pagination.currentPage,
+            pagination.rowsPerPage,
+            activeSearch,
+            internalSort
+        );
+    }
+
     async function handleConfirmDelete() {
         setIsDeleting(true);
         try {
@@ -173,12 +199,7 @@ export default function CommonTableCard<T extends FieldValues>({
                 const result = await onDeleteRow(pendingDeleteIds[0]);
                 if (!result?.error) {
                     setGridSelectedIds(new Set());
-                    loadData(
-                        pagination.currentPage,
-                        pagination.rowsPerPage,
-                        activeSearch,
-                        internalSort
-                    );
+                    reloadAfterDelete();
                 }
             }
             else if (onDelete) {
@@ -186,12 +207,7 @@ export default function CommonTableCard<T extends FieldValues>({
                 if (!result?.error) {
                     gridApi?.deselectAll();
                     setGridSelectedIds(new Set());
-                    loadData(
-                        pagination.currentPage,
-                        pagination.rowsPerPage,
-                        activeSearch,
-                        internalSort
-                    );
+                    reloadAfterDelete();
                 }
             }
         }
@@ -464,9 +480,9 @@ export default function CommonTableCard<T extends FieldValues>({
     // A static description of the page belongs behind the header's info icon
     // rather than on a permanent second line, which costs vertical space on
     // every list. `showSubheader` opts out for headers carrying live status.
-    const resolvedInfoContent = infoContent ?? (showSubheader
+    const resolvedInfoContent = showSubheader
         ? undefined
-        : cardHeaderProps?.subheader);
+        : cardHeaderProps?.subheader;
 
     return (
         <CommonCard
@@ -522,7 +538,9 @@ export default function CommonTableCard<T extends FieldValues>({
                                         }
                                     })}
                                     selectedCount={effectiveSelectedCount}
-                                    totalCount={pagination.totalElements}
+                                    totalCount={activeViewMode === 'grid'
+                                        ? internalRowData.length
+                                        : pagination.totalElements}
                                     onClearSelection={function() {
                                         if (activeViewMode === 'grid') {
                                             handleClearGridSelection();
@@ -580,7 +598,7 @@ export default function CommonTableCard<T extends FieldValues>({
                                     }}
                                     viewMode={activeViewMode}
                                     onToggleViewMode={showViewToggle
-                                        ? setActiveViewMode
+                                        ? handleToggleViewMode
                                         : undefined}
                                 />
                             )}
@@ -690,16 +708,14 @@ export default function CommonTableCard<T extends FieldValues>({
                                 })}
                             </div>
 
-                            {enableInfiniteScroll && (
-                                <div
-                                    className="flex font-medium items-center justify-center px-4 py-3 text-(--mui-palette-text-secondary) text-xs"
-                                    ref={sentinelRef}
-                                >
-                                    {isLoadingMore
-                                        ? 'Loading more…'
-                                        : null}
-                                </div>
-                            )}
+                            <div
+                                className="flex font-medium items-center justify-center px-4 py-3 text-(--mui-palette-text-secondary) text-xs"
+                                ref={sentinelRef}
+                            >
+                                {isLoadingMore
+                                    ? 'Loading more…'
+                                    : null}
+                            </div>
                         </div>
                     )
                     : (
@@ -707,7 +723,6 @@ export default function CommonTableCard<T extends FieldValues>({
                             {...tableProps}
                             alwaysMultiSort
                             rowData={internalRowData}
-                            tableActionConfig={resolvedTableActionConfig}
                             onGridReady={handleGridReady}
                             onRowClicked={function(event) {
                                 if (event.data) {
@@ -721,7 +736,7 @@ export default function CommonTableCard<T extends FieldValues>({
                     )
             }
 
-            {!hasNoData && (enableInfiniteScroll
+            {!hasNoData && (activeViewMode === 'grid'
                 ? (
                     <div className="border border-(--mui-palette-grey-100) flex gap-2 items-center justify-between mx-0 my-1 px-2 py-0.5 rounded-full sm:gap-3 sm:mx-4 sm:my-2 sm:px-4 sm:py-1.5">
                         <button
@@ -776,10 +791,6 @@ export default function CommonTableCard<T extends FieldValues>({
                 updateModalProps={updateModalProps}
                 viewModalProps={viewModalProps}
             />
-
-            {uploadCsvModalProps && (
-                <UploadCsvModal {...uploadCsvModalProps} />
-            )}
 
             <DeletePromptModal
                 actionIconProps={deleteModalProps?.actionIcon

@@ -7,7 +7,7 @@ import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptMod
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
 import { useObjectDraft } from '@hooks/use-form-draft';
-import { isBlankText, MATERIAL_URL_PATTERN } from '@pages/shared/content/content-form.constant';
+import { getEmptyFileError, isBlankText, MATERIAL_URL_PATTERN } from '@pages/shared/content/content-form.constant';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -29,7 +29,7 @@ import {
     updateModule
 } from '@services/content.service';
 import { listGradingPeriodsBySection } from '@services/faculty.service';
-import { uploadFile } from '@services/storage.service';
+import { deleteFile, uploadFileToFolder } from '@services/storage.service';
 import { useToastStore } from '@stores/toast.store';
 import { ContentModule, MaterialType } from '@type/content.type';
 import { generateId } from '@utils/uuid.util';
@@ -483,6 +483,62 @@ export default function LessonModuleWizardModal({
         setCurrentStep(stepNumber);
     }
 
+    /**
+     * Removes a leading "[Period]" tag so a changed period does not stack a second tag.
+     */
+    function stripPeriodPrefix(value: string): string {
+        const match = value.match(/^\[([^\]]+)\]\s*/);
+        if (!match) return value;
+        const knownPeriods = [...PERIOD_OPTIONS, ...periodOptions].map((option) => option.value.toLowerCase());
+        return knownPeriods.includes(match[1].trim()
+            .toLowerCase())
+            ? value.slice(match[0].length)
+            : value;
+    }
+
+    /**
+     * Uploads one staged material. Returns an error message, or null when it was saved.
+     */
+    async function saveStagedMaterial(moduleId: string, item: StagedMaterial): Promise<string | null> {
+        if (item.material_type === 'Link') {
+            const matRes = await createMaterial({
+                moduleId,
+                title: item.title,
+                description: item.description || null,
+                materialType: 'Link',
+                externalUrl: item.external_url || ''
+            }, { silent: true });
+            return matRes.error?.message ?? null;
+        }
+
+        if (!item.file) return null;
+
+        const uploadRes = await uploadFileToFolder({
+            bucket: 'materials',
+            file: item.file,
+            folder: `${sectionId}/${moduleId}`
+        });
+        if (!uploadRes.data) {
+            return uploadRes.error?.message ?? 'the file could not be uploaded';
+        }
+
+        const matRes = await createMaterial({
+            moduleId,
+            title: item.title,
+            description: item.description || null,
+            materialType: item.material_type,
+            fileUrl: uploadRes.data.file_path,
+            fileName: item.file.name,
+            fileSizeBytes: item.file.size,
+            mimeType: uploadRes.data.mime_type
+        }, { silent: true });
+        if (matRes.error) {
+            // The record was not saved, so the uploaded file is not needed
+            await deleteFile('materials', uploadRes.data.file_path);
+        }
+        return matRes.error?.message ?? null;
+    }
+
     async function handleSaveModule() {
         if (!(await validateStep1())) return;
         if (currentStep === 2 && !(await commitPendingMaterialIfValid())) return;
@@ -491,29 +547,43 @@ export default function LessonModuleWizardModal({
         try {
             let moduleId: string | undefined = initialModule?.id;
 
-            // Compute final title with period tag if not already included
-            let finalTitle = title.trim();
+            // Drop any old period tag, then add the chosen one if the title does not name it
+            let finalTitle = stripPeriodPrefix(title.trim());
             if (period !== 'General' && !finalTitle.toLowerCase()
                 .includes(period.toLowerCase())) {
                 finalTitle = `[${period}] ${finalTitle}`;
             }
 
             if (isEdit && moduleId) {
-                const res = await updateModule(moduleId, finalTitle, description.trim() || null);
-                if (res.error) return;
+                const res = await updateModule(moduleId, finalTitle, description.trim() || null, { silent: true });
+                if (res.error) {
+                    useToastStore.getState()
+                        .showToast(res.error.message, 'error');
+                    return;
+                }
                 if (initialModule && initialModule.is_published !== isPublished) {
-                    await setModulePublished(moduleId, isPublished);
+                    const publishRes = await setModulePublished(moduleId, isPublished, { silent: true });
+                    if (publishRes.error) {
+                        useToastStore.getState()
+                            .showToast(`Module saved, but its status could not be changed: ${publishRes.error.message}`, 'error');
+                    }
                 }
             }
             else {
-                const res = await createModule(sectionId, finalTitle, description.trim() || null);
-                if (res.error || !res.data) return;
-                const created = res.data as unknown as { id?: string; module_id?: string };
-                moduleId = created.id || created.module_id;
-                if (!isPublished && moduleId) {
-                    await setModulePublished(moduleId, false);
+                // Created with the chosen status so a draft is never visible to students
+                const res = await createModule(sectionId, finalTitle, description.trim() || null, isPublished, { silent: true });
+                if (res.error || !res.data) {
+                    if (res.error) {
+                        useToastStore.getState()
+                            .showToast(res.error.message, 'error');
+                    }
+                    return;
                 }
+                const created = res.data as { id?: string; module_id?: string };
+                moduleId = created.id || created.module_id;
             }
+
+            const failures: string[] = [];
 
             // Sync materials
             if (moduleId) {
@@ -523,7 +593,10 @@ export default function LessonModuleWizardModal({
                         (orig) => !stagedMaterials.some((s) => s.id === orig.id)
                     );
                     for (const rem of removedMaterials) {
-                        await deleteMaterial(rem.id);
+                        const deleteRes = await deleteMaterial(rem.id, { silent: true });
+                        if (deleteRes.error) {
+                            failures.push(`could not remove "${rem.title}" (${deleteRes.error.message})`);
+                        }
                     }
                 }
 
@@ -531,51 +604,24 @@ export default function LessonModuleWizardModal({
                 const pendingUploads = stagedMaterials.filter((m) => !m.isExisting);
 
                 for (const item of pendingUploads) {
-                    if (item.material_type === 'Link') {
-                        const matRes = await createMaterial({
-                            moduleId,
-                            title: item.title,
-                            description: item.description || null,
-                            materialType: 'Link',
-                            externalUrl: item.external_url || ''
-                        });
-                        if (matRes.error) {
-                            useToastStore.getState()
-                                .showToast(`Failed to add resource "${item.title}": ${matRes.error.message}`, 'error');
-                        }
-                    }
-                    else if (item.file) {
-                        const path = `${sectionId}/${moduleId}/${generateId()}-${item.file.name}`;
-                        const uploadRes = await uploadFile({
-                            bucket: 'materials', file: item.file, path
-                        });
-                        if (!uploadRes.error) {
-                            const matRes = await createMaterial({
-                                moduleId,
-                                title: item.title,
-                                description: item.description || null,
-                                materialType: item.material_type,
-                                fileUrl: path,
-                                fileName: item.file.name,
-                                fileSizeBytes: item.file.size,
-                                mimeType: item.file.type || null
-                            });
-                            if (matRes.error) {
-                                useToastStore.getState()
-                                    .showToast(`Failed to add resource "${item.title}": ${matRes.error.message}`, 'error');
-                            }
-                        }
-                        else {
-                            useToastStore.getState()
-                                .showToast(`Failed to upload file for "${item.title}": ${uploadRes.error.message}`, 'error');
-                        }
+                    const errorMessage = await saveStagedMaterial(moduleId, item);
+                    if (errorMessage) {
+                        failures.push(`"${item.title}" (${errorMessage})`);
                     }
                 }
             }
 
             draftGuard.clearDraft();
-            useToastStore.getState()
-                .showToast('Lesson & syllabus module saved successfully.', 'success');
+            if (failures.length > 0) {
+                useToastStore.getState()
+                    .showToast(`Module saved, but some resources were not: ${failures.join('; ')}. Edit the module to try again.`, 'error');
+            }
+            else {
+                useToastStore.getState()
+                    .showToast(isPublished
+                        ? 'Lesson & syllabus module saved and published.'
+                        : 'Lesson & syllabus module saved as draft.', 'success');
+            }
             onSuccess();
             onClose();
         }
@@ -744,6 +790,13 @@ export default function LessonModuleWizardModal({
                                                         type="file"
                                                         onChange={(e: ChangeEvent<HTMLInputElement>) => {
                                                             const file = e.target.files?.[0] ?? null;
+                                                            const emptyError = getEmptyFileError(file);
+                                                            if (emptyError) {
+                                                                setSelectedFile(null);
+                                                                setFileError(emptyError);
+                                                                e.target.value = '';
+                                                                return;
+                                                            }
                                                             setSelectedFile(file);
                                                             if (file) setFileError(null);
                                                         }}

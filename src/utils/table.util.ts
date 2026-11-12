@@ -1,6 +1,6 @@
 import {
     MOBILE_CARD_HEADER_HEIGHT, MOBILE_CARD_META_ROW_HEIGHT, MOBILE_CARD_ROW_GAP, MOBILE_CARD_ROW_SPACING,
-    MOBILE_CARD_VERTICAL_PADDING, TABLE_ACTION_COL_ID
+    MOBILE_CARD_VERTICAL_PADDING
 } from '@constants/table.constant';
 import { MouseEventDivElement } from '@type/common.type';
 import { MobileCardColDef, MobileCardPlan } from '@type/table.type';
@@ -36,8 +36,7 @@ function hasHeaderName(columnDef: MobileCardColDef): boolean {
 export function resolveMobileCardPlan(columnDefs: MobileCardColDef[]): MobileCardPlan {
     const visibleColumnDefs = columnDefs.filter(function(columnDef) {
         return columnDef.mobileCard !== 'hidden'
-            && !columnDef.hide
-            && columnDef.colId !== TABLE_ACTION_COL_ID;
+            && !columnDef.hide;
     });
     const explicitTitle = visibleColumnDefs.find(function(columnDef) {
         return columnDef.mobileCard === 'title';

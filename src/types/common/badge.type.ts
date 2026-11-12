@@ -39,7 +39,7 @@ export interface CommonChipProps {
 
 // Badge props
 export type StateVariant = 'active' | 'inactive';
-export type BadgeStatusVariant = 'info' | 'success' | 'warning' | 'error';
+export type BadgeStatusVariant = 'info' | 'success' | 'warning' | 'error' | 'neutral';
 export type ChipVariant = 'light' | 'dark' | 'ghost' | 'outline';
 export type MuiChipColor = ChipProps['color'];
 export type MuiChipSize = ChipProps['size'];

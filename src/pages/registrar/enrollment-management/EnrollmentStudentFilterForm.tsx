@@ -1,7 +1,7 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
-import { YEAR_LEVEL_OPTIONS } from '@constants/year-level.constant';
+import { YEAR_LEVEL_TEXT_OPTIONS } from '@constants/year-level.constant';
 import { getPrograms } from '@services/program/program.service';
 import { ComponentPropsForm } from '@type/common.type';
 import { EnrollmentState, EnrollmentStudentFilterValues, StudentStatus } from '@type/enrollment.type';
@@ -70,7 +70,7 @@ export default function EnrollmentStudentFilterForm({
         {
             label: 'Year Levels',
             name: 'year_levels' as const,
-            options: YEAR_LEVEL_OPTIONS,
+            options: YEAR_LEVEL_TEXT_OPTIONS,
             type: 'multi-select' as const
         },
         {

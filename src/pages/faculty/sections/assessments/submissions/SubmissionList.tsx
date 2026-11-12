@@ -1,18 +1,10 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonTable from '@components/table/CommonTable';
-import { SubmissionListRow, SubmissionStatus } from '@type/assessment.type';
+import { SUBMISSION_STATUS_VARIANT } from '@constants/status-badge.constant';
+import { SubmissionListRow } from '@type/assessment.type';
 import { MobileCardColDef } from '@type/table.type';
 import { RowClickedEvent } from 'ag-grid-community';
 import { useMemo } from 'react';
-
-const STATUS_VARIANT_MAP: Record<SubmissionStatus, 'success' | 'error' | 'warning' | 'info'> = {
-    'Not Started': 'warning',
-    'In Progress': 'warning',
-    'Submitted': 'info',
-    'Late': 'error',
-    'Graded': 'success',
-    'Returned': 'success'
-};
 
 interface SubmissionListProps {
     submissions: SubmissionListRow[];
@@ -48,7 +40,7 @@ export default function SubmissionList({ submissions, onSelect }: SubmissionList
                     <div className="flex h-full items-center">
                         <CommonBadgeStatus
                             label={params.data.status}
-                            variant={STATUS_VARIANT_MAP[params.data.status]}
+                            variant={SUBMISSION_STATUS_VARIANT[params.data.status]}
                         />
                     </div>
                 ),
@@ -86,7 +78,7 @@ export default function SubmissionList({ submissions, onSelect }: SubmissionList
 
     return (
         <div className="flex flex-col min-h-0 w-full h-full">
-            <CommonTable<SubmissionListRow>
+            <CommonTable
                 leadingColumnDefs={columnDefs}
                 rowData={submissions}
                 onRowClicked={function(e: RowClickedEvent<SubmissionListRow>) {

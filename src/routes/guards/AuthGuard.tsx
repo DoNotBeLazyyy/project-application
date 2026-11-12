@@ -1,4 +1,5 @@
-import { logout } from '@services/auth.service';
+import useAccountStatusWatch from '@routes/guards/use-account-status-watch';
+import { getBlockedAccountMessage, logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
 import { parseAuthUrlError } from '@utils/auth-error.util';
 import { isSessionExpiredDueToInactivity } from '@utils/session.util';
@@ -11,9 +12,10 @@ export default function AuthGuard() {
     const { pathname, search } = useLocation();
 
     const isExpired = Boolean(session && isSessionExpiredDueToInactivity());
-    const isSuspendedOrInactive = Boolean(
-        userProfile && (userProfile.status === 'Suspended' || userProfile.status === 'Inactive')
-    );
+    const blockedMessage = getBlockedAccountMessage(userProfile?.status);
+    const isSuspendedOrInactive = Boolean(blockedMessage);
+
+    useAccountStatusWatch(Boolean(session) && !isExpired && !isSuspendedOrInactive);
 
     useEffect(() => {
         if (isExpired || isSuspendedOrInactive) {
@@ -27,7 +29,7 @@ export default function AuthGuard() {
             <Navigate
                 replace
                 state={{
-                    authError: authErr?.userMessage,
+                    authError: blockedMessage ?? authErr?.userMessage,
                     from: `${pathname}${search}`
                 }}
                 to="/login"

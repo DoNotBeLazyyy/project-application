@@ -1,6 +1,5 @@
 import { callRpc } from '@services/supabase.wrapper';
 import {
-    FacultyLoadAssignmentInput,
     FacultyLoadDetail,
     FacultyLoadFilterValues,
     FacultyLoadRow
@@ -33,13 +32,5 @@ export async function getFacultyLoadDetail(
     return callRpc<FacultyLoadDetail>('fn_get_faculty_load_detail', {
         p_faculty_id: facultyId,
         p_term_id: termId || null
-    });
-}
-
-export async function saveFacultyLoadAssignments(
-    assignments: FacultyLoadAssignmentInput[]
-): Promise<ServiceResult<{ success: boolean; updated_count: number; message: string }>> {
-    return callRpc<{ success: boolean; updated_count: number; message: string }>('fn_save_faculty_load_assignments', {
-        p_assignments: assignments
     });
 }

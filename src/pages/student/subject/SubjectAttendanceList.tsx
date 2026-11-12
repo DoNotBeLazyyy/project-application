@@ -239,7 +239,7 @@ export default function SubjectAttendanceList({ attendance }: SubjectAttendanceL
                         </div>
                     )
                     : (
-                        <CommonTable<StudentSubjectAttendanceItem>
+                        <CommonTable
                             leadingColumnDefs={columnDefs}
                             rowData={attendance}
                         />

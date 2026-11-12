@@ -1,6 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
+import CommonEmptyState from '@components/empty/CommonEmptyState';
 import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
 import AssessmentQuestionCard from '@pages/student/assessment/AssessmentQuestionCard';
 import AssessmentTimer from '@pages/student/assessment/AssessmentTimer';
@@ -13,7 +14,8 @@ import {
     EyeIcon,
     PlayIcon,
     ShieldCheckIcon,
-    TrophyIcon
+    TrophyIcon,
+    WarningCircleIcon
 } from '@phosphor-icons/react';
 import {
     getAssessmentForStudent,
@@ -27,11 +29,81 @@ import {
 import { useToastStore } from '@stores/toast.store';
 import { StudentAssessment, StudentQuestion } from '@type/student-portal.type';
 import { DEFAULT_FORM_OPTIONS } from '@utils/form.util';
+import { holdIdleTimeout, releaseIdleTimeout } from '@utils/session.util';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const REQUIRED_ANSWER_MESSAGE = 'This question is required.';
+const CHOICE_TYPES = ['Multiple Choice', 'True or False', 'Matching'];
+const TEXT_SAVE_DELAY_MS = 1500;
+const HEARTBEAT_INTERVAL_MS = 30000;
+const SAVE_FAILED_MESSAGE = 'Some answers could not be saved, so the assessment was not submitted. Your answers are still on this page. Check your connection and try again.';
+const PAGE_SAVE_FAILED_MESSAGE = 'Some answers on this page could not be saved. Check your connection and try again.';
+const TIME_UP_MESSAGE = 'Time is up. Your saved answers were submitted automatically.';
+
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
+/**
+ * Tells whether a heartbeat or submit error means the attempt has already ended on the server.
+ */
+function isAttemptEndedMessage(message: string): boolean {
+    return /expired|no longer active|not in a submittable state/i.test(message);
+}
+
+/**
+ * Tells whether an attempt with this expiry time has already run out.
+ */
+function isPastExpiry(expiresAt: string | null | undefined): boolean {
+    if (!expiresAt) return false;
+
+    return new Date(expiresAt)
+        .getTime() <= Date.now();
+}
+
+/**
+ * Tells whether the assessment window is open right now.
+ */
+function isWindowOpen(assessment: StudentAssessment): boolean {
+    const now = Date.now();
+    const hasOpened = !assessment.opens_at || new Date(assessment.opens_at)
+        .getTime() <= now;
+    const hasClosed = Boolean(assessment.closes_at) && new Date(assessment.closes_at ?? '')
+        .getTime() < now;
+
+    return hasOpened && !hasClosed;
+}
+
+interface SaveIndicatorProps {
+    status: SaveStatus;
+}
+
+/**
+ * Small "Saving / Saved / Not saved" label shown next to the timer.
+ */
+function SaveIndicator({ status }: SaveIndicatorProps) {
+    if (status === 'idle') return null;
+
+    const labels: Record<Exclude<SaveStatus, 'idle'>, string> = {
+        error: 'Not saved',
+        saved: 'All answers saved',
+        saving: 'Saving…'
+    };
+    const colors: Record<Exclude<SaveStatus, 'idle'>, string> = {
+        error: 'text-rose-600 dark:text-rose-400',
+        saved: 'text-emerald-600 dark:text-emerald-400',
+        saving: 'text-slate-500 dark:text-slate-400'
+    };
+
+    return (
+        <span
+            aria-live="polite"
+            className={`font-medium text-xs ${colors[status]}`}
+        >
+            {labels[status]}
+        </span>
+    );
+}
 
 export default function TakeAssessmentPage() {
     const { enrollmentId = '', assessmentId = '' } = useParams<{
@@ -41,42 +113,103 @@ export default function TakeAssessmentPage() {
     const navigate = useNavigate();
 
     const [assessment, setAssessment] = useState<StudentAssessment | null>(null);
+    const [isLoadFailed, setIsLoadFailed] = useState(false);
+    const [loadKey, setLoadKey] = useState(0);
     const [questions, setQuestions] = useState<StudentQuestion[]>([]);
+    const [isQuestionsFailed, setIsQuestionsFailed] = useState(false);
     const [submissionId, setSubmissionId] = useState('');
     const [expiresAt, setExpiresAt] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(0);
+    const [isStarting, setIsStarting] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isStarted, setIsStarted] = useState(false);
+    const [isTimeUp, setIsTimeUp] = useState(false);
     const [isConfirmSubmitOpen, setIsConfirmSubmitOpen] = useState(false);
+    const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
     const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    // Question ids whose latest value has not reached the server yet
+    const dirtyIdsRef = useRef<Set<string>>(new Set());
+    const saveTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+    const pendingSavesRef = useRef(0);
+    const hasShownTimeUpRef = useRef(false);
 
     const methods = useForm<Record<string, string>>({ ...DEFAULT_FORM_OPTIONS, defaultValues: {} });
 
+    const subjectPath = `/student/subjects/${assessment?.enrollment_id || enrollmentId}`;
+    const resultPath = `${subjectPath}/assessments/${assessmentId}/result`;
+
     useEffect(function() {
+        let isCurrent = true;
+
         async function fetchAssessment() {
+            setIsLoadFailed(false);
             const result = await getAssessmentForStudent(assessmentId, enrollmentId);
-            if (result.data) {
-                setAssessment(result.data);
-                const canonicalEnrollmentId = result.data.enrollment_id || enrollmentId;
-                if (result.data.enrollment_id && result.data.enrollment_id !== enrollmentId) {
-                    navigate(`/student/subjects/${result.data.enrollment_id}/assessments/${assessmentId}`, { replace: true });
-                }
-                const used = result.data.attempts_used ?? 0;
-                const max = result.data.max_attempts ?? 1;
-                if (used >= max && !result.data.has_active_submission) {
-                    navigate(`/student/subjects/${canonicalEnrollmentId}/assessments/${assessmentId}/result?already_submitted=true`, { replace: true });
-                }
+            if (!isCurrent) return;
+
+            if (!result.data) {
+                setIsLoadFailed(true);
+                return;
+            }
+
+            const data: StudentAssessment = result.data;
+            setAssessment(data);
+            const canonicalEnrollmentId = data.enrollment_id || enrollmentId;
+            if (data.enrollment_id && data.enrollment_id !== enrollmentId) {
+                navigate(`/student/subjects/${data.enrollment_id}/assessments/${assessmentId}`, { replace: true });
+            }
+            const used = data.attempts_used ?? 0;
+            const max = data.max_attempts ?? 1;
+            if (used >= max && !data.has_active_submission && !data.expired_attempt_auto_submitted) {
+                navigate(`/student/subjects/${canonicalEnrollmentId}/assessments/${assessmentId}/result?already_submitted=true`, { replace: true });
             }
         }
 
         fetchAssessment();
-    }, [assessmentId, enrollmentId, navigate]);
+
+        return function() {
+            isCurrent = false;
+        };
+    }, [assessmentId, enrollmentId, navigate, loadKey]);
 
     useEffect(function() {
+        const saveTimers = saveTimersRef.current;
+
         return function() {
             if (heartbeatRef.current) clearInterval(heartbeatRef.current);
+            saveTimers.forEach(clearTimeout);
         };
     }, []);
+
+    // A student reading a question without touching anything is not signed out mid-attempt
+    useEffect(function() {
+        if (!isStarted || isTimeUp) return;
+
+        holdIdleTimeout(expiresAt
+            ? new Date(expiresAt)
+                .getTime()
+            : undefined);
+
+        return function() {
+            releaseIdleTimeout();
+        };
+    }, [expiresAt, isStarted, isTimeUp]);
+
+    // Warn before leaving the page while answers are still unsaved
+    useEffect(function() {
+        if (!isStarted || isTimeUp) return;
+
+        function handleBeforeUnload(event: BeforeUnloadEvent) {
+            if (dirtyIdsRef.current.size === 0 && pendingSavesRef.current === 0) return;
+            event.preventDefault();
+            event.returnValue = '';
+        }
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return function() {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [isStarted, isTimeUp]);
 
     useEffect(function() {
         if (!isStarted || !submissionId) return;
@@ -115,35 +248,82 @@ export default function TakeAssessmentPage() {
         };
     }, [isStarted, submissionId]);
 
-    async function handleStart() {
-        const result = await startAssessmentTimer(enrollmentId, assessmentId);
+    /**
+     * Stops the heartbeat and pending saves, and shows the time-up screen with one message.
+     */
+    const handleAttemptEnded = useCallback(function() {
+        if (heartbeatRef.current) {
+            clearInterval(heartbeatRef.current);
+            heartbeatRef.current = null;
+        }
+        saveTimersRef.current.forEach(clearTimeout);
+        saveTimersRef.current.clear();
+        dirtyIdsRef.current.clear();
+        setIsConfirmSubmitOpen(false);
+        setIsTimeUp(true);
 
-        if (result.data?.submission_id) {
+        if (!hasShownTimeUpRef.current) {
+            hasShownTimeUpRef.current = true;
+            useToastStore.getState()
+                .showToast(TIME_UP_MESSAGE, 'warning');
+        }
+    }, []);
+
+    /**
+     * Loads the questions of the started attempt and fills in any saved answers.
+     */
+    async function loadQuestions(subId: string) {
+        setIsQuestionsFailed(false);
+        const qResult = await getAssessmentQuestionsForStudent(assessmentId, enrollmentId, subId);
+
+        if (!qResult.data || qResult.data.length === 0) {
+            setIsQuestionsFailed(true);
+            return;
+        }
+
+        setQuestions(qResult.data);
+        const initialValues: Record<string, string> = {};
+        qResult.data.forEach((q) => {
+            const isChoice = CHOICE_TYPES.includes(q.question_type);
+            initialValues[`answer_${q.id}`] = isChoice
+                ? (q.saved_answer?.choice_id ?? '')
+                : (q.saved_answer?.answer_text ?? '');
+        });
+        methods.reset(initialValues);
+    }
+
+    async function handleStart() {
+        if (isStarting || !assessment) return;
+
+        setIsStarting(true);
+        try {
+            const hadActiveAttempt = Boolean(assessment.has_active_submission);
+            const result = await startAssessmentTimer(enrollmentId, assessmentId);
+
+            if (!result.data?.submission_id) return;
+
             const subId = result.data.submission_id;
+            // The server ended the old attempt because its time ran out, then started a new one
+            if (hadActiveAttempt && result.data.is_resumed === false) {
+                useToastStore.getState()
+                    .showToast('Your previous attempt ran out of time and was submitted automatically. This is a new attempt.', 'warning');
+            }
+
             setSubmissionId(subId);
             setExpiresAt(result.data.expires_at ?? null);
             setIsStarted(true);
 
-            heartbeatRef.current = setInterval(function() {
-                recordHeartbeat(subId);
-            }, 30000);
+            heartbeatRef.current = setInterval(async function() {
+                const heartbeat = await recordHeartbeat(subId);
+                if (heartbeat.error && isAttemptEndedMessage(heartbeat.error.message)) {
+                    handleAttemptEnded();
+                }
+            }, HEARTBEAT_INTERVAL_MS);
 
-            const qResult = await getAssessmentQuestionsForStudent(
-                assessmentId,
-                enrollmentId,
-                subId
-            );
-            if (qResult.data) {
-                setQuestions(qResult.data);
-                const initialValues: Record<string, string> = {};
-                qResult.data.forEach((q) => {
-                    const isChoice = ['Multiple Choice', 'True or False', 'Matching'].includes(q.question_type);
-                    initialValues[`answer_${q.id}`] = isChoice
-                        ? (q.saved_answer?.choice_id ?? '')
-                        : (q.saved_answer?.answer_text ?? '');
-                });
-                methods.reset(initialValues);
-            }
+            await loadQuestions(subId);
+        }
+        finally {
+            setIsStarting(false);
         }
     }
 
@@ -154,7 +334,7 @@ export default function TakeAssessmentPage() {
             const question = questions.find((q) => q.id === questionId);
             if (!question || question.question_type === 'File Upload') return null;
 
-            const isChoice = ['Multiple Choice', 'True or False', 'Matching'].includes(question.question_type);
+            const isChoice = CHOICE_TYPES.includes(question.question_type);
 
             const result = await saveStudentAnswer(submissionId, {
                 question_id: questionId,
@@ -171,19 +351,92 @@ export default function TakeAssessmentPage() {
         [submissionId, questions]
     );
 
-    // Saves are silent per answer (one "Answer saved." toast per question otherwise);
-    // surface only the first failure.
-    async function saveAnswers(targets: StudentQuestion[]) {
-        const values = methods.getValues();
-        const errors = await Promise.all(
-            targets.map((q) => handleSaveAnswer(q.id, values[`answer_${q.id}`] ?? ''))
-        );
-        const firstError = errors.find(Boolean);
+    /**
+     * Saves the current value of one question and keeps the save indicator up to date.
+     * Returns the error message when the save failed.
+     */
+    const saveQuestion = useCallback(
+        async function(questionId: string): Promise<string | null> {
+            const pendingTimer = saveTimersRef.current.get(questionId);
+            if (pendingTimer) {
+                clearTimeout(pendingTimer);
+                saveTimersRef.current.delete(questionId);
+            }
 
-        if (firstError) {
+            const value = methods.getValues(`answer_${questionId}`) ?? '';
+            dirtyIdsRef.current.delete(questionId);
+            pendingSavesRef.current += 1;
+            setSaveStatus('saving');
+
+            const error = await handleSaveAnswer(questionId, value);
+            pendingSavesRef.current -= 1;
+
+            if (error) {
+                dirtyIdsRef.current.add(questionId);
+                setSaveStatus('error');
+                return error;
+            }
+
+            if (pendingSavesRef.current === 0) {
+                setSaveStatus(function(previous) {
+                    if (dirtyIdsRef.current.size > 0) {
+                        return previous === 'error'
+                            ? 'error'
+                            : 'saving';
+                    }
+                    return 'saved';
+                });
+            }
+            return null;
+        },
+        [handleSaveAnswer, methods]
+    );
+
+    // Autosave: a picked choice saves at once, a typed answer 1.5 s after typing stops
+    useEffect(function() {
+        if (!isStarted || questions.length === 0) return;
+
+        const subscription = methods.watch(function(_values, { name }) {
+            if (!name?.startsWith('answer_')) return;
+
+            const questionId = name.slice('answer_'.length);
+            const question = questions.find((q) => q.id === questionId);
+            if (!question || question.question_type === 'File Upload') return;
+
+            dirtyIdsRef.current.add(questionId);
+            setSaveStatus('saving');
+
+            const pendingTimer = saveTimersRef.current.get(questionId);
+            if (pendingTimer) clearTimeout(pendingTimer);
+
+            if (CHOICE_TYPES.includes(question.question_type)) {
+                saveQuestion(questionId);
+                return;
+            }
+
+            saveTimersRef.current.set(questionId, setTimeout(function() {
+                saveQuestion(questionId);
+            }, TEXT_SAVE_DELAY_MS));
+        });
+
+        return function() {
+            subscription.unsubscribe();
+        };
+    }, [isStarted, questions, methods, saveQuestion]);
+
+    /**
+     * Saves the given questions now. Returns false and shows one error when any save failed.
+     */
+    async function saveAnswers(targets: StudentQuestion[], failureMessage: string): Promise<boolean> {
+        const errors = await Promise.all(targets.map((q) => saveQuestion(q.id)));
+        const hasFailed = errors.some(Boolean);
+
+        if (hasFailed) {
             useToastStore.getState()
-                .showToast(firstError, 'error');
+                .showToast(failureMessage, 'error');
         }
+
+        return !hasFailed;
     }
 
     // Flags every unanswered required question and jumps to the first one's page.
@@ -213,23 +466,43 @@ export default function TakeAssessmentPage() {
     }
 
     async function handleSubmit(isAutoSubmit: boolean) {
-        if (!submissionId || isSubmitting) return;
+        if (!submissionId || isSubmitting || isTimeUp) return;
+        // Never send an empty attempt when the questions did not load
+        if (questions.length === 0) return;
 
         if (!isAutoSubmit && !validateRequiredAnswers()) return;
 
         setIsSubmitting(true);
-        await saveAnswers(questions);
-
         try {
+            const isAllSaved = await saveAnswers(questions, SAVE_FAILED_MESSAGE);
+            // A failed save would be graded as a blank answer, so keep the student here
+            if (!isAllSaved) return;
+
             const result = await submitAssessment(submissionId);
             if (!result.error) {
                 if (heartbeatRef.current) clearInterval(heartbeatRef.current);
-                navigate(`/student/subjects/${assessment?.enrollment_id || enrollmentId}/assessments/${assessmentId}/result?submitted=true`);
+                dirtyIdsRef.current.clear();
+                navigate(`${resultPath}?submitted=true`);
+                return;
+            }
+
+            if (isAutoSubmit || isAttemptEndedMessage(result.error.message)) {
+                handleAttemptEnded();
             }
         }
         finally {
             setIsSubmitting(false);
         }
+    }
+
+    /**
+     * Moves to another page of questions after saving the visible ones.
+     */
+    async function handleChangePage(step: number) {
+        const isSaved = await saveAnswers(visibleQuestions, PAGE_SAVE_FAILED_MESSAGE);
+        if (!isSaved) return;
+
+        setCurrentPage((prev) => prev + step);
     }
 
     const questionsPerPage = assessment?.show_all_questions
@@ -246,10 +519,78 @@ export default function TakeAssessmentPage() {
 
     const isLastPage = currentPage >= totalPages - 1;
 
+    if (isLoadFailed) {
+        return (
+            <CommonCard className="flex flex-col gap-4 h-full p-6 w-full items-center justify-center">
+                <CommonEmptyState
+                    action={(
+                        <div className="flex flex-wrap gap-2 justify-center">
+                            <CommonButton
+                                color="inherit"
+                                size="small"
+                                variant="outlined"
+                                onClick={function() {
+                                    navigate(`${subjectPath}?tab=assessments`);
+                                }}
+                            >
+                                Back to Subject
+                            </CommonButton>
+                            <CommonButton
+                                size="small"
+                                variant="contained"
+                                onClick={function() {
+                                    setLoadKey((key) => key + 1);
+                                }}
+                            >
+                                Try Again
+                            </CommonButton>
+                        </div>
+                    )}
+                    description="The assessment could not be loaded. Check your connection and try again."
+                    icon={(
+                        <WarningCircleIcon
+                            size={48}
+                            weight="duotone"
+                        />
+                    )}
+                    title="Assessment not available"
+                />
+            </CommonCard>
+        );
+    }
+
     if (!assessment) {
         return (
             <CommonCard className="flex flex-col gap-4 h-full p-6 w-full items-center justify-center">
                 <div className="py-16 text-center text-slate-500 dark:text-slate-400 text-sm">Loading assessment…</div>
+            </CommonCard>
+        );
+    }
+
+    if (isTimeUp) {
+        return (
+            <CommonCard className="flex flex-col gap-4 h-full p-6 w-full items-center justify-center">
+                <CommonEmptyState
+                    action={(
+                        <CommonButton
+                            size="small"
+                            variant="contained"
+                            onClick={function() {
+                                navigate(resultPath);
+                            }}
+                        >
+                            View Result
+                        </CommonButton>
+                    )}
+                    description="Your saved answers were submitted automatically when the time limit ended."
+                    icon={(
+                        <ClockIcon
+                            size={48}
+                            weight="duotone"
+                        />
+                    )}
+                    title="Time is up"
+                />
             </CommonCard>
         );
     }
@@ -259,6 +600,20 @@ export default function TakeAssessmentPage() {
         const attemptsUsed = assessment.attempts_used ?? 0;
         const maxAttempts = assessment.max_attempts ?? 1;
         const isMaxedOut = attemptsUsed >= maxAttempts && !assessment.has_active_submission;
+        // An attempt whose time ran out cannot be resumed; the server submits it when asked
+        const isActiveAttemptExpired = Boolean(assessment.has_active_submission)
+            && isPastExpiry(assessment.active_submission_expires_at);
+        const wasAutoSubmitted = Boolean(assessment.expired_attempt_auto_submitted) || isActiveAttemptExpired;
+        // The expired attempt counts once the server submits it
+        const finishedAttempts = attemptsUsed + (isActiveAttemptExpired
+            ? 1
+            : 0);
+        const canRetake = finishedAttempts < maxAttempts && isWindowOpen(assessment);
+        const startLabel = assessment.has_active_submission && !isActiveAttemptExpired
+            ? 'Resume Assessment'
+            : wasAutoSubmitted || attemptsUsed > 0
+                ? `Retake (attempt ${finishedAttempts + 1} of ${maxAttempts})`
+                : 'Start Assessment Now';
 
         return (
             <CommonCard className="flex flex-col gap-6 h-full p-4 sm:p-8 w-full max-w-4xl mx-auto shadow-sm">
@@ -274,16 +629,16 @@ export default function TakeAssessmentPage() {
                         )}
                         variant="outlined"
                         onClick={function() {
-                            navigate(`/student/subjects/${assessment?.enrollment_id || enrollmentId}?tab=assessments`);
+                            navigate(`${subjectPath}?tab=assessments`);
                         }}
                     >
                         Back to Subject
                     </CommonButton>
                     <CommonBadgeStatus
-                        label={assessment.has_active_submission
+                        label={assessment.has_active_submission && !isActiveAttemptExpired
                             ? 'In Progress'
                             : 'Ready to Take'}
-                        variant={assessment.has_active_submission
+                        variant={assessment.has_active_submission && !isActiveAttemptExpired
                             ? 'warning'
                             : 'info'}
                     />
@@ -313,6 +668,34 @@ export default function TakeAssessmentPage() {
                                 </p>
                             )}
                     </div>
+
+                    {wasAutoSubmitted && (
+                        <div className="bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/80 p-4 rounded-xl flex items-start gap-3 text-left w-full max-w-xl">
+                            <ClockIcon
+                                className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"
+                                size={22}
+                            />
+                            <div className="flex flex-col gap-1 text-xs text-amber-900 dark:text-amber-200">
+                                <span className="font-bold">Your last attempt ran out of time</span>
+                                <span>
+                                    It was submitted automatically with the answers you saved. You can view its result
+                                    {canRetake
+                                        ? ' or start a new attempt.'
+                                        : '.'}
+                                </span>
+                                <CommonButton
+                                    className="self-start"
+                                    size="small"
+                                    variant="outlined"
+                                    onClick={function() {
+                                        navigate(resultPath);
+                                    }}
+                                >
+                                    View Result
+                                </CommonButton>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Metric Badges Grid */}
                     <div className="gap-3 sm:gap-4 grid grid-cols-2 sm:grid-cols-4 w-full">
@@ -391,7 +774,7 @@ export default function TakeAssessmentPage() {
                                     size="medium"
                                     variant="contained"
                                     onClick={function() {
-                                        navigate(`/student/subjects/${assessment?.enrollment_id || enrollmentId}/assessments/${assessmentId}/result`);
+                                        navigate(resultPath);
                                     }}
                                 >
                                 View Assessment Results
@@ -402,6 +785,8 @@ export default function TakeAssessmentPage() {
                             <CommonButton
                                 className="px-8 py-2.5 text-base font-semibold shadow-md"
                                 color="primary"
+                                disabled={isStarting || (isActiveAttemptExpired && !canRetake)}
+                                loading={isStarting}
                                 size="medium"
                                 startIcon={(
                                     <PlayIcon
@@ -412,12 +797,38 @@ export default function TakeAssessmentPage() {
                                 variant="contained"
                                 onClick={handleStart}
                             >
-                                {assessment.has_active_submission
-                                    ? 'Resume Assessment'
-                                    : 'Start Assessment Now'}
+                                {startLabel}
                             </CommonButton>
                         )}
                 </div>
+            </CommonCard>
+        );
+    }
+
+    if (isQuestionsFailed) {
+        return (
+            <CommonCard className="flex flex-col gap-4 h-full p-6 w-full items-center justify-center">
+                <CommonEmptyState
+                    action={(
+                        <CommonButton
+                            size="small"
+                            variant="contained"
+                            onClick={function() {
+                                loadQuestions(submissionId);
+                            }}
+                        >
+                            Load Questions Again
+                        </CommonButton>
+                    )}
+                    description="The questions could not be loaded, so nothing can be submitted yet. Your attempt has started; try loading the questions again."
+                    icon={(
+                        <WarningCircleIcon
+                            size={48}
+                            weight="duotone"
+                        />
+                    )}
+                    title="Questions not loaded"
+                />
             </CommonCard>
         );
     }
@@ -436,6 +847,7 @@ export default function TakeAssessmentPage() {
                     </span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
+                    <SaveIndicator status={saveStatus} />
                     <AssessmentTimer
                         expiresAt={expiresAt}
                         onExpire={function() {
@@ -474,9 +886,8 @@ export default function TakeAssessmentPage() {
                             />
                         )}
                         variant="outlined"
-                        onClick={async function() {
-                            await saveAnswers(visibleQuestions);
-                            setCurrentPage((prev) => prev - 1);
+                        onClick={function() {
+                            handleChangePage(-1);
                         }}
                     >
                         Previous Page
@@ -500,8 +911,7 @@ export default function TakeAssessmentPage() {
                                 );
                                 if (!isPageValid) return;
 
-                                await saveAnswers(visibleQuestions);
-                                setCurrentPage((prev) => prev + 1);
+                                await handleChangePage(1);
                             }}
                         >
                             Next Page
@@ -510,7 +920,7 @@ export default function TakeAssessmentPage() {
                     {(assessment.show_all_questions || isLastPage) && (
                         <CommonButton
                             color="primary"
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || questions.length === 0}
                             loading={isSubmitting}
                             size="medium"
                             variant="contained"

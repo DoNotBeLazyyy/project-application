@@ -1,6 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
 import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from '@pages/shared/calendar/calendar.types';
+import { formatEventDateRange } from '@pages/shared/calendar/event-date-range';
 import {
     ArrowSquareOutIcon,
     ClockIcon,
@@ -31,50 +32,7 @@ export function CalendarEventDetailModal({
 
     if (!event || !categoryConfig) return null;
 
-    const formattedDateRange = (() => {
-        const startStr = event.start.toLocaleDateString('en-US', {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric'
-        });
-
-        if (event.allDay) {
-            const endStr = event.end.toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric'
-            });
-
-            if (startStr === endStr) {
-                return `${startStr} (All Day)`;
-            }
-            return `${startStr} – ${endStr} (All Day)`;
-        }
-
-        const startTime = event.start.toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit'
-        });
-        const endTime = event.end.toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit'
-        });
-
-        const isSameDay = event.start.toDateString() === event.end.toDateString();
-        if (isSameDay) {
-            return `${startStr} • ${startTime} – ${endTime}`;
-        }
-
-        const endStr = event.end.toLocaleDateString('en-US', {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric'
-        });
-        return `${startStr} at ${startTime} – ${endStr} at ${endTime}`;
-    })();
+    const formattedDateRange = formatEventDateRange(event.start, event.end, event.allDay);
 
     function handleActionClick() {
         const targetUrl = event?.metadata?.targetUrl;

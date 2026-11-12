@@ -1,19 +1,7 @@
-import { MenuOption } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/use-table-configs';
-import { RoleListRow } from '@type/role.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
-interface UseRoleTableConfigProps {
-    onRequestDeleteRow: (id: string) => void;
-    onEdit: (id: string) => void;
-    onView: (id: string) => void;
-}
-
-export function useRoleTableConfig({
-    onEdit,
-    onView
-}: UseRoleTableConfigProps) {
+export function useRoleTableConfig() {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
@@ -39,29 +27,5 @@ export function useRoleTableConfig({
         ];
     }, []);
 
-    const tableActionConfig = useMemo(function() {
-        return function(onDelete: (id: string) => void): TableActionConfig<RoleListRow> {
-            return {
-                onEditClick: (row: RoleListRow) => function() {
-                    onEdit(row.id);
-                },
-                menuOptions: (row: RoleListRow): MenuOption[] => [
-                    {
-                        preset: 'view',
-                        onClick: () => onView(row.id)
-                    },
-                    {
-                        preset: 'edit',
-                        onClick: () => onEdit(row.id)
-                    },
-                    {
-                        preset: 'delete',
-                        onClick: () => onDelete(row.id)
-                    }
-                ]
-            };
-        };
-    }, [onEdit, onView]);
-
-    return { columnDefs, tableActionConfig };
+    return { columnDefs };
 }

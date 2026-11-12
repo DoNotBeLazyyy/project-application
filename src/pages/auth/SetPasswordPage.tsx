@@ -12,11 +12,31 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * Button text for the reset, invite and retry cases.
+ */
+function getSubmitLabel(isRecovery: boolean, isPasswordSaved: boolean, isSubmitting: boolean): string {
+    if (isRecovery) {
+        return isSubmitting
+            ? 'Saving Password…'
+            : 'Reset Password';
+    }
+    if (isSubmitting) return 'Activating Account…';
+
+    return isPasswordSaved
+        ? 'Try Activation Again'
+        : 'Activate Account';
+}
+
 export default function SetPasswordPage() {
     const navigate = useNavigate();
     const [sessionReady, setSessionReady] = useState(false);
     const [isTimedOut, setIsTimedOut] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    // A forgot-password link (type=recovery) resets the password; an invite activates the account
+    const [isRecovery, setIsRecovery] = useState(false);
+    // The password is saved but activation failed, so a retry only repeats the activation
+    const [isPasswordSaved, setIsPasswordSaved] = useState(false);
     const mountedRef = useRef(true);
 
     const methods = useForm<SetPasswordFormValues>({
@@ -55,6 +75,7 @@ export default function SetPasswordPage() {
             const tokenType = (rawType === 'recovery'
                 ? 'recovery'
                 : 'invite') as 'invite' | 'recovery';
+            setIsRecovery(tokenType === 'recovery');
 
             if (tokenHash) {
                 supabase.auth.verifyOtp({ token_hash: tokenHash, type: tokenType })
@@ -90,6 +111,7 @@ export default function SetPasswordPage() {
             if (session && (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY')) {
                 if (mountedRef.current) {
                     setSessionReady(true);
+                    if (event === 'PASSWORD_RECOVERY') setIsRecovery(true);
                 }
             }
         });
@@ -115,15 +137,25 @@ export default function SetPasswordPage() {
     async function onSubmit(values: SetPasswordFormValues) {
         setSubmitError(null);
 
-        const { error: updateError } = await supabase.auth.updateUser({ password: values.password });
-        if (updateError) {
-            setSubmitError(parseServiceError(updateError).message ?? 'Failed to set password.');
+        if (!isPasswordSaved) {
+            const { error: updateError } = await supabase.auth.updateUser({ password: values.password });
+            if (updateError) {
+                setSubmitError(parseServiceError(updateError).message ?? 'Failed to set password.');
+                return;
+            }
+        }
+
+        if (isRecovery) {
+            // A reset must not change the account status (it would reactivate a suspended account)
+            await logout();
+            navigate('/login', { state: { passwordResetSuccess: true } });
             return;
         }
 
-        const activateResult = await callRpc('fn_activate_user');
+        setIsPasswordSaved(true);
+        const activateResult = await callRpc('fn_activate_user', undefined, { silent: true });
         if (activateResult.error) {
-            setSubmitError(activateResult.error.message ?? 'Failed to activate account.');
+            setSubmitError('Your password was saved, but your account could not be activated. Select "Try Activation Again", or contact your administrator if this keeps happening.');
             return;
         }
 
@@ -140,7 +172,7 @@ export default function SetPasswordPage() {
             <div className="flex flex-col gap-4 h-full items-center justify-center p-4 text-center w-full">
                 {!isTimedOut && (
                     <p className="text-(--mui-palette-text-secondary) text-sm">
-                        Verifying invite link…
+                        Verifying your link…
                     </p>
                 )}
                 {isTimedOut && (
@@ -179,10 +211,14 @@ export default function SetPasswordPage() {
             <CommonCard className="flex flex-col gap-6 max-w-sm p-8 w-full">
                 <div className="flex flex-col gap-1">
                     <h2 className="font-bold text-(--mui-palette-text-primary) text-xl">
-                        Set Your Password
+                        {isRecovery
+                            ? 'Reset Your Password'
+                            : 'Set Your Password'}
                     </h2>
                     <p className="text-(--mui-palette-text-secondary) text-sm">
-                        Create a secure password to activate your account.
+                        {isRecovery
+                            ? 'Choose a new password for your account.'
+                            : 'Create a secure password to activate your account.'}
                     </p>
                 </div>
 
@@ -247,9 +283,7 @@ export default function SetPasswordPage() {
                         type="submit"
                         variant="contained"
                     >
-                        {methods.formState.isSubmitting
-                            ? 'Activating Account…'
-                            : 'Activate Account'}
+                        {getSubmitLabel(isRecovery, isPasswordSaved, methods.formState.isSubmitting)}
                     </CommonButton>
                 </form>
             </CommonCard>

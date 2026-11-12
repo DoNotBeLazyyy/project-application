@@ -70,6 +70,8 @@ export default function RoleGridCard({
                     ariaLabel="Role actions"
                 />
             )}
+            // No bulk action exists for this list, so cards cannot be selected
+            hasCheckbox={false}
             isSelected={isSelected}
             selectVariant="button"
             status=""

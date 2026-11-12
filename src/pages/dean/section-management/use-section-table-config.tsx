@@ -1,28 +1,10 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
-import { MenuOption } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/use-table-configs';
-import { SectionListRow, SectionStatus } from '@type/section.type';
+import { SECTION_STATUS_VARIANT } from '@constants/status-badge.constant';
+import { SectionListRow } from '@type/section.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
-interface UseSectionTableConfigProps {
-    onEdit: (id: string) => void;
-    onRequestDeleteRow: (id: string) => void;
-    onView: (id: string) => void;
-}
-
-const STATUS_VARIANT_MAP: Record<SectionStatus, 'success' | 'error' | 'warning' | 'info'> = {
-    Open: 'success',
-    Full: 'warning',
-    Ongoing: 'info',
-    Closed: 'error',
-    Cancelled: 'info'
-};
-
-export function useSectionTableConfig({
-    onEdit,
-    onView
-}: UseSectionTableConfigProps) {
+export function useSectionTableConfig() {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
@@ -85,7 +67,7 @@ export function useSectionTableConfig({
                     <div className="flex h-full items-center">
                         <CommonBadgeStatus
                             label={params.data.status}
-                            variant={STATUS_VARIANT_MAP[params.data.status]}
+                            variant={SECTION_STATUS_VARIANT[params.data.status]}
                         />
                     </div>
                 )
@@ -93,39 +75,5 @@ export function useSectionTableConfig({
         ];
     }, []);
 
-    const tableActionConfig = useMemo(function() {
-        return function(onDelete: (id: string) => void): TableActionConfig<SectionListRow> {
-            return {
-                onEditClick: (row: SectionListRow) => () => {
-                    if (row.is_active_academic_year !== false) {
-                        onEdit(row.id);
-                    }
-                },
-                menuOptions: (row: SectionListRow): MenuOption[] => {
-                    const isEditable = row.is_active_academic_year !== false;
-
-                    return [
-                        {
-                            preset: 'view',
-                            onClick: () => onView(row.id)
-                        },
-                        ...(isEditable
-                            ? [
-                                {
-                                    preset: 'edit' as const,
-                                    onClick: () => onEdit(row.id)
-                                },
-                                {
-                                    preset: 'delete' as const,
-                                    onClick: () => onDelete(row.id)
-                                }
-                            ]
-                            : [])
-                    ];
-                }
-            };
-        };
-    }, [onEdit, onView]);
-
-    return { columnDefs, tableActionConfig };
+    return { columnDefs };
 }

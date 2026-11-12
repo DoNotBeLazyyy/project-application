@@ -1,8 +1,6 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
-import { MenuOption } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/use-table-configs';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import EvaluationTemplateGridCard from '@pages/admin/evaluation-management/EvaluationTemplateGridCard';
@@ -36,7 +34,7 @@ const SORT_COLUMNS: SortColumn[] = [
 // The sample row is chosen to import cleanly against the live DB (ALL mode, so no program codes).
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     {
-        key: 'section_title', label: 'Section Title', hint: 'e.g. Teaching Effectiveness (rows with the same title form one section; must not match an existing section)', sample: 'Teaching Effectiveness', aliases: ['section', 'section_name', 'title']
+        key: 'section_title', label: 'Section Title', hint: 'e.g. Teaching Effectiveness (rows with the same title form one section; must not match an existing section)', sample: 'Teaching Effectiveness', required: true, aliases: ['section', 'section_name', 'title']
     },
     {
         key: 'section_sequence', label: 'Section Sequence', hint: 'Whole number 1-32767 (optional, blank = after the last section)', sample: '1', required: false, aliases: ['sequence', 'order']
@@ -57,7 +55,7 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
         key: 'suggestion_placeholder', label: 'Suggestion Box Placeholder', hint: 'Optional suggestion prompt for students', sample: 'Provide constructive feedback for your instructor', required: false
     },
     {
-        key: 'question_text', label: 'Question Text', hint: 'e.g. Explains concepts clearly', sample: 'Explains concepts clearly and provides practical examples', aliases: ['question', 'prompt']
+        key: 'question_text', label: 'Question Text', hint: 'e.g. Explains concepts clearly', sample: 'Explains concepts clearly and provides practical examples', required: true, aliases: ['question', 'prompt']
     },
     {
         key: 'question_type', label: 'Question Type', hint: 'Rating, Multiple Choice, or Open Ended', sample: 'Rating', aliases: ['type']
@@ -173,32 +171,44 @@ export default function EvaluationManagement() {
         return deleteEvaluationTemplate(id);
     }
 
-    async function loadIntoForm(id: string) {
+    /**
+     * Loads a section into the edit form. Returns false when it could not be loaded,
+     * so the caller does not open a modal with old values.
+     */
+    async function loadIntoForm(id: string): Promise<boolean> {
         const res = await getEvaluationTemplateById(id);
-        if (res.data) {
-            updateMethods.reset({
-                id: res.data.id,
-                title: res.data.title,
-                description: res.data.description ?? '',
-                is_active: res.data.is_active,
-                sequence: String(res.data.sequence ?? 1),
-                target_mode: res.data.target_mode ?? 'ALL',
-                suggestion_placeholder: res.data.suggestion_placeholder ?? '',
-                program_ids: res.data.program_ids ?? [],
-                questions: res.data.questions.length
-                    ? res.data.questions.map(function(q) {
-                        return {
-                            id: q.id,
-                            question_text: q.question_text,
-                            question_type: q.question_type,
-                            is_required: q.is_required,
-                            min_rating: String(q.min_rating ?? 1),
-                            max_rating: String(q.max_rating ?? 5)
-                        };
-                    })
-                    : DEFAULT_QUESTIONS
-            });
+        if (res.error) {
+            // The service call already showed the error
+            return false;
         }
+        if (!res.data) {
+            useToastStore.getState()
+                .showToast('This evaluation section could not be loaded. Please try again.', 'error');
+            return false;
+        }
+        updateMethods.reset({
+            id: res.data.id,
+            title: res.data.title,
+            description: res.data.description ?? '',
+            is_active: res.data.is_active,
+            sequence: String(res.data.sequence ?? 1),
+            target_mode: res.data.target_mode ?? 'ALL',
+            suggestion_placeholder: res.data.suggestion_placeholder ?? '',
+            program_ids: res.data.program_ids ?? [],
+            questions: res.data.questions.length
+                ? res.data.questions.map(function(q) {
+                    return {
+                        id: q.id,
+                        question_text: q.question_text,
+                        question_type: q.question_type,
+                        is_required: q.is_required,
+                        min_rating: String(q.min_rating ?? 1),
+                        max_rating: String(q.max_rating ?? 5)
+                    };
+                })
+                : DEFAULT_QUESTIONS
+        });
+        return true;
     }
 
     function handleOpenCreate() {
@@ -212,8 +222,10 @@ export default function EvaluationManagement() {
     }
 
     async function handleOpenView(id: string) {
+        if (!(await loadIntoForm(id))) {
+            return;
+        }
         setSelectedId(id);
-        await loadIntoForm(id);
         setIsViewOpen(true);
     }
 
@@ -224,16 +236,20 @@ export default function EvaluationManagement() {
     }
 
     async function handleOpenUpdate(id: string) {
+        if (!(await loadIntoForm(id))) {
+            return;
+        }
         setSelectedId(id);
         setEditStep(1);
-        await loadIntoForm(id);
         setIsUpdateOpen(true);
     }
 
     async function handleSwitchToEdit(id: string, step = 1) {
+        if (!(await loadIntoForm(id))) {
+            return;
+        }
         setIsViewOpen(false);
         setEditStep(step);
-        await loadIntoForm(id);
         setIsUpdateOpen(true);
     }
 
@@ -265,9 +281,8 @@ export default function EvaluationManagement() {
                 }))
             };
             const res = await createEvaluationTemplate(sanitizedValues);
+            // The server's own success message is already shown
             if (!res.error) {
-                useToastStore.getState()
-                    .showToast('Evaluation section created successfully.', 'success');
                 handleCloseCreate();
                 triggerRefresh();
             }
@@ -301,8 +316,6 @@ export default function EvaluationManagement() {
             };
             const res = await updateEvaluationTemplate(selectedId, sanitizedValues);
             if (!res.error) {
-                useToastStore.getState()
-                    .showToast('Evaluation section updated successfully.', 'success');
                 handleCloseUpdate();
                 triggerRefresh();
             }
@@ -365,30 +378,6 @@ export default function EvaluationManagement() {
         ];
     }, [programOptions]);
 
-    const tableActionConfig = useMemo(function() {
-        return function(onDelete: (id: string) => void): TableActionConfig<EvaluationTemplateListRow> {
-            return {
-                onEditClick: (row: EvaluationTemplateListRow) => function() {
-                    handleOpenUpdate(row.id);
-                },
-                menuOptions: (row: EvaluationTemplateListRow): MenuOption[] => [
-                    {
-                        preset: 'view',
-                        onClick: () => handleOpenView(row.id)
-                    },
-                    {
-                        preset: 'edit',
-                        onClick: () => handleOpenUpdate(row.id)
-                    },
-                    {
-                        preset: 'delete',
-                        onClick: () => onDelete(row.id)
-                    }
-                ]
-            };
-        };
-    }, []);
-
     return (
         <>
             <CommonTableCard<EvaluationTemplateListRow>
@@ -433,7 +422,6 @@ export default function EvaluationManagement() {
                     );
                 }}
                 sortColumns={SORT_COLUMNS}
-                tableActionConfig={tableActionConfig}
                 tableProps={{
                     leadingColumnDefs: columnDefs
                 }}

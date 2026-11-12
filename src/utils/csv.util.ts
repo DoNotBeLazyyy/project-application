@@ -7,6 +7,9 @@ export interface CsvParseResult {
 
     // Blank cells in columns marked `required: true`, as "Row 2: Email"
     missingValues: string[];
+
+    // True when the template's example row was found and left out
+    skippedExampleRow: boolean;
 }
 
 const COMMON_SYNONYMS: Record<string, string[]> = {
@@ -365,7 +368,7 @@ export function parseCsvWithColumns(text: string, columns: CsvTemplateColumn[]):
     const records = splitCsvRecords(text);
     if (!records.length) {
         return {
-            missingHeaders: [], missingValues: [], rows: [], unknownHeaders: []
+            missingHeaders: [], missingValues: [], rows: [], skippedExampleRow: false, unknownHeaders: []
         };
     }
 
@@ -377,8 +380,16 @@ export function parseCsvWithColumns(text: string, columns: CsvTemplateColumn[]):
     )
         .map((col) => col.label);
 
-    const dataRecords = records.slice(1)
-        .filter((record, index) => !(index === 0 && isHintRecord(record, matchedColumns)));
+    // The template's example row is left out, and the caller is told so it can say so
+    const skippedExampleRow = records.length > 1 && isHintRecord(records[1], matchedColumns);
+    const dataRecords = records.slice(skippedExampleRow
+        ? 2
+        : 1);
+
+    // Row numbers in messages match the spreadsheet: the header is row 1
+    const firstDataRowNumber = skippedExampleRow
+        ? 3
+        : 2;
 
     const rows = dataRecords.map((values) => {
         const row: Record<string, string> = {};
@@ -395,13 +406,13 @@ export function parseCsvWithColumns(text: string, columns: CsvTemplateColumn[]):
     rows.forEach((row, rowIndex) => {
         requiredColumns.forEach((col) => {
             if (col.key in row && (row[col.key] ?? '').trim() === '') {
-                missingValues.push(`Row ${rowIndex + 1}: ${col.label}`);
+                missingValues.push(`Row ${rowIndex + firstDataRowNumber}: ${col.label}`);
             }
         });
     });
 
     return {
-        missingHeaders, missingValues, rows, unknownHeaders
+        missingHeaders, missingValues, rows, skippedExampleRow, unknownHeaders
     };
 }
 

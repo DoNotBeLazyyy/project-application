@@ -103,11 +103,8 @@ export default function SectionThresholdModal({
                 next
             );
 
-            if (result.error) {
-                useToastStore.getState()
-                    .showToast(result.error.message || 'Failed to save section threshold.', 'error');
-            }
-            else {
+            // callRpc already shows the error
+            if (!result.error) {
                 useToastStore.getState()
                     .showToast(
                         'Saved for this section. Recalculate grades to re-check your students.',
@@ -136,11 +133,8 @@ export default function SectionThresholdModal({
                 leaf.signal
             );
 
-            if (result.error) {
-                useToastStore.getState()
-                    .showToast(result.error.message || 'Failed to reset threshold.', 'error');
-            }
-            else {
+            // callRpc already shows the error
+            if (!result.error) {
                 setDrafts(function(previous) {
                     return {
                         ...previous,

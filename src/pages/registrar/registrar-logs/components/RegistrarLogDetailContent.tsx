@@ -1,14 +1,9 @@
 import { CommonChip } from '@components/badge/CommonChip';
+import { formatActionLabel } from '@pages/registrar/registrar-logs/utils/registrar-log.util';
 import { RegistrarLogRow } from '@type/registrar-verification.type';
 
 interface RegistrarLogDetailContentProps {
     row: RegistrarLogRow;
-}
-
-function formatActionLabel(action: string): string {
-    return action
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export default function RegistrarLogDetailContent({ row }: RegistrarLogDetailContentProps) {

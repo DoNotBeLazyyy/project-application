@@ -1,15 +1,16 @@
 import CommonButton from '@components/button/CommonButton';
+import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonTextarea from '@components/textarea/CommonTextarea';
 import DiscussionAttachmentList from '@pages/shared/discussion/DiscussionAttachmentList';
 import DiscussionAttachmentPicker from '@pages/shared/discussion/DiscussionAttachmentPicker';
 import { ArrowLeftIcon, CheckCircleIcon, PushPinIcon, TrashIcon } from '@phosphor-icons/react';
 import {
-    deletePost, deleteThread, getDiscussionThread, replyToThread, setPostAnswer,
-    setThreadPinned, setThreadResolved, uploadDiscussionFile
+    deletePost, deleteThread, getDiscussionThread, removeDiscussionFiles, replyToThread, setPostAnswer,
+    setThreadPinned, setThreadResolved, uploadDiscussionFiles
 } from '@services/discussion.service';
 import { useAppStore } from '@stores/app.store';
 import { useToastStore } from '@stores/toast.store';
-import { DiscussionAttachmentPayload, DiscussionThreadDetail } from '@type/discussion.type';
+import { DiscussionThreadDetail } from '@type/discussion.type';
 import { formatShortDate } from '@utils/date.util';
 import { extractClipboardFiles } from '@utils/file.util';
 import {
@@ -44,6 +45,8 @@ export default function DiscussionThreadView({
     const [replyBody, setReplyBody] = useState('');
     const [replyFiles, setReplyFiles] = useState<File[]>([]);
     const [isUploading, setIsUploading] = useState(false);
+    const [isDeleteThreadOpen, setIsDeleteThreadOpen] = useState(false);
+    const [pendingDeletePostId, setPendingDeletePostId] = useState<string | null>(null);
 
     async function loadThread() {
         const result = await getDiscussionThread(threadId);
@@ -101,26 +104,27 @@ export default function DiscussionThreadView({
 
         setIsUploading(true);
 
-        const uploaded: DiscussionAttachmentPayload[] = [];
+        const upload = await uploadDiscussionFiles(thread.section_id, replyFiles);
 
-        for (const file of replyFiles) {
-            const upload = await uploadDiscussionFile(thread.section_id, file);
-
-            if (upload.error || !upload.data) {
-                setIsUploading(false);
-                showToast(`Failed to upload ${file.name}.`, 'error');
-
-                return;
+        if (!upload.data) {
+            setIsUploading(false);
+            // Storage errors are already shown; a refused file is not
+            if (upload.error?.code === 'INVALID_FILE') {
+                showToast(upload.error.message, 'error');
             }
 
-            uploaded.push(upload.data);
+            return;
         }
 
-        const result = await replyToThread(threadId, replyBody.trim(), uploaded);
+        const result = await replyToThread(threadId, replyBody.trim(), upload.data);
 
         setIsUploading(false);
 
-        if (!result.error) {
+        if (result.error) {
+            // The reply was not saved, so its files are not needed
+            await removeDiscussionFiles(upload.data);
+        }
+        else {
             setReplyBody('');
             setReplyFiles([]);
             await loadThread();
@@ -162,6 +166,7 @@ export default function DiscussionThreadView({
     }
 
     async function handleDeleteThread() {
+        setIsDeleteThreadOpen(false);
         const result = await deleteThread(threadId);
 
         if (!result.error) {
@@ -192,7 +197,10 @@ export default function DiscussionThreadView({
         await loadThread();
     }
 
-    async function handleDeletePost(postId: string) {
+    async function handleConfirmDeletePost() {
+        if (!pendingDeletePostId) return;
+        const postId = pendingDeletePostId;
+        setPendingDeletePostId(null);
         await deletePost(postId);
         await loadThread();
     }
@@ -276,7 +284,7 @@ export default function DiscussionThreadView({
                             size="small"
                             startIcon={<TrashIcon size={16} />}
                             variant="outlined"
-                            onClick={handleDeleteThread}
+                            onClick={() => setIsDeleteThreadOpen(true)}
                         >
                             Delete
                         </CommonButton>
@@ -356,7 +364,7 @@ export default function DiscussionThreadView({
                                             startIcon={<TrashIcon size={16} />}
                                             variant="outlined"
                                             onClick={function() {
-                                                handleDeletePost(post.id);
+                                                setPendingDeletePostId(post.id);
                                             }}
                                         >
                                             Delete
@@ -397,6 +405,26 @@ export default function DiscussionThreadView({
                     </CommonButton>
                 </div>
             </div>
+            <DeletePromptModal
+                formButtonsProps={{
+                    cancelProps: { onClick: () => setIsDeleteThreadOpen(false) },
+                    confirmProps: { onClick: handleDeleteThread }
+                }}
+                mainContent={{ title: 'Delete this discussion?' }}
+                open={isDeleteThreadOpen}
+                subContent={{ title: 'The discussion and all of its replies will be removed. This cannot be undone.' }}
+                onClose={() => setIsDeleteThreadOpen(false)}
+            />
+            <DeletePromptModal
+                formButtonsProps={{
+                    cancelProps: { onClick: () => setPendingDeletePostId(null) },
+                    confirmProps: { onClick: handleConfirmDeletePost }
+                }}
+                mainContent={{ title: 'Delete this reply?' }}
+                open={pendingDeletePostId !== null}
+                subContent={{ title: 'This cannot be undone.' }}
+                onClose={() => setPendingDeletePostId(null)}
+            />
         </div>
     );
 }

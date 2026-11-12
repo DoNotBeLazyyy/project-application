@@ -1,11 +1,11 @@
-import { supabase } from '@services/supabase.client';
-import { callRpc, callStorage } from '@services/supabase.wrapper';
+import { uploadFileToFolder } from '@services/storage.service';
+import { callRpc } from '@services/supabase.wrapper';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 import {
-    DraftAnswer, MyGradeBreakdown, MyGradeListRow, MySubjectListRow, ProctorEventType, StudentAssessment, StudentAssessmentResult, StudentDashboard, StudentQuestion, StudentScheduleSection, StudentSectionColor, StudentSubjectAttendanceItem, SubjectAssessmentItem, SubjectDetail, SubjectGradeItem, SubmissionFileAttachment
+    DraftAnswer, MyGradeBreakdown, MyGradeListRow, MySubjectListRow, ProctorEventType, StartedAttempt, StudentAssessment, StudentAssessmentResult, StudentDashboard, StudentQuestion, StudentScheduleSection, StudentSectionColor, StudentSubjectAttendanceItem, SubjectAssessmentItem, SubjectDetail, SubjectGradeItem, SubmissionFileAttachment
 } from '@type/student-portal.type';
-import { parseServiceError } from '@utils/error.util';
+import { UploadFileRules } from '@utils/file.util';
 
 export async function getStudentDashboard(): Promise<ServiceResult<StudentDashboard>> {
     return callRpc<StudentDashboard>('fn_get_student_dashboard');
@@ -98,8 +98,8 @@ export async function getMyAssessmentResult(
 export async function startAssessmentTimer(
     enrollmentId: string,
     assessmentId: string
-): Promise<ServiceResult<{ submission_id: string; expires_at: string | null }>> {
-    return callRpc<{ submission_id: string; expires_at: string | null }>('fn_start_assessment_timer', {
+): Promise<ServiceResult<StartedAttempt>> {
+    return callRpc<StartedAttempt>('fn_start_assessment_timer', {
         p_enrollment_id: enrollmentId,
         p_assessment_id: assessmentId
     });
@@ -117,24 +117,34 @@ export async function saveStudentAnswer(
     }, { silent: true });
 }
 
+/**
+ * Uploads a file answer to the submissions bucket, using the question's file rules.
+ *
+ * @param submissionId - The attempt the file belongs to.
+ * @param questionId - The question being answered.
+ * @param file - The chosen file.
+ * @param rules - The question's allowed extensions and size limit.
+ * @returns The stored file name and path.
+ */
 export async function uploadSubmissionFile(
     submissionId: string,
     questionId: string,
-    file: File
+    file: File,
+    rules: UploadFileRules = {}
 ): Promise<ServiceResult<SubmissionFileAttachment>> {
-    const path = `${submissionId}/${questionId}/${Date.now()}_${file.name}`;
-
-    return callStorage(async function() {
-        const { error } = await supabase.storage
-            .from('submissions')
-            .upload(path, file, { upsert: false });
-
-        if (error) {
-            return { data: null, error: parseServiceError(error) };
-        }
-
-        return { data: { name: file.name, path }, error: null };
+    const result = await uploadFileToFolder({
+        allowedExtensions: rules.allowedExtensions,
+        bucket: 'submissions',
+        file,
+        folder: `${submissionId}/${questionId}`,
+        maxSizeMb: rules.maxSizeMb
     });
+
+    if (!result.data) {
+        return { data: null, error: result.error };
+    }
+
+    return { data: { name: result.data.file_name, path: result.data.file_path }, error: null };
 }
 
 export async function saveStudentAnswerFiles(
@@ -160,9 +170,10 @@ export async function submitAssessment(
 export async function recordHeartbeat(
     submissionId: string
 ): Promise<ServiceResult<null>> {
+    // Runs every 30 s, so it must not flash the loader or toast; the page handles an ended attempt
     return callRpc<null>('fn_record_heartbeat', {
         p_submission_id: submissionId
-    });
+    }, { background: true, silent: true });
 }
 
 export async function recordFocusEvent(

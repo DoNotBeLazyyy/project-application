@@ -1,4 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
+import AlertPromptModal from '@components/modal/AlertPromptModal';
+import DeletePromptModal from '@components/modal/DeletePromptModal';
 import AssessmentWizardModal from '@pages/faculty/sections/assessments/builder/AssessmentWizardModal';
 import RubricsTab from '@pages/faculty/sections/rubrics/RubricsTab';
 import DuplicateToSectionsModal from '@pages/shared/content/DuplicateToSectionsModal';
@@ -55,6 +57,8 @@ export default function AssessmentsTab({ initialView = 'assessments', sectionId 
     const [activeView, setActiveView] = useState<'assessments' | 'rubrics'>(initialView);
     const [assessments, setAssessments] = useState<AssessmentListRow[]>([]);
     const [duplicating, setDuplicating] = useState<AssessmentListRow | null>(null);
+    const [pendingDelete, setPendingDelete] = useState<AssessmentListRow | null>(null);
+    const [pendingUnpublish, setPendingUnpublish] = useState<AssessmentListRow | null>(null);
 
     // Sync activeView if initialView changes
     useEffect(() => {
@@ -79,6 +83,18 @@ export default function AssessmentsTab({ initialView = 'assessments', sectionId 
     }
 
     async function handlePublishToggle(row: AssessmentListRow) {
+        // Hiding an assessment that students already answered deserves a second look
+        if (row.is_published && row.submission_count > 0) {
+            setPendingUnpublish(row);
+            return;
+        }
+        await applyPublishToggle(row);
+    }
+
+    /**
+     * Publishes or unpublishes the assessment and reloads the list.
+     */
+    async function applyPublishToggle(row: AssessmentListRow) {
         const result = row.is_published
             ? await unpublishAssessment(row.id)
             : await publishAssessment(row.id);
@@ -88,7 +104,17 @@ export default function AssessmentsTab({ initialView = 'assessments', sectionId 
         }
     }
 
-    async function handleDelete(id: string) {
+    async function handleConfirmUnpublish() {
+        if (!pendingUnpublish) return;
+        const row = pendingUnpublish;
+        setPendingUnpublish(null);
+        await applyPublishToggle(row);
+    }
+
+    async function handleConfirmDelete() {
+        if (!pendingDelete) return;
+        const id = pendingDelete.id;
+        setPendingDelete(null);
         const result = await deleteAssessment(id);
         if (!result.error) {
             await fetchAssessments();
@@ -239,7 +265,7 @@ export default function AssessmentsTab({ initialView = 'assessments', sectionId 
                                                                 className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
                                                                 title="Delete Assessment"
                                                                 type="button"
-                                                                onClick={() => handleDelete(item.id)}
+                                                                onClick={() => setPendingDelete(item)}
                                                             >
                                                                 <TrashIcon
                                                                     size={16}
@@ -381,6 +407,30 @@ export default function AssessmentsTab({ initialView = 'assessments', sectionId 
                         )}
                     </div>
                 )}
+
+            <DeletePromptModal
+                formButtonsProps={{
+                    cancelProps: { onClick: () => setPendingDelete(null) },
+                    confirmProps: { onClick: handleConfirmDelete }
+                }}
+                mainContent={{ title: 'Delete this assessment?' }}
+                open={pendingDelete !== null}
+                subContent={{ title: 'Students\' submissions and grades for it will no longer count.' }}
+                onClose={() => setPendingDelete(null)}
+            />
+
+            <AlertPromptModal
+                formButtonsProps={{
+                    cancelProps: { onClick: () => setPendingUnpublish(null) },
+                    confirmProps: { children: 'Yes, Unpublish', onClick: handleConfirmUnpublish }
+                }}
+                mainContent={{ title: 'Unpublish this assessment?' }}
+                open={pendingUnpublish !== null}
+                subContent={{
+                    title: `${pendingUnpublish?.submission_count ?? 0} student submission(s) exist. Students will no longer see this assessment until you publish it again.`
+                }}
+                onClose={() => setPendingUnpublish(null)}
+            />
 
             {/* Stepper Assessment Builder Wizard Modal */}
             <AssessmentWizardModal

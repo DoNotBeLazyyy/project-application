@@ -1,20 +1,9 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
-import { MenuOption } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/use-table-configs';
 import { CourseListRow } from '@type/course/course.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
-interface UseCourseTableConfigProps {
-    onEdit: (id: string) => void;
-    onRequestDeleteRow: (id: string) => void;
-    onView: (id: string) => void;
-}
-
-export function useCourseTableConfig({
-    onEdit,
-    onView
-}: UseCourseTableConfigProps) {
+export function useCourseTableConfig() {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
@@ -70,27 +59,5 @@ export function useCourseTableConfig({
         ];
     }, []);
 
-    const tableActionConfig = useMemo(function() {
-        return function(onDelete: (id: string) => void): TableActionConfig<CourseListRow> {
-            return {
-                onEditClick: (row: CourseListRow) => () => onEdit(row.id),
-                menuOptions: (row: CourseListRow): MenuOption[] => [
-                    {
-                        preset: 'view',
-                        onClick: () => onView(row.id)
-                    },
-                    {
-                        preset: 'edit',
-                        onClick: () => onEdit(row.id)
-                    },
-                    {
-                        preset: 'delete',
-                        onClick: () => onDelete(row.id)
-                    }
-                ]
-            };
-        };
-    }, [onEdit, onView]);
-
-    return { columnDefs, tableActionConfig };
+    return { columnDefs };
 }

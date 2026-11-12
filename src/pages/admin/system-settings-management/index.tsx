@@ -4,22 +4,60 @@ import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import { useHasRealChanges } from '@hooks/use-has-real-changes';
-import { CameraIcon, InfoIcon, TrashIcon } from '@phosphor-icons/react';
-import { uploadFile } from '@services/storage.service';
+import {
+    CameraIcon,
+    InfoIcon,
+    TrashIcon,
+    WarningCircleIcon
+} from '@phosphor-icons/react';
+import { deleteFile, uploadFile } from '@services/storage.service';
 import { getSystemSettings, updateSystemSettings } from '@services/system-settings.service';
+import { useToastStore } from '@stores/toast.store';
 import { SystemSettingsFormValues } from '@type/system-settings.type';
 import { formErrors } from '@utils/form.util';
 import { useEffect, useRef, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
 const SETTINGS_FORM_ID = 'system-settings-form';
+const LOGO_BUCKET = 'logos';
+const LOGO_MAX_BYTES = 2 * 1024 * 1024;
+const LOGO_TYPES: Record<string, string> = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/svg+xml': 'svg',
+    'image/webp': 'webp'
+};
+
+/**
+ * Finds the storage path of a logo we uploaded, from its public URL.
+ * Returns null for any other URL, so outside images are never deleted.
+ */
+function getLogoStoragePath(url: string | null | undefined): string | null {
+    if (!url) {
+        return null;
+    }
+    const marker = `/object/public/${LOGO_BUCKET}/`;
+    const index = url.indexOf(marker);
+    if (index === -1) {
+        return null;
+    }
+    const path = url.slice(index + marker.length)
+        .split('?')[0];
+    return path
+        ? decodeURIComponent(path)
+        : null;
+}
 
 export default function SystemSettings() {
     const [isLoading, setIsLoading] = useState(true);
     const [hasData, setHasData] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
-    const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+    // The chosen logo is only uploaded when the settings are saved
+    const [pendingLogoFile, setPendingLogoFile] = useState<File | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const localPreviewUrlRef = useRef<string | null>(null);
     const methods = useForm<SystemSettingsFormValues>({
         defaultValues: {
             institution_name: '',
@@ -39,7 +77,11 @@ export default function SystemSettings() {
         async function loadSettings() {
             const result = await getSystemSettings();
 
-            if (result.data) {
+            if (result.error) {
+                // A failed load must not look like "nothing saved yet", or Save would overwrite real settings
+                setLoadError(result.error.message || 'The system settings could not be loaded.');
+            }
+            else if (result.data) {
                 setHasData(true);
                 methods.reset({
                     institution_name: result.data.institution_name,
@@ -68,59 +110,122 @@ export default function SystemSettings() {
         loadSettings();
     }, []);
 
-    async function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    useEffect(function() {
+        return function() {
+            if (localPreviewUrlRef.current) {
+                URL.revokeObjectURL(localPreviewUrlRef.current);
+            }
+        };
+    }, []);
+
+    function clearLocalPreview() {
+        if (localPreviewUrlRef.current) {
+            URL.revokeObjectURL(localPreviewUrlRef.current);
+            localPreviewUrlRef.current = null;
+        }
+    }
+
+    function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
 
         if (!file) {
             return;
         }
 
-        setIsUploadingLogo(true);
-
-        const path = `logos/institution-logo.${file.name.split('.')
-            .pop()}`;
-        const result = await uploadFile({
-            bucket: 'logos', file, path, upsert: true
-        });
-
-        if (result.data) {
-            methods.setValue('institution_logo_url', result.data.url, { shouldDirty: true });
-            setLogoPreview(result.data.url);
+        if (!LOGO_TYPES[file.type]) {
+            useToastStore.getState()
+                .showToast('Please choose a JPG, PNG, WEBP, or SVG image.', 'error');
+            return;
         }
 
-        setIsUploadingLogo(false);
-
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
+        if (file.size > LOGO_MAX_BYTES) {
+            useToastStore.getState()
+                .showToast('The logo must be 2 MB or smaller.', 'error');
+            return;
         }
+
+        // Show the logo right away, but upload it only on Save
+        clearLocalPreview();
+        localPreviewUrlRef.current = URL.createObjectURL(file);
+        setPendingLogoFile(file);
+        setLogoPreview(localPreviewUrlRef.current);
     }
 
     function handleLogoRemove() {
+        clearLocalPreview();
+        setPendingLogoFile(null);
         methods.setValue('institution_logo_url', '', { shouldDirty: true });
         setLogoPreview(null);
     }
 
     function handleCancel() {
+        clearLocalPreview();
+        setPendingLogoFile(null);
         methods.reset();
         setLogoPreview(methods.getValues('institution_logo_url') || null);
     }
 
     async function handleSubmit(values: SystemSettingsFormValues) {
-        const trimmedValues: SystemSettingsFormValues = {
-            ...values,
-            institution_name: values.institution_name.trim(),
-            institution_short_name: values.institution_short_name.trim(),
-            institution_address: values.institution_address.trim(),
-            institution_email: values.institution_email.trim(),
-            institution_phone: values.institution_phone.trim(),
-            institution_mobile: values.institution_mobile?.trim() ?? '',
-            institution_website: values.institution_website?.trim() ?? ''
-        };
-        const result = await updateSystemSettings(trimmedValues);
+        if (loadError || isSaving) {
+            return;
+        }
 
-        if (!result.error) {
+        setIsSaving(true);
+        try {
+            const previousLogoUrl = methods.formState.defaultValues?.institution_logo_url || '';
+            let logoUrl = values.institution_logo_url;
+            let uploadedPath: string | null = null;
+
+            if (pendingLogoFile) {
+                // A new name for every upload, so browsers and the CDN never show an old logo
+                uploadedPath = `logos/institution-logo-${Date.now()}.${LOGO_TYPES[pendingLogoFile.type]}`;
+                const upload = await uploadFile({
+                    bucket: LOGO_BUCKET, file: pendingLogoFile, path: uploadedPath, upsert: false
+                });
+                if (!upload.data) {
+                    return;
+                }
+                logoUrl = upload.data.url;
+            }
+
+            const trimmedValues: SystemSettingsFormValues = {
+                ...values,
+                institution_name: values.institution_name.trim(),
+                institution_short_name: values.institution_short_name.trim(),
+                institution_address: values.institution_address.trim(),
+                institution_email: values.institution_email.trim(),
+                institution_phone: values.institution_phone.trim(),
+                institution_mobile: values.institution_mobile?.trim() ?? '',
+                institution_website: values.institution_website?.trim() ?? '',
+                institution_logo_url: logoUrl
+            };
+            const result = await updateSystemSettings(trimmedValues);
+
+            if (result.error) {
+                // The new file is not used by any saved settings, so remove it again
+                if (uploadedPath) {
+                    await deleteFile(LOGO_BUCKET, uploadedPath);
+                }
+                return;
+            }
+
+            const previousPath = getLogoStoragePath(previousLogoUrl);
+            if (previousPath && previousLogoUrl !== logoUrl) {
+                await deleteFile(LOGO_BUCKET, previousPath);
+            }
+
+            clearLocalPreview();
+            setPendingLogoFile(null);
+            setLogoPreview(logoUrl || null);
             setHasData(true);
             methods.reset(trimmedValues);
+        }
+        finally {
+            setIsSaving(false);
         }
     }
 
@@ -204,6 +309,9 @@ export default function SystemSettings() {
         }
     ];
 
+    const hasChanges = hasRealChanges || Boolean(pendingLogoFile);
+    const isBusy = isSaving || methods.formState.isSubmitting;
+
     if (isLoading) {
         return (
             <div className="flex h-full items-center justify-center">
@@ -220,7 +328,7 @@ export default function SystemSettings() {
                 action: (
                     <div className="flex gap-2 items-center justify-end">
                         <CommonButton
-                            disabled={!hasRealChanges || methods.formState.isSubmitting}
+                            disabled={!hasChanges || isBusy}
                             size="small"
                             variant="outlined"
                             onClick={handleCancel}
@@ -228,9 +336,9 @@ export default function SystemSettings() {
                             Cancel
                         </CommonButton>
                         <CommonButton
-                            disabled={!hasRealChanges || methods.formState.isSubmitting}
+                            disabled={!hasChanges || isBusy || Boolean(loadError)}
                             form={SETTINGS_FORM_ID}
-                            loading={methods.formState.isSubmitting}
+                            loading={isBusy}
                             size="small"
                             type="submit"
                             variant="contained"
@@ -252,7 +360,18 @@ export default function SystemSettings() {
             infoContent="Configure institution-wide settings for the system. Changes apply across every portal once saved."
         >
             <div className="flex flex-1 flex-col gap-6 min-h-0 overflow-y-auto p-4 w-full">
-                {!hasData && (
+                {loadError && (
+                    <div
+                        className="bg-red-50 border border-red-200 dark:bg-red-950/30 dark:border-red-800/60 dark:text-red-300 flex gap-2.5 items-center p-3.5 rounded-xl text-red-700 text-xs"
+                        role="alert"
+                    >
+                        <WarningCircleIcon className="h-4 shrink-0 w-4" />
+                        <span>
+                            The system settings could not be loaded ({loadError}). Saving is turned off so the stored settings are not overwritten. Reload the page to try again.
+                        </span>
+                    </div>
+                )}
+                {!loadError && !hasData && (
                     <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 rounded-xl p-3.5 flex items-center gap-2.5 text-blue-700 dark:text-blue-300 text-xs">
                         <InfoIcon className="w-4 h-4 shrink-0" />
                         <span>
@@ -280,7 +399,7 @@ export default function SystemSettings() {
                             Institution Logo
                             <span className="inline-flex align-middle ml-1.5 whitespace-nowrap">
                                 <CommonInfoTooltip
-                                    content="JPG, PNG, WEBP, or SVG. The logo appears on portal headers and printed documents."
+                                    content="JPG, PNG, WEBP, or SVG, up to 2 MB. The logo is uploaded when you save, and appears on portal headers and printed documents."
                                     label="About the institution logo"
                                     size={16}
                                 />
@@ -288,7 +407,7 @@ export default function SystemSettings() {
                         </h2>
                         <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                             <CommonButton
-                                loading={isUploadingLogo}
+                                disabled={isBusy || Boolean(loadError)}
                                 size="small"
                                 startIcon={<CameraIcon />}
                                 variant="contained"
@@ -302,7 +421,7 @@ export default function SystemSettings() {
                             {logoPreview && (
                                 <CommonButton
                                     color="error"
-                                    disabled={isUploadingLogo}
+                                    disabled={isBusy || Boolean(loadError)}
                                     size="small"
                                     startIcon={<TrashIcon />}
                                     variant="outlined"
@@ -338,4 +457,4 @@ export default function SystemSettings() {
             </div>
         </CommonCard>
     );
-}
+}

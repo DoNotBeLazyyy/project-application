@@ -1,16 +1,17 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { CommonChip } from '@components/badge/CommonChip';
 import CommonButton from '@components/button/CommonButton';
-import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
+import ValidCommonDatePicker from '@components/datepicker/ValidCommonDatepicker';
 import FormLabel from '@components/form/FormLabel';
 import ModalCloseIcon from '@components/icons/ModalCloseIcon';
-import CommonInput from '@components/input/CommonInput';
+import ValidCommonInput from '@components/input/ValidCommonInput';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
-import CommonSelect from '@components/select/CommonSelect';
-import CommonTextarea from '@components/textarea/CommonTextarea';
-import { useObjectDraft } from '@hooks/use-form-draft';
+import ValidCommonSelect from '@components/select/ValidCommonSelect';
+import ValidCommonTextarea from '@components/textarea/ValidCommonTextArea';
+import { useFormDraft } from '@hooks/use-form-draft';
+import { useMediaQuery } from '@mui/material';
 import { CIVIL_STATUS_OPTIONS, GENDER_OPTIONS } from '@pages/shared/profile/constants/profile.constant';
 import {
     BuildingsIcon,
@@ -23,8 +24,9 @@ import { approveStaffProfileRequest, rejectStaffProfileRequest } from '@services
 import { useToastStore } from '@stores/toast.store';
 import { StaffProfileRequestRow } from '@type/admin-verification.type';
 import { ProfileFormValues } from '@type/profile.type';
-import { MOBILE_NUMBER_RULE, POSTAL_CODE_RULE } from '@utils/form.util';
-import { useEffect, useMemo, useState } from 'react';
+import { DEFAULT_FORM_OPTIONS, formErrors, MOBILE_NUMBER_RULE, POSTAL_CODE_RULE } from '@utils/form.util';
+import { useEffect, useState } from 'react';
+import { FieldErrors, useForm, useWatch } from 'react-hook-form';
 
 interface StaffProfileVerificationModalProps {
     open: boolean;
@@ -72,6 +74,23 @@ const DISPLAY_FIELDS: (keyof ProfileFormValues)[] = [
     'postal_code'
 ];
 
+interface StaffVerificationFormValues extends ProfileFormValues {
+    admin_notes: string;
+    reject_reason: string;
+}
+
+const NON_PROFILE_KEYS = new Set(['admin_notes', 'reject_reason']);
+
+/**
+ * The profile part of the form, without the admin notes and reject reason.
+ */
+function pickProfileValues(values: StaffVerificationFormValues): ProfileFormValues {
+    return Object.fromEntries(
+        Object.entries(values)
+            .filter(([key]) => !NON_PROFILE_KEYS.has(key))
+    ) as unknown as ProfileFormValues;
+}
+
 function buildInitialEditableValues(request: StaffProfileRequestRow | null): ProfileFormValues {
     const current = (request?.current_values || {}) as ProfileValueMap;
     const requested = (request?.requested_changes || {}) as ProfileValueMap;
@@ -100,61 +119,86 @@ function buildInitialEditableValues(request: StaffProfileRequestRow | null): Pro
     };
 }
 
+/**
+ * Starting form values for a request: the requested (or approved) profile plus the notes.
+ */
+function buildInitialFormValues(request: StaffProfileRequestRow | null): StaffVerificationFormValues {
+    return {
+        ...buildInitialEditableValues(request),
+        admin_notes: request?.admin_notes || '',
+        reject_reason: ''
+    };
+}
+
+/**
+ * Checks a profile field the same way the staff member's own profile form does. First and last
+ * name may stay blank only when the current profile has one, because the server then keeps it.
+ *
+ * @returns The error message, or null when the value is fine.
+ */
+function getFieldProblem(field: keyof ProfileFormValues, value: unknown, currentValue?: string): string | null {
+    const text = String(value ?? '')
+        .trim();
+
+    if (field === 'first_name' || field === 'last_name') {
+        const hasName = text !== '' || String(currentValue ?? '')
+            .trim() !== '';
+        return hasName
+            ? null
+            : `${FIELD_LABELS[field]} is required.`;
+    }
+    if (field === 'mobile_number' && text && !MOBILE_NUMBER_RULE.value.test(text)) {
+        return MOBILE_NUMBER_RULE.message;
+    }
+    if (field === 'postal_code' && text && !POSTAL_CODE_RULE.value.test(text)) {
+        return POSTAL_CODE_RULE.message;
+    }
+    return null;
+}
+
+const VALIDATED_FIELDS: (keyof ProfileFormValues)[] = ['first_name', 'last_name', 'mobile_number', 'postal_code'];
+
 export default function StaffProfileVerificationModal({
     open,
     onClose,
     request,
     onSuccess
 }: StaffProfileVerificationModalProps) {
-    const [editableValues, setEditableValues] = useState<ProfileFormValues>(() => buildInitialEditableValues(request));
-    const [adminNotes, setAdminNotes] = useState('');
-    const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ProfileFormValues, string>>>({});
     const [isRejectOpen, setIsRejectOpen] = useState(false);
-    const [rejectReason, setRejectReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showOnlyChanged, setShowOnlyChanged] = useState(true);
     const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
     const [isConfirmRejectCloseOpen, setIsConfirmRejectCloseOpen] = useState(false);
 
-    const initialDraftValues = useMemo(() => ({
-        adminNotes: request?.admin_notes || '',
-        editableValues: buildInitialEditableValues(request),
-        rejectReason: ''
-    }), [request]);
-
-    const currentDraftValues = useMemo(() => ({
-        adminNotes,
-        editableValues,
-        rejectReason
-    }), [adminNotes, editableValues, rejectReason]);
+    // Only one layout is rendered, so each field has a single input
+    const isDesktop = useMediaQuery('(min-width:768px)');
+    const methods = useForm<StaffVerificationFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: buildInitialFormValues(request) });
+    const { control } = methods;
+    const watchedValues = useWatch({ control });
+    const editableValues = watchedValues as Partial<StaffVerificationFormValues>;
+    const rejectReason = watchedValues.reject_reason ?? '';
 
     const isPending = request?.status === 'Pending';
 
-    const draftGuard = useObjectDraft({
-        defaultValues: initialDraftValues,
+    // Runs before the draft check below, so a saved draft is compared with this request's values
+    useEffect(() => {
+        if (!request) return;
+        methods.reset(buildInitialFormValues(request));
+        setIsRejectOpen(false);
+        setShowOnlyChanged(true);
+    }, [request, open]);
+
+    const draftGuard = useFormDraft({
+        control,
         enabled: open && Boolean(isPending && request?.id),
         formId: request?.id
             ? `staff-profile-verification-${request.id}`
             : 'staff-profile-verification',
         onRestore: (restored) => {
-            if (restored.editableValues) setEditableValues(restored.editableValues);
-            if (restored.adminNotes !== undefined) setAdminNotes(restored.adminNotes);
-            if (restored.rejectReason !== undefined) {
-                setRejectReason(restored.rejectReason);
-                if (restored.rejectReason.trim()) setIsRejectOpen(true);
-            }
-        },
-        values: currentDraftValues
+            if (String(restored.reject_reason ?? '')
+                .trim()) setIsRejectOpen(true);
+        }
     });
-
-    useEffect(() => {
-        if (!request) return;
-        setEditableValues(buildInitialEditableValues(request));
-        setAdminNotes(request.admin_notes || '');
-        setIsRejectOpen(false);
-        setRejectReason('');
-        setShowOnlyChanged(true);
-    }, [request, open]);
 
     if (!request) return null;
 
@@ -173,7 +217,7 @@ export default function StaffProfileVerificationModal({
     }, {} as Record<keyof ProfileFormValues, string>);
 
     const hasAdminEdits = DISPLAY_FIELDS.some(
-        (key) => (editableValues[key] || '') !== (baselineValues[key] || '')
+        (key) => String(editableValues[key] ?? '') !== (baselineValues[key] || '')
     );
 
     const changedFields = DISPLAY_FIELDS.filter((field) => {
@@ -200,11 +244,18 @@ export default function StaffProfileVerificationModal({
     function handleDiscardChanges() {
         setIsConfirmCloseOpen(false);
         draftGuard.clearDraft();
-        setEditableValues(buildInitialEditableValues(request));
-        setAdminNotes(request?.admin_notes || '');
-        setRejectReason('');
+        methods.reset(buildInitialFormValues(request));
         setIsRejectOpen(false);
         onClose();
+    }
+
+    /**
+     * Clears the reject reason and closes the reject dialog.
+     */
+    function closeRejectDialog() {
+        methods.setValue('reject_reason', '');
+        methods.clearErrors('reject_reason');
+        setIsRejectOpen(false);
     }
 
     function handleAttemptRejectClose() {
@@ -213,56 +264,92 @@ export default function StaffProfileVerificationModal({
             setIsConfirmRejectCloseOpen(true);
             return;
         }
-        setRejectReason('');
-        setIsRejectOpen(false);
+        closeRejectDialog();
     }
 
     function handleDiscardRejectChanges() {
         setIsConfirmRejectCloseOpen(false);
-        setRejectReason('');
-        setIsRejectOpen(false);
+        closeRejectDialog();
     }
 
-    function handleFieldChange(field: keyof ProfileFormValues, value: string) {
-        setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
-        setEditableValues((prev) => ({
-            ...prev,
-            [field]: value
-        }));
+    function getFieldRules(field: keyof ProfileFormValues) {
+        if (!VALIDATED_FIELDS.includes(field)) {
+            return undefined;
+        }
+        return {
+            validate: (value: unknown) => getFieldProblem(field, value, current[field]) ?? true
+        };
+    }
+
+    function renderEditableField(field: keyof ProfileFormValues) {
+        if (field === 'gender' || field === 'civil_status') {
+            return (
+                <ValidCommonSelect
+                    control={control}
+                    fullWidth
+                    name={field}
+                    options={field === 'gender'
+                        ? GENDER_OPTIONS
+                        : CIVIL_STATUS_OPTIONS}
+                    size="small"
+                />
+            );
+        }
+
+        if (field === 'date_of_birth') {
+            return (
+                <ValidCommonDatePicker
+                    control={control}
+                    disableFuture
+                    name="date_of_birth"
+                />
+            );
+        }
+
+        return (
+            <ValidCommonInput
+                control={control}
+                fullWidth
+                name={field}
+                rules={getFieldRules(field)}
+                size="small"
+            />
+        );
     }
 
     async function handleApprove() {
         if (!request) return;
 
-        const effectiveFirstName = editableValues.first_name?.trim() || current.first_name?.trim() || '';
-        const effectiveLastName = editableValues.last_name?.trim() || current.last_name?.trim() || '';
+        // Checks every field, also the ones "show changed fields only" hides
+        const values = methods.getValues();
+        const problems: FieldErrors<StaffVerificationFormValues> = {};
+        methods.clearErrors(DISPLAY_FIELDS);
+        VALIDATED_FIELDS.forEach((field) => {
+            const message = getFieldProblem(field, values[field], current[field]);
+            if (message) {
+                problems[field] = { message, type: 'validate' };
+                methods.setError(field, { message, type: 'validate' });
+            }
+        });
 
-        if (!effectiveFirstName || !effectiveLastName) {
-            useToastStore.getState()
-                .showToast('First name and last name are required.', 'error');
-            return;
-        }
-
-        // Same format checks as the staff member's own profile form
-        const nextErrors: Partial<Record<keyof ProfileFormValues, string>> = {};
-        const mobile = String(editableValues.mobile_number ?? '')
-            .trim();
-        const postal = String(editableValues.postal_code ?? '')
-            .trim();
-        if (mobile && !MOBILE_NUMBER_RULE.value.test(mobile)) nextErrors.mobile_number = MOBILE_NUMBER_RULE.message;
-        if (postal && !POSTAL_CODE_RULE.value.test(postal)) nextErrors.postal_code = POSTAL_CODE_RULE.message;
-        setFieldErrors(nextErrors);
-        if (Object.keys(nextErrors).length > 0) {
+        const problemFields = Object.keys(problems) as (keyof ProfileFormValues)[];
+        if (problemFields.length > 0) {
+            // A field with an error may be hidden by "show changed fields only", so show every field
+            if (problemFields.some((field) => !fieldsToDisplay.includes(field))) {
+                setShowOnlyChanged(false);
+            }
+            formErrors(problems, methods);
             return;
         }
 
         setIsSubmitting(true);
+        // Silent call: this screen shows exactly one message for the result
         const result = await approveStaffProfileRequest(
             request.id,
             hasAdminEdits
-                ? editableValues
+                ? pickProfileValues(values)
                 : null,
-            adminNotes.trim() || null
+            values.admin_notes.trim() || null
         );
         setIsSubmitting(false);
 
@@ -277,18 +364,23 @@ export default function StaffProfileVerificationModal({
                 );
             onSuccess?.();
             onClose();
+            return;
         }
+
+        useToastStore.getState()
+            .showToast(result.error.message || 'The request could not be approved. Please try again.', 'error');
     }
 
     async function handleRejectSubmit() {
         if (!request) return;
-        if (!rejectReason.trim()) {
-            useToastStore.getState()
-                .showToast('Please provide a reason for rejection.', 'error');
+        const isValid = await methods.trigger('reject_reason');
+        if (!isValid) {
+            formErrors(methods.formState.errors, methods);
             return;
         }
 
         setIsSubmitting(true);
+        // Silent call: this screen shows exactly one message for the result
         const result = await rejectStaffProfileRequest(request.id, rejectReason.trim());
         setIsSubmitting(false);
 
@@ -299,7 +391,11 @@ export default function StaffProfileVerificationModal({
             setIsRejectOpen(false);
             onSuccess?.();
             onClose();
+            return;
         }
+
+        useToastStore.getState()
+            .showToast(result.error.message || 'The request could not be rejected. Please try again.', 'error');
     }
 
     return (
@@ -463,222 +559,152 @@ export default function StaffProfileVerificationModal({
                         : (
                             <>
                                 {/* Desktop Side-by-side verification table */}
-                                <div className="hidden md:block border border-(--mui-palette-divider) rounded-lg overflow-hidden shrink-0">
-                                    <div className="grid grid-cols-12 bg-(--mui-palette-background-default) px-3 py-2 text-xs font-semibold text-(--mui-palette-text-secondary) border-b border-(--mui-palette-divider)">
-                                        <div className="col-span-3">Profile Field</div>
-                                        <div className="col-span-4">Current Value</div>
-                                        <div className="col-span-5">
-                                            {isPending
-                                                ? 'Verified Value (Editable)'
-                                                : 'Final Approved Value'}
+                                {isDesktop && (
+                                    <div className="border border-(--mui-palette-divider) rounded-lg overflow-hidden shrink-0">
+                                        <div className="grid grid-cols-12 bg-(--mui-palette-background-default) px-3 py-2 text-xs font-semibold text-(--mui-palette-text-secondary) border-b border-(--mui-palette-divider)">
+                                            <div className="col-span-3">Profile Field</div>
+                                            <div className="col-span-4">Current Value</div>
+                                            <div className="col-span-5">
+                                                {isPending
+                                                    ? 'Verified Value (Editable)'
+                                                    : 'Final Approved Value'}
+                                            </div>
+                                        </div>
+
+                                        <div className="divide-y divide-(--mui-palette-divider) text-xs">
+                                            {fieldsToDisplay.map((field) => {
+                                                const currVal = current[field] || '—';
+                                                const reqVal = requested[field] || '—';
+                                                const isModified = (requested[field] || '') !== (current[field] || '');
+                                                const isEditedByAdmin = String(editableValues[field] ?? '') !== (requested[field] || '');
+
+                                                return (
+                                                    <div
+                                                        className={`grid grid-cols-12 px-3 py-2.5 items-center transition-colors ${
+                                                            isModified
+                                                                ? 'bg-(--mui-palette-warning-light)/25'
+                                                                : isEditedByAdmin
+                                                                    ? 'bg-(--mui-palette-info-light)/25'
+                                                                    : ''
+                                                        }`}
+                                                        key={field}
+                                                    >
+                                                        <div className="col-span-3 font-medium text-(--mui-palette-text-primary) flex items-center gap-1.5 flex-wrap">
+                                                            <span>{FIELD_LABELS[field] || field}</span>
+                                                            {isModified && (
+                                                                <CommonChip
+                                                                    label="Changed"
+                                                                    size="small"
+                                                                    variant="light"
+                                                                />
+                                                            )}
+                                                            {isPending && isEditedByAdmin && (
+                                                                <CommonChip
+                                                                    label="Admin Edited"
+                                                                    size="small"
+                                                                    variant="light"
+                                                                />
+                                                            )}
+                                                        </div>
+
+                                                        <div className="col-span-4 text-(--mui-palette-text-secondary) pr-3 break-words">
+                                                            {currVal}
+                                                        </div>
+
+                                                        <div className="col-span-5 pr-2">
+                                                            {isPending
+                                                                ? (
+                                                                    renderEditableField(field)
+                                                                )
+                                                                : (
+                                                                    <span className="font-medium text-(--mui-palette-text-primary) break-words">
+                                                                        {request.status === 'Approved with Edits'
+                                                                            ? (request.approved_changes?.[field] || reqVal)
+                                                                            : reqVal}
+                                                                    </span>
+                                                                )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     </div>
+                                )}
 
-                                    <div className="divide-y divide-(--mui-palette-divider) text-xs">
+                                {/* Mobile Responsive Field Cards */}
+                                {!isDesktop && (
+                                    <div className="flex flex-col gap-2.5">
                                         {fieldsToDisplay.map((field) => {
                                             const currVal = current[field] || '—';
                                             const reqVal = requested[field] || '—';
-                                            const editVal = editableValues[field] || '';
                                             const isModified = (requested[field] || '') !== (current[field] || '');
-                                            const isEditedByAdmin = (editableValues[field] || '') !== (requested[field] || '');
+                                            const isEditedByAdmin = String(editableValues[field] ?? '') !== (requested[field] || '');
 
                                             return (
                                                 <div
-                                                    className={`grid grid-cols-12 px-3 py-2.5 items-center transition-colors ${
+                                                    className={`border rounded-lg p-3 transition-colors ${
                                                         isModified
-                                                            ? 'bg-(--mui-palette-warning-light)/25'
+                                                            ? 'border-(--mui-palette-warning-main)/40 bg-(--mui-palette-warning-light)/15'
                                                             : isEditedByAdmin
-                                                                ? 'bg-(--mui-palette-info-light)/25'
-                                                                : ''
+                                                                ? 'border-(--mui-palette-info-main)/40 bg-(--mui-palette-info-light)/15'
+                                                                : 'border-(--mui-palette-divider) bg-(--mui-palette-background-default)/50'
                                                     }`}
-                                                    key={field}
+                                                    key={`mobile-${field}`}
                                                 >
-                                                    <div className="col-span-3 font-medium text-(--mui-palette-text-primary) flex items-center gap-1.5 flex-wrap">
-                                                        <span>{FIELD_LABELS[field] || field}</span>
-                                                        {isModified && (
-                                                            <CommonChip
-                                                                label="Changed"
-                                                                size="small"
-                                                                variant="light"
-                                                            />
-                                                        )}
-                                                        {isPending && isEditedByAdmin && (
-                                                            <CommonChip
-                                                                label="Admin Edited"
-                                                                size="small"
-                                                                variant="light"
-                                                            />
-                                                        )}
+                                                    <div className="flex items-center justify-between gap-2 mb-2">
+                                                        <span className="font-semibold text-xs text-(--mui-palette-text-primary)">
+                                                            {FIELD_LABELS[field] || field}
+                                                        </span>
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            {isModified && (
+                                                                <CommonChip
+                                                                    label="Changed"
+                                                                    size="small"
+                                                                    variant="light"
+                                                                />
+                                                            )}
+                                                            {isPending && isEditedByAdmin && (
+                                                                <CommonChip
+                                                                    label="Admin Edited"
+                                                                    size="small"
+                                                                    variant="light"
+                                                                />
+                                                            )}
+                                                        </div>
                                                     </div>
 
-                                                    <div className="col-span-4 text-(--mui-palette-text-secondary) pr-3 break-words">
-                                                        {currVal}
+                                                    <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) rounded p-2 mb-2 text-xs">
+                                                        <span className="text-[10px] text-(--mui-palette-text-secondary) block mb-0.5">
+                                                            Current Value:
+                                                        </span>
+                                                        <span className="font-medium text-(--mui-palette-text-primary) break-words">
+                                                            {currVal}
+                                                        </span>
                                                     </div>
 
-                                                    <div className="col-span-5 pr-2">
+                                                    <div>
+                                                        <span className="text-[10px] font-medium text-(--mui-palette-text-secondary) block mb-1">
+                                                            {isPending
+                                                                ? 'Verified Value (Editable):'
+                                                                : 'Final Approved Value:'}
+                                                        </span>
                                                         {isPending
                                                             ? (
-                                                                field === 'gender'
-                                                                    ? (
-                                                                        <CommonSelect
-                                                                            fullWidth
-                                                                            options={GENDER_OPTIONS}
-                                                                            size="small"
-                                                                            value={String(editVal)}
-                                                                            onChange={(e) => handleFieldChange('gender', e.target.value as string)}
-                                                                        />
-                                                                    )
-                                                                    : field === 'civil_status'
-                                                                        ? (
-                                                                            <CommonSelect
-                                                                                fullWidth
-                                                                                options={CIVIL_STATUS_OPTIONS}
-                                                                                size="small"
-                                                                                value={String(editVal)}
-                                                                                onChange={(e) => handleFieldChange('civil_status', e.target.value as string)}
-                                                                            />
-                                                                        )
-                                                                        : field === 'date_of_birth'
-                                                                            ? (
-                                                                                <CommonDatePicker
-                                                                                    size="small"
-                                                                                    value={String(editVal || '')}
-                                                                                    onChange={(val) => handleFieldChange('date_of_birth', val)}
-                                                                                />
-                                                                            )
-                                                                            : (
-                                                                                <CommonInput
-                                                                                    fullWidth
-                                                                                    size="small"
-                                                                                    value={String(editVal)}
-                                                                                    onChange={(e) => handleFieldChange(field, e.target.value)}
-                                                                                />
-                                                                            )
+                                                                renderEditableField(field)
                                                             )
                                                             : (
-                                                                <span className="font-medium text-(--mui-palette-text-primary) break-words">
+                                                                <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) rounded p-2 text-xs font-medium text-(--mui-palette-text-primary) break-words">
                                                                     {request.status === 'Approved with Edits'
                                                                         ? (request.approved_changes?.[field] || reqVal)
                                                                         : reqVal}
-                                                                </span>
+                                                                </div>
                                                             )}
                                                     </div>
                                                 </div>
                                             );
                                         })}
                                     </div>
-                                </div>
-
-                                {/* Mobile Responsive Field Cards */}
-                                <div className="flex flex-col gap-2.5 md:hidden">
-                                    {fieldsToDisplay.map((field) => {
-                                        const currVal = current[field] || '—';
-                                        const reqVal = requested[field] || '—';
-                                        const editVal = editableValues[field] || '';
-                                        const isModified = (requested[field] || '') !== (current[field] || '');
-                                        const isEditedByAdmin = (editableValues[field] || '') !== (requested[field] || '');
-
-                                        return (
-                                            <div
-                                                className={`border rounded-lg p-3 transition-colors ${
-                                                    isModified
-                                                        ? 'border-(--mui-palette-warning-main)/40 bg-(--mui-palette-warning-light)/15'
-                                                        : isEditedByAdmin
-                                                            ? 'border-(--mui-palette-info-main)/40 bg-(--mui-palette-info-light)/15'
-                                                            : 'border-(--mui-palette-divider) bg-(--mui-palette-background-default)/50'
-                                                }`}
-                                                key={`mobile-${field}`}
-                                            >
-                                                <div className="flex items-center justify-between gap-2 mb-2">
-                                                    <span className="font-semibold text-xs text-(--mui-palette-text-primary)">
-                                                        {FIELD_LABELS[field] || field}
-                                                    </span>
-                                                    <div className="flex items-center gap-1 shrink-0">
-                                                        {isModified && (
-                                                            <CommonChip
-                                                                label="Changed"
-                                                                size="small"
-                                                                variant="light"
-                                                            />
-                                                        )}
-                                                        {isPending && isEditedByAdmin && (
-                                                            <CommonChip
-                                                                label="Admin Edited"
-                                                                size="small"
-                                                                variant="light"
-                                                            />
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) rounded p-2 mb-2 text-xs">
-                                                    <span className="text-[10px] text-(--mui-palette-text-secondary) block mb-0.5">
-                                                        Current Value:
-                                                    </span>
-                                                    <span className="font-medium text-(--mui-palette-text-primary) break-words">
-                                                        {currVal}
-                                                    </span>
-                                                </div>
-
-                                                <div>
-                                                    <span className="text-[10px] font-medium text-(--mui-palette-text-secondary) block mb-1">
-                                                        {isPending
-                                                            ? 'Verified Value (Editable):'
-                                                            : 'Final Approved Value:'}
-                                                    </span>
-                                                    {isPending
-                                                        ? (
-                                                            field === 'gender'
-                                                                ? (
-                                                                    <CommonSelect
-                                                                        fullWidth
-                                                                        options={GENDER_OPTIONS}
-                                                                        size="small"
-                                                                        value={String(editVal)}
-                                                                        onChange={(e) => handleFieldChange('gender', e.target.value as string)}
-                                                                    />
-                                                                )
-                                                                : field === 'civil_status'
-                                                                    ? (
-                                                                        <CommonSelect
-                                                                            fullWidth
-                                                                            options={CIVIL_STATUS_OPTIONS}
-                                                                            size="small"
-                                                                            value={String(editVal)}
-                                                                            onChange={(e) => handleFieldChange('civil_status', e.target.value as string)}
-                                                                        />
-                                                                    )
-                                                                    : field === 'date_of_birth'
-                                                                        ? (
-                                                                            <CommonDatePicker
-                                                                                size="small"
-                                                                                value={String(editVal || '')}
-                                                                                onChange={(val) => handleFieldChange('date_of_birth', val)}
-                                                                            />
-                                                                        )
-                                                                        : (
-                                                                            <CommonInput
-                                                                                error={Boolean(fieldErrors[field])}
-                                                                                fullWidth
-                                                                                helperText={fieldErrors[field]}
-                                                                                size="small"
-                                                                                value={String(editVal)}
-                                                                                onChange={(e) => handleFieldChange(field, e.target.value)}
-                                                                            />
-                                                                        )
-                                                        )
-                                                        : (
-                                                            <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) rounded p-2 text-xs font-medium text-(--mui-palette-text-primary) break-words">
-                                                                {request.status === 'Approved with Edits'
-                                                                    ? (request.approved_changes?.[field] || reqVal)
-                                                                    : reqVal}
-                                                            </div>
-                                                        )}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                )}
                             </>
                         )}
 
@@ -686,12 +712,12 @@ export default function StaffProfileVerificationModal({
                     <div className="flex flex-col gap-1 mt-1 shrink-0">
                         {isPending
                             ? (
-                                <CommonInput
+                                <ValidCommonInput
+                                    control={control}
                                     fullWidth
                                     label="Administrator Notes & Remarks (Optional)"
+                                    name="admin_notes"
                                     placeholder="e.g., Verified credentials and approved modifications..."
-                                    value={adminNotes}
-                                    onChange={(e) => setAdminNotes(e.target.value)}
                                 />
                             )
                             : (
@@ -753,13 +779,17 @@ export default function StaffProfileVerificationModal({
                 onClose={handleAttemptRejectClose}
             >
                 <div className="p-4 flex flex-col gap-3">
-                    <CommonTextarea
+                    <ValidCommonTextarea
+                        control={control}
                         fullWidth
                         isRequired
                         label="Rejection Reason"
+                        name="reject_reason"
                         placeholder="State the reason clearly (e.g., Discrepancy in legal name; please upload proof of name change)..."
-                        value={rejectReason}
-                        onChange={(e) => setRejectReason(e.target.value)}
+                        rules={{
+                            validate: (value: unknown) => String(value ?? '')
+                                .trim() !== '' || 'Please provide a reason for rejection.'
+                        }}
                     />
 
                     <div className="flex items-center justify-end gap-2 mt-2">

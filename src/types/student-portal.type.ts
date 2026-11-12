@@ -145,6 +145,17 @@ export interface StudentAssessment {
     has_active_submission?: boolean;
     latest_submission_status?: string | null;
     enrollment_id?: string;
+    // When the open attempt runs out; older servers leave it out
+    active_submission_expires_at?: string | null;
+    // True when an attempt that ran out was submitted for the student
+    expired_attempt_auto_submitted?: boolean;
+}
+
+export interface StartedAttempt {
+    submission_id: string;
+    expires_at: string | null;
+    // True when an open attempt was picked up instead of a new one started
+    is_resumed?: boolean;
 }
 
 export interface StudentQuestionChoice {

@@ -1,7 +1,7 @@
 import { CommonChip } from '@components/badge/CommonChip';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
-import StudentProfilePromptModal from '@components/modal/StudentProfilePromptModal';
+import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import { useHasRealChanges } from '@hooks/use-has-real-changes';
@@ -15,10 +15,9 @@ import { initAuthSession } from '@services/auth.service';
 import { changeMyPassword, getMyProfile, updateMyProfile } from '@services/profile.service';
 import { getPrograms } from '@services/program/program.service';
 import { cancelMyProfileRequest } from '@services/registrar-verification.service';
-import { useToastStore } from '@stores/toast.store';
 import { ChangePasswordFormValues, MyProfile, ProfileFormValues } from '@type/profile.type';
 import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
-import { SyntheticEvent, useEffect, useState } from 'react';
+import { SyntheticEvent, useEffect, useRef, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
 type ProfileTab = 'details' | 'security';
@@ -47,6 +46,35 @@ const EMPTY_PASSWORD: ChangePasswordFormValues = {
     confirm_password: ''
 };
 
+/**
+ * Form values for a loaded profile.
+ */
+function toProfileFormValues(profile: MyProfile): ProfileFormValues {
+    return {
+        first_name: profile.first_name,
+        middle_name: profile.middle_name,
+        last_name: profile.last_name,
+        suffix: profile.suffix,
+        preferred_name: profile.preferred_name,
+        mobile_number: profile.mobile_number,
+        address_line1: profile.address_line1,
+        address_line2: profile.address_line2,
+        city: profile.city,
+        province: profile.province,
+        postal_code: profile.postal_code,
+        date_of_birth: profile.date_of_birth ?? '',
+        gender: profile.gender,
+        civil_status: profile.civil_status,
+        nationality: profile.nationality,
+        student_number: profile.student?.student_number ?? 'System Generated',
+        program_id: profile.student?.program_id ?? '',
+        year_level: profile.student?.year_level ?? 1,
+        department_id: profile.department_id ?? '',
+        department_code: profile.department_code ?? '',
+        department_name: profile.department_name ?? ''
+    };
+}
+
 function resolveInitials(profile: MyProfile | null): string {
     if (!profile) {
         return 'U';
@@ -65,9 +93,9 @@ export default function ProfilePage() {
     const [profile, setProfile] = useState<MyProfile | null>(null);
     const [refreshKey, setRefreshKey] = useState(0);
     const [programOptions, setProgramOptions] = useState<CommonSelectOption[]>([]);
-    const [isStudentPromptOpen, setIsStudentPromptOpen] = useState(false);
     const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
     const [isCancelling, setIsCancelling] = useState(false);
+    const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
 
     const roleCodes = profile?.role_codes ?? [];
     const roleLabels = profile?.role_labels ?? [];
@@ -108,6 +136,12 @@ export default function ProfilePage() {
     const passwordMethods = useForm<ChangePasswordFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: EMPTY_PASSWORD });
     const isProfileRealDirty = useHasRealChanges(profileMethods.control);
     const isPasswordRealDirty = useHasRealChanges(passwordMethods.control);
+    // Read by the focus reload, which must not wipe edits in progress
+    const isProfileDirtyRef = useRef(isProfileRealDirty);
+
+    useEffect(function() {
+        isProfileDirtyRef.current = isProfileRealDirty;
+    }, [isProfileRealDirty]);
 
     useEffect(function() {
         async function loadData() {
@@ -129,34 +163,34 @@ export default function ProfilePage() {
 
             if (profileRes.data) {
                 setProfile(profileRes.data);
-                profileMethods.reset({
-                    first_name: profileRes.data.first_name,
-                    middle_name: profileRes.data.middle_name,
-                    last_name: profileRes.data.last_name,
-                    suffix: profileRes.data.suffix,
-                    preferred_name: profileRes.data.preferred_name,
-                    mobile_number: profileRes.data.mobile_number,
-                    address_line1: profileRes.data.address_line1,
-                    address_line2: profileRes.data.address_line2,
-                    city: profileRes.data.city,
-                    province: profileRes.data.province,
-                    postal_code: profileRes.data.postal_code,
-                    date_of_birth: profileRes.data.date_of_birth ?? '',
-                    gender: profileRes.data.gender,
-                    civil_status: profileRes.data.civil_status,
-                    nationality: profileRes.data.nationality,
-                    student_number: profileRes.data.student?.student_number ?? 'System Generated',
-                    program_id: profileRes.data.student?.program_id ?? '',
-                    year_level: profileRes.data.student?.year_level ?? 1,
-                    department_id: profileRes.data.department_id ?? '',
-                    department_code: profileRes.data.department_code ?? '',
-                    department_name: profileRes.data.department_name ?? ''
-                });
+                profileMethods.reset(toProfileFormValues(profileRes.data));
             }
         }
 
         loadData();
     }, [refreshKey]);
+
+    // A pending request can be approved, rejected or cancelled elsewhere (another tab, the
+    // Registrar), so reload the profile quietly whenever the window gets focus again
+    useEffect(function() {
+        async function handleWindowFocus() {
+            const result = await getMyProfile({ silent: true });
+            if (!result.data) return;
+
+            setProfile(result.data);
+
+            // Keep what the user is typing; only refresh a form with no edits
+            if (!isProfileDirtyRef.current) {
+                profileMethods.reset(toProfileFormValues(result.data));
+            }
+        }
+
+        window.addEventListener('focus', handleWindowFocus);
+
+        return function() {
+            window.removeEventListener('focus', handleWindowFocus);
+        };
+    }, []);
 
     function handleAvatarChanged() {
         setRefreshKey(function(previous) {
@@ -205,9 +239,9 @@ export default function ProfilePage() {
         setIsCancelling(true);
         const result = await cancelMyProfileRequest(profile.pending_profile_request.id);
         setIsCancelling(false);
+        setIsCancelConfirmOpen(false);
+        // The server already shows its own success message
         if (!result.error) {
-            useToastStore.getState()
-                .showToast('Pending profile change request cancelled.', 'info');
             setRefreshKey((prev) => prev + 1);
         }
     }
@@ -283,7 +317,7 @@ export default function ProfilePage() {
                                         disabled={isCancelling}
                                         size="small"
                                         variant="text"
-                                        onClick={handleCancelPendingRequest}
+                                        onClick={() => setIsCancelConfirmOpen(true)}
                                     >
                                         {isCancelling
                                             ? 'Cancelling...'
@@ -376,17 +410,26 @@ export default function ProfilePage() {
                 )}
             </div>
 
-            <StudentProfilePromptModal
-                currentProfile={profile}
-                open={isStudentPromptOpen}
-                onClose={function() {
-                    setIsStudentPromptOpen(false);
+            <ConfirmPromptModal
+                formButtonsProps={{
+                    cancelProps: {
+                        children: 'Keep Request',
+                        disabled: isCancelling,
+                        onClick: () => setIsCancelConfirmOpen(false)
+                    },
+                    confirmProps: {
+                        children: isCancelling
+                            ? 'Cancelling...'
+                            : 'Cancel Request',
+                        disabled: isCancelling,
+                        loading: isCancelling,
+                        onClick: handleCancelPendingRequest
+                    }
                 }}
-                onSuccess={function() {
-                    setRefreshKey(function(previous) {
-                        return previous + 1;
-                    });
-                }}
+                mainContent={{ title: 'Cancel your pending change request?' }}
+                open={isCancelConfirmOpen}
+                subContent={{ title: 'The changes you asked for will be dropped. You can send a new request later.' }}
+                onClose={() => setIsCancelConfirmOpen(false)}
             />
 
             <PendingChangesModal

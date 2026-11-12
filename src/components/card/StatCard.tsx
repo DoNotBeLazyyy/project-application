@@ -3,6 +3,8 @@ import { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface StatCardProps {
+    // Optional small line under the label, e.g. how the number was worked out
+    hint?: ReactNode;
     icon: ReactNode;
     iconBg: string;
     iconColor: string;
@@ -12,6 +14,7 @@ interface StatCardProps {
 }
 
 export default function StatCard({
+    hint,
     icon,
     iconBg,
     iconColor,
@@ -36,6 +39,11 @@ export default function StatCard({
                 <span className="text-xs sm:text-sm text-[var(--mui-palette-text-secondary)] truncate">
                     {label}
                 </span>
+                {hint && (
+                    <span className="text-[11px] text-[var(--mui-palette-text-secondary)] opacity-80">
+                        {hint}
+                    </span>
+                )}
             </div>
         </>
     );

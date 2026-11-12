@@ -6,6 +6,8 @@ import ValidCommonNumberInput from '@components/input/ValidCommonNumberInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import ValidCommonSelect from '@components/select/ValidCommonSelect';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
+import { HISTORY_DIFF_HIGHLIGHT_CLASS, HistoryDiffMarks } from '@pages/admin/school-year-management/wizard/academic-year-history';
+import HistoryDiffBadge from '@pages/admin/school-year-management/wizard/HistoryDiffBadge';
 import { NUMERIC_4_2_MAX } from '@pages/admin/school-year-management/wizard/wizard.constants';
 import {
     CaretDownIcon,
@@ -24,6 +26,8 @@ import {
 
 interface Step5ThresholdsConfigProps {
     control: Control<AcademicYearWizardFormValues>;
+    /** Differences to highlight while comparing saved versions (history view only). */
+    diffMarks?: HistoryDiffMarks;
     disabled?: boolean;
     setValue: UseFormSetValue<AcademicYearWizardFormValues>;
 }
@@ -36,6 +40,7 @@ const CATEGORY_OPTIONS: { label: string; value: AcademicThresholdCategory }[] = 
 
 export default function Step5ThresholdsConfig({
     control,
+    diffMarks,
     disabled = false,
     setValue
 }: Step5ThresholdsConfigProps) {
@@ -125,9 +130,13 @@ export default function Step5ThresholdsConfig({
                     )
                     : (
                         thresholds.map((item, idx) => {
+                            const diffMark = diffMarks?.[`threshold:${idx}`];
+
                             return (
                                 <div
-                                    className="flex flex-col gap-4 p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm transition-all hover:border-slate-300 dark:hover:border-zinc-700 w-full min-w-0"
+                                    className={`flex flex-col gap-4 p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900 border shadow-sm transition-all w-full min-w-0 ${diffMark
+                                        ? HISTORY_DIFF_HIGHLIGHT_CLASS
+                                        : 'border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700'}`}
                                     key={item.id || `threshold_${idx}`}
                                 >
                                     {/* Row 1: Header with Action Buttons */}
@@ -139,6 +148,7 @@ export default function Step5ThresholdsConfig({
                                             <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
                                                 {item.label || `Threshold #${idx + 1}`}
                                             </span>
+                                            <HistoryDiffBadge mark={diffMark} />
                                             {item.category && (
                                                 <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 shrink-0">
                                                     {item.category}

@@ -1,7 +1,7 @@
 import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import ValidCommonMultiSelect from '@components/select/ValidCommonMultiSelect';
 import ValidCommonSelect from '@components/select/ValidCommonSelect';
-import { YEAR_LEVEL_OPTIONS } from '@constants/year-level.constant';
+import { YEAR_LEVEL_TEXT_OPTIONS } from '@constants/year-level.constant';
 import { EligibleSectionFilterValues, EligibleSectionScope } from '@type/enrollment.type';
 import { Control } from 'react-hook-form';
 
@@ -39,7 +39,7 @@ export default function EligibleSectionFilterBar({
                         disabled={isScopeLocked}
                         hasHelper={false}
                         name="year_levels"
-                        options={YEAR_LEVEL_OPTIONS}
+                        options={YEAR_LEVEL_TEXT_OPTIONS}
                         placeholder={isScopeLocked
                             ? 'Switch to all curriculum courses to filter'
                             : 'All year levels'}

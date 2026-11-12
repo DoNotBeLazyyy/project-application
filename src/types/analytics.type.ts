@@ -25,6 +25,8 @@ export interface InsightAcademic {
     required_units: number;
     remaining_units: number;
     failing_count: number;
+    // Units behind the cumulative GWA; older servers leave it out
+    gwa_units?: number | null;
 }
 
 export interface InsightTrendPoint {
@@ -58,6 +60,8 @@ export interface InsightCourse {
     missing_count: number;
     graded_count: number;
     released_grade: number | null;
+    // Real course units; older servers leave it out
+    units?: number | null;
 }
 
 export interface MasteryEntry {

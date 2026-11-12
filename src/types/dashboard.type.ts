@@ -60,6 +60,10 @@ export interface RegistrarDashboardStats {
     dropped_this_term: number;
     pending_grade_releases: number;
     incomplete_grades: number;
+    /** Students with at least one enrollment this term (migration 20261104023000). */
+    students_enrolled_this_term?: number;
+    /** Enrolled students who have a program (migration 20261104023000). */
+    enrolled_students_with_program?: number;
 }
 
 export interface RegistrarPendingRelease {

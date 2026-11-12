@@ -10,6 +10,9 @@ export interface BentoCardAction {
     label: string;
     icon?: ReactNode;
     destructive?: boolean;
+
+    // Shown greyed out and not clickable, e.g. while the action is running
+    isDisabled?: boolean;
     onClick: VoidFunction;
 }
 
@@ -43,7 +46,8 @@ export default function BentoCardActionMenu({ actions, ariaLabel }: BentoCardAct
     if (actions.length === 1) {
         return (
             <button
-                className="bg-white border border-slate-200 cursor-pointer font-semibold hover:bg-(--mui-palette-action-hover) px-3 py-1 rounded-lg shadow-2xs text-slate-700 text-xs transition-colors"
+                className="bg-white border border-slate-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 font-semibold hover:bg-(--mui-palette-action-hover) px-3 py-1 rounded-lg shadow-2xs text-slate-700 text-xs transition-colors"
+                disabled={actions[0].isDisabled}
                 type="button"
                 onClick={actions[0].onClick}
             >
@@ -81,6 +85,7 @@ export default function BentoCardActionMenu({ actions, ariaLabel }: BentoCardAct
                             <Divider key={`${action.key}-divider`} />
                         ),
                         <MenuItem
+                            disabled={action.isDisabled}
                             key={action.key}
                             onClick={() => runAction(action)}
                         >

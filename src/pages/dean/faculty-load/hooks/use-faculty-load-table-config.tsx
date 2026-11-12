@@ -1,18 +1,9 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
-import { MenuOption } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/use-table-configs';
 import { FacultyLoadRow } from '@type/faculty-load.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
-interface UseFacultyLoadTableConfigProps {
-    onView?: (facultyId: string) => void;
-    onEdit?: (facultyId: string) => void;
-}
-
-export function useFacultyLoadTableConfig(props?: UseFacultyLoadTableConfigProps) {
-    const { onView, onEdit } = props || {};
-
+export function useFacultyLoadTableConfig() {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
@@ -72,31 +63,5 @@ export function useFacultyLoadTableConfig(props?: UseFacultyLoadTableConfigProps
         ];
     }, []);
 
-    const tableActionConfig = useMemo(function() {
-        if (!onView && !onEdit) return undefined;
-
-        return function(): TableActionConfig<FacultyLoadRow> {
-            return {
-                onEditClick: (row: FacultyLoadRow) => () => {
-                    if (row?.id) onEdit?.(row.id);
-                },
-                menuOptions: (row: FacultyLoadRow): MenuOption[] => [
-                    ...(onView && row?.id
-                        ? [{
-                            preset: 'view' as const,
-                            onClick: () => onView(row.id)
-                        }]
-                        : []),
-                    ...(onEdit && row?.id
-                        ? [{
-                            preset: 'edit' as const,
-                            onClick: () => onEdit(row.id)
-                        }]
-                        : [])
-                ]
-            };
-        };
-    }, [onView, onEdit]);
-
-    return { columnDefs, tableActionConfig };
+    return { columnDefs };
 }

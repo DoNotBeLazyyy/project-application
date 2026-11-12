@@ -66,3 +66,14 @@ export interface ApproveAndReleaseResult {
     blocked_by_evaluation: number;
     message: string;
 }
+
+export interface ReturnToFacultyFormValues {
+    reason: string;
+}
+
+/** Result of fn_return_section_grades_to_faculty. */
+export interface ReturnToFacultyResult {
+    success: boolean;
+    returned_count: number;
+    message: string;
+}

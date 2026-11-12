@@ -1,6 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
+import { attendanceStatusVariant } from '@constants/status-badge.constant';
 import AttendanceEditModal from '@pages/faculty/sections/student-detail/AttendanceEditModal';
-import { attendanceStatusVariant, formatDate } from '@pages/faculty/sections/student-detail/studentDetailFormat';
+import { formatDate } from '@pages/faculty/sections/student-detail/studentDetailFormat';
 import { getStudentAttendance } from '@services/faculty.service';
 import { StudentAttendanceRow, StudentEvaluationAttendance } from '@type/faculty.type';
 import { useEffect, useState } from 'react';

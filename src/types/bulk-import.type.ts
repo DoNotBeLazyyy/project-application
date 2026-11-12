@@ -1,6 +1,9 @@
 export interface BulkImportResult {
     provisioned_count: number;
     errors: string[];
+
+    // Rows that were saved but need attention, e.g. a prerequisite that was not found
+    warnings?: string[];
 }
 
 export interface BulkProvisionResult extends BulkImportResult {

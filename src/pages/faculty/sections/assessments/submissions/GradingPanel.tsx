@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import AnswerCard from '@pages/faculty/sections/assessments/submissions/AnswerCard';
+import { getPointsError, MANUAL_GRADE_TYPES } from '@pages/faculty/sections/assessments/submissions/answerPoints';
 import { CheckCircleIcon } from '@phosphor-icons/react';
 import { GradeAnswerUpdate, SubmissionForGrading } from '@type/assessment.type';
 
@@ -27,7 +28,13 @@ export default function GradingPanel({
     onSave
 }: GradingPanelProps) {
     const isGraded = submission.status === 'Graded';
-    const canSave = !isGraded || isDirty;
+    const isNotSubmitted = submission.status === 'Not Started' || submission.status === 'In Progress';
+    const hasInvalidPoints = submission.answers.some(function(answer) {
+        if (!MANUAL_GRADE_TYPES.includes(answer.question_type)) return false;
+        const draft = draftAnswers.find((a) => a.id === answer.id);
+        return Boolean(draft && getPointsError(draft.points_earned, answer.points));
+    });
+    const canSave = (!isGraded || isDirty) && !hasInvalidPoints && !isNotSubmitted;
 
     return (
         <div className="flex flex-col flex-1 gap-3 min-h-0 min-w-0">
@@ -39,6 +46,16 @@ export default function GradingPanel({
                     <span className="text-(--mui-palette-text-secondary) text-xs">
                         Score: {submission.raw_score ?? '—'} pts
                     </span>
+                    {isNotSubmitted && (
+                        <span className="text-(--mui-palette-warning-main) text-xs">
+                            This attempt has not been submitted yet, so it cannot be graded.
+                        </span>
+                    )}
+                    {hasInvalidPoints && (
+                        <span className="text-(--mui-palette-error-main) text-xs">
+                            Fix the points marked below before saving.
+                        </span>
+                    )}
                 </div>
                 <CommonButton
                     disabled={isSaving || !canSave}

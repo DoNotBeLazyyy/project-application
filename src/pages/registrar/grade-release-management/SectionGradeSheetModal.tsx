@@ -1,10 +1,14 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
+import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import PageLoadingFallback from '@components/loading/PageLoadingFallback';
 import CommonActionModal from '@components/modal/CommonActionModal';
 import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
+import { gradeStatusVariant } from '@constants/status-badge.constant';
 import { InputAdornment } from '@mui/material';
+import ReturnToFacultyModal from '@pages/registrar/grade-release-management/ReturnToFacultyModal';
 import {
+    ArrowUUpLeftIcon,
     CheckCircleIcon,
     ClockIcon,
     MagnifyingGlassIcon,
@@ -23,20 +27,7 @@ interface SectionGradeSheetModalProps {
     section: SectionGradeSubmissionRow | null;
     onClose: VoidFunction;
     onReleased?: VoidFunction;
-}
-
-function resolveGradeStatusVariant(status: string): 'success' | 'warning' | 'info' | 'error' {
-    switch (status) {
-    case 'Released':
-        return 'success';
-    case 'Approved':
-        return 'info';
-    case 'Submitted':
-        return 'warning';
-    case 'Draft':
-    default:
-        return 'info';
-    }
+    onReturned?: VoidFunction;
 }
 
 export default function SectionGradeSheetModal({
@@ -45,13 +36,15 @@ export default function SectionGradeSheetModal({
     open,
     section,
     onClose,
-    onReleased
+    onReleased,
+    onReturned
 }: SectionGradeSheetModalProps) {
     const [students, setStudents] = useState<SectionGradeSheetStudent[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [search, setSearch] = useState('');
     const [isReleasing, setIsReleasing] = useState(false);
     const [showConfirmRelease, setShowConfirmRelease] = useState(false);
+    const [isReturnOpen, setIsReturnOpen] = useState(false);
 
     const loadGradeSheet = useCallback(async function() {
         if (!section || !gradingPeriodId) {
@@ -149,18 +142,31 @@ export default function SectionGradeSheetModal({
 
     const hasUnreleasedGrades = useMemo(function() {
         if (!students.length) {
+            // Drafts are still the faculty's; only submitted or approved grades can be released
             return Boolean(
                 section
-                && section.submission_status !== 'Released'
-                && section.submission_status !== 'No Enrollees'
+                && (section.submission_status === 'Submitted' || section.submission_status === 'Approved')
                 && section.graded_count > 0
             );
         }
         const hasSubmitted = students.some((s) => s.status === 'Submitted');
         if (hasSubmitted) return true;
 
-        return students.some((s) => s.status !== 'Released' && s.is_evaluation_completed);
+        return students.some((s) => s.status === 'Approved' && s.is_evaluation_completed);
     }, [students, section]);
+
+    // Only grades the faculty submitted can go back to them
+    const hasSubmittedGrades = students.length > 0
+        ? students.some((s) => s.status === 'Submitted')
+        : (section?.submitted_count ?? 0) > 0;
+
+    /**
+     * Reloads the sheet after grades went back to the faculty.
+     */
+    async function handleReturned() {
+        await loadGradeSheet();
+        onReturned?.();
+    }
 
     const canReleaseSection = Boolean(
         section
@@ -233,7 +239,19 @@ export default function SectionGradeSheetModal({
                                 <span className="text-(--mui-palette-text-secondary) text-xs">({section.faculty_email})</span>
                             )}
                         </div>
-                        <div className="flex gap-4 items-center text-xs">
+                        <div className="flex flex-wrap gap-4 items-center text-xs">
+                            {hasSubmittedGrades && (
+                                <CommonButton
+                                    color="warning"
+                                    disabled={isReleasing}
+                                    size="small"
+                                    startIcon={<ArrowUUpLeftIcon size={14} />}
+                                    variant="outlined"
+                                    onClick={() => setIsReturnOpen(true)}
+                                >
+                                    Return to Faculty
+                                </CommonButton>
+                            )}
                             {section.room && (
                                 <span className="text-(--mui-palette-text-secondary)">
                                     Room: <span className="font-medium text-(--mui-palette-text-primary)">{section.room}</span>
@@ -244,7 +262,7 @@ export default function SectionGradeSheetModal({
                                 {' '}
                                 <CommonBadgeStatus
                                     label={effectiveStatus}
-                                    variant={resolveGradeStatusVariant(effectiveStatus)}
+                                    variant={gradeStatusVariant(effectiveStatus)}
                                 />
                             </span>
                         </div>
@@ -353,7 +371,7 @@ export default function SectionGradeSheetModal({
                                                             </div>
                                                             <CommonBadgeStatus
                                                                 label={st.status}
-                                                                variant={resolveGradeStatusVariant(st.status)}
+                                                                variant={gradeStatusVariant(st.status)}
                                                             />
                                                         </div>
 
@@ -494,7 +512,7 @@ export default function SectionGradeSheetModal({
                                                             <td className="p-3 text-center">
                                                                 <CommonBadgeStatus
                                                                     label={st.status}
-                                                                    variant={resolveGradeStatusVariant(st.status)}
+                                                                    variant={gradeStatusVariant(st.status)}
                                                                 />
                                                             </td>
                                                             <td className="p-3 text-center">
@@ -554,6 +572,15 @@ export default function SectionGradeSheetModal({
                         : `All ${stats.total} student(s) have completed faculty evaluations and will see their official grades immediately.`
                 }}
                 onClose={() => setShowConfirmRelease(false)}
+            />
+
+            <ReturnToFacultyModal
+                gradingPeriodId={gradingPeriodId}
+                gradingPeriodName={gradingPeriodName}
+                open={isReturnOpen}
+                section={section}
+                onClose={() => setIsReturnOpen(false)}
+                onReturned={handleReturned}
             />
         </>
     );

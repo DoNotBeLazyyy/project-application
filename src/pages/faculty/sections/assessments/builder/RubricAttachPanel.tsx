@@ -1,32 +1,31 @@
-import CommonButton from '@components/button/CommonButton';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import { CheckCircleIcon, CircleIcon } from '@phosphor-icons/react';
-import { getAssessmentRubric, listRubrics, setAssessmentRubric } from '@services/rubric.service';
+import { listRubrics } from '@services/rubric.service';
 import { InputChangeEvent } from '@type/common.type';
 import { useEffect, useState } from 'react';
 
-interface RubricAttachPanelProps {
-    assessmentId: string;
-    sectionId: string;
+export interface RubricSelection {
+    rubricId: string;
+    useScoring: boolean;
 }
 
-export default function RubricAttachPanel({ assessmentId, sectionId }: RubricAttachPanelProps) {
-    const [options, setOptions] = useState<CommonSelectOption[]>([]);
-    const [rubricId, setRubricId] = useState('');
-    const [useScoring, setUseScoring] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    const [savedAttachment, setSavedAttachment] = useState('|false');
+interface RubricAttachPanelProps {
+    sectionId: string;
+    value: RubricSelection;
+    onChange: (value: RubricSelection) => void;
+}
 
-    const currentAttachment = `${rubricId}|${useScoring}`;
+/**
+ * Picks the rubric for an assessment. The choice is saved with the rest of the
+ * assessment when the wizard's "Save" button is pressed.
+ */
+export default function RubricAttachPanel({ sectionId, value, onChange }: RubricAttachPanelProps) {
+    const [options, setOptions] = useState<CommonSelectOption[]>([]);
+    const { rubricId, useScoring } = value;
 
     useEffect(function() {
-        if (!assessmentId) return;
-
         async function load() {
-            const [rubricsResult, attachedResult] = await Promise.all([
-                listRubrics(sectionId),
-                getAssessmentRubric(assessmentId)
-            ]);
+            const rubricsResult = await listRubrics(sectionId);
 
             if (rubricsResult.data) {
                 setOptions([
@@ -37,41 +36,23 @@ export default function RubricAttachPanel({ assessmentId, sectionId }: RubricAtt
                     }))
                 ]);
             }
-
-            if (attachedResult.data) {
-                const attachedRubricId = attachedResult.data.rubric_id ?? '';
-
-                setRubricId(attachedRubricId);
-                setUseScoring(attachedResult.data.use_rubric_scoring);
-                setSavedAttachment(`${attachedRubricId}|${attachedResult.data.use_rubric_scoring}`);
-            }
         }
 
         load();
-    }, [assessmentId, sectionId]);
+    }, [sectionId]);
 
     function handleRubricChange(event: InputChangeEvent) {
-        const value = event.target.value;
-        setRubricId(value);
-
-        if (!value) {
-            setUseScoring(false);
-        }
+        const nextRubricId = event.target.value;
+        onChange({
+            rubricId: nextRubricId,
+            useScoring: nextRubricId
+                ? useScoring
+                : false
+        });
     }
 
-    async function handleSave() {
-        setIsSaving(true);
-
-        try {
-            const result = await setAssessmentRubric(assessmentId, rubricId || null, useScoring);
-
-            if (!result.error) {
-                setSavedAttachment(currentAttachment);
-            }
-        }
-        finally {
-            setIsSaving(false);
-        }
+    function handleToggleScoring() {
+        onChange({ rubricId, useScoring: !useScoring });
     }
 
     return (
@@ -81,7 +62,7 @@ export default function RubricAttachPanel({ assessmentId, sectionId }: RubricAtt
                     Rubric
                 </span>
                 <span className="text-(--mui-palette-text-secondary) text-xs">
-                    Attach a section rubric to guide grading, or use it to score submissions directly.
+                    Attach a section rubric to guide grading, or use it to score submissions directly. It is saved when you save the assessment.
                 </span>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -99,9 +80,7 @@ export default function RubricAttachPanel({ assessmentId, sectionId }: RubricAtt
                         className="flex gap-2 items-center py-2 text-left"
                         disabled={!rubricId}
                         type="button"
-                        onClick={function() {
-                            setUseScoring((prev) => !prev);
-                        }}
+                        onClick={handleToggleScoring}
                     >
                         {useScoring
                             ? (
@@ -129,16 +108,6 @@ export default function RubricAttachPanel({ assessmentId, sectionId }: RubricAtt
                         )
                         : null}
                 </div>
-                <CommonButton
-                    disabled={isSaving || currentAttachment === savedAttachment}
-                    size="small"
-                    variant="contained"
-                    onClick={handleSave}
-                >
-                    {isSaving
-                        ? 'Saving...'
-                        : 'Save Rubric'}
-                </CommonButton>
             </div>
         </div>
     );

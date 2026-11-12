@@ -24,6 +24,17 @@ export async function listTerms(
     });
 }
 
+export interface TermOption {
+    id: string;
+    label: string;
+    is_active_academic_year?: boolean;
+}
+
+/** Every term, newest first, labelled "<Term Type> - <School Year>". */
+export async function getTerms(): Promise<ServiceResult<TermOption[]>> {
+    return callRpc<TermOption[]>('fn_get_terms');
+}
+
 export async function getActiveTerm(): Promise<ServiceResult<ActiveTerm>> {
     return callRpc<ActiveTerm>('fn_get_active_term');
 }

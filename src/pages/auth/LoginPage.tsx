@@ -2,7 +2,7 @@ import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import { EMAIL_PATTERN } from '@constants/validation.constant';
-import { login, logout } from '@services/auth.service';
+import { login, LOGIN_ALREADY_NOTIFIED_CODE, logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
 import { useToastStore } from '@stores/toast.store';
 import { UserRole } from '@type/app.type';
@@ -17,6 +17,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 interface LoginLocationState {
     // Shown after an invited user sets a password
     activationSuccess?: boolean;
+    // Shown after a forgot-password user saves a new password
+    passwordResetSuccess?: boolean;
     // Sign-in error passed from the auth guard
     authError?: string;
     // Page the user opened before being sent to sign in
@@ -87,8 +89,11 @@ export default function LoginPage() {
     async function onSubmit(values: LoginFormValues) {
         const result = await login(values.email, values.password);
         if (result.error) {
-            useToastStore.getState()
-                .showToast(result.error.message, 'error');
+            // A blocked account was already explained while the session loaded
+            if (result.error.code !== LOGIN_ALREADY_NOTIFIED_CODE) {
+                useToastStore.getState()
+                    .showToast(result.error.message, 'error');
+            }
 
             return;
         }
@@ -133,6 +138,12 @@ export default function LoginPage() {
                     {locationState?.activationSuccess && (
                         <p className="m-0 text-(--mui-palette-success-main) text-sm">
                             Account activated successfully. Please sign in.
+                        </p>
+                    )}
+
+                    {locationState?.passwordResetSuccess && (
+                        <p className="m-0 text-(--mui-palette-success-main) text-sm">
+                            Password updated. Please sign in with your new password.
                         </p>
                     )}
 

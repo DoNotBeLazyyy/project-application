@@ -1,17 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
-import { MenuOption } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/use-table-configs';
-import { CertificateIcon, CopyIcon, EnvelopeSimpleIcon, GraduationCapIcon } from '@phosphor-icons/react';
-import { useToastStore } from '@stores/toast.store';
 import { EnrollmentStudentRow, StudentStatus } from '@type/enrollment.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
-
-interface UseEnrollmentStudentTableConfigProps {
-    onManage: (id: string) => void;
-    onAssignProgram?: (row: EnrollmentStudentRow) => void;
-    onCreditCourses?: (row: EnrollmentStudentRow) => void;
-}
 
 const STUDENT_STATUS_VARIANT_MAP: Record<StudentStatus, 'success' | 'error' | 'warning' | 'info'> = {
     Active: 'success',
@@ -21,11 +11,7 @@ const STUDENT_STATUS_VARIANT_MAP: Record<StudentStatus, 'success' | 'error' | 'w
     Expelled: 'error'
 };
 
-export function useEnrollmentStudentTableConfig({
-    onManage,
-    onAssignProgram,
-    onCreditCourses
-}: UseEnrollmentStudentTableConfigProps) {
+export function useEnrollmentStudentTableConfig() {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
@@ -103,89 +89,5 @@ export function useEnrollmentStudentTableConfig({
         ];
     }, []);
 
-    const tableActionConfig = useMemo<TableActionConfig<EnrollmentStudentRow>>(function() {
-        return {
-            onEditClick: (row: EnrollmentStudentRow) => () => onManage(row.id),
-            menuOptions: (row: EnrollmentStudentRow): MenuOption[] => [
-                {
-                    preset: 'edit',
-                    onClick: () => onManage(row.id)
-                },
-                ...(onAssignProgram
-                    ? [{
-                        children: (
-                            <div className="flex gap-2 items-center">
-                                <GraduationCapIcon
-                                    size={18}
-                                    weight="bold"
-                                />
-                                <span>Assign Program & Year</span>
-                            </div>
-                        ),
-                        onClick: () => onAssignProgram(row)
-                    }]
-                    : []),
-                ...(onCreditCourses
-                    ? [{
-                        children: (
-                            <div className="flex gap-2 items-center">
-                                <CertificateIcon
-                                    size={18}
-                                    weight="bold"
-                                />
-                                <span>Credit Courses (Transferee)</span>
-                            </div>
-                        ),
-                        onClick: () => onCreditCourses(row)
-                    }]
-                    : []),
-                {
-                    preset: 'view',
-                    onClick: () => onManage(row.id)
-                },
-                {
-                    children: (
-                        <div className="flex gap-2 items-center">
-                            <CopyIcon
-                                size={18}
-                                weight="bold"
-                            />
-                            <span>Copy Student No.</span>
-                        </div>
-                    ),
-                    onClick: () => {
-                        if (navigator?.clipboard?.writeText) {
-                            navigator.clipboard.writeText(row.student_number);
-                            useToastStore.getState()
-                                .showToast('Student number copied to clipboard', 'success');
-                        }
-                    }
-                },
-                ...(row.email
-                    ? [
-                        {
-                            children: (
-                                <div className="flex gap-2 items-center">
-                                    <EnvelopeSimpleIcon
-                                        size={18}
-                                        weight="bold"
-                                    />
-                                    <span>Copy Email</span>
-                                </div>
-                            ),
-                            onClick: () => {
-                                if (navigator?.clipboard?.writeText) {
-                                    navigator.clipboard.writeText(row.email);
-                                    useToastStore.getState()
-                                        .showToast('Email copied to clipboard', 'success');
-                                }
-                            }
-                        }
-                    ]
-                    : [])
-            ]
-        };
-    }, [onManage]);
-
-    return { columnDefs, tableActionConfig };
+    return { columnDefs };
 }

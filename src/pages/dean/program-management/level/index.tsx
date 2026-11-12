@@ -116,11 +116,7 @@ export default function ProgramLevelManagement() {
         updateMethods.reset(defaultFormValues);
     }
 
-    const { columnDefs, tableActionConfig } = useProgramLevelTableConfig({
-        onEdit: handleOpenUpdate,
-        onRequestDeleteRow: function() {},
-        onView: handleOpenView
-    });
+    const { columnDefs } = useProgramLevelTableConfig();
 
     async function fetchProgramLevels(
         page: number,
@@ -229,7 +225,6 @@ export default function ProgramLevelManagement() {
                     );
                 }}
                 sortColumns={SORT_COLUMNS}
-                tableActionConfig={tableActionConfig}
                 tableProps={{
                     leadingColumnDefs: columnDefs
                 }}

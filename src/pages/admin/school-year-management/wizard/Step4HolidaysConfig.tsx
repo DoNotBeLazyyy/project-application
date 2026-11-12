@@ -5,11 +5,11 @@ import FormLabel from '@components/form/FormLabel';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import ValidCommonSelect from '@components/select/ValidCommonSelect';
-import ManageExceptionTypesModal from '@pages/admin/school-year-management/wizard/ManageExceptionTypesModal';
+import { HISTORY_DIFF_HIGHLIGHT_CLASS, HistoryDiffMarks } from '@pages/admin/school-year-management/wizard/academic-year-history';
+import HistoryDiffBadge from '@pages/admin/school-year-management/wizard/HistoryDiffBadge';
 import { CALENDAR_EXCEPTION_TYPE_LABELS, CALENDAR_EXCEPTION_TYPES, toCalendarExceptionType } from '@pages/admin/school-year-management/wizard/wizard.constants';
 import {
     CaretDownIcon,
-    GearIcon,
     PlusIcon,
     SunIcon,
     TrashIcon
@@ -27,12 +27,15 @@ import {
 
 interface Step4HolidaysConfigProps {
     control: Control<AcademicYearWizardFormValues>;
+    /** Differences to highlight while comparing saved versions (history view only). */
+    diffMarks?: HistoryDiffMarks;
     disabled?: boolean;
     setValue: UseFormSetValue<AcademicYearWizardFormValues>;
 }
 
-// Option values must be calendar_exception_type enum values; the DB coerces anything else to 'Holiday'
-const INITIAL_EXCEPTION_TYPE_ITEMS: ExceptionTypeOptionItem[] = CALENDAR_EXCEPTION_TYPES.map((type) => ({
+// Option values must be calendar_exception_type enum values; the DB coerces anything else to 'Holiday'.
+// The built-in types are fixed, so there is no screen to change them.
+const EXCEPTION_TYPE_OPTIONS: ExceptionTypeOptionItem[] = CALENDAR_EXCEPTION_TYPES.map((type) => ({
     is_active: true,
     is_default: true,
     label: type
@@ -47,10 +50,10 @@ function getExceptionTypeLabel(value: string): string {
 
 export default function Step4HolidaysConfig({
     control,
+    diffMarks,
     disabled = false
 }: Step4HolidaysConfigProps) {
-    const [isManageTypesOpen, setIsManageTypesOpen] = useState(false);
-    const [exceptionTypeOptions, setExceptionTypeOptions] = useState<ExceptionTypeOptionItem[]>(INITIAL_EXCEPTION_TYPE_ITEMS);
+    const exceptionTypeOptions = EXCEPTION_TYPE_OPTIONS;
     const [deleteExceptionTarget, setDeleteExceptionTarget] = useState<{ index: number; title: string } | null>(null);
     const [collapsedExceptions, setCollapsedExceptions] = useState<Record<number, boolean>>({});
 
@@ -95,17 +98,6 @@ export default function Step4HolidaysConfig({
             {!disabled && (
                 <div className="flex justify-end items-center gap-2 flex-wrap">
                     <CommonButton
-                        className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
-                        color="primary"
-                        size="small"
-                        startIcon={<GearIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
-                        variant="outlined"
-                        onClick={() => setIsManageTypesOpen(true)}
-                    >
-                        Configure Types
-                    </CommonButton>
-
-                    <CommonButton
                         color="primary"
                         size="small"
                         startIcon={<PlusIcon className="w-3.5 h-3.5" />}
@@ -146,9 +138,13 @@ export default function Step4HolidaysConfig({
                                 optionsToRender.push(currentTypeItem);
                             }
 
+                            const diffMark = diffMarks?.[`holiday:${idx}`];
+
                             return (
                                 <div
-                                    className="p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-zinc-700/70 bg-white dark:bg-zinc-800/80 shadow-xs space-y-4 w-full"
+                                    className={`p-4 sm:p-5 rounded-2xl border bg-white dark:bg-zinc-800/80 shadow-xs space-y-4 w-full ${diffMark
+                                        ? HISTORY_DIFF_HIGHLIGHT_CLASS
+                                        : 'border-slate-200 dark:border-zinc-700/70'}`}
                                     key={item.id}
                                 >
                                     <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-700/60 pb-3">
@@ -164,6 +160,7 @@ export default function Step4HolidaysConfig({
                                                     {getExceptionTypeLabel(current.exception_type)}
                                                 </span>
                                             )}
+                                            <HistoryDiffBadge mark={diffMark} />
                                             {current.start_date && (
                                                 <span className="text-xs text-slate-400 shrink-0 hidden md:inline">
                                                     • {current.start_date}{current.end_date && current.end_date !== current.start_date
@@ -338,16 +335,6 @@ export default function Step4HolidaysConfig({
                         )}
                     </div>
                 )}
-
-            {/* Modal to configure exception type options with soft deprecation */}
-            <ManageExceptionTypesModal
-                exceptionTypes={exceptionTypeOptions}
-                open={isManageTypesOpen}
-                usedTypes={Array.from(new Set(holidays.map((h) => h.exception_type)
-                    .filter(Boolean)))}
-                onClose={() => setIsManageTypesOpen(false)}
-                onSave={(updated) => setExceptionTypeOptions(updated)}
-            />
 
             {/* Delete Exception Prompt Modal */}
             <DeletePromptModal

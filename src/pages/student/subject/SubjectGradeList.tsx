@@ -4,6 +4,7 @@ import CommonTable from '@components/table/CommonTable';
 import { toTargetPath } from '@pages/student/evaluation/use-evaluation-targets';
 import { SubjectGradeItem } from '@type/student-portal.type';
 import { MobileCardColDef } from '@type/table.type';
+import { formatGrade, isGradeReleased } from '@utils/grade-display.util';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,7 +13,8 @@ interface SubjectGradeListProps {
     grades: SubjectGradeItem[];
 }
 
-function formatGrade(value: number | null): string {
+// Raw and final grades are percentages, so they keep their own plain format
+function formatRawGrade(value: number | null): string {
     return value != null
         ? String(value)
         : '—';
@@ -23,7 +25,7 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
 
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         function isReleased(item: SubjectGradeItem): boolean {
-            return item.status === 'Released' || (item.is_visible && item.evaluation_completed);
+            return isGradeReleased(item);
         }
 
         return [
@@ -43,7 +45,7 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                 valueFormatter: (params) => {
                     const grade = params.data as SubjectGradeItem;
                     if (isReleased(grade)) {
-                        return formatGrade(params.value);
+                        return formatRawGrade(params.value);
                     }
                     if (grade.is_visible || grade.status === 'Approved') {
                         return 'Locked';
@@ -60,7 +62,7 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                 valueFormatter: (params) => {
                     const grade = params.data as SubjectGradeItem;
                     if (isReleased(grade)) {
-                        return formatGrade(params.value);
+                        return formatRawGrade(params.value);
                     }
                     if (grade.is_visible || grade.status === 'Approved') {
                         return 'Locked';
@@ -77,9 +79,7 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                 valueFormatter: (params) => {
                     const grade = params.data as SubjectGradeItem;
                     if (isReleased(grade)) {
-                        return params.value != null
-                            ? String(params.value)
-                            : (grade.special_grade ?? '—');
+                        return formatGrade(params.value, grade.special_grade);
                     }
                     if (grade.is_visible || grade.status === 'Approved') {
                         return 'Locked';
@@ -176,7 +176,7 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                 )
                 : (
                     <div className="flex-1 min-h-0">
-                        <CommonTable<SubjectGradeItem>
+                        <CommonTable
                             leadingColumnDefs={columnDefs}
                             rowData={grades}
                         />

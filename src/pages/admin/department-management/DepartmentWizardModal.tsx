@@ -30,7 +30,8 @@ interface DepartmentWizardModalProps {
     isSaving?: boolean;
     methods: UseFormReturn<DepartmentFormValues>;
     onClose: VoidFunction;
-    onSubmit: (values: DepartmentFormValues) => void;
+    /** Resolves true when the save worked, so the draft is only cleared then. */
+    onSubmit: (values: DepartmentFormValues) => Promise<boolean>;
     onSwitchToEdit?: (step?: number) => void;
 }
 
@@ -135,9 +136,11 @@ export default function DepartmentWizardModal({
         onClose();
     }
 
-    function handleFormSubmit(values: DepartmentFormValues) {
-        draftGuard.clearDraft();
-        onSubmit(values);
+    async function handleFormSubmit(values: DepartmentFormValues) {
+        const isSaved = await onSubmit(values);
+        if (isSaved) {
+            draftGuard.clearDraft();
+        }
     }
 
     return (

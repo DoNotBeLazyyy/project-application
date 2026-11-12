@@ -1,5 +1,3 @@
-import TableActionCell, { TableActionCellRendererParams } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/use-table-configs';
 import Checkbox from '@mui/material/Checkbox';
 import { ChangeEventInput } from '@type/common.type';
 import { MobileCardColDef } from '@type/table.type';
@@ -12,7 +10,6 @@ import {
 export interface MobileCardCellParams<TData = unknown> extends ICellRendererParams<TData> {
     columnDefs?: MobileCardColDef[];
     hasCheckbox?: boolean;
-    tableActionConfig?: TableActionConfig<TData>;
 }
 
 function resolveColumnKey(columnDef: MobileCardColDef): string | undefined {
@@ -54,7 +51,6 @@ function renderColumnContent<TData>(columnDef: MobileCardColDef, params: ICellRe
 export default function MobileCardCell<TData>({
     columnDefs = [],
     hasCheckbox,
-    tableActionConfig,
     ...params
 }: MobileCardCellParams<TData>) {
     const { node } = params;
@@ -63,7 +59,6 @@ export default function MobileCardCell<TData>({
         return resolveMobileCardPlan(columnDefs);
     }, [columnDefs]);
     const cellParams = params as unknown as ICellRendererParams<TData>;
-    const hasActions = Boolean(tableActionConfig?.menuOptions ?? tableActionConfig?.onEditClick);
 
     useEffect(function() {
         function handleRowSelected() {
@@ -102,15 +97,6 @@ export default function MobileCardCell<TData>({
                             checked={isSelected}
                             className="h-11 w-11"
                             onChange={handleToggleSelected}
-                        />
-                    )}
-                    {hasActions && (
-                        <TableActionCell<TData>
-                            {...(cellParams as TableActionCellRendererParams<TData>)}
-                            actionContainerClassName={tableActionConfig?.actionContainerClassName}
-                            actionIconClassName={tableActionConfig?.actionIconClassName}
-                            menuOptions={tableActionConfig?.menuOptions}
-                            onEditClick={tableActionConfig?.onEditClick}
                         />
                     )}
                 </div>

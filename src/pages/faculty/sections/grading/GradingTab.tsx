@@ -32,7 +32,7 @@ import {
     GradingPeriod
 } from '@type/faculty.type';
 import { SectionOverridableRule, SpecialGradeFlag } from '@type/grading-config.type';
-import { formatDate } from '@utils/date.util';
+import { toIsoDateKey } from '@utils/date.util';
 import { SyntheticEvent, useEffect, useMemo, useState } from 'react';
 
 interface GradingTabProps {
@@ -60,6 +60,7 @@ export default function GradingTab({
     const [overridableRules, setOverridableRules] = useState<SectionOverridableRule[]>([]);
     const [isThresholdOpen, setIsThresholdOpen] = useState(false);
     const [isSubmittingGrades, setIsSubmittingGrades] = useState(false);
+    const [isCalculating, setIsCalculating] = useState(false);
     const [mobileGradingView, setMobileGradingView] = useState<'sheet' | 'components'>('sheet');
 
     useEffect(function() {
@@ -168,14 +169,24 @@ export default function GradingTab({
         if (!result.error) await fetchPeriodData();
     }
 
+    /**
+     * Saves every component change in one go. Each call runs silently so the teacher sees one
+     * toast at the end: success only when every change went through, otherwise the first failure.
+     */
     async function handleBatchSave(
         updates: { id: string; name: string; weight: number }[],
         creates: { name: string; weight: number }[],
         deletes: string[]
     ) {
+        const silent = { silent: true };
+        const failures: string[] = [];
+
         // 1. Process deletes first
         if (deletes.length > 0) {
-            await Promise.all(deletes.map((id) => deleteGradingComponent(id)));
+            const deleteResults = await Promise.all(deletes.map((id) => deleteGradingComponent(id, silent)));
+            deleteResults.forEach((result) => {
+                if (result.error) failures.push(result.error.message);
+            });
         }
 
         // 2. Order updates so weight decreases run before weight increases
@@ -186,31 +197,47 @@ export default function GradingTab({
         });
 
         for (const u of sortedUpdates) {
-            await updateGradingComponent(u.id, {
+            const result = await updateGradingComponent(u.id, {
                 name: u.name,
                 weight: String(u.weight)
-            });
+            }, silent);
+            if (result.error) failures.push(`${u.name}: ${result.error.message}`);
         }
 
         // 3. Process creations
         for (const c of creates) {
-            await createGradingComponent(sectionId, activePeriodId, {
+            const result = await createGradingComponent(sectionId, activePeriodId, {
                 name: c.name,
                 weight: String(c.weight)
-            });
+            }, silent);
+            if (result.error) failures.push(`${c.name}: ${result.error.message}`);
         }
 
-        useToastStore.getState()
-            .showToast('Grading components saved successfully.', 'success');
+        if (failures.length > 0) {
+            useToastStore.getState()
+                .showToast(`Some component changes were not saved. ${failures[0]}`, 'error');
+        }
+        else {
+            useToastStore.getState()
+                .showToast('Grading components saved successfully.', 'success');
+        }
         await fetchPeriodData();
     }
 
     async function handleCalculate() {
-        const result = await calculateAllGradesForPeriod(sectionId, activePeriodId);
-        if (result.error) return;
+        if (isCalculating) return;
 
-        setCalculationFailures(result.data?.failures ?? []);
-        await fetchPeriodData();
+        setIsCalculating(true);
+        try {
+            const result = await calculateAllGradesForPeriod(sectionId, activePeriodId);
+            if (result.error) return;
+
+            setCalculationFailures(result.data?.failures ?? []);
+            await fetchPeriodData();
+        }
+        finally {
+            setIsCalculating(false);
+        }
     }
 
     function handleDismissFailures() {
@@ -222,15 +249,9 @@ export default function GradingTab({
         const result = await applySpecialGradeFlag(flag.id);
         setIsFlagBusy(false);
 
-        const message = result.error?.message ?? result.data?.message;
-        if (result.error || !result.data?.success) {
-            useToastStore.getState()
-                .showToast(message ?? 'The special grade could not be applied.', 'warning');
-            return;
-        }
+        // callRpc already shows the server's success or error message
+        if (result.error) return;
 
-        useToastStore.getState()
-            .showToast(message ?? `Applied ${flag.code}.`, 'success');
         await fetchPeriodData();
     }
 
@@ -245,16 +266,10 @@ export default function GradingTab({
         const result = await dismissSpecialGradeFlag(flagPendingDismissal.id, reason);
         setIsFlagBusy(false);
 
-        const message = result.error?.message ?? result.data?.message;
-        if (result.error || !result.data?.success) {
-            useToastStore.getState()
-                .showToast(message ?? 'The flag could not be dismissed.', 'warning');
-            return;
-        }
+        // callRpc already shows the server's success or error message
+        if (result.error) return;
 
         setFlagPendingDismissal(null);
-        useToastStore.getState()
-            .showToast(message ?? 'Flag dismissed.', 'success');
         await fetchPeriodData();
     }
 
@@ -263,14 +278,9 @@ export default function GradingTab({
         const result = await setEnrollmentSpecialGrade(enrollmentId, activePeriodId, specialGrade);
         setIsFlagBusy(false);
 
-        if (result.error) {
-            useToastStore.getState()
-                .showToast(result.error.message || 'Failed to update special grade.', 'warning');
-            return;
-        }
+        // callRpc already shows "Special grade set to X." or the error
+        if (result.error) return;
 
-        useToastStore.getState()
-            .showToast('Special grade updated.', 'success');
         await fetchPeriodData();
     }
 
@@ -284,15 +294,9 @@ export default function GradingTab({
         const result = await submitSectionGrades(sectionId, activePeriodId);
         setIsSubmittingGrades(false);
 
-        const message = result.error?.message ?? result.data?.message;
-        if (result.error || !result.data?.success) {
-            useToastStore.getState()
-                .showToast(message ?? 'Grades could not be submitted to the Registrar.', 'warning');
-            return;
-        }
+        // callRpc already shows the server's success or error message
+        if (result.error) return;
 
-        useToastStore.getState()
-            .showToast(message ?? 'Grades officially submitted to the Registrar.', 'success');
         await fetchPeriodData();
     }
 
@@ -303,7 +307,7 @@ export default function GradingTab({
     const isEncodingOpen = useMemo(() => {
         if (!currentPeriod?.grade_encoding_start_date || !currentPeriod?.grade_encoding_end_date) return true;
         // Local calendar date - the encoding window is stored as a plain DATE
-        const todayStr = formatDate(new Date());
+        const todayStr = toIsoDateKey(new Date());
         return todayStr >= currentPeriod.grade_encoding_start_date && todayStr <= currentPeriod.grade_encoding_end_date;
     }, [currentPeriod]);
 
@@ -432,6 +436,9 @@ export default function GradingTab({
                     <GradingComponentPanel
                         components={components}
                         locked={isLocked || !isEncodingOpen}
+                        lockMessage={isLocked
+                            ? 'Locked: grades for this period were submitted, so components can no longer be edited.'
+                            : 'Locked: grade encoding for this period is closed, so components can no longer be edited.'}
                         periodName={periods.find((p) => p.id === activePeriodId)?.name}
                         periodWeight={periods.find((p) => p.id === activePeriodId)?.weight}
                         onBatchSave={handleBatchSave}
@@ -455,6 +462,7 @@ export default function GradingTab({
                         courseTitle={courseTitle}
                         gradeSheet={gradeSheet}
                         gradingPeriodId={activePeriodId}
+                        isCalculating={isCalculating}
                         isEncodingOpen={isEncodingOpen}
                         isFlagBusy={isFlagBusy}
                         isSubmittingGrades={isSubmittingGrades}

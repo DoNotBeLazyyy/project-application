@@ -3,7 +3,7 @@
  *
  * @returns
  */
-export function formatDate(date: Date): string {
+export function toIsoDateKey(date: Date): string {
     return date.toLocaleDateString('en-CA');
 }
 

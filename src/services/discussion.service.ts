@@ -1,3 +1,4 @@
+import { deleteFile, uploadFileToFolder } from '@services/storage.service';
 import { supabase } from '@services/supabase.client';
 import { callRpc, callStorage } from '@services/supabase.wrapper';
 import { DiscussionAttachmentPayload, DiscussionThreadDetail, DiscussionThreadRow } from '@type/discussion.type';
@@ -6,6 +7,9 @@ import { ServiceResult } from '@type/service.type';
 import { parseServiceError } from '@utils/error.util';
 
 const DISCUSSION_BUCKET = 'discussions';
+
+// Discussion files keep their own 25 MB limit
+const DISCUSSION_MAX_SIZE_MB = 25;
 
 export async function listSectionThreads(
     sectionId: string,
@@ -33,32 +37,82 @@ export async function getDiscussionThread(
     });
 }
 
+/**
+ * Uploads one discussion file under the section's folder.
+ *
+ * @param sectionId - The section the discussion belongs to.
+ * @param file - The chosen file.
+ * @returns The attachment details to save with the post.
+ */
 export async function uploadDiscussionFile(
     sectionId: string,
     file: File
 ): Promise<ServiceResult<DiscussionAttachmentPayload>> {
-    const safeName = file.name.replace(/[^\w.-]+/g, '_');
-    const path = `${sectionId}/${crypto.randomUUID()}/${safeName}`;
+    const result = await uploadFileToFolder({
+        bucket: DISCUSSION_BUCKET,
+        file,
+        folder: sectionId,
+        maxSizeMb: DISCUSSION_MAX_SIZE_MB
+    });
 
-    return callStorage(async function() {
-        const { error } = await supabase.storage
-            .from(DISCUSSION_BUCKET)
-            .upload(path, file, { upsert: false });
+    if (!result.data) {
+        return { data: null, error: result.error };
+    }
 
-        if (error) {
-            return { data: null, error: parseServiceError(error) };
+    return {
+        data: {
+            file_name: result.data.file_name,
+            file_path: result.data.file_path,
+            file_size: result.data.file_size,
+            mime_type: result.data.mime_type
+        },
+        error: null
+    };
+}
+
+/**
+ * Deletes uploaded discussion files, e.g. when the post could not be saved.
+ *
+ * @param attachments - The files that were uploaded.
+ */
+export async function removeDiscussionFiles(
+    attachments: DiscussionAttachmentPayload[]
+): Promise<void> {
+    await Promise.all(attachments.map((attachment) => deleteFile(DISCUSSION_BUCKET, attachment.file_path)));
+}
+
+/**
+ * Uploads several discussion files. If one fails, the ones already uploaded are deleted.
+ *
+ * @param sectionId - The section the discussion belongs to.
+ * @param files - The chosen files.
+ * @returns All uploaded attachments, or the error of the file that failed.
+ */
+export async function uploadDiscussionFiles(
+    sectionId: string,
+    files: File[]
+): Promise<ServiceResult<DiscussionAttachmentPayload[]>> {
+    const uploaded: DiscussionAttachmentPayload[] = [];
+
+    for (const file of files) {
+        const result = await uploadDiscussionFile(sectionId, file);
+
+        if (!result.data) {
+            await removeDiscussionFiles(uploaded);
+            return {
+                data: null,
+                error: result.error ?? {
+                    code: 'UPLOAD_FAILED',
+                    message: `"${file.name}" could not be uploaded.`,
+                    status: null
+                }
+            };
         }
 
-        return {
-            data: {
-                file_name: file.name,
-                file_path: path,
-                file_size: file.size,
-                mime_type: file.type || null
-            },
-            error: null
-        };
-    });
+        uploaded.push(result.data);
+    }
+
+    return { data: uploaded, error: null };
 }
 
 export async function getDiscussionFileUrl(

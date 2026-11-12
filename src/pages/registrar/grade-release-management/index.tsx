@@ -4,10 +4,13 @@ import CommonCard from '@components/card/CommonCard';
 import CommonInput from '@components/input/CommonInput';
 import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
 import CommonSelect from '@components/select/CommonSelect';
+import { useTermOptions } from '@hooks/use-term-options';
 import { InputAdornment } from '@mui/material';
 import ReleaseScheduleForm from '@pages/registrar/grade-release-management/ReleaseScheduleForm';
+import ReturnToFacultyModal from '@pages/registrar/grade-release-management/ReturnToFacultyModal';
 import SectionGradeSheetModal from '@pages/registrar/grade-release-management/SectionGradeSheetModal';
 import {
+    ArrowUUpLeftIcon,
     CalendarBlankIcon,
     CheckCircleIcon,
     ClockIcon,
@@ -23,7 +26,6 @@ import {
     releaseGradingPeriodNow,
     setGradingPeriodReleaseAt
 } from '@services/grade-release.service';
-import { getTerms, TermOption } from '@services/section.service';
 import { getActiveTerm } from '@services/term/term.service';
 import { ChangeEventInputTextarea } from '@type/common.type';
 import {
@@ -88,10 +90,10 @@ function resolveSubmissionBadgeVariant(status: SectionGradeSubmissionStatus): 's
     }
 }
 
-type StatusFilterTab = 'ALL' | 'SUBMITTED' | 'DRAFT' | 'APPROVED' | 'RELEASED';
+type StatusFilterTab = 'ALL' | 'SUBMITTED' | 'DRAFT' | 'RELEASED';
 
 export default function GradeRelease() {
-    const [termOptions, setTermOptions] = useState<{ label: string; value: string }[]>([]);
+    const { isLoaded: isTermsLoaded, termOptions } = useTermOptions();
     const [selectedTermId, setSelectedTermId] = useState<string>('');
     const [periods, setPeriods] = useState<GradeReleaseSchedule[]>([]);
     const [selectedPeriodId, setSelectedPeriodId] = useState<string>('');
@@ -109,6 +111,7 @@ export default function GradeRelease() {
     const [inspectedSection, setInspectedSection] = useState<SectionGradeSubmissionRow | null>(null);
     const [sectionToRelease, setSectionToRelease] = useState<SectionGradeSubmissionRow | null>(null);
     const [isReleasingSection, setIsReleasingSection] = useState(false);
+    const [sectionToReturn, setSectionToReturn] = useState<SectionGradeSubmissionRow | null>(null);
 
     const activeTermRequestIdRef = useRef<string>('');
     const activePeriodRequestIdRef = useRef<string>('');
@@ -214,32 +217,22 @@ export default function GradeRelease() {
     }, [selectedTermId, selectedPeriodId]);
 
     useEffect(function() {
-        async function fetchTerms() {
-            const [result, activeResult] = await Promise.all([getTerms(), getActiveTerm()]);
-            if (result.data) {
-                const options = result.data.map(function(term: TermOption) {
-                    return {
-                        label: term.label,
-                        value: term.id
-                    };
-                });
+        if (!isTermsLoaded || termOptions.length === 0) return;
 
-                setTermOptions(options);
-                if (options.length > 0) {
-                    // Open on the term in progress; the list is ordered newest first, which is usually the
-                    // upcoming term with nothing to release yet
-                    const activeTermId = activeResult.data?.term_id;
-                    const initialTermId = options.some((option) => option.value === activeTermId)
-                        ? activeTermId as string
-                        : options[0].value;
-                    setSelectedTermId(initialTermId);
-                    loadTermData(initialTermId);
-                }
-            }
+        async function selectInitialTerm() {
+            const activeResult = await getActiveTerm();
+            // Open on the term in progress; the list is ordered newest first, which is usually the
+            // upcoming term with nothing to release yet
+            const activeTermId = activeResult.data?.term_id;
+            const initialTermId = termOptions.some((option) => option.value === activeTermId)
+                ? activeTermId as string
+                : String(termOptions[0].value);
+            setSelectedTermId(initialTermId);
+            loadTermData(initialTermId);
         }
 
-        fetchTerms();
-    }, [loadTermData]);
+        selectInitialTerm();
+    }, [isTermsLoaded, termOptions, loadTermData]);
 
     function handleTermChange(e: ChangeEventInputTextarea) {
         const newTermId = e.target.value;
@@ -247,6 +240,7 @@ export default function GradeRelease() {
         setReleaseTarget(null);
         setInspectedSection(null);
         setSectionToRelease(null);
+        setSectionToReturn(null);
         setIsScheduleOpen(false);
         setActivePeriod(null);
         loadTermData(newTermId);
@@ -333,9 +327,6 @@ export default function GradeRelease() {
             if (statusFilter === 'DRAFT' && row.submission_status !== 'Draft' && row.submission_status !== 'Not Calculated') {
                 return false;
             }
-            if (statusFilter === 'APPROVED' && row.submission_status !== 'Approved') {
-                return false;
-            }
             if (statusFilter === 'RELEASED' && row.submission_status !== 'Released') {
                 return false;
             }
@@ -362,12 +353,11 @@ export default function GradeRelease() {
     const submissionCounts = useMemo(function() {
         const total = sectionRows.length;
         const submitted = sectionRows.filter((r) => r.submission_status === 'Submitted').length;
-        const approved = sectionRows.filter((r) => r.submission_status === 'Approved').length;
         const released = sectionRows.filter((r) => r.submission_status === 'Released').length;
         const draftOrNone = sectionRows.filter((r) => r.submission_status === 'Draft' || r.submission_status === 'Not Calculated').length;
 
         return {
-            approved, draftOrNone, released, submitted, total
+            draftOrNone, released, submitted, total
         };
     }, [sectionRows]);
 
@@ -640,10 +630,12 @@ export default function GradeRelease() {
                                     {/* Section cards, laid out like the other list pages */}
                                     <div className="gap-3 grid grid-cols-1 lg:grid-cols-3 p-1 sm:grid-cols-2">
                                         {filteredSections.map(function(row) {
+                                            // Drafts are still the faculty's; only submitted or approved grades can be released
                                             const canRelease
-                                                = row.submission_status !== 'Released'
-                                                && row.submission_status !== 'No Enrollees'
+                                                = (row.submission_status === 'Submitted' || row.submission_status === 'Approved')
                                                 && row.graded_count > 0;
+                                            // Only grades the faculty submitted can go back to them
+                                            const canReturn = row.submitted_count > 0;
 
                                             return (
                                                 <div
@@ -706,6 +698,17 @@ export default function GradeRelease() {
                                                         >
                                                             Inspect
                                                         </CommonButton>
+                                                        {canReturn && (
+                                                            <CommonButton
+                                                                color="warning"
+                                                                size="small"
+                                                                startIcon={<ArrowUUpLeftIcon size={14} />}
+                                                                variant="outlined"
+                                                                onClick={() => setSectionToReturn(row)}
+                                                            >
+                                                                Return
+                                                            </CommonButton>
+                                                        )}
                                                         {canRelease && (
                                                             <CommonButton
                                                                 size="small"
@@ -795,6 +798,18 @@ export default function GradeRelease() {
                 onClose={() => setSectionToRelease(null)}
             />
 
+            {/* Return Section Grades to Faculty */}
+            {currentPeriod && (
+                <ReturnToFacultyModal
+                    gradingPeriodId={currentPeriod.grading_period_id}
+                    gradingPeriodName={currentPeriod.grading_period_name}
+                    open={!!sectionToReturn}
+                    section={sectionToReturn}
+                    onClose={() => setSectionToReturn(null)}
+                    onReturned={refreshCurrentData}
+                />
+            )}
+
             {/* Grade Sheet Inspection Modal */}
             {inspectedSection && currentPeriod && (
                 <SectionGradeSheetModal
@@ -806,6 +821,7 @@ export default function GradeRelease() {
                     onReleased={async() => {
                         await refreshCurrentData();
                     }}
+                    onReturned={refreshCurrentData}
                 />
             )}
         </CommonCard>

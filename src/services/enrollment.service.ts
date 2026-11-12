@@ -1,9 +1,9 @@
 import { callRpc } from '@services/supabase.wrapper';
 import { BulkImportResult } from '@type/bulk-import.type';
 import {
-    BulkEnrollStudentParams, BulkEnrollStudentResult, EligibleSectionFilterValues, EligibleSectionResult,
+    BulkEnrollStudentParams, EligibleSectionFilterValues, EligibleSectionResult,
     EnrollmentBulkRow, EnrollmentStudentDetail, EnrollmentStudentFilterValues, EnrollmentStudentRow,
-    EnrollmentTargetTerm
+    EnrollmentTargetTerm, SaveEnrollmentChangesResult
 } from '@type/enrollment.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
@@ -73,25 +73,25 @@ export async function listEligibleSections(
     });
 }
 
-export async function bulkEnrollStudent(
-    params: BulkEnrollStudentParams
-): Promise<ServiceResult<BulkEnrollStudentResult>> {
-    return callRpc<BulkEnrollStudentResult>('fn_bulk_enroll_student', {
+/**
+ * Saves the registrar workspace's drops and new enrollments in one call. If none of the new
+ * sections can be enrolled, nothing is dropped either.
+ *
+ * @param params - Student, sections to enroll, and the override choices.
+ * @param dropEnrollmentIds - Enrollments to drop.
+ * @returns Counts and the sections that were skipped with their reasons.
+ */
+export async function saveStudentEnrollmentChanges(
+    params: BulkEnrollStudentParams,
+    dropEnrollmentIds: string[]
+): Promise<ServiceResult<SaveEnrollmentChangesResult>> {
+    return callRpc<SaveEnrollmentChangesResult>('fn_save_student_enrollment_changes', {
         p_student_id: params.student_id,
         p_section_ids: params.section_ids,
+        p_drop_enrollment_ids: dropEnrollmentIds,
         p_allow_conflict: params.allow_conflict,
         p_conflict_reason: params.conflict_reason || null,
         p_override_prerequisites: params.override_prerequisites
-    });
-}
-
-export async function dropEnrollment(
-    enrollmentId: string,
-    dropReason: string
-): Promise<ServiceResult<null>> {
-    return callRpc<null>('fn_drop_enrollment', {
-        p_enrollment_id: enrollmentId,
-        p_drop_reason: dropReason || null
     });
 }
 

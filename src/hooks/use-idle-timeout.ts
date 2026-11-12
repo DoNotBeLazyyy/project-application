@@ -3,6 +3,7 @@ import {
     DEFAULT_COUNTDOWN_MS,
     DEFAULT_IDLE_TIMEOUT_MS,
     getLastActivity,
+    isIdleTimeoutHeld,
     LAST_ACTIVE_STORAGE_KEY,
     recordActivity
 } from '@utils/session.util';
@@ -83,6 +84,11 @@ export default function useIdleTimeout({
         }
 
         function checkInactivity() {
+            // A held timeout (open exam) counts as activity, so the timers keep restarting
+            if (isIdleTimeoutHeld()) {
+                recordActivity();
+            }
+
             const lastActive = getLastActivity();
             if (!lastActive) {
                 recordActivity();
@@ -172,4 +178,4 @@ export default function useIdleTimeout({
     }, [clearTimers, idleTime, countdownTime]);
 
     return { isIdle, resetTimer };
-}
+}

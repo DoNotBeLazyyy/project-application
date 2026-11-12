@@ -1,7 +1,9 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
+import StatCard from '@components/card/StatCard';
 import CommonProgressBar from '@components/progress-bar/CommonProgressBar';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
+import { YEAR_LEVEL_OPTIONS } from '@constants/year-level.constant';
 import Tooltip from '@mui/material/Tooltip';
 import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
 import {
@@ -17,9 +19,9 @@ import {
 import { getPrograms } from '@services/program/program.service';
 import { assignMyProgram, getCurriculumAudit } from '@services/records.service';
 import { registrarAssignStudentProgramAndYear } from '@services/registrar-verification.service';
-import { useToastStore } from '@stores/toast.store';
 import { CurriculumAudit, CurriculumCourse, CurriculumCourseStatus, CurriculumYearLevel } from '@type/records.type';
-import { ReactNode, useEffect, useState } from 'react';
+import { formatGrade } from '@utils/grade-display.util';
+import { useEffect, useState } from 'react';
 
 const STATUS_VARIANT_MAP: Record<CurriculumCourseStatus, 'success' | 'error' | 'warning' | 'info'> = {
     Completed: 'success',
@@ -29,15 +31,6 @@ const STATUS_VARIANT_MAP: Record<CurriculumCourseStatus, 'success' | 'error' | '
 };
 
 const YEAR_LABELS = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year', '6th Year'];
-
-const YEAR_LEVEL_OPTIONS: CommonSelectOption[] = [
-    { label: '1st Year', value: 1 },
-    { label: '2nd Year', value: 2 },
-    { label: '3rd Year', value: 3 },
-    { label: '4th Year', value: 4 },
-    { label: '5th Year', value: 5 },
-    { label: '6th Year', value: 6 }
-];
 
 interface CurriculumAuditViewProps {
     studentId?: string;
@@ -58,51 +51,12 @@ function formatUnits(value: number | null | undefined | CurriculumCourse): strin
     return String(Number(value));
 }
 
-function formatGrade(course: CurriculumCourse): string {
-    if (course.special_grade) return course.special_grade;
-
-    return course.grade !== null
-        ? Number(course.grade)
-            .toFixed(2)
-        : '—';
+function formatCourseGrade(course: CurriculumCourse): string {
+    return formatGrade(course.grade, course.special_grade);
 }
 
 function yearLabel(level: number): string {
     return YEAR_LABELS[level - 1] ?? `Year ${level}`;
-}
-
-interface AuditMetricCardProps {
-    hint?: string;
-    icon: ReactNode;
-    iconBg: string;
-    iconColor: string;
-    label: string;
-    value: string;
-}
-
-function AuditMetricCard({ hint, icon, iconBg, iconColor, label, value }: AuditMetricCardProps) {
-    return (
-        <div className="bg-slate-50/70 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 flex items-center gap-3 p-3 sm:p-3.5 rounded-2xl shadow-2xs min-w-0 transition-all">
-            <div className={`flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>
-                <span className={`flex items-center justify-center ${iconColor}`}>
-                    {icon}
-                </span>
-            </div>
-            <div className="flex flex-col gap-0.5 min-w-0 text-left">
-                <span className="font-bold text-lg sm:text-xl text-slate-900 dark:text-slate-100 truncate tracking-tight">
-                    {value}
-                </span>
-                <span className="font-medium text-xs text-slate-600 dark:text-slate-400 truncate">
-                    {label}
-                </span>
-                {hint && (
-                    <span className="text-[11px] text-slate-400 dark:text-zinc-500 truncate">
-                        {hint}
-                    </span>
-                )}
-            </div>
-        </div>
-    );
 }
 
 interface YearBlockProps {
@@ -189,7 +143,7 @@ function YearBlock({ yearLevel }: YearBlockProps) {
                                                     {course.taken_label ?? '—'}
                                                 </td>
                                                 <td className="font-mono font-semibold px-4 py-3 text-slate-900 dark:text-slate-100 text-right text-xs sm:text-sm">
-                                                    {formatGrade(course)}
+                                                    {formatCourseGrade(course)}
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <CommonBadgeStatus
@@ -210,6 +164,9 @@ function YearBlock({ yearLevel }: YearBlockProps) {
     );
 }
 
+// Server message when the student has no program (fn_get_curriculum_audit)
+const NO_PROGRAM_PATTERN = /not assigned to a program/i;
+
 export default function CurriculumAuditView({ studentId }: CurriculumAuditViewProps) {
     const [audit, setAudit] = useState<CurriculumAudit | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
@@ -219,15 +176,21 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
     const [selectedYearLevel, setSelectedYearLevel] = useState<number>(1);
     const [isAssigning, setIsAssigning] = useState(false);
     const [isLoadingPrograms, setIsLoadingPrograms] = useState(false);
+    const [loadError, setLoadError] = useState<string | null>(null);
 
     async function fetchAudit() {
         setIsLoaded(false);
+        setLoadError(null);
         const result = await getCurriculumAudit(studentId);
         if (result.data) {
             setAudit(result.data);
         }
         else {
             setAudit(null);
+            // Only "no program yet" leads to the assign form; any other failure is an error
+            if (!NO_PROGRAM_PATTERN.test(result.error?.message ?? '')) {
+                setLoadError(result.error?.message || 'The curriculum audit could not be loaded.');
+            }
         }
         setIsLoaded(true);
     }
@@ -237,7 +200,7 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
     }, [studentId]);
 
     useEffect(function() {
-        if (!isLoaded || (audit && (audit.success ?? Boolean(audit.program?.id)))) return;
+        if (!isLoaded || loadError || (audit && (audit.success ?? Boolean(audit.program?.id)))) return;
 
         async function fetchPrograms() {
             setIsLoadingPrograms(true);
@@ -256,7 +219,7 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
         }
 
         fetchPrograms();
-    }, [isLoaded, audit]);
+    }, [isLoaded, audit, loadError]);
 
     function handlePrint() {
         window.print();
@@ -277,9 +240,8 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
         }
         setIsAssigning(false);
 
+        // The server already shows its own success message
         if (!error) {
-            useToastStore.getState()
-                .showToast('Program assigned successfully.', 'success');
             await fetchAudit();
         }
     }
@@ -288,6 +250,27 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
         return (
             <div className="py-16 text-center text-slate-500 dark:text-slate-400 text-sm">
                 Loading curriculum audit…
+            </div>
+        );
+    }
+
+    if (loadError) {
+        return (
+            <div
+                className="flex flex-col gap-3 items-center justify-center p-6 text-center max-w-lg mx-auto"
+                role="alert"
+            >
+                <h2 className="font-bold text-slate-900 dark:text-slate-100 text-lg">
+                    Curriculum audit not available
+                </h2>
+                <p className="text-slate-500 text-sm">{loadError}</p>
+                <CommonButton
+                    size="small"
+                    variant="contained"
+                    onClick={fetchAudit}
+                >
+                    Try Again
+                </CommonButton>
             </div>
         );
     }
@@ -436,7 +419,7 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
 
                 {/* Metric Summary Cards Grid */}
                 <div className="gap-3 sm:gap-4 grid grid-cols-2 md:grid-cols-5">
-                    <AuditMetricCard
+                    <StatCard
                         hint="Credited of required"
                         icon={<CheckCircleIcon size={22} />}
                         iconBg="bg-emerald-50 dark:bg-emerald-950/60"
@@ -444,7 +427,7 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
                         label="Units Earned"
                         value={`${formatUnits(summary.earned_units)} / ${formatUnits(summary.required_units)}`}
                     />
-                    <AuditMetricCard
+                    <StatCard
                         hint="Current term"
                         icon={<ClockIcon size={22} />}
                         iconBg="bg-amber-50 dark:bg-amber-950/60"
@@ -452,7 +435,7 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
                         label="In Progress"
                         value={formatUnits(summary.in_progress_units)}
                     />
-                    <AuditMetricCard
+                    <StatCard
                         hint="To graduate"
                         icon={<HourglassIcon size={22} />}
                         iconBg="bg-slate-100 dark:bg-zinc-800"
@@ -460,7 +443,7 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
                         label="Remaining"
                         value={formatUnits(summary.remaining_units)}
                     />
-                    <AuditMetricCard
+                    <StatCard
                         hint="Completed courses"
                         icon={<ListChecksIcon size={22} />}
                         iconBg="bg-blue-50 dark:bg-blue-950/60"
@@ -468,7 +451,7 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
                         label="Courses Passed"
                         value={`${summary.completed_courses} / ${summary.total_courses}`}
                     />
-                    <AuditMetricCard
+                    <StatCard
                         hint="Weighted grade"
                         icon={<GraduationCapIcon size={22} />}
                         iconBg="bg-purple-50 dark:bg-purple-950/60"

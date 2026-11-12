@@ -1,20 +1,9 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
-import { MenuOption } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/use-table-configs';
 import { ProgramListRow } from '@type/program/program.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
-interface useProgramTableConfigProps {
-    onEdit: (id: string) => void;
-    onRequestDeleteRow: (id: string) => void;
-    onView: (id: string) => void;
-}
-
-export function useProgramTableConfig({
-    onEdit,
-    onView
-}: useProgramTableConfigProps) {
+export function useProgramTableConfig() {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
@@ -67,27 +56,5 @@ export function useProgramTableConfig({
             }
         ];
     }, []);
-    const tableActionConfig = useMemo(function() {
-        return function(onDelete: (id: string) => void): TableActionConfig<ProgramListRow> {
-            return {
-                onEditClick: (row: ProgramListRow) => () => onEdit(row.id),
-                menuOptions: (row: ProgramListRow): MenuOption[] => [
-                    {
-                        preset: 'view',
-                        onClick: () => onView(row.id)
-                    },
-                    {
-                        preset: 'edit',
-                        onClick: () => onEdit(row.id)
-                    },
-                    {
-                        preset: 'delete',
-                        onClick: () => onDelete(row.id)
-                    }
-                ]
-            };
-        };
-    }, [onEdit, onView]);
-
-    return { columnDefs, tableActionConfig };
+    return { columnDefs };
 }

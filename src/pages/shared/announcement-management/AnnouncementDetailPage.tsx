@@ -2,15 +2,15 @@ import EntityFormPage from '@components/entity-form/EntityFormPage';
 import AnnouncementForm from '@pages/shared/announcement-management/AnnouncementForm';
 import { useAnnouncementBasePath } from '@pages/shared/announcement-management/use-announcement-base-path';
 import {
-    createAnnouncement, deleteAnnouncement, getAnnouncementById, getAnnouncementSectionOptions, updateAnnouncement
+    convertCommunicationItem, createAnnouncement, getAnnouncementById, getAnnouncementSectionOptions, updateAnnouncement
 } from '@services/announcement.service';
-import { createEvent, deleteEvent, getEventById, updateEvent } from '@services/event.service';
+import { createEvent, getEventById, updateEvent } from '@services/event.service';
 import { useAppStore } from '@stores/app.store';
-import { AnnouncementAudience, CommunicationFormValues, CommunicationItemType } from '@type/announcement.type';
+import { useToastStore } from '@stores/toast.store';
+import { AnnouncementAudience, CommunicationFormValues, CommunicationItemType, ConvertedCommunicationItem } from '@type/announcement.type';
 import { EventFormValues } from '@type/event.type';
 import { ServiceResult } from '@type/service.type';
 import { canManageCommunication } from '@utils/communication.util';
-import { getRoleFromPath } from '@utils/role-path.util';
 import { sanitizeUuidArray } from '@utils/uuid.util';
 import { useCallback, useMemo, useState } from 'react';
 import {
@@ -48,7 +48,8 @@ export default function AnnouncementDetailPage() {
     const [searchParams] = useSearchParams();
 
     const currentUserId = useAppStore((s) => s.userProfile?.id || s.session?.user?.id);
-    const currentRole = getRoleFromPath(pathname);
+    // The signed-in role decides what the user may do, not the URL
+    const currentRole = useAppStore((s) => s.activeRole) ?? '';
     const [loadedItem, setLoadedItem] = useState<{
         created_by?: string | null;
         created_by_role?: string | null;
@@ -266,14 +267,13 @@ export default function AnnouncementDetailPage() {
     }, [pathname, searchParams]);
 
     async function handleCreate(values: CommunicationFormValues) {
-        const isFacultyOnly = getRoleFromPath(pathname) === 'Faculty';
+        const isFacultyOnly = currentRole === 'Faculty';
         const audience = isFacultyOnly
             ? 'Section'
             : (values.target_audience || 'Global');
         let sectionIds = (audience === 'Section'
             ? (sanitizeUuidArray(values.section_ids ?? []) ?? [])
             : []);
-        const currentRole = getRoleFromPath(pathname);
 
         if (isFacultyOnly && sectionIds.length === 0) {
             const secRes = await getAnnouncementSectionOptions();
@@ -367,14 +367,10 @@ export default function AnnouncementDetailPage() {
                 title: values.title.trim()
             };
 
+            if (!loadedItemType) return refuseTypeChange();
+
             if (loadedItemType === 'Announcement') {
-                const createRes = await createEvent(eventPayload, currentRole);
-                if (createRes.data) {
-                    await deleteAnnouncement(id);
-                    navigate(basePath, { replace: true });
-                    return { data: createRes.data as unknown as CommunicationFormValues, error: null };
-                }
-                return { data: null, error: createRes.error };
+                return finishTypeChange(await convertCommunicationItem(id, 'Announcement', eventPayload, currentRole));
             }
 
             return updateEvent(id, eventPayload);
@@ -391,17 +387,41 @@ export default function AnnouncementDetailPage() {
             title: values.title.trim()
         };
 
+        if (!loadedItemType) return refuseTypeChange();
+
         if (loadedItemType === 'Event') {
-            const createRes = await createAnnouncement(annPayload, currentRole);
-            if (createRes.data) {
-                await deleteEvent(id);
-                navigate(basePath, { replace: true });
-                return { data: createRes.data as unknown as CommunicationFormValues, error: null };
-            }
-            return { data: null, error: createRes.error };
+            return finishTypeChange(await convertCommunicationItem(id, 'Event', annPayload, currentRole));
         }
 
         return updateAnnouncement(id, annPayload);
+    }
+
+    /**
+     * Without the loaded type the page cannot tell an update from a type change, so it stops.
+     */
+    function refuseTypeChange() {
+        const message = 'This item has not finished loading, so its type cannot be changed. Reload the page and try again.';
+        // The form page does not show returned errors itself
+        useToastStore.getState()
+            .showToast(message, 'error');
+
+        return {
+            data: null,
+            error: {
+                code: null, message, status: null
+            }
+        };
+    }
+
+    /**
+     * Leaves the form once the server swapped the item's type. The server does the whole
+     * change in one step, so on failure nothing changed and its error was already shown.
+     */
+    function finishTypeChange(result: ServiceResult<ConvertedCommunicationItem>) {
+        if (!result.data) return { data: null, error: result.error };
+
+        navigate(basePath, { replace: true });
+        return { data: result.data as unknown as CommunicationFormValues, error: null };
     }
 
     const isStudent = currentRole === 'Student';

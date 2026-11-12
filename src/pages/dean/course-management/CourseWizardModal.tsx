@@ -161,6 +161,16 @@ export default function CourseWizardModal({
             }
         }
 
+        // Same rule as the CSV import: a course needs at least one unit
+        const totalUnits = courseTypes.reduce((sum, ct) => sum + (Number(ct.units) || 0), 0);
+        if (!hasError && totalUnits <= 0) {
+            methods.setError('course_types.0.units' as FieldPath<CourseFormValues>, {
+                type: 'manual',
+                message: 'At least one course type must have more than 0 units.'
+            });
+            hasError = true;
+        }
+
         if (hasError) {
             formErrors(methods.formState.errors, methods);
             return false;

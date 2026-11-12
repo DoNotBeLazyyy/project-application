@@ -4,6 +4,7 @@ import AnnouncementsFeedCard from '@components/dashboard/AnnouncementsFeedCard';
 import DashboardHeader from '@components/dashboard/DashboardHeader';
 import EventsFeedCard from '@components/dashboard/EventsFeedCard';
 import useDashboardFeeds from '@hooks/use-dashboard-feeds';
+import DeanNoDepartmentBanner from '@pages/dean/components/DeanNoDepartmentBanner';
 import {
     BookOpenIcon,
     ChalkboardTeacherIcon,
@@ -83,9 +84,9 @@ const STAT_CARDS: DeanStatCard[] = [
         icon: <WarningIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-error-50)]',
         iconColor: 'text-[var(--mui-palette-error-main)]',
+        // Counts faculty and room clashes; no page lists room clashes yet, so the card does not link
         label: 'Schedule Conflicts',
-        statKey: 'schedule_conflicts',
-        to: '/dean/faculty-load'
+        statKey: 'schedule_conflicts'
     },
     {
         icon: <WarningCircleIcon size={24} />,
@@ -128,6 +129,8 @@ export default function DeanDashboard() {
                 term={dashboard?.term}
                 title="Dashboard"
             />
+
+            <DeanNoDepartmentBanner />
 
             <div className="gap-3 sm:gap-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
                 {STAT_CARDS.map((card) => (

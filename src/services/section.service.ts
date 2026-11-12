@@ -2,8 +2,8 @@ import { callRpc } from '@services/supabase.wrapper';
 import { BulkImportError, BulkImportRowItem, DetailedBulkImportResult } from '@type/bulk-import.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import {
-    DayOfWeek,
-    SectionBulkRow, SectionFilterValues, SectionFormValues, SectionGradingComponentOverride, SectionGradingPeriodOverride, SectionListRow, SectionOption, SectionScheduleBlock, SectionScheduleSlot
+    SavedSectionRow, SectionBulkRow, SectionDetail, SectionFilterValues, SectionFormValues, SectionGradingComponentOverride, SectionGradingPeriodOverride, SectionListRow, SectionOption, SectionScheduleBlock,
+    SectionScheduleSlot
 } from '@type/section.type';
 import { ServiceResult } from '@type/service.type';
 import { nullIfBlank } from '@utils/uuid.util';
@@ -129,18 +129,6 @@ export async function saveSectionGradingOverride(
     });
 }
 
-export interface TermOption {
-    id: string;
-    label: string;
-    is_active_academic_year?: boolean;
-}
-
-export interface FacultyOption {
-    id: string;
-    full_name: string;
-    role_label: string;
-}
-
 export async function listSections(
     page: number,
     size: number,
@@ -163,6 +151,9 @@ export async function listSections(
             : null,
         p_statuses: filters?.statuses?.length
             ? filters.statuses
+            : null,
+        p_program_ids: filters?.program_ids?.length
+            ? filters.program_ids
             : null
     });
 }
@@ -193,24 +184,29 @@ export async function getExistingSectionOfferings(): Promise<ServiceResult<Secti
 
 export async function getSectionById(
     sectionId: string
-): Promise<ServiceResult<SectionFormValues>> {
-    return callRpc<SectionFormValues>('fn_get_section_by_id', {
+): Promise<ServiceResult<SectionDetail>> {
+    return callRpc<SectionDetail>('fn_get_section_by_id', {
+        p_section_id: sectionId
+    });
+}
+
+/**
+ * Puts a section back on the term's default grading. Periods that already have grades or
+ * assessments are kept as they are.
+ *
+ * @param sectionId - Section whose override is removed.
+ * @returns
+ */
+export async function resetSectionGradingOverride(
+    sectionId: string
+): Promise<ServiceResult<null>> {
+    return callRpc<null>('fn_reset_section_grading_override', {
         p_section_id: sectionId
     });
 }
 
 export async function getSections(): Promise<ServiceResult<SectionOption[]>> {
     return callRpc<SectionOption[]>('fn_get_sections');
-}
-
-export async function getTerms(): Promise<ServiceResult<TermOption[]>> {
-    return callRpc<TermOption[]>('fn_get_terms');
-}
-
-export async function getFacultyOptions(): Promise<ServiceResult<FacultyOption[]>> {
-    return callRpc<FacultyOption[]>('fn_get_users_by_roles', {
-        p_role_codes: ['Faculty']
-    });
 }
 
 export async function createSection(
@@ -353,42 +349,6 @@ export function parseGradingPeriodsSchema(input?: string): SectionGradingPeriodO
     return periods;
 }
 
-function parseDaysOfWeek(str?: string): DayOfWeek[] {
-    if (!str || !str.trim()) return [];
-    const tokens = str.split(/[,;\s]+/)
-        .map((t) => t.trim()
-            .toLowerCase())
-        .filter(Boolean);
-    const validDays: DayOfWeek[] = [];
-
-    const map: Record<string, DayOfWeek> = {
-        fri: 'Friday',
-        friday: 'Friday',
-        mon: 'Monday',
-        monday: 'Monday',
-        sat: 'Saturday',
-        saturday: 'Saturday',
-        sun: 'Sunday',
-        sunday: 'Sunday',
-        thu: 'Thursday',
-        thur: 'Thursday',
-        thurs: 'Thursday',
-        thursday: 'Thursday',
-        tue: 'Tuesday',
-        tues: 'Tuesday',
-        tuesday: 'Tuesday',
-        wed: 'Wednesday',
-        wednesday: 'Wednesday'
-    };
-
-    for (const tok of tokens) {
-        if (map[tok] && !validDays.includes(map[tok])) {
-            validDays.push(map[tok]);
-        }
-    }
-    return validDays;
-}
-
 export async function bulkCreateSections(
     sections: SectionBulkRow[]
 ): Promise<DetailedBulkImportResult> {
@@ -403,17 +363,16 @@ export async function bulkCreateSections(
         provisioned_count?: number;
         created_count?: number;
         updated_count?: number;
-        created_rows?: BulkImportRowItem[];
-        updated_rows?: BulkImportRowItem[];
+        created_rows?: SavedSectionRow[];
+        updated_rows?: SavedSectionRow[];
         errors: BulkImportError[];
     }>('fn_bulk_create_sections', { p_sections: mappedSections });
 
     let provisionedCount = 0;
     let updatedCount = 0;
-    let createdRows: BulkImportRowItem[] = [];
-    let updatedRows: BulkImportRowItem[] = [];
+    let createdRows: SavedSectionRow[] = [];
+    let updatedRows: SavedSectionRow[] = [];
     let structuredErrors: BulkImportError[] = [];
-    const structuredConflicts: BulkImportError[] = [];
 
     if (!result.error && result.data) {
         // The live function reports the count as `provisioned`
@@ -430,120 +389,51 @@ export async function bulkCreateSections(
         };
     }
 
-    const facultyScheduleTracker: {
-        row: number;
-        course_code: string;
-        section_code: string;
-        faculty_email: string;
-        days: DayOfWeek[];
-        start: string;
-        end: string;
-    }[] = [];
+    // fn_bulk_create_sections already saved each row's schedule (with the term's faculty and
+    // room conflict check); only custom grading periods are applied here.
+    const savedRows = [...createdRows, ...updatedRows];
+    for (const saved of savedRows) {
+        const row = mappedSections[Number(saved.row) - 1];
+        if (!row || !saved.section_id || !row.grading_periods?.trim()) continue;
 
-    const conflictRows: BulkImportRowItem[] = [];
+        const customPeriods = parseGradingPeriodsSchema(row.grading_periods);
+        if (customPeriods.length === 0) continue;
 
-    if (provisionedCount > 0) {
-        const sectionsRes = await getSections();
-        const allSections = sectionsRes.data || [];
-        // The function reports the final (possibly generated) code of every saved row
-        const savedCodes = new Map<number, string>(
-            [...createdRows, ...updatedRows].map((saved) => [Number(saved.row), String(saved.section_code ?? '')])
-        );
-
-        for (let i = 0; i < mappedSections.length; i++) {
-            const row = {
-                ...mappedSections[i],
-                section_code: savedCodes.get(i + 1) || mappedSections[i].section_code
-            };
-            const hasError = structuredErrors.some((e) => e.row === i + 1);
-            if (hasError) continue;
-
-            const createdSec = allSections.find((s) => s.section_code === row.section_code);
-            if (!createdSec) continue;
-
-            // 1. Process Schedule & Conflict Detection
-            const days = parseDaysOfWeek(row.schedule_days);
-            if (days.length > 0 && row.schedule_time_start && row.schedule_time_end) {
-                const slotStart = row.schedule_time_start.slice(0, 5);
-                const slotEnd = row.schedule_time_end.slice(0, 5);
-                const slots: SectionScheduleSlot[] = days.map((day) => ({
-                    day_of_week: day,
-                    room: row.schedule_room || row.room || null,
-                    time_end: slotEnd,
-                    time_start: slotStart
-                }));
-                await saveSectionSchedules(createdSec.id, slots);
-
-                if (row.faculty_email) {
-                    const email = row.faculty_email.trim()
-                        .toLowerCase();
-                    const start = row.schedule_time_start.slice(0, 5);
-                    const end = row.schedule_time_end.slice(0, 5);
-
-                    const conflict = facultyScheduleTracker.find((prev) =>
-                        prev.faculty_email === email
-                        && prev.days.some((d) => days.includes(d))
-                        && ((start >= prev.start && start < prev.end) || (end > prev.start && end <= prev.end) || (start <= prev.start && end >= prev.end)));
-
-                    if (conflict) {
-                        structuredConflicts.push({
-                            code: 'FACULTY_SCHEDULE_CONFLICT',
-                            message: `Faculty ${row.faculty_email} double-booked across ${row.course_code} (${row.section_code}) and Row ${conflict.row} (${conflict.course_code}) on ${row.schedule_days} ${start}-${end}`,
-                            row: i + 1
-                        });
-                        conflictRows.push({
-                            conflict_with: `Row #${conflict.row} (${conflict.course_code} - ${conflict.section_code})`,
-                            course_code: row.course_code,
-                            days: row.schedule_days,
-                            faculty_email: row.faculty_email,
-                            message: `Faculty double-booked with Row #${conflict.row} (${conflict.section_code}) on ${row.schedule_days} ${start}-${end}`,
-                            room: row.schedule_room || row.room || '—',
-                            row: i + 1,
-                            section_code: row.section_code,
-                            time: `${start} - ${end}`
-                        });
-                    }
-
-                    facultyScheduleTracker.push({
-                        course_code: row.course_code,
-                        days,
-                        end,
-                        faculty_email: email,
-                        row: i + 1,
-                        section_code: row.section_code,
-                        start
-                    });
-                }
-            }
-
-            // 2. Process Custom Grading Periods Schema
-            if (row.grading_periods && row.grading_periods.trim()) {
-                const customPeriods = parseGradingPeriodsSchema(row.grading_periods);
-                if (customPeriods.length > 0) {
-                    const gradingRes = await saveSectionGradingOverride(createdSec.id, customPeriods);
-                    if (gradingRes.error) {
-                        structuredErrors.push({
-                            code: row.section_code,
-                            message: `Section saved, but its grading periods were not applied: ${gradingRes.error.message}`,
-                            row: i + 1
-                        });
-                    }
-                }
-            }
+        const gradingRes = await saveSectionGradingOverride(saved.section_id, customPeriods);
+        if (gradingRes.error) {
+            structuredErrors.push({
+                code: saved.section_code || row.section_code || 'unknown',
+                message: `Section saved, but its grading periods were not applied: ${gradingRes.error.message}`,
+                row: Number(saved.row)
+            });
         }
     }
 
-    const conflictingRowNumbers = new Set(structuredConflicts.map((c) => c.row));
-    const nonConflictingCreatedRows = createdRows.filter((r) => !conflictingRowNumbers.has(r.row));
+    // Rows the server skipped because of a faculty or room clash
+    const structuredConflicts = structuredErrors.filter((error) => error.code === 'SCHEDULE_CONFLICT');
+    const conflictRows: BulkImportRowItem[] = structuredConflicts.map((conflict) => {
+        const row = mappedSections[conflict.row - 1];
+
+        return {
+            course_code: row?.course_code,
+            days: row?.schedule_days,
+            faculty_email: row?.faculty_email,
+            message: conflict.message,
+            room: row?.schedule_room || row?.room || '—',
+            row: conflict.row,
+            section_code: row?.section_code,
+            time: `${row?.schedule_time_start ?? ''} - ${row?.schedule_time_end ?? ''}`
+        };
+    });
 
     return {
         conflictRows,
         conflicts_count: structuredConflicts.length,
-        created_count: nonConflictingCreatedRows.length,
-        createdRows: nonConflictingCreatedRows,
+        created_count: createdRows.length,
+        createdRows,
         errors: structuredErrors.map((error) =>
             `Row ${error.row} (${error.code || 'unknown'}): ${error.message}`),
-        provisioned_count: nonConflictingCreatedRows.length + updatedCount,
+        provisioned_count: provisionedCount,
         structuredConflicts,
         structuredErrors,
         updated_count: updatedCount,

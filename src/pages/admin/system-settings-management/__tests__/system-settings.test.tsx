@@ -15,6 +15,7 @@ vi.mock('@services/system-settings.service', () => ({
 }));
 
 vi.mock('@services/storage.service', () => ({
+    deleteFile: vi.fn(),
     uploadFile: vi.fn()
 }));
 

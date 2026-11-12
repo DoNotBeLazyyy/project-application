@@ -111,17 +111,24 @@ export interface BulkEnrollStudentParams {
     override_prerequisites: boolean;
 }
 
-export interface BulkEnrollSectionError {
+/** A section the workspace asked for that could not be enrolled, with the reason. */
+export interface SkippedEnrollmentSection {
     section_id: string;
-    code: string;
+    section_code: string;
+    code: string | null;
     message: string;
 }
 
-export interface BulkEnrollStudentResult {
+/** Result of fn_save_student_enrollment_changes. */
+export interface SaveEnrollmentChangesResult {
     success: boolean;
-    message: string;
+    /** Present when every change went through; the wrapper shows it as a success toast. */
+    message?: string;
+    /** Present instead of message when some sections were skipped. */
+    summary?: string;
     enrolled_count: number;
-    errors: BulkEnrollSectionError[];
+    dropped_count: number;
+    errors: SkippedEnrollmentSection[];
 }
 
 export interface EnrollmentBulkRow {

@@ -2,6 +2,7 @@ import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
+import DeanNoDepartmentBanner from '@pages/dean/components/DeanNoDepartmentBanner';
 import CourseFilterForm from '@pages/dean/course-management/CourseFilterForm';
 import CourseGridCard from '@pages/dean/course-management/CourseGridCard';
 import CourseWizardModal from '@pages/dean/course-management/CourseWizardModal';
@@ -30,7 +31,7 @@ const FILTER_FORM_ID = 'filter-course-form';
 // resolve by code or name, and at least one of lecture/laboratory units must be above 0.
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     {
-        key: 'code', label: 'Course Code', hint: 'Optional - leave blank to auto-generate; an existing code updates that course', sample: '', required: false, aliases: ['course', 'subject_code', 'code']
+        key: 'code', label: 'Course Code', hint: 'Optional - leave blank to auto-generate; an existing code of your department updates that course (codes of other departments are refused)', sample: '', required: false, aliases: ['course', 'subject_code', 'code']
     },
     {
         key: 'title', label: 'Course Title', hint: 'e.g. Introduction to Computing', sample: 'Introduction to Computing', aliases: ['course_title', 'name', 'title']
@@ -57,7 +58,7 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
         key: 'is_active', label: 'Is Active', hint: 'Optional - false, no, 0 or inactive marks it inactive; defaults to true', sample: 'true', required: false, aliases: ['active', 'status']
     },
     {
-        key: 'prerequisites', label: 'Prerequisites', hint: 'Optional - CODE:Type:MinGrade separated by |, Type is Required, Co-requisite or Recommended, e.g. COCS101:Required:3.00|COCS102:Co-requisite', sample: 'COCS101:Required:3.00', required: false, aliases: ['prereq', 'prereqs']
+        key: 'prerequisites', label: 'Prerequisites', hint: 'Optional - CODE:Type:MinGrade separated by |, Type is Required, Co-requisite or Recommended; may name a course elsewhere in the same file, e.g. COCS101:Required:3.00|COCS102:Co-requisite', sample: 'COCS101:Required:3.00', required: false, aliases: ['prereq', 'prereqs']
     }
 ];
 
@@ -99,6 +100,7 @@ export default function CourseManagement() {
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [editStep, setEditStep] = useState<number>(1);
+    const [isSaving, setIsSaving] = useState(false);
 
     const createMethods = useForm<CourseFormValues>({
         defaultValues: defaultFormValues
@@ -187,11 +189,7 @@ export default function CourseManagement() {
         updateMethods.reset(defaultFormValues);
     }
 
-    const { columnDefs, tableActionConfig } = useCourseTableConfig({
-        onEdit: handleOpenUpdate,
-        onRequestDeleteRow: function() {},
-        onView: handleOpenView
-    });
+    const { columnDefs } = useCourseTableConfig();
 
     async function fetchCourses(
         page: number,
@@ -202,19 +200,33 @@ export default function CourseManagement() {
         return listCourses(page, size, search, sort, activeFilters);
     }
 
-    async function handleCreateSubmit(values: CourseFormValues) {
-        const result = await createCourse({
-            ...values,
-            title: values.title.trim(),
-            description: values.description
-                ? values.description.trim()
-                : ''
-        });
+    /**
+     * Imports the CSV rows. Rows saved with a prerequisite warning are listed in the import results.
+     */
+    async function handleBulkImport(rows: CourseBulkRow[]) {
+        return bulkCreateCourses(rows);
+    }
 
-        if (!result.error) {
-            createMethods.reset(defaultFormValues);
-            setIsCreateOpen(false);
-            setActiveFilters((prev) => ({ ...prev } as CourseFilterValues));
+    async function handleCreateSubmit(values: CourseFormValues) {
+        if (isSaving) return;
+        setIsSaving(true);
+        try {
+            const result = await createCourse({
+                ...values,
+                title: values.title.trim(),
+                description: values.description
+                    ? values.description.trim()
+                    : ''
+            });
+
+            if (!result.error) {
+                createMethods.reset(defaultFormValues);
+                setIsCreateOpen(false);
+                setActiveFilters((prev) => ({ ...prev } as CourseFilterValues));
+            }
+        }
+        finally {
+            setIsSaving(false);
         }
     }
 
@@ -228,24 +240,32 @@ export default function CourseManagement() {
     }
 
     async function handleUpdateSubmit(values: CourseFormValues) {
-        if (!selectedId) return;
+        if (!selectedId || isSaving) return;
 
-        const result = await updateCourse(selectedId, {
-            ...values,
-            title: values.title.trim(),
-            description: values.description
-                ? values.description.trim()
-                : ''
-        });
+        setIsSaving(true);
+        try {
+            const result = await updateCourse(selectedId, {
+                ...values,
+                title: values.title.trim(),
+                description: values.description
+                    ? values.description.trim()
+                    : ''
+            });
 
-        if (!result.error) {
-            handleCloseUpdate();
-            setActiveFilters((prev) => ({ ...prev } as CourseFilterValues));
+            if (!result.error) {
+                handleCloseUpdate();
+                setActiveFilters((prev) => ({ ...prev } as CourseFilterValues));
+            }
+        }
+        finally {
+            setIsSaving(false);
         }
     }
 
     return (
         <div className="flex flex-col gap-4 h-full">
+            <DeanNoDepartmentBanner />
+
             <CommonTableCard<CourseListRow>
                 cardHeaderProps={{
                     subheader: 'Manage courses and their prerequisites.',
@@ -299,7 +319,6 @@ export default function CourseManagement() {
                     );
                 }}
                 sortColumns={SORT_COLUMNS}
-                tableActionConfig={tableActionConfig}
                 tableProps={{
                     hasCheckbox: true,
                     leadingColumnDefs: columnDefs
@@ -322,7 +341,7 @@ export default function CourseManagement() {
                 templateColumns={BULK_IMPORT_TEMPLATE_COLUMNS}
                 templateDownloadFilename="courses_template.csv"
                 title="Bulk Import Courses"
-                onBulkImport={bulkCreateCourses}
+                onBulkImport={handleBulkImport}
                 onClose={function() {
                     setIsBulkImportOpen(false);
                 }}
@@ -346,6 +365,7 @@ export default function CourseManagement() {
 
             {/* Create Course Wizard Modal */}
             <CourseWizardModal
+                isSaving={isSaving}
                 methods={createMethods}
                 open={isCreateOpen}
                 onClose={function() {
@@ -360,6 +380,7 @@ export default function CourseManagement() {
                 courseId={selectedId}
                 initialStep={editStep}
                 isCodeDisabled
+                isSaving={isSaving}
                 methods={updateMethods}
                 open={isUpdateOpen}
                 onClose={handleCloseUpdate}

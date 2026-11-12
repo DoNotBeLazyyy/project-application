@@ -5,8 +5,9 @@ import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
+import { attendanceStatusVariant } from '@constants/status-badge.constant';
 import { useFormDraft } from '@hooks/use-form-draft';
-import { attendanceStatusVariant, formatSessionDate } from '@pages/faculty/sections/student-detail/studentDetailFormat';
+import { formatSessionDate } from '@pages/faculty/sections/student-detail/studentDetailFormat';
 import { XIcon } from '@phosphor-icons/react';
 import { saveAttendanceRecords } from '@services/faculty.service';
 import { useToastStore } from '@stores/toast.store';
@@ -111,13 +112,14 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
         setIsSaving(true);
 
         try {
+            // Silent so this modal shows the one success or error toast
             const result = await saveAttendanceRecords(record.session_id, [
                 {
                     id: record.record_id,
                     remarks: values.remarks.trim(),
                     status: values.status
                 }
-            ]);
+            ], { silent: true });
 
             if (result.error) {
                 useToastStore.getState()

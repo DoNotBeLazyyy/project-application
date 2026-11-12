@@ -55,6 +55,15 @@ export interface ProgramOption {
     code: string;
     label: string;
     department_id?: string;
+    /** Program length in years (1-6). */
+    years_duration?: number;
+}
+
+/** A program in a picker, with its length so year level choices can stop there. */
+export interface ProgramOptionWithDuration {
+    label: string;
+    value: string;
+    years_duration?: number;
 }
 
 export interface ProgramFilterValues {

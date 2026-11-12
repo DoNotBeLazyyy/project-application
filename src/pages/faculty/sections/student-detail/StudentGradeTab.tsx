@@ -1,7 +1,9 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
+import { gradeStatusVariant } from '@constants/status-badge.constant';
 import StudentGradeBreakdownModal from '@pages/faculty/sections/grading/StudentGradeBreakdownModal';
-import { formatScore, gradeStatusVariant } from '@pages/faculty/sections/student-detail/studentDetailFormat';
+import { formatScore } from '@pages/faculty/sections/student-detail/studentDetailFormat';
 import { StudentEvaluationGrade } from '@type/faculty.type';
+import { formatGrade } from '@utils/grade-display.util';
 import { useState } from 'react';
 
 interface StudentGradeTabProps {
@@ -28,11 +30,7 @@ export default function StudentGradeTab({ enrollmentId, grades }: StudentGradeTa
                     : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-4">
                             {grades.map((grade) => {
-                                const transmuted
-                                    = grade.special_grade
-                                    ?? (grade.transmuted_grade !== null && grade.transmuted_grade !== undefined
-                                        ? String(grade.transmuted_grade)
-                                        : '—');
+                                const transmuted = formatGrade(grade.transmuted_grade, grade.special_grade);
 
                                 return (
                                     <div

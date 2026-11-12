@@ -1,6 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonProgressBar from '@components/progress-bar/CommonProgressBar';
-import { formatDate, formatPercent, formatScore, submissionStatusVariant } from '@pages/faculty/sections/student-detail/studentDetailFormat';
+import { submissionStatusVariant } from '@constants/status-badge.constant';
+import { formatDate, formatPercent, formatScore } from '@pages/faculty/sections/student-detail/studentDetailFormat';
 import { CaretRightIcon, FileTextIcon } from '@phosphor-icons/react';
 import { MyGradeBreakdownComponent, MyGradeBreakdownItem } from '@type/student-portal.type';
 import { useState } from 'react';
@@ -89,16 +90,9 @@ export default function GradeBreakdownComponentPanel({ component, defaultExpande
     const [isExpanded, setIsExpanded] = useState<boolean>(defaultExpanded);
 
     const hasItems = component.items.length > 0;
-    const totalItemMax = component.items.reduce(function(acc, item) {
-        return acc + (item.max_points || 0);
-    }, 0);
-    const effectiveMaxPoints = component.max_points > 0
-        ? component.max_points
-        : totalItemMax;
-
-    const percentage = effectiveMaxPoints > 0
-        ? (component.earned_points / effectiveMaxPoints) * 100
-        : (component.percentage ?? 0);
+    // Show the server's numbers; recomputing them here could disagree with the grade
+    const effectiveMaxPoints = component.max_points;
+    const percentage = component.percentage ?? 0;
 
     const rotationClass = isExpanded
         ? 'rotate-90'

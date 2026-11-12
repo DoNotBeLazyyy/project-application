@@ -87,7 +87,7 @@ describe('SubjectGradeList', () => {
             .toBeInTheDocument();
         expect(screen.getByText('90'))
             .toBeInTheDocument();
-        expect(screen.getByText('1.5'))
+        expect(screen.getByText('1.50'))
             .toBeInTheDocument();
     });
 

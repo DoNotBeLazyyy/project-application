@@ -21,8 +21,8 @@ import {
     createSection,
     flattenScheduleBlocksToSlots,
     getSectionById,
-    getSections,
     groupScheduleSlotsToBlocks,
+    resetSectionGradingOverride,
     saveSectionGradingOverride,
     saveSectionSchedules,
     updateSection
@@ -78,6 +78,11 @@ export default function SectionWizardModal({
     const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
     const [isEditable, setIsEditable] = useState(true);
     const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
+    // Set once a new section is created, so a retry after a failed later step updates it
+    // instead of creating a duplicate
+    const [createdSectionId, setCreatedSectionId] = useState<string | null>(null);
+    // Whether the loaded section already had a grading override
+    const [hasSavedOverride, setHasSavedOverride] = useState(false);
 
     const methods = useForm<SectionFormValues>({
         ...DEFAULT_FORM_OPTIONS,
@@ -99,6 +104,8 @@ export default function SectionWizardModal({
             setIsReadOnly(initialReadOnly);
             setIsEditable(true);
             setIsConfirmCloseOpen(false);
+            setCreatedSectionId(null);
+            setHasSavedOverride(false);
             return;
         }
 
@@ -113,6 +120,8 @@ export default function SectionWizardModal({
                         setIsEditable(data.is_active_academic_year !== false);
                         const rawSlots = (data.schedules || []) as unknown as SectionScheduleSlot[];
                         const scheduleBlocks = groupScheduleSlotsToBlocks(rawSlots);
+                        const isOverridden = data.is_grading_overridden === true;
+                        setHasSavedOverride(isOverridden);
                         reset({
                             term_id: data.term_id || '',
                             course_id: data.course_id || '',
@@ -122,10 +131,12 @@ export default function SectionWizardModal({
                             max_slots: String(data.max_slots ?? 40),
                             status: data.status || 'Open',
                             is_active_academic_year: data.is_active_academic_year,
-                            override_grading_schema: false,
+                            override_grading_schema: isOverridden,
                             grading_override_mode: 'custom',
                             source_section_id: '',
-                            grading_periods: [],
+                            grading_periods: isOverridden
+                                ? data.grading_periods ?? []
+                                : [],
                             schedules: scheduleBlocks.length > 0
                                 ? scheduleBlocks
                                 : defaultFormValues.schedules
@@ -339,7 +350,7 @@ export default function SectionWizardModal({
                 facultyId: values.faculty_id,
                 sectionRoom: values.room,
                 slots: flatSlots,
-                sectionId
+                sectionId: sectionId || createdSectionId
             });
             if (conflictRes.error) return;
             const conflict = conflictRes.data?.[0];
@@ -356,24 +367,19 @@ export default function SectionWizardModal({
                 return;
             }
 
-            let targetSectionId = sectionId;
+            const existingSectionId = sectionId || createdSectionId;
+            let targetSectionId = existingSectionId;
 
-            if (sectionId) {
-                const result = await updateSection(sectionId, values);
+            // create/update toast their own success message
+            if (existingSectionId) {
+                const result = await updateSection(existingSectionId, values);
                 if (result.error) return;
             }
             else {
                 const result = await createSection(values);
                 if (result.error) return;
-                targetSectionId = result.data?.id;
-
-                if (!targetSectionId) {
-                    const sectionsRes = await getSections();
-                    const newSection = sectionsRes.data?.find(
-                        (s) => s.section_code === values.section_code
-                    );
-                    targetSectionId = newSection?.id;
-                }
+                targetSectionId = result.data?.id ?? null;
+                setCreatedSectionId(targetSectionId);
             }
 
             if (targetSectionId) {
@@ -385,15 +391,13 @@ export default function SectionWizardModal({
                     const gradingRes = await saveSectionGradingOverride(targetSectionId, values.grading_periods);
                     if (gradingRes.error) return;
                 }
+                else if (!values.override_grading_schema && hasSavedOverride) {
+                    // "Default (Inherit)" removes the saved override
+                    const resetRes = await resetSectionGradingOverride(targetSectionId);
+                    if (resetRes.error) return;
+                }
             }
 
-            useToastStore.getState()
-                .showToast(
-                    sectionId
-                        ? 'Section updated successfully.'
-                        : 'Section created successfully.',
-                    'success'
-                );
             draftGuard.clearDraft();
             onSuccess();
             onClose();

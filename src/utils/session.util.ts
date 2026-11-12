@@ -5,6 +5,34 @@ export const DEFAULT_COUNTDOWN_MS = 60 * 1000; // 1 minute
 export const TOTAL_INACTIVITY_LIMIT_MS = DEFAULT_IDLE_TIMEOUT_MS + DEFAULT_COUNTDOWN_MS; // 31 minutes
 export const LAST_ACTIVE_STORAGE_KEY = 'au_jas_last_active_at';
 
+// While a page holds the idle timeout (an open exam), the user is never signed out for being idle
+let idleHoldUntil = 0;
+
+/**
+ * Keeps the user signed in while they are idle, for example while reading an exam question.
+ *
+ * @param untilMs - When the hold ends, as a timestamp. Leave out to hold until released.
+ */
+export function holdIdleTimeout(untilMs: number = Number.POSITIVE_INFINITY): void {
+    idleHoldUntil = untilMs;
+    recordActivity();
+}
+
+/**
+ * Ends a hold started with holdIdleTimeout, so the normal idle sign-out applies again.
+ */
+export function releaseIdleTimeout(): void {
+    idleHoldUntil = 0;
+    recordActivity();
+}
+
+/**
+ * Tells whether a page is holding the idle timeout right now.
+ */
+export function isIdleTimeoutHeld(): boolean {
+    return Date.now() < idleHoldUntil;
+}
+
 /**
  * Saves the current timestamp as the user's latest activity in both localStorage and cookies.
  */

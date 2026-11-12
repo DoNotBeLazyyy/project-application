@@ -52,7 +52,7 @@ describe('Entity Code Auto-Update on Name/Label Change', () => {
                 .toBe('COCS');
         });
 
-        it('updates department code in edit mode when department name is changed', () => {
+        it('keeps the department code in edit mode when the name is changed', () => {
             const { container } = render(
                 <TestWrapper
                     initialValues={{
@@ -68,12 +68,12 @@ describe('Entity Code Auto-Update on Name/Label Change', () => {
             expect(codeInput.value)
                 .toBe('COCS');
 
-            // When name changes, code is regenerated
+            // Renaming keeps the code, since other records and CSV files refer to it
             act(() => {
                 fireEvent.change(nameInput, { target: { value: 'College of Engineering' } });
             });
             expect(codeInput.value)
-                .toBe('COENG');
+                .toBe('COCS');
 
             // When restored to original name, original code is restored
             act(() => {

@@ -1,5 +1,5 @@
 import { CalendarDay } from '@type/common/calendar.type';
-import { formatDate } from '@utils/date.util';
+import { toIsoDateKey } from '@utils/date.util';
 
 /**
  * getCalendarDays
@@ -36,7 +36,7 @@ export function getCalendarDays(
 
         days.push({
             day: dateObj.getDate(),
-            date: formatDate(dateObj),
+            date: toIsoDateKey(dateObj),
             isCurrentMonth: isCurrentMonth,
             isToday: today.toDateString() === dateObj.toDateString()
         });

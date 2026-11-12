@@ -55,6 +55,14 @@ export default function FilterAuditLogForm({
         {
             label: 'Date To',
             name: 'date_to',
+            rules: {
+                // YYYY-MM-DD strings sort the same way as the dates they hold
+                validate: (value: unknown, formValues: AuditLogFilterValues) => {
+                    const dateTo = String(value || '');
+                    const dateFrom = String(formValues.date_from || '');
+                    return !dateTo || !dateFrom || dateFrom <= dateTo || 'Date To must be on or after Date From';
+                }
+            },
             type: 'date'
         }
     ];

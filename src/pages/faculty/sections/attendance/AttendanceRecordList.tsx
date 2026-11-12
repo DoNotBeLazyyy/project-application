@@ -57,7 +57,8 @@ export default function AttendanceRecordList({
 }: AttendanceRecordListProps) {
     const [searchQuery, setSearchQuery] = useState('');
 
-    const formattedSessionDate = new Date(selectedSession.session_date)
+    // Parse as a local date; new Date('YYYY-MM-DD') reads it as UTC midnight
+    const formattedSessionDate = new Date(`${selectedSession.session_date.slice(0, 10)}T00:00:00`)
         .toLocaleDateString(undefined, {
             weekday: 'long',
             year: 'numeric',

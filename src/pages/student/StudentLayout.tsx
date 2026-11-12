@@ -1,5 +1,6 @@
 import RoleShell from '@components/layout/RoleShell';
 import StudentProfilePromptModal from '@components/modal/StudentProfilePromptModal';
+import { notifyStudentProfileSaved, onStudentProfilePromptOpen } from '@pages/student/student-profile-prompt';
 import {
     BooksIcon, CalendarBlankIcon, CalendarDotsIcon, ChartLineUpIcon, ClipboardTextIcon, ExamIcon, GraduationCapIcon, HouseIcon, ListChecksIcon, MegaphoneIcon
 } from '@phosphor-icons/react';
@@ -33,6 +34,21 @@ export default function StudentLayout() {
     useEffect(function() {
         loadProfile();
     }, [loadProfile, userProfile?.profile_completed]);
+
+    // The dashboard's "Set Up Student Profile" button opens this same prompt
+    useEffect(function() {
+        return onStudentProfilePromptOpen(function() {
+            setIsPromptOpen(true);
+        });
+    }, []);
+
+    /**
+     * Reloads the profile here and lets open pages refresh theirs.
+     */
+    const handleProfileSaved = useCallback(async function() {
+        await loadProfile();
+        notifyStudentProfileSaved();
+    }, [loadProfile]);
 
     const navSections = useMemo((): SideBarSection[] => [
         {
@@ -131,7 +147,7 @@ export default function StudentLayout() {
                 onClose={function() {
                     setIsPromptOpen(false);
                 }}
-                onSuccess={loadProfile}
+                onSuccess={handleProfileSaved}
             />
         </>
     );

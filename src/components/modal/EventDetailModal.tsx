@@ -1,6 +1,7 @@
 import FileAttachmentList from '@components/attachment/FileAttachmentList';
 import RichContentReader from '@components/editor/RichContentReader';
 import CommonModal from '@components/modal/CommonModal';
+import { formatEventDateRange } from '@pages/shared/calendar/event-date-range';
 import {
     ClockIcon,
     MapPinIcon,
@@ -23,66 +24,6 @@ interface EventDetailFieldProps {
     icon: ReactNode;
     label: string;
     value: string;
-}
-
-function formatEventRange(eventLike: { start_at?: string; end_at?: string | null; all_day?: boolean }): string {
-    if (!eventLike.start_at) return '—';
-    const start = new Date(eventLike.start_at);
-    if (Number.isNaN(start.getTime())) return '—';
-
-    const startLabel = eventLike.all_day
-        ? start.toLocaleDateString(undefined, {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric'
-        })
-        : start.toLocaleString(undefined, {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit'
-        });
-
-    if (!eventLike.end_at) {
-        return startLabel;
-    }
-
-    const end = new Date(eventLike.end_at);
-    if (Number.isNaN(end.getTime())) return startLabel;
-
-    const isSameDay = start.toDateString() === end.toDateString();
-
-    if (eventLike.all_day) {
-        if (isSameDay) {
-            return startLabel;
-        }
-
-        return `${startLabel} — ${end.toLocaleDateString(undefined, {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric'
-        })}`;
-    }
-
-    const endLabel = isSameDay
-        ? end.toLocaleTimeString(undefined, {
-            hour: 'numeric',
-            minute: '2-digit'
-        })
-        : end.toLocaleString(undefined, {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit'
-        });
-
-    return `${startLabel} — ${endLabel}`;
 }
 
 function EventDetailField({ icon, label, value }: EventDetailFieldProps) {
@@ -208,9 +149,7 @@ export function EventDetailModal({ event, eventId, onClose }: EventDetailModalPr
                             <EventDetailField
                                 icon={<ClockIcon size={16} />}
                                 label="When"
-                                value={formatEventRange({
-                                    all_day: allDay, end_at: endAt, start_at: startAt
-                                })}
+                                value={formatEventDateRange(startAt, endAt, allDay)}
                             />
                             {location && (
                                 <EventDetailField

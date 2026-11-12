@@ -2,21 +2,12 @@ import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonSelect from '@components/select/CommonSelect';
 import CommonTable from '@components/table/CommonTable';
-import { AssessmentType } from '@type/assessment.type';
+import { ASSESSMENT_TYPE_VARIANT } from '@constants/status-badge.constant';
 import { SubjectAssessmentItem } from '@type/student-portal.type';
 import { MobileCardColDef } from '@type/table.type';
 import { RowClickedEvent } from 'ag-grid-community';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const TYPE_VARIANT: Record<AssessmentType, 'success' | 'error' | 'warning' | 'info'> = {
-    Quiz: 'info',
-    Exam: 'error',
-    Activity: 'success',
-    Assignment: 'warning',
-    Project: 'info',
-    'Lab Report': 'warning'
-};
 
 const ALL_VALUE = 'all';
 
@@ -29,12 +20,17 @@ function formatDateTime(value: string | null): string {
         : '—';
 }
 
+/**
+ * Works out which action the student can take on an assessment row.
+ * A submitted attempt can be retaken while attempts remain and the window is open.
+ */
 function getAssessmentState(item: SubjectAssessmentItem): {
     canTake: boolean;
+    canRetake: boolean;
     label: string;
 } {
     const now = new Date();
-    const isSubmitted = ['Submitted', 'Late', 'Graded'].includes(item.submission_status ?? '');
+    const isSubmitted = SUBMITTED_STATUSES.includes(item.submission_status ?? '');
     const isMaxed = item.attempts_used >= item.max_attempts;
     const isClosed = item.closes_at
         ? new Date(item.closes_at) < now
@@ -47,23 +43,45 @@ function getAssessmentState(item: SubjectAssessmentItem): {
         : false;
 
     const isPublishedEffective = item.is_published === true || Boolean(item.scheduled_publish_at && new Date(item.scheduled_publish_at) <= now);
+    const isWindowOpen = !isClosed && !isNotYetOpen && !isScheduled && isPublishedEffective;
 
-    if (isSubmitted) return { canTake: false, label: 'Submitted' };
-    if (isMaxed) return { canTake: false, label: 'Max attempts reached' };
-    if (isClosed) return { canTake: false, label: 'Closed' };
-    if (isScheduled || !isPublishedEffective) return { canTake: false, label: 'Not yet published' };
+    if (isSubmitted) {
+        const canRetake = !isMaxed && isWindowOpen;
+
+        return {
+            canTake: false,
+            canRetake,
+            label: canRetake
+                ? `Retake (attempt ${item.attempts_used + 1} of ${item.max_attempts})`
+                : 'Submitted'
+        };
+    }
+    if (isMaxed) return {
+        canTake: false, canRetake: false, label: 'Max attempts reached'
+    };
+    if (isClosed) return {
+        canTake: false, canRetake: false, label: 'Closed'
+    };
+    if (isScheduled || !isPublishedEffective) return {
+        canTake: false, canRetake: false, label: 'Not yet published'
+    };
     if (isNotYetOpen) {
         const opensAt = new Date(item.opens_at ?? '');
         return {
             canTake: false,
+            canRetake: false,
             label: `Opens ${opensAt.toLocaleString()}`
         };
     }
     if (item.submission_status === 'In Progress') {
-        return { canTake: true, label: 'Resume' };
+        return {
+            canTake: true, canRetake: false, label: 'Resume'
+        };
     }
 
-    return { canTake: true, label: 'Take' };
+    return {
+        canTake: true, canRetake: false, label: 'Take'
+    };
 }
 
 interface SubjectAssessmentListProps {
@@ -141,7 +159,7 @@ export default function SubjectAssessmentList({
                     <div className="flex h-full items-center">
                         <CommonBadgeStatus
                             label={params.data.assessment_type}
-                            variant={TYPE_VARIANT[params.data.assessment_type]}
+                            variant={ASSESSMENT_TYPE_VARIANT[params.data.assessment_type]}
                         />
                     </div>
                 )
@@ -188,19 +206,19 @@ export default function SubjectAssessmentList({
             },
             {
                 headerName: '',
-                maxWidth: 140,
+                maxWidth: 300,
                 minWidth: 140,
                 mobileCard: 'meta',
                 sortable: false,
                 cellRenderer: (params: { data: SubjectAssessmentItem }) => {
-                    const { canTake, label } = getAssessmentState(params.data);
+                    const { canTake, canRetake, label } = getAssessmentState(params.data);
                     const hasSubmission = SUBMITTED_STATUSES.includes(
                         params.data.submission_status ?? ''
                     );
 
                     if (hasSubmission) {
                         return (
-                            <div className="flex h-full ignore_row_click items-center">
+                            <div className="flex flex-wrap gap-1.5 h-full ignore_row_click items-center">
                                 <CommonButton
                                     size="small"
                                     variant="outlined"
@@ -210,6 +228,17 @@ export default function SubjectAssessmentList({
                                 >
                                     View Results
                                 </CommonButton>
+                                {canRetake && (
+                                    <CommonButton
+                                        size="small"
+                                        variant="contained"
+                                        onClick={function() {
+                                            navigate(`/student/subjects/${enrollmentId}/assessments/${params.data.id}`);
+                                        }}
+                                    >
+                                        {label}
+                                    </CommonButton>
+                                )}
                             </div>
                         );
                     }
@@ -261,7 +290,7 @@ export default function SubjectAssessmentList({
                 </div>
             </div>
             <div className="flex-1 min-h-0">
-                <CommonTable<SubjectAssessmentItem>
+                <CommonTable
                     leadingColumnDefs={columnDefs}
                     rowData={filteredAssessments}
                     onRowClicked={handleRowClicked}

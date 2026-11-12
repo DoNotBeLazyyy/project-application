@@ -1,19 +1,7 @@
-import { MenuOption } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/use-table-configs';
-import { ProgramLevelListRow } from '@type/program/program-level.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
-interface UseProgramLevelTableConfigProps {
-    onEdit: (id: string) => void;
-    onRequestDeleteRow: (id: string) => void;
-    onView: (id: string) => void;
-}
-
-export function useProgramLevelTableConfig({
-    onEdit,
-    onView
-}: UseProgramLevelTableConfigProps) {
+export function useProgramLevelTableConfig() {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
@@ -39,27 +27,5 @@ export function useProgramLevelTableConfig({
         ];
     }, []);
 
-    const tableActionConfig = useMemo(function() {
-        return function(onDelete: (id: string) => void): TableActionConfig<ProgramLevelListRow> {
-            return {
-                onEditClick: (row: ProgramLevelListRow) => () => onEdit(row.id),
-                menuOptions: (row: ProgramLevelListRow): MenuOption[] => [
-                    {
-                        preset: 'view',
-                        onClick: () => onView(row.id)
-                    },
-                    {
-                        preset: 'edit',
-                        onClick: () => onEdit(row.id)
-                    },
-                    {
-                        preset: 'delete',
-                        onClick: () => onDelete(row.id)
-                    }
-                ]
-            };
-        };
-    }, [onEdit, onView]);
-
-    return { columnDefs, tableActionConfig };
+    return { columnDefs };
 }

@@ -26,7 +26,7 @@ import {
 } from '@services/faculty.service';
 import { useToastStore } from '@stores/toast.store';
 import { AttendanceRecordUpdate, AttendanceSession, AttendanceStatus, SectionStudent } from '@type/faculty.type';
-import { formatDate } from '@utils/date.util';
+import { toIsoDateKey } from '@utils/date.util';
 import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -69,7 +69,7 @@ interface AttendanceSessionWizardValues {
 function getDefaultValues(): AttendanceSessionWizardValues {
     // Local calendar date - toISOString() would roll back a day before 8 AM in UTC+8
     return {
-        notes: '', session_date: formatDate(new Date()), session_type: 'Lecture'
+        notes: '', session_date: toIsoDateKey(new Date()), session_type: 'Lecture'
     };
 }
 
@@ -221,12 +221,17 @@ export default function AttendanceSessionWizardModal({
 
     const step1Fields: FormFieldConfig<AttendanceSessionWizardValues>[] = [
         {
+            fieldProps: { disableFuture: true },
             gridCols: 1,
             label: 'Session Date',
             name: 'session_date',
             rules: {
                 required: 'Please select a valid session date.',
-                validate: (value) => !existingSessionDates.includes(String(value)) || 'An attendance session already exists for this date.'
+                validate: {
+                    notDuplicate: (value) => !existingSessionDates.includes(String(value)) || 'An attendance session already exists for this date.',
+                    // YYYY-MM-DD strings compare correctly as text
+                    notFuture: (value) => String(value) <= toIsoDateKey(new Date()) || 'Attendance cannot be recorded for a future date.'
+                }
             },
             type: 'date'
         },
@@ -279,9 +284,8 @@ export default function AttendanceSessionWizardModal({
                 session_date: sessionDate
             });
 
+            // callRpc already shows the server's error or success message
             if (createRes.error) {
-                showToast(createRes.error.message || 'Failed to create attendance session.', 'error');
-                setIsSaving(false);
                 return;
             }
 
@@ -304,18 +308,23 @@ export default function AttendanceSessionWizardModal({
                         };
                     });
 
-                    await saveAttendanceRecords(createdSession.id, updates);
+                    // Silent so the student marks do not add a second success toast
+                    const saveRes = await saveAttendanceRecords(createdSession.id, updates, { silent: true });
+                    if (saveRes.error) {
+                        showToast(`The session was created, but the student marks were not saved: ${saveRes.error.message} Open the session to mark attendance again.`, 'error');
+                    }
                 }
             }
 
             draftGuard.clearDraft();
-            showToast('Attendance session recorded successfully.', 'success');
             onSuccess(createdSession);
             onClose();
         }
         catch {
-            setIsSaving(false);
             showToast('An unexpected error occurred while saving the attendance session.', 'error');
+        }
+        finally {
+            setIsSaving(false);
         }
     }
 

@@ -23,6 +23,9 @@ const STATE_PILL_CLASS = 'font-semibold h-fit mt-1 px-2 py-0.5 rounded-full self
 const UNREAD_ROW_CLASS = 'bg-(--mui-palette-primary-main)/10 border-(--mui-palette-primary-main) hover:bg-(--mui-palette-primary-main)/20';
 const READ_ROW_CLASS = 'bg-transparent border-transparent hover:bg-black/8 dark:hover:bg-white/10';
 
+// How many notifications the panel shows at first, and how many more each "Load more" adds
+const PAGE_SIZE = 8;
+
 function resolveRowStateClass(isRead: boolean): string {
     return isRead
         ? READ_ROW_CLASS
@@ -38,6 +41,10 @@ export default function NotificationBell() {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const [count, setCount] = useState(0);
     const [items, setItems] = useState<NotificationRow[]>([]);
+    const [shownCount, setShownCount] = useState(PAGE_SIZE);
+    // The live update listener is set up once, so it reads the shown count from here
+    const shownCountRef = useRef(PAGE_SIZE);
+    const [totalCount, setTotalCount] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const isOpen = Boolean(anchorEl);
     const isOpenRef = useRef(isOpen);
@@ -90,16 +97,29 @@ export default function NotificationBell() {
         };
     }, [userId]);
 
-    async function loadItems() {
+    /**
+     * Loads the newest notifications, as many as the panel currently shows.
+     *
+     * @param size - How many to load; defaults to the number already shown.
+     */
+    async function loadItems(size: number = shownCountRef.current) {
         setIsLoading(true);
 
-        const result = await listMyNotifications(1, 8, false);
+        const result = await listMyNotifications(1, size, false);
 
         if (result.data) {
             setItems(result.data.content);
+            setTotalCount(result.data.totalElements);
         }
 
         setIsLoading(false);
+    }
+
+    function handleLoadMore() {
+        const nextCount = shownCount + PAGE_SIZE;
+        shownCountRef.current = nextCount;
+        setShownCount(nextCount);
+        loadItems(nextCount);
     }
 
     function handleOpen(event: React.MouseEvent<HTMLElement>) {
@@ -137,11 +157,13 @@ export default function NotificationBell() {
     }
 
     async function handleToggleRead(item: NotificationRow) {
-        if (item.is_read) {
-            await markMyNotificationsUnread([item.id]);
-        }
-        else {
-            await markMyNotificationsRead([item.id]);
+        const result = item.is_read
+            ? await markMyNotificationsUnread([item.id])
+            : await markMyNotificationsRead([item.id]);
+
+        // The pill only flips once the server has saved it; the wrapper already showed the error
+        if (result.error) {
+            return;
         }
 
         const nextReadAt = item.is_read
@@ -317,6 +339,17 @@ export default function NotificationBell() {
                         </div>
                     );
                 })}
+                {!isLoading && items.length < totalCount && (
+                    <div className="flex justify-center px-4 py-2">
+                        <button
+                            className="cursor-pointer font-semibold hover:underline text-(--mui-palette-primary-main) text-xs"
+                            type="button"
+                            onClick={handleLoadMore}
+                        >
+                            Load more ({totalCount - items.length} older)
+                        </button>
+                    </div>
+                )}
             </Menu>
         </>
     );

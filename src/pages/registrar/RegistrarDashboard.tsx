@@ -38,10 +38,19 @@ const STAT_CARDS: RegistrarStatCard[] = [
         to: '/registrar/enrollment-management'
     },
     {
+        icon: <GraduationCapIcon size={24} />,
+        iconBg: 'bg-[var(--mui-palette-info-50)]',
+        iconColor: 'text-[var(--mui-palette-info-main)]',
+        label: 'Students Enrolled This Term',
+        statKey: 'students_enrolled_this_term',
+        to: '/registrar/enrollment-management'
+    },
+    {
         icon: <ClipboardTextIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-info-50)]',
         iconColor: 'text-[var(--mui-palette-info-main)]',
-        label: 'Course Enrollments This Term',
+        // One per student per subject, so a student with 6 subjects counts 6 times
+        label: 'Subject Enrollments This Term',
         statKey: 'enrollments_this_term',
         to: '/registrar/enrollment-management'
     },
@@ -90,10 +99,14 @@ export default function RegistrarDashboard() {
         fetchDashboard();
     }, []);
 
-    const totalEnrolled = dashboard?.program_distribution.reduce(
-        (sum, program) => sum + program.student_count,
-        0
-    ) ?? 0;
+    const stats = dashboard?.stats as RegistrarDashboardStats | undefined;
+    // Percentages are out of every enrolled student with a program, not only the top programs
+    const totalEnrolled = stats?.enrolled_students_with_program
+        ?? dashboard?.program_distribution.reduce(
+            (sum, program) => sum + program.student_count,
+            0
+        )
+        ?? 0;
 
     return (
         <div className="flex flex-col gap-6">
@@ -103,7 +116,7 @@ export default function RegistrarDashboard() {
                 title="Dashboard"
             />
 
-            <div className="2xl:grid-cols-5 gap-3 grid grid-cols-2 md:grid-cols-3 sm:gap-4">
+            <div className="2xl:grid-cols-6 gap-3 grid grid-cols-2 md:grid-cols-3 sm:gap-4">
                 {STAT_CARDS.map((card) => (
                     <StatCard
                         icon={card.icon}
@@ -112,7 +125,7 @@ export default function RegistrarDashboard() {
                         key={card.label}
                         label={card.label}
                         to={card.to}
-                        value={resolveStatValue(dashboard?.stats?.[card.statKey])}
+                        value={resolveStatValue(stats?.[card.statKey])}
                     />
                 ))}
             </div>
@@ -172,7 +185,7 @@ export default function RegistrarDashboard() {
 
                 <CommonCard
                     cardHeaderProps={{
-                        subheader: 'Enrolled students by program this term.',
+                        subheader: 'Enrolled students by program this term (top 6; percent of all enrolled students with a program).',
                         title: 'Enrollment Distribution'
                     }}
                     className="flex flex-col"

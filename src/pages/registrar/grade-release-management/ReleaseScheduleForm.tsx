@@ -18,6 +18,20 @@ interface ReleaseScheduleFormProps {
     onSave: (releaseAt: string) => void;
 }
 
+/**
+ * A scheduled release must be in the future; "Release All" covers releasing right now.
+ *
+ * @param value - The picked date and time.
+ * @returns An error message, or true when the time is still ahead.
+ */
+function validateNotInPast(value: string): string | true {
+    const time = new Date(value)
+        .getTime();
+    if (Number.isNaN(time)) return 'Select a valid date and time.';
+
+    return time > Date.now() || 'The release time cannot be in the past. Use Release All to release now.';
+}
+
 export default function ReleaseScheduleForm({
     isSaving,
     open,
@@ -132,7 +146,10 @@ export default function ReleaseScheduleForm({
                         helperText="Grades stay hidden from students until this moment. A student who has not yet submitted their faculty evaluation stays blocked until they do."
                         label="Release date and time"
                         name="release_at"
-                        rules={{ required: 'Select the date and time when grades become visible.' }}
+                        rules={{
+                            required: 'Select the date and time when grades become visible.',
+                            validate: validateNotInPast
+                        }}
                     />
                     {period?.release_at
                         ? (

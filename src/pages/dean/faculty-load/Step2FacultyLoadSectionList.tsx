@@ -1,50 +1,25 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
+import { SECTION_STATUS_VARIANT } from '@constants/status-badge.constant';
 import {
     ArrowSquareOutIcon,
     BuildingsIcon,
     CalendarCheckIcon,
     ChalkboardTeacherIcon,
-    GraduationCapIcon,
-    PlusIcon,
-    TrashIcon
+    GraduationCapIcon
 } from '@phosphor-icons/react';
 import { FacultyLoadSection } from '@type/faculty-load.type';
-import { SectionStatus } from '@type/section.type';
 import { useNavigate } from 'react-router-dom';
-
-interface FacultyOption {
-    label: string;
-    value: string;
-}
 
 interface Step2FacultyLoadSectionListProps {
     sections: FacultyLoadSection[];
-    isReadOnly: boolean;
     facultyName: string;
-    facultyOptions: FacultyOption[];
-    onFacultyChange: (sectionId: string, newFacultyId: string | null) => void;
-    onRequestDeleteSection: (section: FacultyLoadSection) => void;
-    onOpenAssignModal?: VoidFunction;
     onNavigateToSectionManagement?: VoidFunction;
 }
 
-const STATUS_VARIANT_MAP: Record<SectionStatus, 'success' | 'error' | 'warning' | 'info'> = {
-    Open: 'success',
-    Full: 'warning',
-    Ongoing: 'info',
-    Closed: 'error',
-    Cancelled: 'info'
-};
-
 export default function Step2FacultyLoadSectionList({
     sections,
-    isReadOnly,
     facultyName,
-    facultyOptions,
-    onFacultyChange,
-    onRequestDeleteSection,
-    onOpenAssignModal,
     onNavigateToSectionManagement
 }: Step2FacultyLoadSectionListProps) {
     const navigate = useNavigate();
@@ -58,7 +33,7 @@ export default function Step2FacultyLoadSectionList({
 
     return (
         <div className="flex flex-col gap-4">
-            {/* Header with Assigned Sections count and Assign button */}
+            {/* Header with Assigned Sections count */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-zinc-800/80 p-4 rounded-xl border border-slate-200 dark:border-zinc-700/70 shadow-xs">
                 <div>
                     <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
@@ -72,23 +47,6 @@ export default function Step2FacultyLoadSectionList({
                         </span>
                     </h3>
                 </div>
-
-                {!isReadOnly && onOpenAssignModal && (
-                    <CommonButton
-                        color="primary"
-                        size="small"
-                        startIcon={(
-                            <PlusIcon
-                                className="w-4 h-4"
-                                weight="bold"
-                            />
-                        )}
-                        variant="contained"
-                        onClick={onOpenAssignModal}
-                    >
-                        Assign Section
-                    </CommonButton>
-                )}
             </div>
 
             {/* Empty State */}
@@ -105,22 +63,6 @@ export default function Step2FacultyLoadSectionList({
                             This faculty member currently has no sections assigned in this term.
                         </span>
                     </div>
-                    {!isReadOnly && onOpenAssignModal && (
-                        <CommonButton
-                            color="primary"
-                            size="small"
-                            startIcon={(
-                                <PlusIcon
-                                    className="w-4 h-4"
-                                    weight="bold"
-                                />
-                            )}
-                            variant="outlined"
-                            onClick={onOpenAssignModal}
-                        >
-                            Assign a Section Offering
-                        </CommonButton>
-                    )}
                 </div>
             )}
 
@@ -149,7 +91,7 @@ export default function Step2FacultyLoadSectionList({
                                         </h4>
                                         <CommonBadgeStatus
                                             label={section.status}
-                                            variant={STATUS_VARIANT_MAP[section.status] || 'info'}
+                                            variant={SECTION_STATUS_VARIANT[section.status] || 'info'}
                                         />
                                     </div>
                                     <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -169,29 +111,17 @@ export default function Step2FacultyLoadSectionList({
                                 </div>
 
                                 <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                                    {/* Registrar Button to jump to Section Management in write mode */}
+                                    {/* Opens the section in Section Management */}
                                     <CommonButton
                                         color="inherit"
                                         size="small"
                                         startIcon={<ArrowSquareOutIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
-                                        title="Open in Section Management in write mode to modify course, room, slots, or grading schema"
+                                        title="Open in Section Management to change course, room, slots, schedule, instructor, or grading"
                                         variant="outlined"
                                         onClick={() => handleGoToSectionManagement(section.section_id)}
                                     >
                                         Edit in Section Management
                                     </CommonButton>
-
-                                    {/* Delete / Remove Section Button with confirmation popup in write mode */}
-                                    {!isReadOnly && (
-                                        <button
-                                            className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-rose-200 dark:hover:border-rose-800"
-                                            title="Remove section from this faculty member's load"
-                                            type="button"
-                                            onClick={() => onRequestDeleteSection(section)}
-                                        >
-                                            <TrashIcon className="w-4 h-4" />
-                                        </button>
-                                    )}
                                 </div>
                             </div>
 
@@ -291,49 +221,15 @@ export default function Step2FacultyLoadSectionList({
                                     )}
                             </div>
 
-                            {/* Assigned Faculty Control: Inline field in edit mode, Display in read mode */}
-                            <div className="pt-2 border-t border-slate-100 dark:border-zinc-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                                <div className="flex items-center gap-2">
-                                    <label
-                                        className="text-xs font-semibold text-slate-700 dark:text-slate-300 shrink-0"
-                                        htmlFor={`faculty-select-${section.section_id}`}
-                                    >
-                                        Assigned Instructor:
-                                    </label>
-                                    {isReadOnly
-                                        ? (
-                                            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-zinc-700/60 text-slate-800 dark:text-slate-200 text-xs font-semibold">
-                                                <ChalkboardTeacherIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" />
-                                                <span>{section.faculty_name || facultyName || 'Unassigned'}</span>
-                                            </div>
-                                        )
-                                        : (
-                                            <div className="min-w-[240px] max-w-sm">
-                                                <select
-                                                    className="w-full text-xs font-medium bg-white dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 cursor-pointer shadow-2xs"
-                                                    id={`faculty-select-${section.section_id}`}
-                                                    value={section.faculty_id || ''}
-                                                    onChange={(e) => onFacultyChange(section.section_id, e.target.value || null)}
-                                                >
-                                                    <option value="">— Unassign Instructor —</option>
-                                                    {facultyOptions.map((opt) => (
-                                                        <option
-                                                            key={opt.value}
-                                                            value={opt.value}
-                                                        >
-                                                            {opt.label}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        )}
+                            {/* Assigned Instructor */}
+                            <div className="pt-2 border-t border-slate-100 dark:border-zinc-700/60 flex items-center gap-2">
+                                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 shrink-0">
+                                    Assigned Instructor:
+                                </span>
+                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-zinc-700/60 text-slate-800 dark:text-slate-200 text-xs font-semibold">
+                                    <ChalkboardTeacherIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" />
+                                    <span>{section.faculty_name || facultyName || 'Unassigned'}</span>
                                 </div>
-
-                                {!isReadOnly && (
-                                    <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
-                                        * Changes will be saved upon clicking &quot;Save Changes&quot; below.
-                                    </span>
-                                )}
                             </div>
                         </div>
                     );

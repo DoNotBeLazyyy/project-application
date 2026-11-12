@@ -46,7 +46,10 @@ export default function CalendarPage() {
     const [selectedEvent, setSelectedEvent] = useState<UnifiedCalendarEvent | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-    const { events, isLoading, reload, currentRole } = useCalendarData(currentDate);
+    // Day view shows selectedDate, so load around that day there
+    const { events, isLoading, error, reload, currentRole } = useCalendarData(viewMode === 'day'
+        ? selectedDate
+        : currentDate);
 
     // Filter events by selected category
     const filteredEvents = useMemo(() => {
@@ -445,6 +448,23 @@ export default function CalendarPage() {
 
             {/* Main Calendar View Area - Full Width */}
             <div className="flex-1 min-h-0 flex flex-col overflow-hidden p-1 sm:p-3 md:p-4">
+                {error && !isLoading && (
+                    <div
+                        className="border border-rose-200 bg-rose-50/60 dark:bg-rose-950/30 dark:border-rose-800/80 flex flex-wrap gap-3 items-center justify-between mb-3 px-4 py-2.5 rounded-xl"
+                        role="alert"
+                    >
+                        <span className="text-rose-800 dark:text-rose-200 text-sm">
+                            {error} The calendar may be missing some items.
+                        </span>
+                        <CommonButton
+                            size="small"
+                            variant="outlined"
+                            onClick={reload}
+                        >
+                            Retry
+                        </CommonButton>
+                    </div>
+                )}
                 {isLoading && events.length === 0
                     ? (
                         <div className="p-16 flex justify-center">

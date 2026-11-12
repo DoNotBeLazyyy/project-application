@@ -20,6 +20,7 @@ export default function Step3FacultyLoadConflicts({
     onNavigateToSectionManagement
 }: Step3FacultyLoadConflictsProps) {
     const navigate = useNavigate();
+    const hasRoomConflicts = conflicts.some((conflict) => conflict.conflict_type === 'Room');
 
     function handleOpenSection(sectionId: string) {
         if (onNavigateToSectionManagement) {
@@ -56,7 +57,7 @@ export default function Step3FacultyLoadConflicts({
                                 No Schedule Conflicts Detected
                             </h4>
                             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                                All meeting times and venue rooms for this faculty member&apos;s teaching load are compatible and free of time collisions.
+                                None of this faculty member&apos;s classes meet at the same time, and none share a room with another class at the same time.
                             </p>
                         </div>
                     </div>
@@ -76,7 +77,9 @@ export default function Step3FacultyLoadConflicts({
                                         : ''} Found
                                 </span>
                                 <p className="text-xs text-rose-700 dark:text-rose-300 leading-relaxed">
-                                Overlapping schedules indicate that an instructor has multiple simultaneous classes or that sections share a classroom at the same time. You can reassign sections in Step 2, or edit the section schedules in Section Management.
+                                    {hasRoomConflicts
+                                        ? 'Some of this faculty member’s classes meet at the same time, or use a room another class is using at that time. Change the schedule, room, or instructor of one of them in Section Management.'
+                                        : 'These classes in this faculty member’s load meet at the same time. Change the schedule or the instructor of one of them in Section Management.'}
                                 </p>
                             </div>
                         </div>
@@ -155,6 +158,11 @@ export default function Step3FacultyLoadConflicts({
                                             <span className="text-xs text-slate-600 dark:text-slate-300">
                                                 {conflict.course_b || 'Course details'}
                                             </span>
+                                            {conflict.conflict_type === 'Room' && conflict.faculty_b_name && (
+                                                <span className="text-[11px] text-slate-500 font-medium">
+                                                Instructor: {conflict.faculty_b_name}
+                                                </span>
+                                            )}
                                             {conflict.room && (
                                                 <span className="text-[11px] text-slate-500 font-medium">
                                                 Venue: {conflict.room}

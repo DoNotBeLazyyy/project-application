@@ -1,21 +1,10 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
-import { MenuOption } from '@components/table/TableActionCell';
-import { TableActionConfig } from '@components/table/use-table-configs';
 import { PaperclipIcon, PushPinIcon } from '@phosphor-icons/react';
 import { AnnouncementAudience, CommunicationListRow } from '@type/announcement.type';
 import { BadgeStatusVariant } from '@type/common/badge.type';
 import { MobileCardColDef } from '@type/table.type';
-import { canManageCommunication } from '@utils/communication.util';
 import { formatShortDate } from '@utils/date.util';
 import { useMemo } from 'react';
-
-interface UseAnnouncementTableConfigProps {
-    currentUserId?: string | null;
-    currentUserRole?: string | null;
-    onEdit?: (id: string) => void;
-    onView: (id: string) => void;
-    isViewingOnly?: boolean;
-}
 
 const AUDIENCE_META: Record<AnnouncementAudience, { label: string; variant: BadgeStatusVariant }> = {
     Faculty: { label: 'All Faculty', variant: 'success' },
@@ -24,13 +13,7 @@ const AUDIENCE_META: Record<AnnouncementAudience, { label: string; variant: Badg
     Student: { label: 'All Students', variant: 'warning' }
 };
 
-export function useAnnouncementTableConfig({
-    currentUserId,
-    currentUserRole,
-    onEdit,
-    onView,
-    isViewingOnly = false
-}: UseAnnouncementTableConfigProps) {
+export function useAnnouncementTableConfig() {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
@@ -145,53 +128,5 @@ export function useAnnouncementTableConfig({
         ];
     }, []);
 
-    const tableActionConfig = useMemo(function() {
-        return function(onDelete: (id: string) => void): TableActionConfig<CommunicationListRow> {
-            if (isViewingOnly) {
-                return {
-                    menuOptions: (row: CommunicationListRow): MenuOption[] => [
-                        {
-                            onClick: () => onView(row.id),
-                            preset: 'view'
-                        }
-                    ]
-                };
-            }
-
-            return {
-                menuOptions: (row: CommunicationListRow): MenuOption[] => {
-                    const canManage = canManageCommunication(row, currentUserId, currentUserRole);
-
-                    return [
-                        {
-                            onClick: () => onView(row.id),
-                            preset: 'view'
-                        },
-                        ...(canManage && onEdit
-                            ? [{
-                                onClick: () => onEdit(row.id),
-                                preset: 'edit' as const
-                            }]
-                            : []),
-                        ...(canManage
-                            ? [{
-                                onClick: () => onDelete(row.id),
-                                preset: 'delete' as const
-                            }]
-                            : [])
-                    ];
-                },
-                onEditClick: onEdit
-                    ? (row: CommunicationListRow) => {
-                        const canManage = canManageCommunication(row, currentUserId, currentUserRole);
-                        return canManage
-                            ? () => onEdit(row.id)
-                            : undefined;
-                    }
-                    : undefined
-            };
-        };
-    }, [currentUserId, currentUserRole, isViewingOnly, onEdit, onView]);
-
-    return { columnDefs, tableActionConfig };
+    return { columnDefs };
 }

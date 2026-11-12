@@ -2,10 +2,10 @@ import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
+import { SECTION_STATUS_VARIANT } from '@constants/status-badge.constant';
 import { listMySections } from '@services/faculty.service';
 import { MySectionListRow } from '@type/faculty.type';
 import { SortStringDto } from '@type/http.type';
-import { SectionStatus } from '@type/section.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -16,14 +16,6 @@ const SORT_COLUMNS: SortColumn[] = [
     { field: 'course_title', label: 'Course Title' },
     { field: 'term_label', label: 'Term' }
 ];
-
-const STATUS_VARIANT_MAP: Record<SectionStatus, 'success' | 'error' | 'warning' | 'info'> = {
-    Open: 'success',
-    Full: 'warning',
-    Ongoing: 'info',
-    Closed: 'error',
-    Cancelled: 'error'
-};
 
 export default function FacultySectionManagement() {
     const navigate = useNavigate();
@@ -73,7 +65,7 @@ export default function FacultySectionManagement() {
                     <div className="flex h-full items-center">
                         <CommonBadgeStatus
                             label={params.data.status}
-                            variant={STATUS_VARIANT_MAP[params.data.status]}
+                            variant={SECTION_STATUS_VARIANT[params.data.status]}
                         />
                     </div>
                 )

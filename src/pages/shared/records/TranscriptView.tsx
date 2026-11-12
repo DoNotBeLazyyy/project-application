@@ -9,6 +9,7 @@ import {
 } from '@phosphor-icons/react';
 import { getStudentTranscript } from '@services/records.service';
 import { StudentTranscript, TranscriptCourse } from '@type/records.type';
+import { formatGrade, formatGwa } from '@utils/grade-display.util';
 import { useEffect, useState } from 'react';
 
 interface TranscriptViewProps {
@@ -21,20 +22,8 @@ function formatNumber(value: number | null): string {
         : '—';
 }
 
-function formatGrade(course: TranscriptCourse): string {
-    if (course.special_grade) return course.special_grade;
-
-    return course.grade !== null
-        ? Number(course.grade)
-            .toFixed(2)
-        : '—';
-}
-
-function formatGwa(value: number | null): string {
-    return value !== null && value !== undefined
-        ? Number(value)
-            .toFixed(2)
-        : '—';
+function formatCourseGrade(course: TranscriptCourse): string {
+    return formatGrade(course.grade, course.special_grade);
 }
 
 function formatDate(value: string): string {
@@ -238,7 +227,7 @@ export default function TranscriptView({ studentId }: TranscriptViewProps) {
                                                             {formatNumber(course.units)}
                                                         </td>
                                                         <td className="font-mono font-bold px-4 py-3 text-slate-900 dark:text-slate-100 text-right text-xs sm:text-sm">
-                                                            {formatGrade(course)}
+                                                            {formatCourseGrade(course)}
                                                         </td>
                                                         <td className="px-4 py-3">
                                                             {course.is_passing !== null

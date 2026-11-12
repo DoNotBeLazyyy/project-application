@@ -6,6 +6,9 @@ import { generateRoleCode } from '@utils/entity-code.util';
 import { useEffect, useRef } from 'react';
 import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
 
+// The server never changes the code of these roles (20261031020000_protect_builtin_roles)
+const BUILT_IN_ROLE_CODES = ['Admin', 'Dean', 'Faculty', 'Registrar', 'Student'];
+
 interface RoleFormProps extends ComponentPropsForm {
     control: Control<CreateRoleFormValues>;
     disabled?: boolean;
@@ -85,7 +88,14 @@ export default function RoleForm({
             }
         }
         else {
-            if (watchedLabel !== initialLabelRef.current) {
+            const isBuiltInRole = BUILT_IN_ROLE_CODES.includes(initialCodeRef.current || '');
+            // A built-in role keeps its real code when renamed, so show that code
+            if (isBuiltInRole) {
+                if (watchedCode !== initialCodeRef.current) {
+                    setValue('code', initialCodeRef.current || '', { shouldValidate: true, shouldDirty: false });
+                }
+            }
+            else if (watchedLabel !== initialLabelRef.current) {
                 const generated = generateRoleCode(watchedLabel || '');
                 if (generated) {
                     setValue('code', generated, { shouldValidate: true, shouldDirty: true });

@@ -20,12 +20,11 @@ import {
     listMyEventsFeed
 } from '@services/event.service';
 import { useAppStore } from '@stores/app.store';
-import { AnnouncementFeedRow, AnnouncementFilterValues, CommunicationListRow } from '@type/announcement.type';
+import { AnnouncementFilterValues, CommunicationListRow } from '@type/announcement.type';
 import { EventFeedRow } from '@type/event.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 import { canManageCommunication } from '@utils/communication.util';
-import { getRoleFromPath } from '@utils/role-path.util';
 import { useCallback, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
@@ -36,9 +35,6 @@ const COMMUNICATION_SORT_COLUMNS: SortColumn[] = [
 ];
 
 const FILTER_COMMUNICATION_FORM_ID = 'filter-communication-form';
-
-// Feed rows can carry a section count the base feed type does not declare
-type FeedRowWithSectionCount = AnnouncementFeedRow & { section_count?: number };
 
 // Sort entries may still arrive with the legacy grid 'field' key
 type SortWithLegacyField = SortStringDto & { field?: string };
@@ -52,7 +48,8 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
     const { pathname } = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const currentRole = getRoleFromPath(pathname);
+    // The signed-in role decides what the user may do, not the URL
+    const currentRole = useAppStore((s) => s.activeRole) ?? '';
     const isManagementRole = currentRole !== 'Student';
 
     // In viewing mode, users view communications targeted to them (audience feed).
@@ -118,18 +115,7 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
 
     const currentUserId = useAppStore((s) => s.userProfile?.id || s.session?.user?.id);
 
-    const {
-        columnDefs,
-        tableActionConfig
-    } = useAnnouncementTableConfig({
-        currentUserId,
-        currentUserRole: currentRole,
-        isViewingOnly,
-        onEdit: isViewingOnly
-            ? undefined
-            : handleOpenEdit,
-        onView: handleOpenDetail
-    });
+    const { columnDefs } = useAnnouncementTableConfig();
 
     const fetchCommunications = useCallback(async function(
         page: number,
@@ -171,7 +157,7 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                     items = items.filter((a) => a.is_pinned === isPinned);
                 }
 
-                const rows: CommunicationListRow[] = (items as FeedRowWithSectionCount[]).map((a) => ({
+                const rows: CommunicationListRow[] = items.map((a) => ({
                     attachment_count: a.attachment_count ?? a.attachments?.length ?? 0,
                     author_name: a.author_name,
                     content: a.content,
@@ -400,7 +386,7 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                 annItems = annItems.filter((a) => a.is_pinned === isPinned);
             }
 
-            const annRows: CommunicationListRow[] = (annItems as FeedRowWithSectionCount[]).map((a) => ({
+            const annRows: CommunicationListRow[] = annItems.map((a) => ({
                 attachment_count: a.attachment_count ?? a.attachments?.length ?? 0,
                 author_name: a.author_name,
                 content: a.content,
@@ -948,7 +934,6 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                     );
                 }}
                 sortColumns={COMMUNICATION_SORT_COLUMNS}
-                tableActionConfig={tableActionConfig}
                 tableProps={{
                     hasCheckbox: !isViewingOnly,
                     leadingColumnDefs: columnDefs

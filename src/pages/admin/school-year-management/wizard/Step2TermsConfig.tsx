@@ -3,6 +3,9 @@ import ValidCommonDatePicker from '@components/datepicker/ValidCommonDatepicker'
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import ValidCommonSelect from '@components/select/ValidCommonSelect';
+import { EVALUATION_SCOPE_OPTIONS } from '@constants/evaluation.constant';
+import { HISTORY_DIFF_HIGHLIGHT_CLASS, HistoryDiffMarks } from '@pages/admin/school-year-management/wizard/academic-year-history';
+import HistoryDiffBadge from '@pages/admin/school-year-management/wizard/HistoryDiffBadge';
 import {
     CaretDownIcon,
     ClockIcon,
@@ -18,19 +21,17 @@ import {
     Control, useFieldArray, useFormState, UseFormSetValue, useWatch
 } from 'react-hook-form';
 
-const EVALUATION_SCOPE_OPTIONS = [
-    { label: 'Per Grading Period', value: 'Period' },
-    { label: 'Per Term', value: 'Term' }
-];
-
 interface Step2TermsConfigProps {
     control: Control<AcademicYearWizardFormValues>;
+    /** Differences to highlight while comparing saved versions (history view only). */
+    diffMarks?: HistoryDiffMarks;
     disabled?: boolean;
     setValue: UseFormSetValue<AcademicYearWizardFormValues>;
 }
 
 export default function Step2TermsConfig({
     control,
+    diffMarks,
     disabled = false,
     setValue
 }: Step2TermsConfigProps) {
@@ -194,12 +195,16 @@ export default function Step2TermsConfig({
                         && new Date(currentTerm.end_date) <= new Date(currentTerm.start_date)
                     );
 
+                    const diffMark = diffMarks?.[`term:${index}`];
+
                     return (
                         <div
                             className={`p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-800/80 border shadow-sm space-y-4 transition-all ${
-                                otherTermsHaveThisType || hasPrecedingConflict || hasDateOrderError
-                                    ? 'border-amber-300 dark:border-amber-700/70'
-                                    : 'border-slate-200 dark:border-zinc-700/60'
+                                diffMark
+                                    ? HISTORY_DIFF_HIGHLIGHT_CLASS
+                                    : otherTermsHaveThisType || hasPrecedingConflict || hasDateOrderError
+                                        ? 'border-amber-300 dark:border-amber-700/70'
+                                        : 'border-slate-200 dark:border-zinc-700/60'
                             }`}
                             key={field.id}
                         >
@@ -217,6 +222,7 @@ export default function Step2TermsConfig({
                                             ({currentTerm.start_date} to {currentTerm.end_date})
                                         </span>
                                     )}
+                                    <HistoryDiffBadge mark={diffMark} />
                                 </div>
 
                                 <div className="flex items-center gap-1.5 shrink-0">

@@ -1,3 +1,4 @@
+import { clearAssistantChats } from '@services/assistant.service';
 import { supabase } from '@services/supabase.client';
 import { callRpc } from '@services/supabase.wrapper';
 import { useAppStore } from '@stores/app.store';
@@ -18,13 +19,18 @@ export const INCOMPLETE_PROFILE_MESSAGE = 'Your account is not fully set up. Con
 export const SUSPENDED_ACCOUNT_MESSAGE = 'Your account has been suspended. Please contact your administrator.';
 export const INACTIVE_ACCOUNT_MESSAGE = 'Your account is currently inactive. Please contact your administrator.';
 
+// Error code for a login failure that initAuthSession has already shown to the user
+export const LOGIN_ALREADY_NOTIFIED_CODE = 'LOGIN_ALREADY_NOTIFIED';
+
+/**
+ * Signs in and loads the session. It does not toast a wrong password itself, so the login
+ * page shows exactly one message. When initAuthSession already showed the reason, the
+ * error carries LOGIN_ALREADY_NOTIFIED_CODE.
+ */
 export async function login(email: string, password: string): Promise<ServiceResult<Session>> {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-        const parsed = parseServiceError(error);
-        useToastStore.getState()
-            .showToast(parsed.message, 'error');
-        return { data: null, error: parsed };
+        return { data: null, error: parseServiceError(error) };
     }
 
     recordActivity();
@@ -45,7 +51,11 @@ export async function login(email: string, password: string): Promise<ServiceRes
             return {
                 data: null,
                 error: {
-                    code: null, message: msg, status: null
+                    code: status === 'incomplete'
+                        ? LOGIN_ALREADY_NOTIFIED_CODE
+                        : null,
+                    message: msg,
+                    status: null
                 }
             };
         }
@@ -130,6 +140,7 @@ export async function requestPasswordReset(email: string): Promise<ServiceResult
 
 export async function logout(): Promise<void> {
     clearActivity();
+    clearAssistantChats();
     await supabase.auth.signOut();
     useAppStore.getState()
         .clearSession();
@@ -166,6 +177,32 @@ export async function refreshSession(): Promise<ServiceResult<Session>> {
 
 export async function getAuthContext(): Promise<ServiceResult<AuthContext>> {
     return callRpc<AuthContext>('fn_get_auth_context');
+}
+
+/**
+ * Reads the signed-in user's account status without any toast or loading bar, so it can
+ * run in the background.
+ *
+ * @returns The status, e.g. "Active" or "Suspended", or null when it could not be read.
+ */
+export async function getMyAccountStatus(): Promise<string | null> {
+    const { data } = await callRpc<AuthContext>('fn_get_auth_context', undefined, { silent: true });
+
+    return data?.profile?.status ?? null;
+}
+
+/**
+ * The sign-in page message for an account that can no longer be used, or null when the
+ * status is fine.
+ *
+ * @param status - The account status.
+ */
+export function getBlockedAccountMessage(status: string | null | undefined): string | null {
+    if (status === 'Suspended') return SUSPENDED_ACCOUNT_MESSAGE;
+
+    if (status === 'Inactive') return INACTIVE_ACCOUNT_MESSAGE;
+
+    return null;
 }
 
 export async function initAuthSession(): Promise<AuthSessionStatus> {
@@ -215,6 +252,7 @@ export async function initAuthSession(): Promise<AuthSessionStatus> {
 
         await supabase.auth.signOut();
         store.clearSession();
+        clearAssistantChats();
         try {
             cookieStorage.removeItem('au-jas-app');
         }
@@ -258,6 +296,7 @@ export function setupAuthListener(): VoidFunction {
         if (event === 'SIGNED_OUT' || (!session && store.session)) {
             store.clearSession();
             clearActivity();
+            clearAssistantChats();
             try {
                 cookieStorage.removeItem('au-jas-app');
             }
@@ -282,4 +321,4 @@ export function setupAuthListener(): VoidFunction {
     return () => {
         subscription.unsubscribe();
     };
-}
+}

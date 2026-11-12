@@ -2,10 +2,10 @@ import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { useCourseOptions } from '@pages/dean/course-management/use-course-options';
+import { useTermOptions } from '@hooks/use-term-options';
 import { ChalkboardIcon } from '@phosphor-icons/react';
-import {
-    FacultyOption, getExistingSectionOfferings, getFacultyOptions, getTerms, SectionOfferingRecord, TermOption
-} from '@services/section.service';
+import { getExistingSectionOfferings, SectionOfferingRecord } from '@services/section.service';
+import { getUsersByRoles } from '@services/user.service';
 import { SectionFormValues, SectionStatus } from '@type/section.type';
 import { useEffect, useMemo, useState } from 'react';
 import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
@@ -33,7 +33,8 @@ export default function Step1SectionOverview({
     sectionId,
     setValue
 }: Step1SectionOverviewProps) {
-    const [termOptions, setTermOptions] = useState<CommonSelectOption[]>([]);
+    // New sections can only go into the active academic year
+    const { termOptions } = useTermOptions({ isActiveYearOnly: Boolean(isCreate) });
     const [facultyOptions, setFacultyOptions] = useState<CommonSelectOption[]>([]);
     const [existingOfferings, setExistingOfferings] = useState<SectionOfferingRecord[]>([]);
     const { courseOptions } = useCourseOptions({});
@@ -44,28 +45,14 @@ export default function Step1SectionOverview({
 
     useEffect(function() {
         async function fetchOptions() {
-            const [termsResult, facultyResult, offeringsResult] = await Promise.all([
-                getTerms(),
-                getFacultyOptions(),
+            const [facultyResult, offeringsResult] = await Promise.all([
+                getUsersByRoles(['Faculty']),
                 getExistingSectionOfferings()
             ]);
 
-            if (termsResult.data) {
-                const availableTerms = isCreate
-                    ? termsResult.data.filter((term: TermOption) => term.is_active_academic_year !== false)
-                    : termsResult.data;
-
-                setTermOptions(
-                    availableTerms.map((term: TermOption) => ({
-                        label: term.label,
-                        value: term.id
-                    }))
-                );
-            }
-
             if (facultyResult.data) {
                 setFacultyOptions(
-                    facultyResult.data.map((faculty: FacultyOption) => ({
+                    facultyResult.data.map((faculty) => ({
                         label: faculty.full_name,
                         value: faculty.id
                     }))
@@ -78,7 +65,7 @@ export default function Step1SectionOverview({
         }
 
         fetchOptions();
-    }, [isCreate]);
+    }, []);
 
     // Exclude the current section being edited from collision checks
     const activeOfferings = useMemo(() => {

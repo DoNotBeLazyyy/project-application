@@ -1,3 +1,4 @@
+import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
 import { QUESTIONS_SCROLL_STEP } from '@constants/evaluation.constant';
@@ -58,6 +59,82 @@ function toAnswerForms(form: EvaluationForm): EvaluationAnswerForm[] {
     });
 }
 
+type EvaluationDraft = Record<string, { rating_value: string; response_text: string }>;
+
+const DRAFT_SAVE_DELAY_MS = 500;
+
+/**
+ * localStorage key for the unsent ratings of one faculty/period target.
+ */
+function toDraftKey(enrollmentId: string, gradingPeriodId: string): string {
+    return `evaluation-draft:${enrollmentId}:${gradingPeriodId}`;
+}
+
+/**
+ * Reads a saved draft, or null when there is none or storage is blocked.
+ */
+function readDraft(key: string): EvaluationDraft | null {
+    try {
+        const raw = window.localStorage.getItem(key);
+
+        return raw
+            ? JSON.parse(raw) as EvaluationDraft
+            : null;
+    }
+    catch {
+        return null;
+    }
+}
+
+/**
+ * Saves the current answers as a draft. Storage errors are ignored; the draft is a convenience.
+ */
+function writeDraft(key: string, answers: EvaluationAnswerForm[]) {
+    try {
+        const draft: EvaluationDraft = {};
+        answers.forEach(function(answer) {
+            draft[answer.question_id] = {
+                rating_value: answer.rating_value ?? '',
+                response_text: answer.response_text ?? ''
+            };
+        });
+        window.localStorage.setItem(key, JSON.stringify(draft));
+    }
+    catch {
+        // Storage can be full or blocked; the form still works without a draft
+    }
+}
+
+/**
+ * Removes the draft after a successful submit.
+ */
+function clearDraft(key: string) {
+    try {
+        window.localStorage.removeItem(key);
+    }
+    catch {
+        // Nothing to clean up when storage is blocked
+    }
+}
+
+/**
+ * Fills answers the server has not stored yet from the local draft.
+ */
+function applyDraft(answers: EvaluationAnswerForm[], draft: EvaluationDraft | null): EvaluationAnswerForm[] {
+    if (!draft) return answers;
+
+    return answers.map(function(answer) {
+        const saved = draft[answer.question_id];
+        if (!saved) return answer;
+
+        return {
+            ...answer,
+            rating_value: answer.rating_value || saved.rating_value,
+            response_text: answer.response_text || saved.response_text
+        };
+    });
+}
+
 function toRenderedSections(form: EvaluationForm | null): RenderedSection[] {
     if (!form) {
         return [];
@@ -101,6 +178,8 @@ export default function StudentEvaluations() {
     const [isLoadingForm, setIsLoadingForm] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
+    const [loadError, setLoadError] = useState<string | null>(null);
+    const draftKey = toDraftKey(enrollmentId, gradingPeriodId);
     const { pendingCount, targetOptions, targets } = useEvaluationTargets(refreshKey);
 
     const hasTarget = Boolean(enrollmentId && gradingPeriodId);
@@ -126,6 +205,7 @@ export default function StudentEvaluations() {
 
     useEffect(function() {
         setForm(null);
+        setLoadError(null);
         methods.reset({ responses: [] });
 
         if (!hasTarget) {
@@ -144,7 +224,7 @@ export default function StudentEvaluations() {
                 }
 
                 if (!result.data) {
-                    navigate(BASE_PATH);
+                    setLoadError(result.error?.message || 'The evaluation form could not be loaded.');
                     return;
                 }
 
@@ -156,7 +236,12 @@ export default function StudentEvaluations() {
                 }
 
                 setForm(result.data);
-                methods.reset({ responses: toAnswerForms(result.data) });
+                const answers = toAnswerForms(result.data);
+                methods.reset({
+                    responses: result.data.is_completed
+                        ? answers
+                        : applyDraft(answers, readDraft(toDraftKey(enrollmentId, result.data.grading_period_id || gradingPeriodId)))
+                });
             }
             finally {
                 if (active) {
@@ -171,6 +256,26 @@ export default function StudentEvaluations() {
             active = false;
         };
     }, [enrollmentId, gradingPeriodId, refreshKey]);
+
+    // Keep a local draft of the ratings so a refresh does not lose them
+    useEffect(function() {
+        if (!form || form.is_completed) return;
+
+        const key = toDraftKey(enrollmentId, form.grading_period_id || gradingPeriodId);
+        let timer: ReturnType<typeof setTimeout> | null = null;
+        const subscription = methods.watch(function(values, { name }) {
+            if (!name?.startsWith('responses')) return;
+            if (timer) clearTimeout(timer);
+            timer = setTimeout(function() {
+                writeDraft(key, (values.responses ?? []) as EvaluationAnswerForm[]);
+            }, DRAFT_SAVE_DELAY_MS);
+        });
+
+        return function() {
+            if (timer) clearTimeout(timer);
+            subscription.unsubscribe();
+        };
+    }, [form, enrollmentId, gradingPeriodId, methods]);
 
     const sections = useMemo(function() {
         return toRenderedSections(form);
@@ -309,6 +414,8 @@ export default function StudentEvaluations() {
             const result = await submitEvaluation(enrollmentId, form.grading_period_id || gradingPeriodId, responses);
 
             if (!result.error) {
+                clearDraft(toDraftKey(enrollmentId, form.grading_period_id || gradingPeriodId));
+                clearDraft(draftKey);
                 setRefreshKey(function(previous) {
                     return previous + 1;
                 });
@@ -344,6 +451,38 @@ export default function StudentEvaluations() {
                     steps={EVALUATION_STEPS}
                     onStepClick={handleStepClick}
                 />
+
+                {loadError && hasTarget && (
+                    <div
+                        className="border border-rose-200 bg-rose-50/60 dark:bg-rose-950/30 dark:border-rose-800/80 flex flex-wrap gap-3 items-center justify-between px-4 py-3 rounded-xl"
+                        role="alert"
+                    >
+                        <span className="text-rose-800 dark:text-rose-200 text-sm">
+                            {loadError}
+                        </span>
+                        <div className="flex gap-2">
+                            <CommonButton
+                                color="inherit"
+                                size="small"
+                                variant="outlined"
+                                onClick={function() {
+                                    navigate(BASE_PATH);
+                                }}
+                            >
+                                Back to List
+                            </CommonButton>
+                            <CommonButton
+                                size="small"
+                                variant="contained"
+                                onClick={function() {
+                                    setRefreshKey((previous) => previous + 1);
+                                }}
+                            >
+                                Try Again
+                            </CommonButton>
+                        </div>
+                    </div>
+                )}
 
                 {/* Step Body */}
                 {currentStep === 1

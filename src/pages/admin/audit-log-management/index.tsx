@@ -3,7 +3,7 @@ import { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import AuditLogDetailContent from '@pages/admin/audit-log-management/components/AuditLogDetailContent';
-import { FILTER_FORM_ID, SORT_COLUMNS } from '@pages/admin/audit-log-management/constants/audit-log.constant';
+import { ACTION_OPTIONS, AUDIT_LOG_FILTER_FORM_ID, AUDIT_LOG_SORT_COLUMNS } from '@pages/admin/audit-log-management/constants/audit-log.constant';
 import FilterAuditLogForm from '@pages/admin/audit-log-management/forms/FilterAuditLogForm';
 import { useAuditLogTableConfig } from '@pages/admin/audit-log-management/hooks/use-audit-log-table-config';
 import { getAuditLogFilters, listAuditLogs } from '@services/audit-log.service';
@@ -41,7 +41,6 @@ function formatDate(value: string): string {
 
 export default function AuditLogManagement() {
     const [activeFilters, setActiveFilters] = useState<AuditLogFilterValues | null>(null);
-    const [quickAction, setQuickAction] = useState<string>('All');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [tableOptions, setTableOptions] = useState<CommonSelectOption[]>([]);
     const [eventOptions, setEventOptions] = useState<CommonSelectOption[]>([]);
@@ -90,15 +89,7 @@ export default function AuditLogManagement() {
         search: string,
         sort: SortStringDto[]
     ) {
-        // Merge active filters with quick action chip if set
-        const effectiveFilters: AuditLogFilterValues = {
-            ...(activeFilters || EMPTY_FILTERS),
-            action: quickAction !== 'All'
-                ? quickAction
-                : (activeFilters?.action || 'All')
-        };
-
-        const result = await listAuditLogs(page, size, search, sort, effectiveFilters);
+        const result = await listAuditLogs(page, size, search, sort, activeFilters || EMPTY_FILTERS);
         if (result.data?.content) {
             result.data.content.forEach(function(item: AuditLogRow) {
                 rowsMapRef.current.set(item.id, item);
@@ -107,26 +98,26 @@ export default function AuditLogManagement() {
         return result;
     }
 
+    // The action pills and the filter form share activeFilters.action, so they always agree
+    const selectedAction = activeFilters?.action || 'All';
+
     function handleFilterSubmit(values: AuditLogFilterValues) {
         setActiveFilters(values);
-        if (values.action && values.action !== 'All') {
-            setQuickAction(values.action);
-        }
         setIsFilterOpen(false);
     }
 
     function handleFilterReset() {
         filterMethods.reset(EMPTY_FILTERS);
         setActiveFilters(null);
-        setQuickAction('All');
     }
 
     function handleQuickActionChange(action: string) {
-        setQuickAction(action);
-        setActiveFilters((prev) => ({
-            ...(prev || EMPTY_FILTERS),
+        const nextFilters: AuditLogFilterValues = {
+            ...(activeFilters || EMPTY_FILTERS),
             action
-        }));
+        };
+        setActiveFilters(nextFilters);
+        filterMethods.reset(nextFilters);
     }
 
     function handleCloseView() {
@@ -181,13 +172,8 @@ export default function AuditLogManagement() {
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1">
                     Action Type:
                 </span>
-                {[
-                    { label: 'All Actions', value: 'All' },
-                    { label: 'INSERT (Create)', value: 'INSERT' },
-                    { label: 'UPDATE (Modify)', value: 'UPDATE' },
-                    { label: 'DELETE (Remove)', value: 'DELETE' }
-                ].map((pill) => {
-                    const isSelected = quickAction === pill.value;
+                {ACTION_OPTIONS.map((pill) => {
+                    const isSelected = selectedAction === pill.value;
                     return (
                         <button
                             className={`px-3 py-1 text-xs font-bold rounded-lg border transition-all cursor-pointer shadow-2xs ${
@@ -195,9 +181,9 @@ export default function AuditLogManagement() {
                                     ? 'bg-slate-900 text-white border-slate-900 dark:bg-slate-100 dark:text-slate-900 dark:border-slate-100'
                                     : 'bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-750'
                             }`}
-                            key={pill.value}
+                            key={String(pill.value)}
                             type="button"
-                            onClick={() => handleQuickActionChange(pill.value)}
+                            onClick={() => handleQuickActionChange(String(pill.value))}
                         >
                             {pill.label}
                         </button>
@@ -215,7 +201,7 @@ export default function AuditLogManagement() {
                         searchHints: SEARCH_HINTS.auditLogs
                     }
                 }}
-                dependencies={[activeFilters, quickAction]}
+                dependencies={[activeFilters]}
                 filterModalProps={{
                     cardProps: {
                         cardHeaderProps: {
@@ -226,21 +212,16 @@ export default function AuditLogManagement() {
                     confirmText: 'Apply Filters',
                     formContent: (
                         <FilterAuditLogForm
-                            actionOptions={[
-                                { label: 'All Actions', value: 'All' },
-                                { label: 'INSERT (Create)', value: 'INSERT' },
-                                { label: 'UPDATE (Modify)', value: 'UPDATE' },
-                                { label: 'DELETE (Remove)', value: 'DELETE' }
-                            ]}
+                            actionOptions={ACTION_OPTIONS}
                             control={filterMethods.control}
                             eventOptions={eventOptions}
-                            id={FILTER_FORM_ID}
+                            id={AUDIT_LOG_FILTER_FORM_ID}
                             operatorOptions={operatorOptions}
                             tableOptions={tableOptions}
                             onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
                         />
                     ),
-                    formId: FILTER_FORM_ID,
+                    formId: AUDIT_LOG_FILTER_FORM_ID,
                     open: isFilterOpen,
                     onClose: function() {
                         filterMethods.reset(activeFilters || EMPTY_FILTERS);
@@ -251,7 +232,7 @@ export default function AuditLogManagement() {
                 renderGridCard={function(item) {
                     return renderAuditBentoCard(item);
                 }}
-                sortColumns={SORT_COLUMNS}
+                sortColumns={AUDIT_LOG_SORT_COLUMNS}
                 tableProps={{
                     leadingColumnDefs: columnDefs
                 }}

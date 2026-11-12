@@ -20,6 +20,19 @@ import { exportCsvFile } from '@utils/file.util';
 import { generateGradeSheetCsv } from '@utils/grading.util';
 import { useMemo, useState } from 'react';
 
+const SPECIAL_GRADE_LABELS: Record<string, string> = {
+    DRP: 'DRP (Dropped)',
+    FA: 'FA (Failure due to Absences)',
+    INC: 'INC (Incomplete)',
+    UW: 'UW (Unauthorized Withdrawal)'
+};
+
+interface PendingSpecialGrade {
+    code: string;
+    enrollmentId: string;
+    studentName: string;
+}
+
 interface GradeSheetPanelProps {
     components: GradingComponent[];
     gradeSheet: GradeSheetRow[];
@@ -28,6 +41,7 @@ interface GradeSheetPanelProps {
     courseTitle?: string;
     gradingPeriodId?: string;
     isEncodingOpen?: boolean;
+    isCalculating?: boolean;
     isFlagBusy?: boolean;
     isSubmittingGrades?: boolean;
     periodName?: string;
@@ -49,6 +63,7 @@ export default function GradeSheetPanel({
     courseTitle,
     gradingPeriodId,
     isEncodingOpen = true,
+    isCalculating = false,
     isFlagBusy,
     isSubmittingGrades,
     periodName,
@@ -64,12 +79,36 @@ export default function GradeSheetPanel({
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [auditEnrollmentId, setAuditEnrollmentId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [pendingSpecialGrade, setPendingSpecialGrade] = useState<PendingSpecialGrade | null>(null);
 
+    // Locked only when every row has left Draft; the server skips locked rows on Calculate and Submit
     const isSubmitted
         = gradeSheet.length > 0
-        && gradeSheet.some(
+        && gradeSheet.every(
             (r) => r.status === 'Submitted' || r.status === 'Approved' || r.status === 'Released'
         );
+
+    /**
+     * Clearing a special grade applies right away; setting one asks first because it
+     * replaces the computed grade and locks the student's components.
+     */
+    function handleSpecialGradeChange(row: GradeSheetRow, value: string) {
+        if (!value) {
+            onUpdateSpecialGrade?.(row.enrollment_id, null);
+            return;
+        }
+
+        setPendingSpecialGrade({
+            code: value, enrollmentId: row.enrollment_id, studentName: row.full_name ?? 'this student'
+        });
+    }
+
+    async function handleConfirmSpecialGrade() {
+        if (!pendingSpecialGrade) return;
+
+        await onUpdateSpecialGrade?.(pendingSpecialGrade.enrollmentId, pendingSpecialGrade.code);
+        setPendingSpecialGrade(null);
+    }
 
     function handleExportCsv() {
         if (gradeSheet.length === 0) return;
@@ -135,7 +174,8 @@ export default function GradeSheetPanel({
                     </CommonButton>
 
                     <CommonButton
-                        disabled={components.length === 0 || isSubmitted || !isEncodingOpen}
+                        disabled={components.length === 0 || isSubmitted || !isEncodingOpen || isCalculating}
+                        loading={isCalculating}
                         size="small"
                         startIcon={(
                             <CalculatorIcon
@@ -146,7 +186,9 @@ export default function GradeSheetPanel({
                         variant="outlined"
                         onClick={onCalculate}
                     >
-                        Calculate
+                        {isCalculating
+                            ? 'Calculating...'
+                            : 'Calculate'}
                     </CommonButton>
 
                     {onSubmitGrades && (
@@ -349,7 +391,7 @@ export default function GradeSheetPanel({
                                                     disabled={isSubmitted || !isEncodingOpen || isFlagBusy}
                                                     title="Select special grade flag (INC, DRP, FA, UW)"
                                                     value={row.special_grade || ''}
-                                                    onChange={(e) => onUpdateSpecialGrade?.(row.enrollment_id, e.target.value || null)}
+                                                    onChange={(e) => handleSpecialGradeChange(row, e.target.value)}
                                                 >
                                                     <option
                                                         className="text-slate-700 dark:text-slate-200 bg-white dark:bg-zinc-900"
@@ -439,6 +481,31 @@ export default function GradeSheetPanel({
                     title: `Are you sure you want to submit official grades for ${periodName ?? 'this grading period'} ${sectionCode ?? ''} to the Registrar? Once submitted, the grade sheet will be locked for review.`
                 }}
                 onClose={() => setIsConfirmOpen(false)}
+            />
+
+            {/* Confirm Special Grade Modal */}
+            <ConfirmPromptModal
+                formButtonsProps={{
+                    cancelProps: {
+                        children: 'Cancel',
+                        disabled: isFlagBusy,
+                        onClick: () => setPendingSpecialGrade(null)
+                    },
+                    confirmProps: {
+                        children: `Apply ${pendingSpecialGrade?.code ?? ''}`,
+                        disabled: isFlagBusy,
+                        loading: isFlagBusy,
+                        onClick: handleConfirmSpecialGrade
+                    }
+                }}
+                mainContent={{
+                    title: `Apply ${SPECIAL_GRADE_LABELS[pendingSpecialGrade?.code ?? ''] ?? pendingSpecialGrade?.code ?? ''}?`
+                }}
+                open={pendingSpecialGrade !== null}
+                subContent={{
+                    title: `${pendingSpecialGrade?.studentName ?? 'This student'} will get ${pendingSpecialGrade?.code ?? ''} for ${periodName ?? 'this period'} instead of a computed grade, and their grading components will be locked until you clear it.`
+                }}
+                onClose={() => setPendingSpecialGrade(null)}
             />
 
             {/* Student Grade Breakdown Modal */}

@@ -17,6 +17,8 @@ const EMPTY_FILTERS: StaffProfileRequestFilterValues = {
     status: 'All'
 };
 
+const REALTIME_REFRESH_DELAY_MS = 800;
+
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'created_at', label: 'Submitted Date' },
     { field: 'user_name', label: 'Staff Name' },
@@ -32,18 +34,24 @@ export default function StaffProfileVerificationPage() {
     const [refreshCount, setRefreshCount] = useState(0);
 
     const rowsMapRef = useRef<Map<string, StaffProfileRequestRow>>(new Map());
+    const isKeepingLoadedRowsRef = useRef(false);
+    const loadedPagesRef = useRef(1);
     const filterMethods = useForm<StaffProfileRequestFilterValues>({ defaultValues: EMPTY_FILTERS });
     const { columnDefs } = useStaffVerificationTableConfig();
 
     useEffect(function() {
-        function handleVisibilityOrFocus() {
-            if (document.visibilityState === 'visible') {
-                setRefreshCount((prev) => prev + 1);
-            }
-        }
+        let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 
-        document.addEventListener('visibilitychange', handleVisibilityOrFocus);
-        window.addEventListener('focus', handleVisibilityOrFocus);
+        // Several changes often arrive together, so wait a moment and refresh once
+        function handleRealtimeChange() {
+            if (refreshTimer) {
+                clearTimeout(refreshTimer);
+            }
+            refreshTimer = setTimeout(function() {
+                isKeepingLoadedRowsRef.current = true;
+                setRefreshCount((prev) => prev + 1);
+            }, REALTIME_REFRESH_DELAY_MS);
+        }
 
         const channel = supabase
             .channel('realtime:staff_profile_change_requests')
@@ -54,28 +62,37 @@ export default function StaffProfileVerificationPage() {
                     schema: 'public',
                     table: 'staff_profile_change_requests'
                 },
-                function() {
-                    setRefreshCount((prev) => prev + 1);
-                }
+                handleRealtimeChange
             )
             .subscribe();
 
         return function() {
-            document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
-            window.removeEventListener('focus', handleVisibilityOrFocus);
+            if (refreshTimer) {
+                clearTimeout(refreshTimer);
+            }
             supabase.removeChannel(channel);
         };
     }, []);
 
+    /**
+     * Loads one page of requests. A background refresh reloads every page already shown
+     * in one call, so the list keeps its length and the scroll position stays put.
+     */
     async function fetchRequests(
         page: number,
         size: number,
         search: string,
         sort: SortStringDto[]
     ) {
+        const isKeepingLoadedRows = isKeepingLoadedRowsRef.current && page === 1;
+        isKeepingLoadedRowsRef.current = false;
+        const pagesToLoad = isKeepingLoadedRows
+            ? Math.max(1, loadedPagesRef.current)
+            : 1;
+
         const result = await listStaffProfileRequests(
             page,
-            size,
+            size * pagesToLoad,
             search,
             sort,
             activeFilters?.role_code || null,
@@ -87,7 +104,27 @@ export default function StaffProfileVerificationPage() {
                 rowsMapRef.current.set(item.id, item);
             });
         }
-        return result;
+
+        if (!result.data) {
+            return result;
+        }
+
+        if (!isKeepingLoadedRows) {
+            loadedPagesRef.current = page;
+            return result;
+        }
+
+        // Report the reload as the last page shown so "load more" continues from there
+        const totalPages = Math.ceil(result.data.totalElements / size);
+        return {
+            ...result,
+            data: {
+                ...result.data,
+                number: pagesToLoad - 1,
+                size,
+                totalPages
+            }
+        };
     }
 
     function handleFilterSubmit(values: StaffProfileRequestFilterValues) {
@@ -120,6 +157,7 @@ export default function StaffProfileVerificationPage() {
     }
 
     function handleVerificationSuccess() {
+        isKeepingLoadedRowsRef.current = true;
         setRefreshCount((prev) => prev + 1);
     }
 

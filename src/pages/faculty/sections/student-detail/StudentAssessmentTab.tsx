@@ -1,6 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonSelect from '@components/select/CommonSelect';
-import { formatDate, formatScore, submissionStatusVariant } from '@pages/faculty/sections/student-detail/studentDetailFormat';
+import { submissionStatusVariant } from '@constants/status-badge.constant';
+import { formatDate, formatScore } from '@pages/faculty/sections/student-detail/studentDetailFormat';
 import SubmissionDetailModal from '@pages/faculty/sections/student-detail/SubmissionDetailModal';
 import { StudentEvaluationAssessment } from '@type/faculty.type';
 import { useMemo, useState } from 'react';

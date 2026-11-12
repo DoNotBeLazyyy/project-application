@@ -18,15 +18,21 @@ import {
     UserIcon,
     XIcon
 } from '@phosphor-icons/react';
-import { createThread, listSectionThreads, uploadDiscussionFile } from '@services/discussion.service';
+import {
+    createThread,
+    listSectionThreads,
+    removeDiscussionFiles,
+    uploadDiscussionFiles
+} from '@services/discussion.service';
 import { useToastStore } from '@stores/toast.store';
-import { DiscussionAttachmentPayload, DiscussionThreadRow } from '@type/discussion.type';
+import { DiscussionThreadRow } from '@type/discussion.type';
 import { formatShortDate } from '@utils/date.util';
 import { extractClipboardFiles } from '@utils/file.util';
 import { ClipboardEvent, useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
 const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
+const THREAD_PAGE_SIZE = 50;
 const COMPOSE_TEXTAREA_SX = {
     '& .common_textarea_html_input': {
         height: '100%',
@@ -57,6 +63,9 @@ interface SectionDiscussionPanelProps {
 
 export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionPanelProps) {
     const [threads, setThreads] = useState<DiscussionThreadRow[]>([]);
+    const [loadedPages, setLoadedPages] = useState(1);
+    const [totalThreads, setTotalThreads] = useState(0);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
     const [filterMode, setFilterMode] = useState<'All' | 'Pinned' | 'Unanswered' | 'Resolved'>('All');
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -89,16 +98,47 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
 
     const hasRealChanges = draftGuard.hasRealChanges || files.length > 0;
 
-    async function loadThreads() {
-        const result = await listSectionThreads(sectionId, 1, 50, '', []);
+    /**
+     * Reloads the threads, keeping as many pages as are already shown.
+     *
+     * @param pageCount - How many pages to load.
+     */
+    async function loadThreads(pageCount = loadedPages) {
+        const result = await listSectionThreads(sectionId, 1, THREAD_PAGE_SIZE * pageCount, '', []);
         if (result.data) {
             setThreads(result.data.content);
+            setTotalThreads(result.data.totalElements);
+            setLoadedPages(pageCount);
+        }
+    }
+
+    /**
+     * Loads the next page of older threads and adds it to the list.
+     */
+    async function handleLoadMore() {
+        if (isLoadingMore) return;
+
+        setIsLoadingMore(true);
+        const nextPage = loadedPages + 1;
+        const result = await listSectionThreads(sectionId, nextPage, THREAD_PAGE_SIZE, '', []);
+        setIsLoadingMore(false);
+
+        if (result.data) {
+            const pageThreads = result.data.content;
+            setThreads((prev) => {
+                const knownIds = new Set(prev.map((thread) => thread.id));
+                return [...prev, ...pageThreads.filter((thread) => !knownIds.has(thread.id))];
+            });
+            setTotalThreads(result.data.totalElements);
+            setLoadedPages(nextPage);
         }
     }
 
     useEffect(function() {
-        loadThreads();
+        loadThreads(1);
     }, [sectionId]);
+
+    const hasMoreThreads = threads.length < totalThreads;
 
     const filteredThreads = threads.filter((t) => {
         if (filterMode === 'Pinned') return t.is_pinned;
@@ -185,22 +225,24 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
         if (isUploading) return;
 
         setIsUploading(true);
-        const uploaded: DiscussionAttachmentPayload[] = [];
-
-        for (const file of files) {
-            const upload = await uploadDiscussionFile(sectionId, file);
-            if (upload.error || !upload.data) {
-                setIsUploading(false);
-                showToast(`Failed to upload ${file.name}.`, 'error');
-                return;
+        const upload = await uploadDiscussionFiles(sectionId, files);
+        if (!upload.data) {
+            setIsUploading(false);
+            // Storage errors are already shown; a refused file is not
+            if (upload.error?.code === 'INVALID_FILE') {
+                showToast(upload.error.message, 'error');
             }
-            uploaded.push(upload.data);
+            return;
         }
 
-        const result = await createThread(sectionId, values.title.trim(), values.body.trim(), uploaded);
+        const result = await createThread(sectionId, values.title.trim(), values.body.trim(), upload.data);
         setIsUploading(false);
 
-        if (!result.error) {
+        if (result.error) {
+            // The thread was not saved, so its files are not needed
+            await removeDiscussionFiles(upload.data);
+        }
+        else {
             resetComposer();
             await loadThreads();
         }
@@ -225,7 +267,7 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                             onClick={() => setFilterMode(f)}
                         >
                             {f === 'All'
-                                ? `All Threads (${threads.length})`
+                                ? `All Threads (${totalThreads || threads.length})`
                                 : f}
                         </button>
                     ))}
@@ -339,6 +381,26 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                             ))}
                         </div>
                     )}
+
+                {/* Filters only look at the threads loaded so far, so say so */}
+                {hasMoreThreads && (
+                    <div className="flex flex-col gap-2 items-center pb-6">
+                        {filterMode !== 'All' && (
+                            <p className="text-slate-500 text-xs">
+                                Showing {filterMode.toLowerCase()} threads among the {threads.length} newest of {totalThreads}. Load more to search older threads.
+                            </p>
+                        )}
+                        <CommonButton
+                            disabled={isLoadingMore}
+                            loading={isLoadingMore}
+                            size="small"
+                            variant="outlined"
+                            onClick={handleLoadMore}
+                        >
+                            Load More ({totalThreads - threads.length} older)
+                        </CommonButton>
+                    </div>
+                )}
             </div>
 
             {/* Read Modal: DiscussionThreadModal */}

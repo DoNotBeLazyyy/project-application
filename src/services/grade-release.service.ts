@@ -2,6 +2,7 @@ import { callRpc } from '@services/supabase.wrapper';
 import {
     ApproveAndReleaseResult,
     GradeReleaseSchedule,
+    ReturnToFacultyResult,
     SectionGradeSheetStudent,
     SectionGradeSubmissionRow
 } from '@type/grade-release.type';
@@ -59,6 +60,26 @@ export async function approveAndReleaseSection(
 ): Promise<ServiceResult<ApproveAndReleaseResult>> {
     return callRpc<ApproveAndReleaseResult>('fn_approve_and_release_grades', {
         p_grading_period_id: gradingPeriodId,
+        p_section_id: sectionId
+    });
+}
+
+/**
+ * Sends a section's submitted grades for one period back to the faculty as drafts.
+ *
+ * @param sectionId - Section whose grades go back.
+ * @param gradingPeriodId - Grading period of those grades.
+ * @param reason - Why they go back; the faculty sees it in a notification.
+ * @returns How many grades were returned.
+ */
+export async function returnSectionGradesToFaculty(
+    sectionId: string,
+    gradingPeriodId: string,
+    reason: string
+): Promise<ServiceResult<ReturnToFacultyResult>> {
+    return callRpc<ReturnToFacultyResult>('fn_return_section_grades_to_faculty', {
+        p_grading_period_id: gradingPeriodId,
+        p_reason: reason,
         p_section_id: sectionId
     });
 }

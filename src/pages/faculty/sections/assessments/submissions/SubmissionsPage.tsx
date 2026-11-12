@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import GradingPanel from '@pages/faculty/sections/assessments/submissions/GradingPanel';
 import RubricGradingPanel from '@pages/faculty/sections/assessments/submissions/RubricGradingPanel';
 import SubmissionList from '@pages/faculty/sections/assessments/submissions/SubmissionList';
@@ -33,10 +34,13 @@ export default function SubmissionsPage() {
     const [draftFeedback, setDraftFeedback] = useState('');
     const [savedGradeDraft, setSavedGradeDraft] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    // undefined: no prompt; null: leave the open submission; string: open that submission
+    const [pendingSelection, setPendingSelection] = useState<string | null | undefined>(undefined);
 
     const isGradeDirty = buildGradeDraftKey(draftFeedback, draftAnswers, draftEvaluations)
         !== savedGradeDraft;
-    const canSaveGrade = Boolean(selectedSubmission && (selectedSubmission.status !== 'Graded' || isGradeDirty));
+    const isNotSubmitted = selectedSubmission?.status === 'Not Started' || selectedSubmission?.status === 'In Progress';
+    const canSaveGrade = Boolean(selectedSubmission && (selectedSubmission.status !== 'Graded' || isGradeDirty) && !isNotSubmitted);
 
     useEffect(function() {
         if (!assessmentId) return;
@@ -46,6 +50,32 @@ export default function SubmissionsPage() {
     async function fetchSubmissions() {
         const result = await listSubmissions(assessmentId);
         if (result.data) setSubmissions(result.data);
+    }
+
+    /**
+     * Opens another submission, asking first when the open one has unsaved grading changes.
+     */
+    async function handleRequestSelect(submissionId: string | null) {
+        if (submissionId === selectedSubmission?.id) return;
+        if (selectedSubmission && isGradeDirty) {
+            setPendingSelection(submissionId);
+            return;
+        }
+        await applySelection(submissionId);
+    }
+
+    async function applySelection(submissionId: string | null) {
+        if (submissionId === null) {
+            setSelectedSubmission(null);
+            return;
+        }
+        await handleSelectSubmission(submissionId);
+    }
+
+    async function handleDiscardAndSwitch() {
+        const target = pendingSelection;
+        setPendingSelection(undefined);
+        if (target !== undefined) await applySelection(target);
     }
 
     async function handleSelectSubmission(submissionId: string) {
@@ -138,6 +168,13 @@ export default function SubmissionsPage() {
 
     return (
         <CommonCard className="h-full w-full">
+            <DiscardChangesPromptModal
+                open={pendingSelection !== undefined}
+                subtitle="The grade you are editing has not been saved. Discard your changes and open the other submission?"
+                title="Discard unsaved grading?"
+                onContinueEditing={() => setPendingSelection(undefined)}
+                onDiscard={handleDiscardAndSwitch}
+            />
             <div className="flex flex-col gap-4 h-full">
                 <div className="flex gap-3 items-center">
                     <CommonButton
@@ -175,7 +212,7 @@ export default function SubmissionsPage() {
                     >
                         <SubmissionList
                             submissions={submissions}
-                            onSelect={handleSelectSubmission}
+                            onSelect={handleRequestSelect}
                         />
                     </div>
                     <div
@@ -195,7 +232,7 @@ export default function SubmissionsPage() {
                                         />
                                     )}
                                     variant="outlined"
-                                    onClick={() => setSelectedSubmission(null)}
+                                    onClick={() => handleRequestSelect(null)}
                                 >
                                     Back to Submissions
                                 </CommonButton>

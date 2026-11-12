@@ -4,6 +4,8 @@ import ValidCommonDatePicker from '@components/datepicker/ValidCommonDatepicker'
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import ValidCommonNumberInput from '@components/input/ValidCommonNumberInput';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
+import { HISTORY_DIFF_FIELD_CLASS, HistoryDiffMarks } from '@pages/admin/school-year-management/wizard/academic-year-history';
+import { HistoryDiffNote } from '@pages/admin/school-year-management/wizard/HistoryDiffBadge';
 import {
     checkSchoolYearDateConflict,
     ExistingSchoolYearComparison,
@@ -21,6 +23,8 @@ import { Control, useFormState, UseFormSetValue, useWatch } from 'react-hook-for
 
 interface Step1SchoolYearInfoProps {
     control: Control<AcademicYearWizardFormValues>;
+    /** Differences to highlight while comparing saved versions (history view only). */
+    diffMarks?: HistoryDiffMarks;
     disabled?: boolean;
     isNew?: boolean;
     setValue: UseFormSetValue<AcademicYearWizardFormValues>;
@@ -35,6 +39,7 @@ interface Step1SchoolYearInfoProps {
 export default function Step1SchoolYearInfo({
     control,
     currentSchoolYearId = null,
+    diffMarks,
     disabled = false,
     existingSchoolYears = [],
     isNew = true,
@@ -48,6 +53,16 @@ export default function Step1SchoolYearInfo({
     const label = useWatch({ control, name: 'label' });
 
     const { errors } = useFormState({ control });
+
+    /**
+     * Highlight classes for a field that differs from the compared version.
+     */
+    function getDiffClass(field: string): string | undefined {
+        return diffMarks?.[field]
+            ? HISTORY_DIFF_FIELD_CLASS
+            : undefined;
+    }
+
     const firstErrorField = useMemo(() => {
         const step1Fields: (keyof AcademicYearWizardFormValues)[] = ['start_date', 'end_date', 'code', 'label', 'max_units_per_term'];
         return step1Fields.find((f) => Boolean(errors[f]));
@@ -172,7 +187,7 @@ export default function Step1SchoolYearInfo({
 
             {/* Inputs Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                <div>
+                <div className={getDiffClass('start_date')}>
                     <ValidCommonDatePicker
                         control={control}
                         description="Official start date of the academic calendar. Terms must begin on or after this date."
@@ -210,9 +225,10 @@ export default function Step1SchoolYearInfo({
                             }
                         }}
                     />
+                    <HistoryDiffNote mark={diffMarks?.start_date} />
                 </div>
 
-                <div>
+                <div className={getDiffClass('end_date')}>
                     <ValidCommonDatePicker
                         control={control}
                         description="Official concluding date of this academic year. Terms must end on or before this date."
@@ -250,9 +266,10 @@ export default function Step1SchoolYearInfo({
                             }
                         }}
                     />
+                    <HistoryDiffNote mark={diffMarks?.end_date} />
                 </div>
 
-                <div>
+                <div className={getDiffClass('code')}>
                     <ValidCommonInput
                         control={control}
                         description="Auto-generated unique system identifier for this academic year based on Start and End dates (e.g. AY-2026-2027)."
@@ -269,6 +286,7 @@ export default function Step1SchoolYearInfo({
                             userEditedCodeRef.current = true;
                         }}
                     />
+                    <HistoryDiffNote mark={diffMarks?.code} />
                     {sourceSchoolYear && (
                         <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
                             Auto-updated from duplicated year: &quot;{sourceSchoolYear.code}&quot;
@@ -276,7 +294,7 @@ export default function Step1SchoolYearInfo({
                     )}
                 </div>
 
-                <div>
+                <div className={getDiffClass('label')}>
                     <ValidCommonInput
                         control={control}
                         description="Auto-generated title displayed on portal headers, report cards, and official transcripts based on Start and End dates."
@@ -293,6 +311,7 @@ export default function Step1SchoolYearInfo({
                             userEditedLabelRef.current = true;
                         }}
                     />
+                    <HistoryDiffNote mark={diffMarks?.label} />
                     {sourceSchoolYear && (
                         <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
                             Auto-updated from duplicated year: &quot;{sourceSchoolYear.label}&quot;
@@ -325,7 +344,11 @@ export default function Step1SchoolYearInfo({
             </div>
 
             {/* Active Status Card */}
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/40 flex items-center justify-between gap-4">
+            <div
+                className={`p-4 rounded-xl border bg-slate-50/50 dark:bg-zinc-800/40 flex flex-wrap items-center justify-between gap-4 ${diffMarks?.is_active
+                    ? 'border-amber-300 dark:border-amber-700'
+                    : 'border-slate-200 dark:border-zinc-800'}`}
+            >
                 <div className="flex items-center gap-2">
                     <ShieldCheckIcon className="w-4 h-4 text-emerald-600 shrink-0" />
                     <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
@@ -343,6 +366,11 @@ export default function Step1SchoolYearInfo({
                     disabled={disabled}
                     name="is_active"
                 />
+                {diffMarks?.is_active && (
+                    <div className="basis-full -mt-3">
+                        <HistoryDiffNote mark={diffMarks.is_active} />
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -1,6 +1,6 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import { YEAR_LEVEL_OPTIONS } from '@constants/year-level.constant';
+import { YEAR_LEVEL_TEXT_OPTIONS } from '@constants/year-level.constant';
 import { useCourseOptions } from '@pages/dean/course-management/use-course-options';
 import { TermTypeOptionWithMeta, useActiveTermOptions } from '@pages/dean/curriculum-map-management/use-active-term-options';
 import { ComponentPropsForm } from '@type/common.type';
@@ -147,7 +147,7 @@ export default function CurriculumMapForm({
             fieldProps: { helperText: 'Year level when this course is taken' },
             label: 'Year Level',
             name: 'year_level',
-            options: YEAR_LEVEL_OPTIONS,
+            options: YEAR_LEVEL_TEXT_OPTIONS,
             rules: disabled
                 ? undefined
                 : { required: 'Please select a year level' },

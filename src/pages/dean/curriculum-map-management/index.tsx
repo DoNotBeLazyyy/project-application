@@ -14,6 +14,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { useSchoolYearOptions } from '@pages/admin/school-year-management/use-school-year-options';
 import { useTermTypeOptions } from '@pages/admin/term-management/type/use-term-type-options';
+import DeanNoDepartmentBanner from '@pages/dean/components/DeanNoDepartmentBanner';
 import CurriculumMapForm from '@pages/dean/curriculum-map-management/CurriculumMapForm';
 import CurriculumTermTable from '@pages/dean/curriculum-map-management/CurriculumTermTable';
 import { useActiveTermOptions } from '@pages/dean/curriculum-map-management/use-active-term-options';
@@ -971,6 +972,8 @@ export default function CurriculumMapManagement({
     return (
         <CommonCard className="h-full">
             <div className="flex flex-col gap-4 h-full min-h-0 overflow-hidden">
+                <DeanNoDepartmentBanner />
+
                 <div className="flex-none flex items-center justify-between gap-3 pb-3 border-b border-(--mui-palette-divider)">
                     <div className="flex flex-wrap items-center gap-2 min-w-0">
                         {!shouldHideProgramSelect && (

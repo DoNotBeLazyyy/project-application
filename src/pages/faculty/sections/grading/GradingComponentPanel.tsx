@@ -67,6 +67,8 @@ interface DraftRow {
 interface GradingComponentPanelProps {
     components: GradingComponent[];
     locked: boolean;
+    // Why the components are locked; shown in the lock banner
+    lockMessage?: string;
     periodName?: string;
     periodWeight?: number;
     onCreate: (values: GradingComponentFormValues) => Promise<void>;
@@ -83,6 +85,7 @@ interface GradingComponentPanelProps {
 export default function GradingComponentPanel({
     components,
     locked,
+    lockMessage = 'Locked: grades for this period were submitted, so components can no longer be edited.',
     periodName,
     periodWeight,
     onCreate,
@@ -389,7 +392,7 @@ export default function GradingComponentPanel({
                         weight="bold"
                     />
                     <span className="text-[11px] leading-tight">
-                        Locked: grades have been recorded for this period, so components can no longer be edited.
+                        {lockMessage}
                     </span>
                 </div>
             )}

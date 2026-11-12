@@ -24,7 +24,6 @@ import {
     XCircleIcon
 } from '@phosphor-icons/react';
 import { approveStudentProfileRequest, rejectStudentProfileRequest } from '@services/registrar-verification.service';
-import { useToastStore } from '@stores/toast.store';
 import { ProfileFormValues } from '@type/profile.type';
 import { StudentProfileRequestRow } from '@type/registrar-verification.type';
 import { DEFAULT_FORM_OPTIONS, formErrors, MOBILE_NUMBER_RULE, POSTAL_CODE_RULE } from '@utils/form.util';
@@ -110,11 +109,14 @@ function pickProfileValues(values: VerificationFormValues): ProfileFormValues {
 }
 
 function buildInitialStudentEditableValues(request: StudentProfileRequestRow | null): ProfileFormValues {
+    const current = (request?.current_values || {}) as Partial<ProfileFormValues>;
     const requested = (request?.requested_changes || {}) as Partial<ProfileFormValues>;
     const approved = (request?.approved_changes || {}) as Partial<ProfileFormValues>;
-    const baseValues: Partial<ProfileFormValues> = request?.status === 'Approved with Edits'
+    const baseTarget: Partial<ProfileFormValues> = request?.status === 'Approved with Edits'
         ? approved
         : requested;
+    // Fields the student did not send keep their current value instead of going blank
+    const baseValues: Partial<ProfileFormValues> = { ...current, ...baseTarget };
 
     return {
         address_line1: baseValues.address_line1 || '',
@@ -327,15 +329,9 @@ export default function StudentProfileVerificationModal({
         );
         setIsSubmitting(false);
 
+        // The server's success message is already shown as a toast
         if (!result.error) {
             draftGuard.clearDraft();
-            useToastStore.getState()
-                .showToast(
-                    hasRegistrarEdits
-                        ? 'Student profile changes approved with registrar adjustments and recorded in Registrar Log.'
-                        : 'Student profile verified and approved successfully. Logged in Registrar Log.',
-                    'success'
-                );
             onSuccess?.();
             onClose();
         }
@@ -353,15 +349,9 @@ export default function StudentProfileVerificationModal({
         const result = await rejectStudentProfileRequest(request.id, rejectReason.trim(), isFalseInfoFlag);
         setIsSubmitting(false);
 
+        // The server's message is already shown as a toast
         if (!result.error) {
             draftGuard.clearDraft();
-            useToastStore.getState()
-                .showToast(
-                    isFalseInfoFlag
-                        ? 'Profile change request rejected as false information and recorded in Registrar Log.'
-                        : 'Profile change request rejected and recorded in Registrar Log.',
-                    'info'
-                );
             setIsRejectOpen(false);
             onSuccess?.();
             onClose();

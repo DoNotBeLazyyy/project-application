@@ -13,7 +13,7 @@ function isFullWidthCardRow(params: IsFullWidthRowParams): boolean {
     return !params.rowNode.rowPinned;
 }
 
-export default function CommonTable<TData = unknown>({
+export default function CommonTable({
     containerClassName,
     defaultColDef,
     hasCheckbox,
@@ -21,14 +21,13 @@ export default function CommonTable<TData = unknown>({
     isDeselectedOnBlur,
     isMobileCardDisabled,
     leadingColumnDefs = [],
-    tableActionConfig,
     trailingColumnDefs = [],
     onConfirmSort,
     onGridReady,
     onRowClicked,
     onSetSort,
     ...props
-}: CommonTableProps<TData>) {
+}: CommonTableProps) {
     const {
         containerRef,
         handleGridReady,
@@ -45,11 +44,10 @@ export default function CommonTable<TData = unknown>({
         resolvedColumnDefs,
         resolvedColDefs,
         rowSelection
-    } = useTableConfigs<TData>({
+    } = useTableConfigs({
         defaultColDef,
         hasCheckbox,
         leadingColumnDefs,
-        tableActionConfig,
         trailingColumnDefs
     });
     const { isMobile } = useBreakpoint();
@@ -59,8 +57,7 @@ export default function CommonTable<TData = unknown>({
             fullWidthCellRenderer: MobileCardCell,
             fullWidthCellRendererParams: {
                 columnDefs: resolvedColumnDefs,
-                hasCheckbox: hasCheckbox,
-                tableActionConfig: tableActionConfig
+                hasCheckbox: hasCheckbox
             },
             headerHeight: 0,
             isFullWidthRow: isFullWidthCardRow,

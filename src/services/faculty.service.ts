@@ -1,4 +1,4 @@
-import { callRpc } from '@services/supabase.wrapper';
+import { callRpc, CallRpcOptions } from '@services/supabase.wrapper';
 import {
     AttendanceRecord, AttendanceRecordUpdate, AttendanceSession, AttendanceSessionFormValues, FacultyEvaluationSummary, FacultyStudentGradeBreakdown, GradeCalculationResult, GradeSheetRow, GradingComponent, GradingComponentFormValues, GradingPeriod, MySectionListRow, SectionDetail, SectionStudent, StudentAttendanceRow, StudentEvaluation
 } from '@type/faculty.type';
@@ -100,12 +100,13 @@ export async function getAttendanceRecords(
 
 export async function saveAttendanceRecords(
     sessionId: string,
-    records: AttendanceRecordUpdate[]
+    records: AttendanceRecordUpdate[],
+    options?: CallRpcOptions
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_save_attendance_records', {
         p_session_id: sessionId,
         p_records: records
-    });
+    }, options);
 }
 
 export async function listGradingPeriodsBySection(
@@ -129,33 +130,36 @@ export async function listGradingComponents(
 export async function createGradingComponent(
     sectionId: string,
     gradingPeriodId: string,
-    params: GradingComponentFormValues
+    params: GradingComponentFormValues,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_create_grading_component', {
         p_section_id: sectionId,
         p_grading_period_id: gradingPeriodId,
         p_name: params.name.trim(),
         p_weight: Number(params.weight)
-    });
+    }, options);
 }
 
 export async function updateGradingComponent(
     componentId: string,
-    params: GradingComponentFormValues
+    params: GradingComponentFormValues,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_update_grading_component', {
         p_component_id: componentId,
         p_name: params.name.trim(),
         p_weight: Number(params.weight)
-    });
+    }, options);
 }
 
 export async function deleteGradingComponent(
-    componentId: string
+    componentId: string,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_delete_grading_component', {
         p_component_id: componentId
-    });
+    }, options);
 }
 
 export async function listGradeSheet(
@@ -326,4 +330,3 @@ export async function getFacultyStudentGradeBreakdown(
         p_grading_period_id: gradingPeriodId
     });
 }
-

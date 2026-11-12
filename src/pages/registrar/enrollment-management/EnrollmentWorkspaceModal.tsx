@@ -23,7 +23,8 @@ import {
     WarningCircleIcon,
     XIcon
 } from '@phosphor-icons/react';
-import { bulkEnrollStudent, dropEnrollment, getEnrollmentStudentDetail, listEligibleSections } from '@services/enrollment.service';
+import { getEnrollmentStudentDetail, listEligibleSections, saveStudentEnrollmentChanges } from '@services/enrollment.service';
+import { useToastStore } from '@stores/toast.store';
 import {
     EligibleSectionFilterValues,
     EligibleSectionRow,
@@ -275,35 +276,27 @@ export default function EnrollmentWorkspaceModal({
         setSaveErrorMessage(null);
 
         try {
-            // 1. Process drops first
-            if (markedDropIds.size > 0) {
-                const dropPromises = Array.from(markedDropIds)
-                    .map((enrollmentId) =>
-                        dropEnrollment(enrollmentId, 'Dropped via registrar workspace'));
-                const dropResults = await Promise.all(dropPromises);
-                const dropError = dropResults.find((res) => res.error);
-                if (dropError) {
-                    setSaveErrorMessage(dropError.error?.message ?? 'Failed to drop one or more subjects.');
-                    setIsSaving(false);
-                    return;
-                }
+            // One call: drops and enrollments succeed or fail together
+            const result = await saveStudentEnrollmentChanges({
+                student_id: studentId,
+                section_ids: stagedNewSections.map((sec) => sec.section_id),
+                allow_conflict: Boolean(values.allow_conflict),
+                conflict_reason: (values.conflict_reason ?? '').trim(),
+                override_prerequisites: Boolean(values.override_prerequisites)
+            }, Array.from(markedDropIds));
+
+            if (result.error) {
+                setSaveErrorMessage(result.error.message);
+                return;
             }
 
-            // 2. Process bulk enrollments
-            if (stagedNewSections.length > 0) {
-                const enrollResult = await bulkEnrollStudent({
-                    student_id: studentId,
-                    section_ids: stagedNewSections.map((sec) => sec.section_id),
-                    allow_conflict: Boolean(values.allow_conflict),
-                    conflict_reason: (values.conflict_reason ?? '').trim(),
-                    override_prerequisites: Boolean(values.override_prerequisites)
-                });
-
-                if (enrollResult.error) {
-                    setSaveErrorMessage(enrollResult.error.message);
-                    setIsSaving(false);
-                    return;
-                }
+            // Some sections were skipped: one warning listing each with its reason
+            const skipped = result.data?.errors ?? [];
+            if (skipped.length > 0) {
+                const reasons = skipped.map((item) => `${item.section_code}: ${item.message}`)
+                    .join(' ');
+                useToastStore.getState()
+                    .showToast(`${result.data?.summary ?? ''} ${reasons}`.trim(), 'warning');
             }
 
             // Reset staged states and refresh workspace
@@ -868,4 +861,4 @@ export default function EnrollmentWorkspaceModal({
             />
         </>
     );
-}
+}

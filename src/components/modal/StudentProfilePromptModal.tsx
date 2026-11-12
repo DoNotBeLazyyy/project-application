@@ -3,6 +3,7 @@ import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
 import { CommonSelectOption } from '@components/select/CommonSelect';
+import { YEAR_LEVEL_OPTIONS } from '@constants/year-level.constant';
 import { CIVIL_STATUS_OPTIONS, GENDER_OPTIONS } from '@pages/shared/profile/constants/profile.constant';
 import { GraduationCapIcon, IdentificationCardIcon } from '@phosphor-icons/react';
 import { initAuthSession } from '@services/auth.service';
@@ -13,15 +14,6 @@ import { MyProfile } from '@type/profile.type';
 import { formErrors, MOBILE_NUMBER_RULE, POSTAL_CODE_RULE } from '@utils/form.util';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-
-const YEAR_LEVEL_OPTIONS: CommonSelectOption[] = [
-    { label: '1st Year', value: 1 },
-    { label: '2nd Year', value: 2 },
-    { label: '3rd Year', value: 3 },
-    { label: '4th Year', value: 4 },
-    { label: '5th Year', value: 5 },
-    { label: '6th Year', value: 6 }
-];
 
 export interface StudentProfilePromptModalProps {
     open: boolean;

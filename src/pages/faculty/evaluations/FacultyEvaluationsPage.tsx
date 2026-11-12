@@ -64,10 +64,35 @@ function resolveRatingLabel(rating: number | null): string {
 const RATING_FILTER_OPTIONS = [
     { label: 'All Ratings', value: 'ALL' },
     { label: '5 Stars (4.5 – 5.0)', value: '5' },
+    { label: '4 Stars (3.5 – 4.4)', value: '4' },
+    { label: '3 Stars (2.5 – 3.4)', value: '3' },
+    { label: '2 Stars (1.5 – 2.4)', value: '2' },
+    { label: '1 Star (below 1.5)', value: '1' },
     { label: '4 Stars & Above (4.0+)', value: '4PLUS' },
     { label: 'Below 4.0 Stars (< 4.0)', value: '3MINUS' },
     { label: 'Low Ratings (< 3.0)', value: 'LOW' }
 ];
+
+/**
+ * Checks an average rating against the rating filter. A star value ('1'..'5') matches
+ * averages that round to that many stars, the same bands the distribution rows use.
+ */
+function isRatingInFilter(rating: number, filter: string): boolean {
+    if (filter === '4PLUS') return rating >= 4.0;
+    if (filter === '3MINUS') return rating < 4.0;
+    if (filter === 'LOW') return rating < 3.0;
+
+    const stars = Number(filter);
+    if (!Number.isInteger(stars) || stars < 1 || stars > 5) return true;
+
+    const lower = stars === 1
+        ? -Infinity
+        : stars - 0.5;
+    const upper = stars === 5
+        ? Infinity
+        : stars + 0.5;
+    return rating >= lower && rating < upper;
+}
 
 export default function FacultyEvaluationsPage() {
     const [summary, setSummary] = useState<FacultyEvaluationSummary | null>(null);
@@ -178,12 +203,8 @@ export default function FacultyEvaluationsPage() {
             if (selectedCourse && sec.course_code !== selectedCourse) return false;
             if (selectedSection && sec.section_code !== selectedSection) return false;
 
-            if (selectedRating !== 'ALL' && sec.avg_rating !== null) {
-                const r = sec.avg_rating;
-                if (selectedRating === '5' && r < 4.5) return false;
-                if (selectedRating === '4PLUS' && r < 4.0) return false;
-                if (selectedRating === '3MINUS' && r >= 4.0) return false;
-                if (selectedRating === 'LOW' && r >= 3.0) return false;
+            if (selectedRating !== 'ALL' && sec.avg_rating !== null && !isRatingInFilter(sec.avg_rating, selectedRating)) {
+                return false;
             }
 
             if (searchQuery.trim()) {
@@ -227,12 +248,8 @@ export default function FacultyEvaluationsPage() {
     const filteredQuestions = useMemo(() => {
         if (!summary?.questions) return [];
         return summary.questions.filter((qItem) => {
-            if (selectedRating !== 'ALL' && qItem.avg_rating !== null) {
-                const r = qItem.avg_rating;
-                if (selectedRating === '5' && r < 4.5) return false;
-                if (selectedRating === '4PLUS' && r < 4.0) return false;
-                if (selectedRating === '3MINUS' && r >= 4.0) return false;
-                if (selectedRating === 'LOW' && r >= 3.0) return false;
+            if (selectedRating !== 'ALL' && qItem.avg_rating !== null && !isRatingInFilter(qItem.avg_rating, selectedRating)) {
+                return false;
             }
 
             if (searchQuery.trim()) {

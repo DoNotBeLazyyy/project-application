@@ -1,16 +1,14 @@
 import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
-import { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
+import { useTermOptions } from '@hooks/use-term-options';
 import EnrollmentStudentFilterForm from '@pages/registrar/enrollment-management/EnrollmentStudentFilterForm';
 import EnrollmentStudentGridCard from '@pages/registrar/enrollment-management/EnrollmentStudentGridCard';
 import EnrollmentWorkspaceModal from '@pages/registrar/enrollment-management/EnrollmentWorkspaceModal';
 import { useEnrollmentStudentTableConfig } from '@pages/registrar/enrollment-management/use-enrollment-student-table-config';
 import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
-import CreditTransfereeCoursesModal from '@pages/shared/records/CreditTransfereeCoursesModal';
 import { bulkEnrollStudents, getEnrollmentTargetTerm, listEnrollmentStudents } from '@services/enrollment.service';
-import { getTerms } from '@services/section.service';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { EnrollmentBulkRow, EnrollmentStudentFilterValues, EnrollmentStudentRow } from '@type/enrollment.type';
 import { SortStringDto } from '@type/http.type';
@@ -67,10 +65,9 @@ export default function EnrollmentManagement() {
     const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
     const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
     const [assignModalStudent, setAssignModalStudent] = useState<EnrollmentStudentRow | null>(null);
-    const [creditModalStudent, setCreditModalStudent] = useState<EnrollmentStudentRow | null>(null);
     const [targetTermId, setTargetTermId] = useState<string | null>(null);
     const [targetTermLabel, setTargetTermLabel] = useState('');
-    const [termOptions, setTermOptions] = useState<CommonSelectOption[]>([]);
+    const { isLoaded: isTermsLoaded, termOptions } = useTermOptions();
     const [refreshKey, setRefreshKey] = useState(0);
 
     const filterMethods = useForm<EnrollmentStudentFilterValues>({
@@ -78,11 +75,10 @@ export default function EnrollmentManagement() {
     });
 
     useEffect(function() {
+        if (!isTermsLoaded) return;
+
         async function fetchTermContext() {
-            const [targetTerm, terms] = await Promise.all([
-                getEnrollmentTargetTerm(),
-                getTerms()
-            ]);
+            const targetTerm = await getEnrollmentTargetTerm();
 
             let initialTermId: string | null = null;
             let initialTermLabel = '';
@@ -92,17 +88,9 @@ export default function EnrollmentManagement() {
                 initialTermLabel = targetTerm.data.label;
             }
 
-            if (terms.data) {
-                const options = terms.data.map((term) => ({
-                    label: term.label,
-                    value: term.id
-                }));
-                setTermOptions(options);
-
-                if (!initialTermId && options.length > 0) {
-                    initialTermId = String(options[0].value);
-                    initialTermLabel = options[0].label;
-                }
+            if (!initialTermId && termOptions.length > 0) {
+                initialTermId = String(termOptions[0].value);
+                initialTermLabel = termOptions[0].label;
             }
 
             if (initialTermId) {
@@ -113,7 +101,7 @@ export default function EnrollmentManagement() {
         }
 
         fetchTermContext();
-    }, [filterMethods]);
+    }, [filterMethods, isTermsLoaded, termOptions]);
 
     function handleOpenWorkspace(id: string) {
         setSelectedStudentId(id);
@@ -129,11 +117,7 @@ export default function EnrollmentManagement() {
         setRefreshKey((previous) => previous + 1);
     }
 
-    const { columnDefs, tableActionConfig } = useEnrollmentStudentTableConfig({
-        onManage: handleOpenWorkspace,
-        onAssignProgram: (row) => setAssignModalStudent(row),
-        onCreditCourses: (row) => setCreditModalStudent(row)
-    });
+    const { columnDefs } = useEnrollmentStudentTableConfig();
 
     async function fetchStudents(
         page: number,
@@ -223,7 +207,6 @@ export default function EnrollmentManagement() {
                 }}
                 showSubheader={true}
                 sortColumns={SORT_COLUMNS}
-                tableActionConfig={tableActionConfig}
                 tableProps={{
                     leadingColumnDefs: columnDefs
                 }}
@@ -271,21 +254,6 @@ export default function EnrollmentManagement() {
                     onClose={() => setAssignModalStudent(null)}
                     onSuccess={() => {
                         setAssignModalStudent(null);
-                        handleRefresh();
-                    }}
-                />
-            )}
-            {creditModalStudent && (
-                <CreditTransfereeCoursesModal
-                    open={Boolean(creditModalStudent)}
-                    programCode={creditModalStudent.program_code}
-                    programName={creditModalStudent.program_name}
-                    studentId={creditModalStudent.id}
-                    studentName={creditModalStudent.student_name}
-                    studentNumber={creditModalStudent.student_number}
-                    yearLevel={creditModalStudent.year_level}
-                    onClose={() => setCreditModalStudent(null)}
-                    onSuccess={() => {
                         handleRefresh();
                     }}
                 />

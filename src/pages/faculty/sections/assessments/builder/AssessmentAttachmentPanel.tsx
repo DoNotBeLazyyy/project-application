@@ -1,15 +1,11 @@
 import CommonButton from '@components/button/CommonButton';
+import DeletePromptModal from '@components/modal/DeletePromptModal';
 import { ArrowLineDownIcon, ArrowLineUpIcon, FileIcon, TrashIcon } from '@phosphor-icons/react';
 import { deleteAssessmentAttachment, getAttachmentSignedUrl, uploadAssessmentAttachment } from '@services/assessment.service';
+import { useToastStore } from '@stores/toast.store';
 import { AssessmentAttachment } from '@type/assessment.type';
+import { formatFileSize, triggerFileDownload } from '@utils/file.util';
 import { useRef, useState } from 'react';
-
-function formatFileSize(bytes: number | null): string {
-    if (!bytes) return '';
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 interface AssessmentAttachmentPanelProps {
     assessmentDbId: string;
@@ -24,6 +20,7 @@ export default function AssessmentAttachmentPanel({
 }: AssessmentAttachmentPanelProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [pendingDelete, setPendingDelete] = useState<AssessmentAttachment | null>(null);
 
     async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const files = Array.from(e.target.files ?? []);
@@ -32,9 +29,19 @@ export default function AssessmentAttachmentPanel({
         setIsUploading(true);
 
         try {
-            await Promise.all(
+            const results = await Promise.all(
                 files.map((file) => uploadAssessmentAttachment(assessmentDbId, file))
             );
+
+            // Refused files (empty, too large, program files) are not toasted by the upload itself
+            const refusedMessages = results
+                .filter((result) => result.error?.code === 'INVALID_FILE')
+                .map((result) => result.error?.message);
+            if (refusedMessages.length > 0) {
+                useToastStore.getState()
+                    .showToast(refusedMessages.join(' '), 'error');
+            }
+
             await onAttachmentsChange();
         }
         finally {
@@ -50,14 +57,13 @@ export default function AssessmentAttachmentPanel({
             return;
         }
 
-        const a = document.createElement('a');
-        a.href = result.data;
-        a.download = attachment.file_name;
-        a.target = '_blank';
-        a.click();
+        await triggerFileDownload(result.data, attachment.file_name);
     }
 
-    async function handleDelete(attachmentId: string) {
+    async function handleConfirmDelete() {
+        if (!pendingDelete) return;
+        const attachmentId = pendingDelete.id;
+        setPendingDelete(null);
         const result = await deleteAssessmentAttachment(attachmentId);
         if (!result.error) await onAttachmentsChange();
     }
@@ -139,7 +145,7 @@ export default function AssessmentAttachmentPanel({
                             color="error"
                             size="small"
                             onClick={function() {
-                                handleDelete(attachment.id);
+                                setPendingDelete(attachment);
                             }}
                         >
                             <TrashIcon
@@ -150,6 +156,16 @@ export default function AssessmentAttachmentPanel({
                     </div>
                 ))}
             </div>
+            <DeletePromptModal
+                formButtonsProps={{
+                    cancelProps: { onClick: () => setPendingDelete(null) },
+                    confirmProps: { onClick: handleConfirmDelete }
+                }}
+                mainContent={{ title: 'Delete this attachment?' }}
+                open={pendingDelete !== null}
+                subContent={{ title: `${pendingDelete?.file_name ?? 'The file'} will be removed from this assessment.` }}
+                onClose={() => setPendingDelete(null)}
+            />
         </div>
     );
 }

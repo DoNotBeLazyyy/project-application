@@ -86,6 +86,8 @@ export interface FacultyScheduleConflict {
     section_b_id: string;
     section_b: string;
     course_b?: string;
+    /** Instructor of the other class in a room clash. */
+    faculty_b_name?: string | null;
     overlap_start: string;
     overlap_end: string;
     room?: string;
@@ -103,9 +105,4 @@ export interface FacultyLoadDetail {
     conflicts?: FacultyScheduleConflict[];
     success?: boolean;
     message?: string;
-}
-
-export interface FacultyLoadAssignmentInput {
-    section_id: string;
-    faculty_id: string | null;
 }

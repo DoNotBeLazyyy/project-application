@@ -4,6 +4,8 @@ import ValidCommonInput from '@components/input/ValidCommonInput';
 import ValidCommonNumberInput from '@components/input/ValidCommonNumberInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
+import { HistoryDiffMarks } from '@pages/admin/school-year-management/wizard/academic-year-history';
+import HistoryDiffBadge from '@pages/admin/school-year-management/wizard/HistoryDiffBadge';
 import {
     CaretDownIcon,
     CheckCircleIcon,
@@ -19,6 +21,8 @@ import { Control, useFormState, UseFormSetValue, useWatch } from 'react-hook-for
 
 interface Step3GradingPeriodsConfigProps {
     control: Control<AcademicYearWizardFormValues>;
+    /** Differences to highlight while comparing saved versions (history view only). */
+    diffMarks?: HistoryDiffMarks;
     disabled?: boolean;
     setValue?: UseFormSetValue<AcademicYearWizardFormValues>;
     onChangeTerms: (terms: AcademicYearWizardFormValues['terms']) => void;
@@ -26,6 +30,7 @@ interface Step3GradingPeriodsConfigProps {
 
 export default function Step3GradingPeriodsConfig({
     control,
+    diffMarks,
     disabled = false,
     onChangeTerms
 }: Step3GradingPeriodsConfigProps) {
@@ -385,10 +390,12 @@ export default function Step3GradingPeriodsConfig({
                                             const compTotalWeight = components.reduce((sum, c) => sum + (Number(c.weight) || 0), 0);
                                             const isCompBalanced = components.length === 0 || compTotalWeight === 100;
 
+                                            const diffMark = diffMarks?.[`period:${tIdx}:${pIdx}`];
+
                                             return (
                                                 <div
                                                     className={`p-4 rounded-xl border flex flex-col gap-3 transition-colors ${
-                                                        isDuplicateName || hasPrecedingConflict || hasDateOrderError || isOutsideTerm || !isCompBalanced
+                                                        diffMark || isDuplicateName || hasPrecedingConflict || hasDateOrderError || isOutsideTerm || !isCompBalanced
                                                             ? 'border-amber-300 dark:border-amber-700/70 bg-amber-50/20 dark:bg-amber-950/10'
                                                             : 'border-slate-200 dark:border-zinc-700 bg-slate-50/60 dark:bg-zinc-800/40'
                                                     }`}
@@ -413,6 +420,7 @@ export default function Step3GradingPeriodsConfig({
                                                                 • {period.start_date} to {period.end_date}
                                                                 </span>
                                                             )}
+                                                            <HistoryDiffBadge mark={diffMark} />
                                                         </div>
 
                                                         <div className="flex items-center gap-1.5 shrink-0">

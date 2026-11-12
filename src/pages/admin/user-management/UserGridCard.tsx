@@ -7,14 +7,16 @@ import { UserListRow } from '@type/user.type';
 
 export interface UserGridCardProps {
     row: UserListRow;
+    isBusy?: boolean;
     isSelected: boolean;
+    isSelf?: boolean;
     onToggleSelect: VoidFunction;
     onView: (id: string) => void;
     onEdit: (id: string) => void;
     onRequestDelete: (id: string) => void;
     onReactivate?: (id: string) => void;
-    onResendInvite?: (email: string) => void;
-    onResetPassword?: (email: string) => void;
+    onResendInvite?: (row: UserListRow) => void;
+    onResetPassword?: (row: UserListRow) => void;
 }
 
 /**
@@ -25,8 +27,10 @@ export interface UserGridCardProps {
  * account status as the status pill, role as a metric, and email on its own row.
  */
 export default function UserGridCard({
+    isBusy = false,
     row,
     isSelected,
+    isSelf = false,
     onToggleSelect,
     onView,
     onEdit,
@@ -71,22 +75,27 @@ export default function UserGridCard({
                         weight="bold"
                     />
                 ),
+                isDisabled: isBusy,
                 onClick: () => onReactivate?.(row.id)
             }]
-            : [{
-                key: 'deactivate',
-                label: 'Deactivate',
-                icon: (
-                    <ProhibitIcon
-                        className="text-rose-600"
-                        size={18}
-                        weight="bold"
-                    />
-                ),
-                destructive: true,
-                onClick: () => onRequestDelete(row.id)
-            }]),
-        ...(onResendInvite && row.status !== 'Active'
+            : isSelf
+                // An admin cannot deactivate their own account
+                ? []
+                : [{
+                    key: 'deactivate',
+                    label: 'Deactivate',
+                    icon: (
+                        <ProhibitIcon
+                            className="text-rose-600"
+                            size={18}
+                            weight="bold"
+                        />
+                    ),
+                    destructive: true,
+                    onClick: () => onRequestDelete(row.id)
+                }]),
+        // An inactive user must be reactivated before a new invite is sent
+        ...(onResendInvite && row.status === 'Invited'
             ? [{
                 key: 'resend-invite',
                 label: 'Resend Invite',
@@ -96,7 +105,8 @@ export default function UserGridCard({
                         weight="bold"
                     />
                 ),
-                onClick: () => onResendInvite(row.email)
+                isDisabled: isBusy,
+                onClick: () => onResendInvite(row)
             }]
             : []),
         ...(onResetPassword && row.status === 'Active'
@@ -109,7 +119,8 @@ export default function UserGridCard({
                         weight="bold"
                     />
                 ),
-                onClick: () => onResetPassword(row.email)
+                isDisabled: isBusy,
+                onClick: () => onResetPassword(row)
             }]
             : [])
     ];

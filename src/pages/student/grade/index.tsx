@@ -4,11 +4,12 @@ import { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { toTargetPath } from '@pages/student/evaluation/use-evaluation-targets';
 import MyGradesFilterForm from '@pages/student/grade/MyGradesFilterForm';
-import { getTerms } from '@services/section.service';
 import { listStudentGrades } from '@services/student-portal.service';
+import { getTerms } from '@services/term/term.service';
 import { SortStringDto } from '@type/http.type';
 import { MyGradeListRow, MyGradesFilterValues } from '@type/student-portal.type';
 import { MobileCardColDef } from '@type/table.type';
+import { formatGrade, isGradeReleased } from '@utils/grade-display.util';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -24,16 +25,15 @@ const SORT_COLUMNS: SortColumn[] = [
 
 const FILTER_FORM_ID = 'filter-my-grades-form';
 
-function formatGrade(value: number | null, isEvaluated: boolean, fallback: string | null = null): string {
-    if (!isEvaluated) {
+/**
+ * Grade text for a My Grades cell: "Locked" until the grade is released to the student.
+ */
+function formatGradeCell(row: MyGradeListRow | undefined, value: number | null, specialGrade: string | null = null): string {
+    if (!row || !isGradeReleased(row)) {
         return 'Locked';
     }
 
-    if (value == null) {
-        return fallback ?? '—';
-    }
-
-    return String(value);
+    return formatGrade(value, specialGrade);
 }
 
 export default function StudentGrades() {
@@ -108,25 +108,21 @@ export default function StudentGrades() {
                 flex: 1,
                 headerName: 'Raw',
                 sortable: false,
-                valueFormatter: (params) => formatGrade(params.value, params.data?.evaluation_completed === true)
+                valueFormatter: (params) => formatGradeCell(params.data, params.value)
             },
             {
                 field: 'final_grade',
                 flex: 1,
                 headerName: 'Final',
                 sortable: false,
-                valueFormatter: (params) => formatGrade(params.value, params.data?.evaluation_completed === true)
+                valueFormatter: (params) => formatGradeCell(params.data, params.value)
             },
             {
                 field: 'transmuted_grade',
                 flex: 1,
                 headerName: 'Transmuted',
                 sortable: false,
-                valueFormatter: (params) => formatGrade(
-                    params.value,
-                    params.data?.evaluation_completed === true,
-                    params.data?.special_grade ?? null
-                )
+                valueFormatter: (params) => formatGradeCell(params.data, params.value, params.data?.special_grade ?? null)
             },
             {
                 flex: 2,

@@ -1,6 +1,7 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
+import DeanNoDepartmentBanner from '@pages/dean/components/DeanNoDepartmentBanner';
 import FacultyLoadFilterForm from '@pages/dean/faculty-load/FacultyLoadFilterForm';
 import FacultyLoadWizardModal from '@pages/dean/faculty-load/FacultyLoadWizardModal';
 import { useFacultyLoadTableConfig } from '@pages/dean/faculty-load/hooks/use-faculty-load-table-config';
@@ -10,7 +11,7 @@ import { FacultyLoadFilterValues, FacultyLoadRow } from '@type/faculty-load.type
 import { SortStringDto } from '@type/http.type';
 import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 const LOAD_FILTER_FORM_ID = 'filter-faculty-load-form';
 
@@ -25,7 +26,6 @@ const LOAD_SORT_COLUMNS: SortColumn[] = [
 const defaultLoadFilters: FacultyLoadFilterValues = { term_id: '' };
 
 export default function FacultyLoadManagement() {
-    const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const queryFacultyId = searchParams.get('facultyId');
 
@@ -47,14 +47,7 @@ export default function FacultyLoadManagement() {
         setIsDetailOpen(true);
     }, []);
 
-    const handleOpenEdit = useCallback((facultyId: string) => {
-        navigate(`/dean/section-management?createSection=true&facultyId=${facultyId}`);
-    }, [navigate]);
-
-    const { columnDefs: loadColumnDefs, tableActionConfig } = useFacultyLoadTableConfig({
-        onEdit: handleOpenEdit,
-        onView: handleOpenView
-    });
+    const { columnDefs: loadColumnDefs } = useFacultyLoadTableConfig();
 
     const { reset: resetLoadFilterForm } = loadFilterMethods;
 
@@ -111,12 +104,10 @@ export default function FacultyLoadManagement() {
         }
     }
 
-    function handleDetailSuccess() {
-        setLoadFilters((prev) => ({ ...prev }));
-    }
-
     return (
         <div className="flex flex-col gap-4 h-full">
+            <DeanNoDepartmentBanner />
+
             {isTermResolved && (
                 <div className="flex-1 min-h-0">
                     <CommonTableCard<FacultyLoadRow>
@@ -153,7 +144,6 @@ export default function FacultyLoadManagement() {
                             }
                         }}
                         sortColumns={LOAD_SORT_COLUMNS}
-                        tableActionConfig={tableActionConfig}
                         tableProps={{
                             leadingColumnDefs: loadColumnDefs
                         }}
@@ -173,7 +163,6 @@ export default function FacultyLoadManagement() {
                 open={isDetailOpen}
                 termId={loadFilters.term_id}
                 onClose={handleCloseDetail}
-                onSuccess={handleDetailSuccess}
             />
         </div>
     );

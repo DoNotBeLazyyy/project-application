@@ -1,7 +1,7 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 
-export const FILTER_FORM_ID = 'filter-audit-log-form';
+export const AUDIT_LOG_FILTER_FORM_ID = 'filter-audit-log-form';
 
 export const ACTION_OPTIONS: CommonSelectOption[] = [
     { label: 'All Actions', value: 'All' },
@@ -10,7 +10,7 @@ export const ACTION_OPTIONS: CommonSelectOption[] = [
     { label: 'DELETE (Remove)', value: 'DELETE' }
 ];
 
-export const SORT_COLUMNS: SortColumn[] = [
+export const AUDIT_LOG_SORT_COLUMNS: SortColumn[] = [
     { field: 'created_at', label: 'Timestamp' },
     { field: 'action', label: 'Action Type' },
     { field: 'event_name', label: 'Transaction Event' },

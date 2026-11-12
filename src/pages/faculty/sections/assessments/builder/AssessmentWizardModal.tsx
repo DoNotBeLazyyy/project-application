@@ -1,8 +1,10 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
+import AlertPromptModal from '@components/modal/AlertPromptModal';
 import BulkImportModal from '@components/modal/BulkImportModal';
 import CommonModal from '@components/modal/CommonModal';
+import DeletePromptModal from '@components/modal/DeletePromptModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
@@ -12,7 +14,7 @@ import { useFormDraft } from '@hooks/use-form-draft';
 import AssessmentAttachmentPanel from '@pages/faculty/sections/assessments/builder/AssessmentAttachmentPanel';
 import QuestionList from '@pages/faculty/sections/assessments/builder/QuestionList';
 import QuestionModal from '@pages/faculty/sections/assessments/builder/QuestionModal';
-import RubricAttachPanel from '@pages/faculty/sections/assessments/builder/RubricAttachPanel';
+import RubricAttachPanel, { RubricSelection } from '@pages/faculty/sections/assessments/builder/RubricAttachPanel';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -31,6 +33,7 @@ import {
     upsertQuestion
 } from '@services/assessment.service';
 import { listGradingComponents, listGradingPeriodsBySection } from '@services/faculty.service';
+import { getAssessmentRubric, setAssessmentRubric } from '@services/rubric.service';
 import { useToastStore } from '@stores/toast.store';
 import {
     AssessmentAttachment,
@@ -102,11 +105,51 @@ const ASSESSMENT_TYPE_OPTIONS: { label: string; value: AssessmentType }[] = [
     { label: 'Lab Report', value: 'Lab Report' }
 ];
 
+const EMPTY_RUBRIC_SELECTION: RubricSelection = { rubricId: '', useScoring: false };
+
+interface RescorePrompt {
+    message: string;
+    onConfirm: () => Promise<void>;
+}
+
+/**
+ * Tells whether a question edit changes how saved answers are scored: its points, its type,
+ * or which choices are correct.
+ *
+ * @param question - The question as it is saved.
+ * @param values - The edited form values.
+ * @returns True when existing answers would get new scores.
+ */
+function isScoringChanged(question: AssessmentQuestion, values: QuestionFormValues): boolean {
+    if (Number(values.points) !== Number(question.points)) return true;
+    if (values.question_type !== question.question_type) return true;
+
+    const savedCorrect = question.choices
+        .filter((choice) => choice.is_correct)
+        .map((choice) => choice.id)
+        .sort()
+        .join('|');
+    const nextCorrect = values.choices
+        .filter((choice) => choice.is_correct)
+        .map((choice) => choice.id || `new:${choice.choice_text}`)
+        .sort()
+        .join('|');
+
+    return savedCorrect !== nextCorrect;
+}
+
+/**
+ * Shows an error toast for a call that was made silently.
+ */
+function showErrorToast(message: string) {
+    useToastStore.getState()
+        .showToast(message, 'error');
+}
+
 interface AssessmentWizardModalProps {
     open: boolean;
     sectionId: string;
     assessmentId?: string | null;
-    readOnly?: boolean;
     onClose: VoidFunction;
     onSuccess: VoidFunction;
 }
@@ -115,7 +158,6 @@ export default function AssessmentWizardModal({
     open,
     sectionId,
     assessmentId,
-    readOnly = false,
     onClose,
     onSuccess
 }: AssessmentWizardModalProps) {
@@ -135,13 +177,20 @@ export default function AssessmentWizardModal({
     const [editingQuestion, setEditingQuestion] = useState<AssessmentQuestion | null>(null);
     const [expandedQuestionId, setExpandedQuestionId] = useState('');
     const [isImportOpen, setIsImportOpen] = useState(false);
+    const [pendingDeleteQuestionId, setPendingDeleteQuestionId] = useState<string | null>(null);
+    const [rubricSelection, setRubricSelection] = useState<RubricSelection>(EMPTY_RUBRIC_SELECTION);
+    const [savedRubricSelection, setSavedRubricSelection] = useState<RubricSelection>(EMPTY_RUBRIC_SELECTION);
+    // Students who already submitted; edits that change scoring ask first
+    const [submissionCount, setSubmissionCount] = useState(0);
+    const [savedTotalPoints, setSavedTotalPoints] = useState<number | null>(null);
+    const [rescorePrompt, setRescorePrompt] = useState<RescorePrompt | null>(null);
 
     const settingsMethods = useForm<AssessmentFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: DEFAULT_ASSSESSMENT_VALUES });
     const questionMethods = useForm<QuestionFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: DEFAULT_QUESTION_VALUES });
 
     const draftGuard = useFormDraft({
         control: settingsMethods.control,
-        enabled: open && !readOnly && !isSaving,
+        enabled: open && !isSaving,
         formId: `assessment-wizard-${sectionId}-${assessmentId || 'new'}`
     });
 
@@ -189,6 +238,11 @@ export default function AssessmentWizardModal({
             settingsMethods.reset(DEFAULT_ASSSESSMENT_VALUES);
             setQuestions([]);
             setAttachments([]);
+            setRubricSelection(EMPTY_RUBRIC_SELECTION);
+            setSavedRubricSelection(EMPTY_RUBRIC_SELECTION);
+            setSubmissionCount(0);
+            setSavedTotalPoints(null);
+            setRescorePrompt(null);
             return;
         }
 
@@ -202,11 +256,13 @@ export default function AssessmentWizardModal({
             Promise.all([
                 getAssessmentById(targetId),
                 getAssessmentQuestions(targetId),
-                listAssessments(sectionId)
+                listAssessments(sectionId),
+                getAssessmentRubric(targetId)
             ])
-                .then(([settingsResult, questionsResult, listResult]) => {
+                .then(([settingsResult, questionsResult, listResult, rubricResult]) => {
                     if (settingsResult.data) {
                         const d = settingsResult.data;
+                        setSavedTotalPoints(Number(d.total_points ?? 100));
                         settingsMethods.reset({
                             title: d.title ?? '',
                             description: d.description ?? '',
@@ -244,6 +300,16 @@ export default function AssessmentWizardModal({
                     if (listResult.data) {
                         const match = listResult.data.find((item) => item.id === targetId);
                         setAttachments(match?.attachments ?? []);
+                        setSubmissionCount(match?.submission_count ?? 0);
+                    }
+
+                    if (rubricResult.data) {
+                        const attached = {
+                            rubricId: rubricResult.data.rubric_id ?? '',
+                            useScoring: rubricResult.data.use_rubric_scoring
+                        };
+                        setRubricSelection(attached);
+                        setSavedRubricSelection(attached);
                     }
                 })
                 .finally(() => {
@@ -254,6 +320,8 @@ export default function AssessmentWizardModal({
             settingsMethods.reset(DEFAULT_ASSSESSMENT_VALUES);
             setQuestions([]);
             setAttachments([]);
+            setRubricSelection(EMPTY_RUBRIC_SELECTION);
+            setSavedRubricSelection(EMPTY_RUBRIC_SELECTION);
         }
     }, [open, assessmentId, isNew, sectionId]);
 
@@ -344,10 +412,15 @@ export default function AssessmentWizardModal({
 
         setIsSaving(true);
         const values = settingsMethods.getValues();
-        const result = await createAssessment(sectionId, values);
+        // Saved quietly as a Draft so questions can be added; the final save shows the one toast
+        const result = await createAssessment(sectionId, values, { silent: true });
         setIsSaving(false);
 
-        if (!result.error && result.data?.id) {
+        if (result.error) {
+            showErrorToast(result.error.message);
+            return null;
+        }
+        if (result.data?.id) {
             setActiveAssessmentId(result.data.id);
             return result.data.id;
         }
@@ -384,10 +457,6 @@ export default function AssessmentWizardModal({
 
     async function handleStepClick(stepNumber: number) {
         if (stepNumber === currentStep) return;
-        if (readOnly) {
-            setCurrentStep(stepNumber);
-            return;
-        }
         if (stepNumber < currentStep) {
             setCurrentStep(stepNumber);
             return;
@@ -426,30 +495,68 @@ export default function AssessmentWizardModal({
             return;
         }
 
+        const nextTotal = Number(settingsMethods.getValues('total_points'));
+        if (!isNew && submissionCount > 0 && savedTotalPoints !== null && nextTotal !== savedTotalPoints) {
+            setRescorePrompt({
+                message: `${submissionCount} student submission(s) exist. Changing Total Points from ${savedTotalPoints} to ${nextTotal} changes how their scores count toward the grade. Recalculate grades after saving.`,
+                onConfirm: saveAssessment
+            });
+            return;
+        }
+
+        await saveAssessment();
+    }
+
+    /**
+     * Saves the settings and the rubric link, then closes the builder.
+     */
+    async function saveAssessment() {
         setIsSaving(true);
         const values = settingsMethods.getValues();
 
         try {
-            if (!activeAssessmentId) {
-                const res = await createAssessment(sectionId, values);
-                if (!res.error) {
-                    draftGuard.clearDraft();
-                    useToastStore.getState()
-                        .showToast('Assessment created successfully.', 'success');
-                    onSuccess();
-                    onClose();
+            // Calls run quietly so the teacher sees one toast for the whole save
+            let savedId = activeAssessmentId;
+            if (!savedId) {
+                const createResult = await createAssessment(sectionId, values, { silent: true });
+                if (createResult.error || !createResult.data?.id) {
+                    showErrorToast(createResult.error?.message ?? 'The assessment could not be saved.');
+                    return;
                 }
+                savedId = createResult.data.id;
+                setActiveAssessmentId(savedId);
             }
             else {
-                const res = await updateAssessment(activeAssessmentId, values);
-                if (!res.error) {
-                    draftGuard.clearDraft();
-                    useToastStore.getState()
-                        .showToast('Assessment saved successfully.', 'success');
-                    onSuccess();
-                    onClose();
+                const updateResult = await updateAssessment(savedId, values, { silent: true });
+                if (updateResult.error) {
+                    showErrorToast(updateResult.error.message);
+                    return;
                 }
             }
+
+            const isRubricChanged = rubricSelection.rubricId !== savedRubricSelection.rubricId
+                || rubricSelection.useScoring !== savedRubricSelection.useScoring;
+            if (isRubricChanged) {
+                const rubricResult = await setAssessmentRubric(
+                    savedId,
+                    rubricSelection.rubricId || null,
+                    Boolean(rubricSelection.rubricId) && rubricSelection.useScoring,
+                    { silent: true }
+                );
+                if (rubricResult.error) {
+                    showErrorToast(`Assessment saved, but the rubric was not: ${rubricResult.error.message}`);
+                    return;
+                }
+                setSavedRubricSelection(rubricSelection);
+            }
+
+            draftGuard.clearDraft();
+            useToastStore.getState()
+                .showToast(isNew
+                    ? 'Assessment saved as a Draft. Publish it when it is ready for students.'
+                    : 'Assessment saved.', 'success');
+            onSuccess();
+            onClose();
         }
         finally {
             setIsSaving(false);
@@ -473,13 +580,38 @@ export default function AssessmentWizardModal({
     }
 
     async function handleSyncTotalPoints(newTotal: number) {
-        settingsMethods.setValue('total_points', String(newTotal), { shouldDirty: true });
-        if (activeAssessmentId) {
-            const currentValues = settingsMethods.getValues();
-            await updateAssessment(activeAssessmentId, { ...currentValues, total_points: String(newTotal) });
-            useToastStore.getState()
-                .showToast(`Assessment total points updated to ${newTotal} pts.`, 'success');
+        if (submissionCount > 0 && activeAssessmentId && newTotal !== Number(settingsMethods.getValues('total_points'))) {
+            setRescorePrompt({
+                message: `${submissionCount} student submission(s) exist. Changing Total Points to ${newTotal} changes how their scores count toward the grade. Recalculate grades afterwards.`,
+                onConfirm: () => syncTotalPoints(newTotal)
+            });
+            return;
         }
+
+        await syncTotalPoints(newTotal);
+    }
+
+    /**
+     * Sets Total Points to the questions' sum and saves it right away.
+     *
+     * @param newTotal - The new Total Points.
+     */
+    async function syncTotalPoints(newTotal: number) {
+        const previousTotal = settingsMethods.getValues('total_points');
+        settingsMethods.setValue('total_points', String(newTotal), { shouldDirty: true });
+        if (!activeAssessmentId) return;
+
+        const currentValues = settingsMethods.getValues();
+        const result = await updateAssessment(activeAssessmentId, { ...currentValues, total_points: String(newTotal) }, { silent: true });
+        if (result.error) {
+            // Put the old value back so the form matches what is saved
+            settingsMethods.setValue('total_points', previousTotal, { shouldDirty: true });
+            showErrorToast(`Total points were not updated: ${result.error.message}`);
+            return;
+        }
+        setSavedTotalPoints(newTotal);
+        useToastStore.getState()
+            .showToast(`Assessment total points updated to ${newTotal} pts.`, 'success');
     }
 
     function handleOpenEditQuestion(question: AssessmentQuestion) {
@@ -498,7 +630,11 @@ export default function AssessmentWizardModal({
                 ? String(question.max_file_count)
                 : '',
             choices: question.choices.length > 0
-                ? question.choices.map((c) => ({ choice_text: c.choice_text, is_correct: c.is_correct }))
+                ? question.choices.map((c) => ({
+                    choice_text: c.choice_text,
+                    id: c.id,
+                    is_correct: c.is_correct
+                }))
                 : [
                     { choice_text: '', is_correct: false },
                     { choice_text: '', is_correct: false }
@@ -515,6 +651,25 @@ export default function AssessmentWizardModal({
 
     async function handleQuestionSubmit(values: QuestionFormValues) {
         if (!activeAssessmentId) return;
+
+        if (editingQuestion && submissionCount > 0 && isScoringChanged(editingQuestion, values)) {
+            setRescorePrompt({
+                message: `${submissionCount} student submission(s) exist. Saving this change re-scores their answers to this question and updates their scores.`,
+                onConfirm: () => saveQuestion(values)
+            });
+            return;
+        }
+
+        await saveQuestion(values);
+    }
+
+    /**
+     * Saves the question being edited and refreshes the list.
+     *
+     * @param values - The question form values.
+     */
+    async function saveQuestion(values: QuestionFormValues) {
+        if (!activeAssessmentId) return;
         const sequence = editingQuestion?.sequence ?? questions.length + 1;
         const result = await upsertQuestion(activeAssessmentId, editingQuestion?.id ?? null, values, sequence);
 
@@ -524,9 +679,30 @@ export default function AssessmentWizardModal({
         }
     }
 
-    async function handleDeleteQuestion(questionId: string) {
+    /**
+     * Asks for confirmation before a question is deleted.
+     */
+    function handleDeleteQuestion(questionId: string): Promise<void> {
+        setPendingDeleteQuestionId(questionId);
+        return Promise.resolve();
+    }
+
+    async function handleConfirmDeleteQuestion() {
+        if (!pendingDeleteQuestionId) return;
+        const questionId = pendingDeleteQuestionId;
+        setPendingDeleteQuestionId(null);
         const result = await deleteQuestion(questionId);
         if (!result.error) await refreshQuestions();
+    }
+
+    function handleCancelRescore() {
+        setRescorePrompt(null);
+    }
+
+    async function handleConfirmRescore() {
+        const prompt = rescorePrompt;
+        setRescorePrompt(null);
+        if (prompt) await prompt.onConfirm();
     }
 
     function handleToggleExpand(questionId: string) {
@@ -614,7 +790,7 @@ export default function AssessmentWizardModal({
 
     const step2ScheduleFields: FormFieldConfig<AssessmentFormValues>[] = [
         {
-            fieldProps: { helperText: 'When the assessment auto-publishes to students.' },
+            fieldProps: { helperText: 'When the assessment auto-publishes to students. Saved only once the questions add up to Total Points.' },
             label: 'Scheduled Publish',
             name: 'scheduled_publish_at',
             rules: { validate: validateBefore('opens_at', 'Scheduled publish must be on or before the opening date.', true) },
@@ -713,7 +889,7 @@ export default function AssessmentWizardModal({
 
     function handleCloseModal() {
         if (isSaving) return;
-        if (!readOnly && draftGuard.hasRealChanges) {
+        if (draftGuard.hasRealChanges) {
             setIsConfirmCloseOpen(true);
             return;
         }
@@ -746,11 +922,9 @@ export default function AssessmentWizardModal({
                         </div>
                         <div className="min-w-0 flex-1 sm:min-w-[260px]">
                             <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug">
-                                {readOnly
-                                    ? 'View Assessment Details'
-                                    : activeAssessmentId && !isNew
-                                        ? `Edit Assessment: ${settingsMethods.watch('title') || 'Untitled'}`
-                                        : 'Create Assessment Builder'}
+                                {activeAssessmentId && !isNew
+                                    ? `Edit Assessment: ${settingsMethods.watch('title') || 'Untitled'}`
+                                    : 'Create Assessment Builder'}
                             </h2>
                             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                                 Unified setup for assessment identity, schedule, grading component, questions, and display rules.
@@ -774,7 +948,6 @@ export default function AssessmentWizardModal({
             {/* Stepper Progress Bar Header */}
             <ModalStepperHeader
                 currentStep={currentStep}
-                readOnly={readOnly}
                 steps={ASSESSMENT_WIZARD_STEPS}
                 onStepClick={handleStepClick}
             />
@@ -884,12 +1057,11 @@ export default function AssessmentWizardModal({
                             {/* Step 4: Settings & Rubrics */}
                             {currentStep === 4 && (
                                 <div className="flex flex-col gap-4">
-                                    {activeAssessmentId && (
-                                        <RubricAttachPanel
-                                            assessmentId={activeAssessmentId}
-                                            sectionId={sectionId}
-                                        />
-                                    )}
+                                    <RubricAttachPanel
+                                        sectionId={sectionId}
+                                        value={rubricSelection}
+                                        onChange={setRubricSelection}
+                                    />
 
                                     <AssessmentAttachmentPanel
                                         assessmentDbId={activeAssessmentId}
@@ -921,6 +1093,11 @@ export default function AssessmentWizardModal({
                                                     ? ''
                                                     : 's'})
                                             </p>
+                                            {questionSumPoints !== configuredTotalPoints && (
+                                                <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                                                    Scores are counted out of Total Points, so this assessment cannot be published until the two match.
+                                                </p>
+                                            )}
                                         </div>
                                         {questionSumPoints !== configuredTotalPoints && (
                                             <CommonButton
@@ -973,34 +1150,23 @@ export default function AssessmentWizardModal({
                             Next Step
                             </CommonButton>
                         )
-                        : readOnly
-                            ? (
-                                <CommonButton
-                                    color="primary"
-                                    size="medium"
-                                    variant="contained"
-                                    onClick={handleCloseModal}
-                                >
-                            Close
-                                </CommonButton>
-                            )
-                            : (
-                                <CommonButton
-                                    color="primary"
-                                    disabled={isLoading || isSaving}
-                                    loading={isSaving}
-                                    size="medium"
-                                    startIcon={<FloppyDiskIcon className="w-4 h-4" />}
-                                    variant="contained"
-                                    onClick={handleSaveAssessment}
-                                >
-                                    {isSaving
-                                        ? 'Saving Assessment...'
-                                        : isNew
-                                            ? 'Save Assessment'
-                                            : 'Save Changes'}
-                                </CommonButton>
-                            )}
+                        : (
+                            <CommonButton
+                                color="primary"
+                                disabled={isLoading || isSaving}
+                                loading={isSaving}
+                                size="medium"
+                                startIcon={<FloppyDiskIcon className="w-4 h-4" />}
+                                variant="contained"
+                                onClick={handleSaveAssessment}
+                            >
+                                {isSaving
+                                    ? 'Saving Assessment...'
+                                    : isNew
+                                        ? 'Save Assessment'
+                                        : 'Save Changes'}
+                            </CommonButton>
+                        )}
                 </div>
             </div>
 
@@ -1042,6 +1208,26 @@ export default function AssessmentWizardModal({
                 open={draftGuard.isPromptOpen}
                 onContinue={draftGuard.handleContinue}
                 onDiscard={draftGuard.handleDiscard}
+            />
+            <DeletePromptModal
+                formButtonsProps={{
+                    cancelProps: { onClick: () => setPendingDeleteQuestionId(null) },
+                    confirmProps: { onClick: handleConfirmDeleteQuestion }
+                }}
+                mainContent={{ title: 'Delete this question?' }}
+                open={pendingDeleteQuestionId !== null}
+                subContent={{ title: 'This action cannot be undone.' }}
+                onClose={() => setPendingDeleteQuestionId(null)}
+            />
+            <AlertPromptModal
+                formButtonsProps={{
+                    cancelProps: { onClick: handleCancelRescore },
+                    confirmProps: { children: 'Save and Recalculate', onClick: handleConfirmRescore }
+                }}
+                mainContent={{ title: 'Scores will be recalculated' }}
+                open={rescorePrompt !== null}
+                subContent={{ title: rescorePrompt?.message ?? '' }}
+                onClose={handleCancelRescore}
             />
             <DiscardChangesPromptModal
                 open={isConfirmCloseOpen}

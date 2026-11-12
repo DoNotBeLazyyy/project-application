@@ -5,24 +5,16 @@ import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
-import { CommonSelectOption } from '@components/select/CommonSelect';
-import { useObjectDraft } from '@hooks/use-form-draft';
+import { YEAR_LEVEL_OPTIONS } from '@constants/year-level.constant';
+import { useFormDraft } from '@hooks/use-form-draft';
 import { ArrowsClockwiseIcon } from '@phosphor-icons/react';
 import { getPrograms } from '@services/program/program.service';
 import { shiftStudentProgram } from '@services/records.service';
 import { registrarAssignStudentProgramAndYear, syncStudentYearLevel } from '@services/registrar-verification.service';
 import { useToastStore } from '@stores/toast.store';
+import { ProgramOptionWithDuration } from '@type/program/program.type';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-
-const YEAR_LEVEL_OPTIONS: CommonSelectOption[] = [
-    { label: '1st Year', value: 1 },
-    { label: '2nd Year', value: 2 },
-    { label: '3rd Year', value: 3 },
-    { label: '4th Year', value: 4 },
-    { label: '5th Year', value: 5 },
-    { label: '6th Year', value: 6 }
-];
 
 export interface AssignProgramModalProps {
     open: boolean;
@@ -54,7 +46,7 @@ export default function AssignProgramModal({
     currentYearLevelOverridden = false,
     title
 }: AssignProgramModalProps) {
-    const [programOptions, setProgramOptions] = useState<CommonSelectOption[]>([]);
+    const [programOptions, setProgramOptions] = useState<ProgramOptionWithDuration[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
     const [isLoadingPrograms, setIsLoadingPrograms] = useState(false);
@@ -78,28 +70,8 @@ export default function AssignProgramModal({
     const selectedProgramId = watchedValues.selectedProgramId ?? '';
     const selectedYearLevel = Number(watchedValues.selectedYearLevel ?? 1);
     const isOverride = Boolean(watchedValues.isOverride);
-    const reason = watchedValues.reason ?? '';
 
-    const currentDraftValues = useMemo(() => ({
-        selectedProgramId,
-        selectedYearLevel,
-        isOverride,
-        reason
-    }), [selectedProgramId, selectedYearLevel, isOverride, reason]);
-
-    const draftGuard = useObjectDraft({
-        formId: `assign-program-modal-${studentId ?? 'self'}`,
-        values: currentDraftValues,
-        defaultValues: defaultDraftValues,
-        onRestore: (restored) => {
-            setValue('selectedProgramId', restored.selectedProgramId ?? '');
-            setValue('selectedYearLevel', restored.selectedYearLevel ?? 1);
-            setValue('isOverride', Boolean(restored.isOverride));
-            setValue('reason', restored.reason ?? '');
-        },
-        enabled: open
-    });
-
+    // Runs before the draft check below, so a saved draft is compared with this student's values
     useEffect(function() {
         if (!open) {
             setIsDiscardOpen(false);
@@ -116,7 +88,8 @@ export default function AssignProgramModal({
                     result.data.map(function(program) {
                         return {
                             label: `${program.code} · ${program.label}`,
-                            value: program.id
+                            value: program.id,
+                            years_duration: program.years_duration
                         };
                     })
                 );
@@ -126,6 +99,18 @@ export default function AssignProgramModal({
 
         fetchPrograms();
     }, [open, defaultDraftValues, reset]);
+
+    const draftGuard = useFormDraft({
+        control,
+        enabled: open,
+        formId: `assign-program-modal-${studentId ?? 'self'}`
+    });
+
+    // Year levels stop at the selected program's length
+    const programYears = programOptions.find((option) => option.value === selectedProgramId)?.years_duration;
+    const yearLevelOptions = programYears
+        ? YEAR_LEVEL_OPTIONS.filter((option) => Number(option.value) <= programYears)
+        : YEAR_LEVEL_OPTIONS;
 
     const fields: FormFieldConfig<AssignProgramFormValues>[] = [
         {
@@ -142,8 +127,12 @@ export default function AssignProgramModal({
             gridCols: 2,
             label: 'Year Level',
             name: 'selectedYearLevel',
-            options: YEAR_LEVEL_OPTIONS,
-            rules: { required: 'Year level is required' },
+            options: yearLevelOptions,
+            rules: {
+                required: 'Year level is required',
+                validate: (value) => !programYears || Number(value) <= programYears
+                    || `This program is ${programYears} years long; pick year 1 to ${programYears}.`
+            },
             type: 'select'
         }
     ];
@@ -221,15 +210,9 @@ export default function AssignProgramModal({
 
         setIsSaving(false);
 
+        // The server's success message is already shown as a toast
         if (!error) {
             draftGuard.clearDraft();
-            useToastStore.getState()
-                .showToast(
-                    currentProgramId
-                        ? 'Program & Year Level updated successfully.'
-                        : 'Program assigned successfully.',
-                    'success'
-                );
             onSuccess?.();
             onClose();
         }

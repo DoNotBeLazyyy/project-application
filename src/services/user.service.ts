@@ -1,4 +1,4 @@
-import { callFunction, callRpc, callSingle } from '@services/supabase.wrapper';
+import { callFunction, callRpc } from '@services/supabase.wrapper';
 import { BulkImportResult } from '@type/bulk-import.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
@@ -57,33 +57,11 @@ export async function resetUserPassword(email: string): Promise<ServiceResult<nu
 }
 
 export async function deactivateUsers(userIds: string[]): Promise<ServiceResult<null>> {
-    const res = await callRpc<null>('fn_bulk_delete_users', { p_user_ids: userIds });
-    if (!res.error) {
-        return res;
-    }
-    return callSingle<null>((client) =>
-        client.from('users')
-            .update({
-                status: 'Inactive',
-                updated_at: new Date()
-                    .toISOString()
-            })
-            .in('id', userIds));
+    return callRpc<null>('fn_bulk_delete_users', { p_user_ids: userIds });
 }
 
 export async function reactivateUsers(userIds: string[]): Promise<ServiceResult<null>> {
-    const res = await callRpc<null>('fn_bulk_reactivate_users', { p_user_ids: userIds });
-    if (!res.error) {
-        return res;
-    }
-    return callSingle<null>((client) =>
-        client.from('users')
-            .update({
-                status: 'Active',
-                updated_at: new Date()
-                    .toISOString()
-            })
-            .in('id', userIds));
+    return callRpc<null>('fn_bulk_reactivate_users', { p_user_ids: userIds });
 }
 
 export async function updateUser(

@@ -2,6 +2,7 @@ import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import LinkifiedText from '@components/text/LinkifiedText';
+import { findTransmutationStep, TransmutationStep, useTransmutationScale } from '@pages/student/grade/use-transmutation-scale';
 import {
     ArrowLeftIcon,
     ArrowLineDownIcon,
@@ -17,10 +18,11 @@ import {
     TrophyIcon,
     XCircleIcon
 } from '@phosphor-icons/react';
-import { getAttachmentSignedUrl } from '@services/assessment.service';
-import { getFileUrl } from '@services/storage.service';
+import { getFileUrl, StorageBucket } from '@services/storage.service';
 import { getMyAssessmentResult } from '@services/student-portal.service';
+import { useToastStore } from '@stores/toast.store';
 import { StudentAssessmentResult, StudentResultAnswer, StudentResultRubric } from '@type/student-portal.type';
+import { triggerFileDownload } from '@utils/file.util';
 import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
@@ -45,19 +47,75 @@ function formatScore(value: number | null): string {
         : '—';
 }
 
-async function openSubmissionFile(path: string) {
-    const result = await getFileUrl('submissions', path);
-    if (result.data) window.open(result.data.url, '_blank', 'noopener');
+const FILE_OPEN_FAILED_MESSAGE = 'The file could not be opened. Please try again.';
+const POPUP_BLOCKED_MESSAGE = 'Your browser blocked the file from opening. Allow pop-ups for this site and try again.';
+
+/**
+ * Shows an error when a file link could not be made. The storage call already toasts its
+ * own errors, so this only covers an empty reply.
+ */
+function showFileError(hasServiceError: boolean, message = FILE_OPEN_FAILED_MESSAGE) {
+    if (hasServiceError) return;
+
+    useToastStore.getState()
+        .showToast(message, 'error');
 }
 
-async function downloadAttachment(fileUrl: string, fileName: string) {
-    const result = await getAttachmentSignedUrl(fileUrl);
-    if (!result.data) return;
-    const anchor = document.createElement('a');
-    anchor.href = result.data;
-    anchor.download = fileName;
-    anchor.target = '_blank';
-    anchor.click();
+/**
+ * Gets a link for a stored file. Every file on this page goes through here, so the
+ * submission and the reference files are opened the same way.
+ *
+ * @param bucket - Storage bucket that holds the file.
+ * @param path - Path of the file in the bucket.
+ * @returns The link, or null after an error was shown.
+ */
+async function getStoredFileUrl(bucket: StorageBucket, path: string): Promise<string | null> {
+    const result = await getFileUrl(bucket, path);
+
+    if (!result.data?.url) {
+        showFileError(Boolean(result.error));
+        return null;
+    }
+
+    return result.data.url;
+}
+
+/**
+ * Opens a submitted file in a new tab.
+ *
+ * @param path - Path of the file in the submissions bucket.
+ */
+async function openSubmissionFile(path: string) {
+    // Open the tab first so the browser does not treat it as an unwanted pop-up
+    const fileWindow = window.open('', '_blank');
+    const url = await getStoredFileUrl('submissions', path);
+
+    if (!url) {
+        fileWindow?.close();
+        return;
+    }
+
+    if (!fileWindow) {
+        showFileError(false, POPUP_BLOCKED_MESSAGE);
+        return;
+    }
+
+    fileWindow.opener = null;
+    fileWindow.location.href = url;
+}
+
+/**
+ * Downloads a reference file the faculty attached to the assessment.
+ *
+ * @param path - Path of the file in the materials bucket.
+ * @param fileName - Name to save the file as.
+ */
+async function downloadAttachment(path: string, fileName: string) {
+    const url = await getStoredFileUrl('materials', path);
+
+    if (url) {
+        await triggerFileDownload(url, fileName);
+    }
 }
 
 interface ResultDetailTileProps {
@@ -282,19 +340,38 @@ function ResultAnswerCard({ answer, hasSubmission, index, resultsAvailable }: Re
     );
 }
 
-function computeTransmutedGrade(score: number | null, total: number | null): string {
+/**
+ * Shows the score as a percentage and, when the configured table covers it, the grade it
+ * would transmute to. A single assessment is not a term grade, so this is only a guide.
+ */
+function describeScore(score: number | null, total: number | null, steps: TransmutationStep[]): string {
     if (score === null || total === null || total === 0) return '—';
-    const pct = (score / total) * 100;
-    if (pct >= 99) return '1.00 (99–100% · Excellent)';
-    if (pct >= 96) return '1.25 (96–98% · Superior)';
-    if (pct >= 93) return '1.50 (93–95% · Very Good)';
-    if (pct >= 90) return '1.75 (90–92% · Good)';
-    if (pct >= 87) return '2.00 (87–89% · Meritorious)';
-    if (pct >= 84) return '2.25 (84–86% · Satisfactory)';
-    if (pct >= 81) return '2.50 (81–83% · Fair)';
-    if (pct >= 78) return '2.75 (78–80% · Passing)';
-    if (pct >= 75) return '3.00 (75–77% · Conditional)';
-    return '5.00 (Below 75% · Failed)';
+
+    const percentage = (score / total) * 100;
+    const percentLabel = `${score} / ${total} (${percentage.toFixed(2)}%)`;
+    const step = findTransmutationStep(steps, percentage);
+
+    if (!step) return percentLabel;
+
+    return `${percentLabel} · ${step.grade.toFixed(2)}${step.description
+        ? ` ${step.description}`
+        : ''} on the grading scale`;
+}
+
+/**
+ * Tells whether the student may start another attempt: the latest one is finished,
+ * attempts remain and the window is open.
+ */
+function canRetakeAssessment(result: StudentAssessmentResult): boolean {
+    const now = Date.now();
+    const isFinished = ['Submitted', 'Late', 'Graded', 'Returned'].includes(result.status ?? '');
+    const hasAttemptsLeft = (result.attempt_number ?? 0) < result.max_attempts;
+    const hasOpened = !result.opens_at || new Date(result.opens_at)
+        .getTime() <= now;
+    const hasClosed = Boolean(result.closes_at) && new Date(result.closes_at ?? '')
+        .getTime() < now;
+
+    return result.has_submission && isFinished && hasAttemptsLeft && hasOpened && !hasClosed;
 }
 
 export default function AssessmentResultPage() {
@@ -308,6 +385,7 @@ export default function AssessmentResultPage() {
 
     const [result, setResult] = useState<StudentAssessmentResult | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
+    const { steps: transmutationSteps } = useTransmutationScale();
 
     useEffect(function() {
         async function fetchResult() {
@@ -322,6 +400,10 @@ export default function AssessmentResultPage() {
         }
         fetchResult();
     }, [assessmentId, enrollmentId]);
+
+    const canRetake = result
+        ? canRetakeAssessment(result)
+        : false;
 
     const passed = result && result.has_submission && result.results_available
         && result.passing_points !== null && result.final_score !== null
@@ -347,6 +429,18 @@ export default function AssessmentResultPage() {
                 >
                     Back to Subject
                 </CommonButton>
+                {result && canRetake && (
+                    <CommonButton
+                        className="ml-auto"
+                        size="small"
+                        variant="contained"
+                        onClick={function() {
+                            navigate(`/student/subjects/${result.enrollment_id || enrollmentId}/assessments/${assessmentId}`);
+                        }}
+                    >
+                        Retake (attempt {(result.attempt_number ?? 0) + 1} of {result.max_attempts})
+                    </CommonButton>
+                )}
             </div>
 
             {!result && isLoaded && (
@@ -378,10 +472,16 @@ export default function AssessmentResultPage() {
                                         Assessment Submitted &amp; Recorded
                                     </span>
                                     <p className="m-0 text-slate-600 dark:text-slate-300 text-xs sm:text-sm">
-                                        Computed Grade Scale:{' '}
-                                        <strong className="text-blue-700 dark:text-blue-300">
-                                            {computeTransmutedGrade(result.final_score ?? result.raw_score, result.total_points)}
-                                        </strong>
+                                        {result.results_available
+                                            ? (
+                                                <>
+                                                    Score:{' '}
+                                                    <strong className="text-blue-700 dark:text-blue-300">
+                                                        {describeScore(result.final_score ?? result.raw_score, result.total_points, transmutationSteps)}
+                                                    </strong>
+                                                </>
+                                            )
+                                            : 'Your score will appear here once results are released.'}
                                     </p>
                                 </div>
                             </div>

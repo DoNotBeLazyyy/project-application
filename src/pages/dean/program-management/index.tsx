@@ -2,17 +2,19 @@ import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
+import DeanNoDepartmentBanner from '@pages/dean/components/DeanNoDepartmentBanner';
 import ProgramFilterForm from '@pages/dean/program-management/ProgramFilterForm';
 import ProgramGridCard from '@pages/dean/program-management/ProgramGridCard';
 import ProgramWizardModal from '@pages/dean/program-management/ProgramWizardModal';
 import { useProgramTableConfig } from '@pages/dean/program-management/use-program-table-config';
 import {
-    bulkCreatePrograms, bulkDeletePrograms, createProgram, deleteProgram, getProgramById, listPrograms, updateProgram
+    bulkCreatePrograms, bulkDeletePrograms, createProgram, CURRICULUM_SAVE_FAILED, deleteProgram, getProgramById, listPrograms, updateProgram
 } from '@services/program/program.service';
 import { useToastStore } from '@stores/toast.store';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { SortStringDto } from '@type/http.type';
 import { ProgramBulkRow, ProgramFilterValues, ProgramFormValues, ProgramListRow } from '@type/program/program.type';
+import { ServiceErrorProps } from '@type/service.type';
 import { generateProgramCode } from '@utils/entity-code.util';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -38,7 +40,7 @@ const defaultFormValues: ProgramFormValues = {
     is_active: true
 };
 
-// Mirrors fn_bulk_create_programs (one program per code, years 1-8; bulkCreatePrograms resolves
+// Mirrors fn_bulk_create_programs (one program per code, years 1-6; bulkCreatePrograms resolves
 // department / program level by code or name) plus fn_bulk_create_curriculum_map for the optional curriculum
 // columns - repeat the program columns on extra rows to map more courses to one program.
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
@@ -55,7 +57,7 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
         key: 'program_level_code', label: 'Program Level Code', hint: 'Program level code or name, e.g. UG or GRAD', sample: 'UG'
     },
     {
-        key: 'years_duration', label: 'Years Duration', hint: 'Whole number from 1 to 8, e.g. 4', sample: '4'
+        key: 'years_duration', label: 'Years Duration', hint: 'Whole number from 1 to 6, e.g. 4', sample: '4'
     },
     {
         key: 'total_units', label: 'Total Units', hint: 'Optional number, e.g. 160', sample: '160', required: false
@@ -95,6 +97,9 @@ export default function ProgramManagement() {
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [editStep, setEditStep] = useState<number>(1);
+    const [isSaving, setIsSaving] = useState(false);
+    // Set when a program was created but its curriculum failed, so Save again updates it
+    const [createdProgramId, setCreatedProgramId] = useState<string | null>(null);
 
     const createMethods = useForm<ProgramFormValues>({
         defaultValues: defaultFormValues
@@ -163,11 +168,7 @@ export default function ProgramManagement() {
         updateMethods.reset(defaultFormValues);
     }
 
-    const { columnDefs, tableActionConfig } = useProgramTableConfig({
-        onEdit: handleOpenUpdate,
-        onRequestDeleteRow: function() {},
-        onView: handleOpenView
-    });
+    const { columnDefs } = useProgramTableConfig();
 
     async function fetchPrograms(
         page: number,
@@ -180,17 +181,45 @@ export default function ProgramManagement() {
 
     const showToast = useToastStore((state) => state.showToast);
 
-    async function handleCreateSubmit(values: ProgramFormValues) {
-        const result = await createProgram(values);
-
-        if (!result.error) {
-            showToast('Program and curriculum map saved successfully!', 'success');
-            createMethods.reset(defaultFormValues);
-            setIsCreateOpen(false);
-            setActiveFilters((prev) => ({ ...prev } as ProgramFilterValues));
+    /**
+     * Shows a save error once: callRpc already showed server errors, so only the
+     * "program saved, curriculum not" summary is shown here.
+     */
+    function showCurriculumError(error: ServiceErrorProps | null) {
+        if (error?.code === CURRICULUM_SAVE_FAILED) {
+            showToast(error.message, 'error');
         }
-        else {
-            showToast(result.error.message || 'Failed to save program', 'error');
+    }
+
+    function handleCloseCreate() {
+        createMethods.reset(defaultFormValues);
+        setCreatedProgramId(null);
+        setIsCreateOpen(false);
+    }
+
+    async function handleCreateSubmit(values: ProgramFormValues) {
+        if (isSaving) return;
+        setIsSaving(true);
+        try {
+            // A retry after a curriculum failure updates the program already created
+            const result = createdProgramId
+                ? await updateProgram(createdProgramId, values)
+                : await createProgram(values);
+
+            if (!createdProgramId && result.data && 'id' in result.data && result.data.id) {
+                setCreatedProgramId(result.data.id);
+            }
+
+            if (!result.error) {
+                handleCloseCreate();
+                setActiveFilters((prev) => ({ ...prev } as ProgramFilterValues));
+            }
+            else {
+                showCurriculumError(result.error);
+            }
+        }
+        finally {
+            setIsSaving(false);
         }
     }
 
@@ -204,31 +233,38 @@ export default function ProgramManagement() {
     }
 
     async function handleUpdateSubmit(values: ProgramFormValues) {
-        if (!selectedId) {
+        if (!selectedId || isSaving) {
             return;
         }
 
-        const result = await updateProgram(selectedId, {
-            ...values,
-            code: values.code.trim(),
-            name: values.name.trim(),
-            description: values.description
-                ? values.description.trim()
-                : ''
-        });
+        setIsSaving(true);
+        try {
+            const result = await updateProgram(selectedId, {
+                ...values,
+                code: values.code.trim(),
+                name: values.name.trim(),
+                description: values.description
+                    ? values.description.trim()
+                    : ''
+            });
 
-        if (!result.error) {
-            showToast('Program and curriculum map updated successfully!', 'success');
-            handleCloseUpdate();
-            setActiveFilters((prev) => ({ ...prev } as ProgramFilterValues));
+            if (!result.error) {
+                handleCloseUpdate();
+                setActiveFilters((prev) => ({ ...prev } as ProgramFilterValues));
+            }
+            else {
+                showCurriculumError(result.error);
+            }
         }
-        else {
-            showToast(result.error.message || 'Failed to update program', 'error');
+        finally {
+            setIsSaving(false);
         }
     }
 
     return (
         <div className="flex flex-col gap-4 h-full">
+            <DeanNoDepartmentBanner />
+
             <CommonTableCard<ProgramListRow>
                 cardHeaderProps={{
                     subheader: 'Manage university programs and their details.',
@@ -282,7 +318,6 @@ export default function ProgramManagement() {
                     );
                 }}
                 sortColumns={SORT_COLUMNS}
-                tableActionConfig={tableActionConfig}
                 tableProps={{
                     hasCheckbox: true,
                     leadingColumnDefs: columnDefs
@@ -332,12 +367,10 @@ export default function ProgramManagement() {
             {/* Create Program Wizard Modal */}
             {isCreateOpen && (
                 <ProgramWizardModal
+                    isSaving={isSaving}
                     methods={createMethods}
                     open={isCreateOpen}
-                    onClose={() => {
-                        createMethods.reset(defaultFormValues);
-                        setIsCreateOpen(false);
-                    }}
+                    onClose={handleCloseCreate}
                     onSubmit={handleCreateSubmit}
                 />
             )}
@@ -347,6 +380,7 @@ export default function ProgramManagement() {
                 <ProgramWizardModal
                     initialStep={editStep}
                     isEditing
+                    isSaving={isSaving}
                     methods={updateMethods}
                     open={isUpdateOpen}
                     programId={selectedId ?? undefined}

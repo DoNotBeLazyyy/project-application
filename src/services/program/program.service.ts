@@ -52,6 +52,39 @@ export async function getPrograms(): Promise<ServiceResult<ProgramOption[]>> {
     return callRpc<ProgramOption[]>('fn_get_programs');
 }
 
+/** Error code for a program that saved while some of its curriculum changes did not. */
+export const CURRICULUM_SAVE_FAILED = 'CURRICULUM_SAVE_FAILED';
+
+/**
+ * Removes curriculum entries one by one and reports the ones that failed. Each call is silent
+ * so the caller shows one summary instead of a toast per entry.
+ *
+ * @param ids - Entry ids; unsaved "temp-" ids are ignored.
+ * @returns The failure messages, empty when all were removed.
+ */
+async function deleteCurriculumEntries(ids: string[] | undefined): Promise<string[]> {
+    const realIds = (ids ?? []).filter((id) => !id.startsWith('temp-'));
+    const results = await Promise.all(realIds.map((id) => deleteCurriculumMapEntry(id, { silent: true })));
+
+    return results
+        .filter((res) => res.error)
+        .map((res) => res.error?.message ?? 'Unknown error');
+}
+
+/**
+ * Builds the "program saved, curriculum not" error the program page shows as one toast.
+ *
+ * @param message - What went wrong with the curriculum.
+ * @returns The service error.
+ */
+function curriculumError(message: string) {
+    return {
+        code: CURRICULUM_SAVE_FAILED,
+        message,
+        status: null
+    };
+}
+
 function resolveTermTypeCode(codeOrLabel?: string): string {
     if (!codeOrLabel) return '';
     const clean = codeOrLabel.trim();
@@ -64,9 +97,13 @@ function resolveTermTypeCode(codeOrLabel?: string): string {
     return upper;
 }
 
+/**
+ * Creates a program, then its curriculum. The new id is returned even when the curriculum
+ * fails, so a retry can update that program instead of creating a second one.
+ */
 export async function createProgram(
     params: ProgramFormValues
-): Promise<ServiceResult<null>> {
+): Promise<ServiceResult<{ id: string | null }>> {
     const result = await callRpc<{ id?: string; program_id?: string; code?: string }>('fn_create_program', {
         p_code: params.code,
         p_department_id: nullIfBlank(params.department_id),
@@ -80,54 +117,53 @@ export async function createProgram(
         p_years_duration: Number(params.years_duration)
     });
 
-    if (!result.error) {
-        const programCode = result.data?.code || params.code;
-        const programId = result.data?.id || result.data?.program_id;
+    if (result.error) {
+        return { data: null, error: result.error };
+    }
 
-        // STEP 1: Delete any pending deleted curriculum map entries first (if any)
-        if (params.pending_deleted_curriculum_ids && params.pending_deleted_curriculum_ids.length > 0) {
-            const realDeletedIds = params.pending_deleted_curriculum_ids.filter((id) => !id.startsWith('temp-'));
-            if (realDeletedIds.length > 0) {
-                await Promise.allSettled(
-                    realDeletedIds.map((id) => deleteCurriculumMapEntry(id))
-                );
-            }
-        }
+    const programCode = result.data?.code || params.code;
+    const programId = result.data?.id || result.data?.program_id || null;
 
-        // STEP 2: Bulk create all curriculum entries after program is created via SINGLE API call
-        if (params.curriculum_entries && params.curriculum_entries.length > 0) {
-            const bulkEntries: CurriculumMapBulkRow[] = params.curriculum_entries.map((entry) => ({
-                program_id: programId,
-                program_code: programCode,
-                course_id: entry.course_id,
-                course_code: entry.course_code || '',
-                year_level: String(entry.year_level),
-                term_type_id: entry.term_type_id,
-                term_type_code: resolveTermTypeCode(entry.term_type_code || entry.term_type_label),
-                school_year_id: entry.school_year_id || params.school_year_id || null,
-                school_year_code: '',
-                sequence: String(entry.sequence ?? 1),
-                is_elective: String(Boolean(entry.is_elective)),
-                lecture_units: String(entry.lecture_units ?? 0),
-                laboratory_units: String(entry.laboratory_units ?? 0),
-                units: String(entry.units ?? entry.total_units ?? 0),
-                type_units: entry.type_units
-            }));
-            const currRes = await bulkCreateCurriculumMap(bulkEntries);
-            if (currRes.errors && currRes.errors.length > 0) {
-                return {
-                    data: null,
-                    error: {
-                        message: `Program saved, but failed to save curriculum map entries: ${currRes.errors.join('; ')}`,
-                        code: null,
-                        status: null
-                    }
-                };
-            }
+    // STEP 1: Delete any pending deleted curriculum map entries first (if any)
+    const deleteErrors = await deleteCurriculumEntries(params.pending_deleted_curriculum_ids);
+    if (deleteErrors.length > 0) {
+        return {
+            data: { id: programId },
+            error: curriculumError(`Program saved, but ${deleteErrors.length} curriculum entr${deleteErrors.length === 1
+                ? 'y'
+                : 'ies'} could not be removed: ${deleteErrors.join('; ')}`)
+        };
+    }
+
+    // STEP 2: Bulk create all curriculum entries after program is created via SINGLE API call
+    if (params.curriculum_entries && params.curriculum_entries.length > 0) {
+        const bulkEntries: CurriculumMapBulkRow[] = params.curriculum_entries.map((entry) => ({
+            program_id: programId ?? undefined,
+            program_code: programCode,
+            course_id: entry.course_id,
+            course_code: entry.course_code || '',
+            year_level: String(entry.year_level),
+            term_type_id: entry.term_type_id,
+            term_type_code: resolveTermTypeCode(entry.term_type_code || entry.term_type_label),
+            school_year_id: entry.school_year_id || params.school_year_id || null,
+            school_year_code: '',
+            sequence: String(entry.sequence ?? 1),
+            is_elective: String(Boolean(entry.is_elective)),
+            lecture_units: String(entry.lecture_units ?? 0),
+            laboratory_units: String(entry.laboratory_units ?? 0),
+            units: String(entry.units ?? entry.total_units ?? 0),
+            type_units: entry.type_units
+        }));
+        const currRes = await bulkCreateCurriculumMap(bulkEntries);
+        if (currRes.errors && currRes.errors.length > 0) {
+            return {
+                data: { id: programId },
+                error: curriculumError(`Program saved, but failed to save curriculum map entries: ${currRes.errors.join('; ')}`)
+            };
         }
     }
 
-    return { data: null, error: result.error };
+    return { data: { id: programId }, error: null };
 }
 
 export async function updateProgram(
@@ -151,13 +187,14 @@ export async function updateProgram(
 
     if (!result.error) {
         // STEP 1: Delete all pending deleted curriculum map entries FIRST
-        if (params.pending_deleted_curriculum_ids && params.pending_deleted_curriculum_ids.length > 0) {
-            const realDeletedIds = params.pending_deleted_curriculum_ids.filter((id) => !id.startsWith('temp-'));
-            if (realDeletedIds.length > 0) {
-                await Promise.allSettled(
-                    realDeletedIds.map((id) => deleteCurriculumMapEntry(id))
-                );
-            }
+        const deleteErrors = await deleteCurriculumEntries(params.pending_deleted_curriculum_ids);
+        if (deleteErrors.length > 0) {
+            return {
+                data: null,
+                error: curriculumError(`Program updated, but ${deleteErrors.length} curriculum entr${deleteErrors.length === 1
+                    ? 'y'
+                    : 'ies'} could not be removed: ${deleteErrors.join('; ')}`)
+            };
         }
 
         // STEP 2: Bulk create all new/imported entries in ONE SINGLE API call AFTER deletion completes
@@ -185,11 +222,7 @@ export async function updateProgram(
                 if (currRes.errors && currRes.errors.length > 0) {
                     return {
                         data: null,
-                        error: {
-                            message: `Program updated, but failed to save curriculum entries: ${currRes.errors.join('; ')}`,
-                            code: null,
-                            status: null
-                        }
+                        error: curriculumError(`Program updated, but failed to save curriculum entries: ${currRes.errors.join('; ')}`)
                     };
                 }
             }
@@ -218,6 +251,7 @@ export async function updateProgram(
                 );
                 const firstErr = updateResults.find((r) => r.error);
                 if (firstErr) {
+                    // Each failed update was already shown by callRpc
                     return {
                         data: null,
                         error: {
@@ -333,8 +367,9 @@ export async function bulkCreatePrograms(
             .toLowerCase();
 
         let message = '';
-        if (!Number.isInteger(yearsDuration) || yearsDuration < 1 || yearsDuration > 8) {
-            message = 'Years duration must be a whole number from 1 to 8';
+        // Curriculum year levels go up to 6
+        if (!Number.isInteger(yearsDuration) || yearsDuration < 1 || yearsDuration > 6) {
+            message = 'Years duration must be a whole number from 1 to 6';
         }
         else if (totalUnits !== '' && (isNaN(Number(totalUnits)) || Number(totalUnits) < 0)) {
             message = 'Total units must be a number of 0 or more';

@@ -27,6 +27,8 @@ export default function RoleManagement() {
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
+    const [isCreating, setIsCreating] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
 
     const createMethods = useForm<CreateRoleFormValues>({
         defaultValues: {
@@ -92,11 +94,7 @@ export default function RoleManagement() {
         updateMethods.reset();
     }
 
-    const { columnDefs, tableActionConfig } = useRoleTableConfig({
-        onEdit: handleOpenUpdate,
-        onRequestDeleteRow: function() {},
-        onView: handleOpenView
-    });
+    const { columnDefs } = useRoleTableConfig();
 
     async function fetchRoles(
         page: number,
@@ -108,31 +106,52 @@ export default function RoleManagement() {
     }
 
     async function handleCreateSubmit(values: CreateRoleFormValues) {
-        const result = await createRole(values);
+        if (isCreating) {
+            return;
+        }
+        setIsCreating(true);
+        try {
+            const result = await createRole({
+                ...values,
+                description: values.description
+                    ? values.description.trim()
+                    : '',
+                label: values.label.trim()
+            });
 
-        if (!result.error) {
-            createMethods.reset();
-            setIsCreateOpen(false);
-            triggerRefresh();
+            if (!result.error) {
+                createMethods.reset();
+                setIsCreateOpen(false);
+                triggerRefresh();
+            }
+        }
+        finally {
+            setIsCreating(false);
         }
     }
 
     async function handleUpdateSubmit(values: UpdateRoleFormValues) {
-        if (!selectedRoleId) {
+        if (!selectedRoleId || isUpdating) {
             return;
         }
 
-        const result = await updateRole(selectedRoleId, {
-            code: values.code,
-            description: values.description
-                ? values.description.trim()
-                : '',
-            label: values.label.trim()
-        });
+        setIsUpdating(true);
+        try {
+            const result = await updateRole(selectedRoleId, {
+                code: values.code,
+                description: values.description
+                    ? values.description.trim()
+                    : '',
+                label: values.label.trim()
+            });
 
-        if (!result.error) {
-            handleCloseUpdate();
-            triggerRefresh();
+            if (!result.error) {
+                handleCloseUpdate();
+                triggerRefresh();
+            }
+        }
+        finally {
+            setIsUpdating(false);
         }
     }
 
@@ -167,18 +186,28 @@ export default function RoleManagement() {
                             title: 'Create Role'
                         }
                     },
+                    formButtonsProps: {
+                        cancelProps: {
+                            disabled: isCreating
+                        }
+                    },
                     formId: CREATE_FORM_ID,
                     formContent: (
                         <RoleForm
                             control={createMethods.control}
+                            disabled={isCreating}
                             id={CREATE_FORM_ID}
                             isCreate
                             setValue={createMethods.setValue}
                             onSubmit={createMethods.handleSubmit(handleCreateSubmit, handleCreateFormError)}
                         />
                     ),
+                    isLoading: isCreating,
                     open: isCreateOpen,
                     onClose: function() {
+                        if (isCreating) {
+                            return;
+                        }
                         createMethods.reset();
                         setIsCreateOpen(false);
                     }
@@ -197,7 +226,6 @@ export default function RoleManagement() {
                     );
                 }}
                 sortColumns={SORT_COLUMNS}
-                tableActionConfig={tableActionConfig}
                 tableProps={{
                     leadingColumnDefs: columnDefs
                 }}
@@ -210,21 +238,36 @@ export default function RoleManagement() {
                         }
                     },
                     confirmText: 'Save',
+                    formButtonsProps: {
+                        cancelProps: {
+                            disabled: isUpdating
+                        }
+                    },
                     formId: UPDATE_FORM_ID,
                     formContent: (
                         <RoleForm
                             control={updateMethods.control}
+                            disabled={isUpdating}
                             id={UPDATE_FORM_ID}
                             setValue={updateMethods.setValue}
                             onSubmit={updateMethods.handleSubmit(handleUpdateSubmit, handleUpdateFormError)}
                         />
                     ),
                     isDirty: isUpdateRealDirty,
+                    isLoading: isUpdating,
                     onConfirmClose: function() {
+                        if (isUpdating) {
+                            return false;
+                        }
                         return !isUpdateRealDirty;
                     },
                     open: isUpdateOpen,
-                    onClose: handleCloseUpdate
+                    onClose: function() {
+                        if (isUpdating) {
+                            return;
+                        }
+                        handleCloseUpdate();
+                    }
                 }}
                 viewModalProps={{
                     cardProps: {

@@ -1,8 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
-import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
-import ValidCommonSelect from '@components/select/ValidCommonSelect';
 import Step1FacultyLoadOverview from '@pages/dean/faculty-load/Step1FacultyLoadOverview';
 import Step2FacultyLoadSectionList from '@pages/dean/faculty-load/Step2FacultyLoadSectionList';
 import Step3FacultyLoadConflicts from '@pages/dean/faculty-load/Step3FacultyLoadConflicts';
@@ -10,24 +8,18 @@ import {
     ArrowLeftIcon,
     ArrowRightIcon,
     ChalkboardTeacherIcon,
-    FloppyDiskIcon,
-    PencilSimpleIcon,
     PlusIcon,
     XIcon
 } from '@phosphor-icons/react';
-import { getFacultyLoadDetail, saveFacultyLoadAssignments } from '@services/faculty-load.service';
-import { getFacultyOptions, getSectionById, getSections } from '@services/section.service';
+import { getFacultyLoadDetail } from '@services/faculty-load.service';
 import { useToastStore } from '@stores/toast.store';
 import {
-    FacultyLoadAssignmentInput,
     FacultyLoadDetail,
     FacultyLoadSection,
     FacultyScheduleConflict
 } from '@type/faculty-load.type';
-import { SectionStatus } from '@type/section.type';
 import { evaluateSectionConflicts } from '@utils/faculty-load-conflicts.util';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 // The faculty load RPC returns some unit and id fields under alternate names
@@ -36,35 +28,6 @@ type RawFacultyLoadSection = FacultyLoadSection & {
     laboratory_units?: number | string;
     total_units?: number | string;
 };
-
-// Shape returned by fn_get_section_by_id, read loosely when adding a section to the load
-interface SectionDetailRecord {
-    id: string;
-    section_code: string;
-    course_id: string;
-    course_code?: string;
-    course_title?: string;
-    term_id: string;
-    term_label?: string;
-    program_id?: string | null;
-    program_code?: string | null;
-    program_name?: string | null;
-    room?: string | null;
-    max_slots?: number | string;
-    enrolled_count?: number | string;
-    status?: SectionStatus;
-    is_active_academic_year?: boolean;
-    lecture_units?: number | string;
-    laboratory_units?: number | string;
-    units?: number | string;
-    total_units?: number | string;
-    schedules?: {
-        day_of_week: string;
-        time_start: string;
-        time_end: string;
-        room?: string | null;
-    }[];
-}
 
 const FACULTY_LOAD_STEPS = [
     {
@@ -75,77 +38,48 @@ const FACULTY_LOAD_STEPS = [
     {
         step: 2,
         title: 'Section List',
-        subtitle: 'Assigned sections, capacity, meeting times, and instructor assignment'
+        subtitle: 'Assigned sections, capacity, and meeting times'
     },
     {
         step: 3,
         title: 'Conflict',
-        subtitle: 'Schedule overlaps and classroom collision detection'
+        subtitle: 'Classes in this faculty member\'s load that meet at the same time'
     }
 ];
-
-interface FacultyOption {
-    label: string;
-    value: string;
-}
 
 interface FacultyLoadWizardModalProps {
     open: boolean;
     facultyId: string | null;
     termId?: string | null;
-    initialReadOnly?: boolean;
     onClose: VoidFunction;
-    onSuccess: VoidFunction;
 }
 
+/**
+ * Read-only view of one faculty member's teaching load. Sections are changed in Section
+ * Management.
+ */
 export default function FacultyLoadWizardModal({
     open,
     facultyId,
     termId = null,
-    initialReadOnly = true,
-    onClose,
-    onSuccess
+    onClose
 }: FacultyLoadWizardModalProps) {
     const navigate = useNavigate();
     const { showToast } = useToastStore();
     const [currentStep, setCurrentStep] = useState(1);
-    const [isReadOnly, setIsReadOnly] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [detail, setDetail] = useState<FacultyLoadDetail | null>(null);
+    const [sections, setSections] = useState<FacultyLoadSection[]>([]);
 
-    function handleRedirectToSectionManagement() {
+    /**
+     * Opens Section Management with a new section prefilled for this faculty member.
+     */
+    function handleAssignNewSection() {
         onClose();
         if (facultyId) {
             navigate(`/dean/section-management?createSection=true&facultyId=${facultyId}`);
         }
     }
-    const [isSaving, setIsSaving] = useState(false);
-
-    // Baseline server detail and staged working state
-    const [detail, setDetail] = useState<FacultyLoadDetail | null>(null);
-    const [initialSections, setInitialSections] = useState<FacultyLoadSection[]>([]);
-    const [stagedSections, setStagedSections] = useState<FacultyLoadSection[]>([]);
-    const [facultyOptions, setFacultyOptions] = useState<FacultyOption[]>([]);
-
-    // Assigning sections dialog state
-    const [isAssignPickerOpen, setIsAssignPickerOpen] = useState(false);
-    const [availableOfferings, setAvailableOfferings] = useState<{ id: string; label: string }[]>([]);
-    const assignMethods = useForm<{ section_id: string }>({ defaultValues: { section_id: '' } });
-
-    // Fetch faculty options for dropdown
-    useEffect(() => {
-        if (!open) return;
-        getFacultyOptions()
-            .then((res) => {
-                if (res.data) {
-                    setFacultyOptions(
-                        res.data.map((f) => ({
-                            label: f.full_name,
-                            value: f.id
-                        }))
-                    );
-                }
-            });
-    }, [open]);
 
     // Load faculty load detail
     const loadDetail = useCallback(async() => {
@@ -157,8 +91,7 @@ export default function FacultyLoadWizardModal({
                 if (res.data.success === false) {
                     showToast(res.data.message || 'Faculty record not found.', 'error');
                     setDetail(null);
-                    setInitialSections([]);
-                    setStagedSections([]);
+                    setSections([]);
                     return;
                 }
 
@@ -177,8 +110,7 @@ export default function FacultyLoadWizardModal({
                     term_label: s.term_label || 'Active Term',
                     schedules: s.schedules || []
                 }));
-                setInitialSections(fetchedSections);
-                setStagedSections(fetchedSections);
+                setSections(fetchedSections);
             }
         }
         catch (err) {
@@ -192,27 +124,24 @@ export default function FacultyLoadWizardModal({
     useEffect(() => {
         if (open && facultyId) {
             setCurrentStep(1);
-            setIsReadOnly(initialReadOnly);
             loadDetail();
         }
         else {
             setDetail(null);
-            setInitialSections([]);
-            setStagedSections([]);
+            setSections([]);
             setCurrentStep(1);
         }
-    }, [open, facultyId, initialReadOnly, loadDetail]);
+    }, [open, facultyId, loadDetail]);
 
-    // Calculate dynamic conflicts for staged sections
+    // Overlaps within the load, plus any the server reported
     const activeConflicts = useMemo<FacultyScheduleConflict[]>(() => {
-        const localConflicts = evaluateSectionConflicts(stagedSections, detail?.faculty?.faculty_name);
+        const localConflicts = evaluateSectionConflicts(sections, detail?.faculty?.faculty_name);
 
-        // Merge with any backend-reported room conflicts that apply to remaining staged sections
         const backendConflicts = detail?.conflicts || [];
-        const stagedSectionIds = new Set(stagedSections.map((s) => s.section_id));
+        const sectionIds = new Set(sections.map((s) => s.section_id));
 
         const relevantBackend = backendConflicts.filter((bc) =>
-            stagedSectionIds.has(bc.section_a_id) || stagedSectionIds.has(bc.section_b_id));
+            sectionIds.has(bc.section_a_id) || sectionIds.has(bc.section_b_id));
 
         // Deduplicate
         const merged: FacultyScheduleConflict[] = [...localConflicts];
@@ -228,174 +157,7 @@ export default function FacultyLoadWizardModal({
         }
 
         return merged;
-    }, [stagedSections, detail]);
-
-    // Track staged modifications
-    const hasChanges = useMemo(() => {
-        if (stagedSections.length !== initialSections.length) return true;
-
-        const initialMap = new Map(initialSections.map((s) => [s.section_id, s.faculty_id]));
-        for (const sec of stagedSections) {
-            const initialFacId = initialMap.get(sec.section_id);
-            if (initialFacId === undefined) return true; // newly added
-            if (initialFacId !== sec.faculty_id) return true; // reassigned
-        }
-
-        return false;
-    }, [stagedSections, initialSections]);
-
-    // Handler: change assigned faculty of a section in write mode
-    function handleFacultyChange(sectionId: string, newFacultyId: string | null) {
-        setStagedSections((prev) =>
-            prev.map((sec) => {
-                if (sec.section_id === sectionId) {
-                    const matchedFac = facultyOptions.find((f) => f.value === newFacultyId);
-                    return {
-                        ...sec,
-                        faculty_id: newFacultyId,
-                        faculty_name: matchedFac
-                            ? matchedFac.label
-                            : (newFacultyId
-                                ? sec.faculty_name
-                                : 'Unassigned')
-                    };
-                }
-                return sec;
-            }));
-    }
-
-    // Handler: remove section directly from staged load
-    function handleRemoveSection(section: FacultyLoadSection) {
-        setStagedSections((prev) =>
-            prev.filter((sec) => sec.section_id !== section.section_id));
-        showToast(`Section ${section.section_code} removed from load (unsaved).`, 'info');
-    }
-
-    // Handler: open assign section picker
-    async function handleOpenAssignModal() {
-        const sectionsRes = await getSections();
-        if (sectionsRes.data) {
-            const currentIds = new Set(stagedSections.map((s) => s.section_id));
-            const available = sectionsRes.data
-                .filter((s) => !currentIds.has(s.id))
-                .map((s) => ({
-                    id: s.id,
-                    label: s.label || s.section_code
-                }));
-            setAvailableOfferings(available);
-            assignMethods.reset({ section_id: available[0]?.id || '' });
-            setIsAssignPickerOpen(true);
-        }
-    }
-
-    // Handler: add chosen section to staged sections
-    async function handleAddSectionToLoad({ section_id: selectedAssignSectionId }: { section_id: string }) {
-
-        setIsLoading(true);
-        try {
-            const res = await getSectionById(selectedAssignSectionId);
-            if (res.data) {
-                const s = res.data as unknown as SectionDetailRecord;
-                const newSection: FacultyLoadSection = {
-                    section_id: s.id,
-                    section_code: s.section_code,
-                    course_id: s.course_id,
-                    course_code: s.course_code || 'COURSE',
-                    course_title: s.course_title || 'Course Title',
-                    term_id: s.term_id,
-                    term_label: s.term_label || stagedSections[0]?.term_label || detail?.sections?.[0]?.term_label || 'Current Term',
-                    program_id: s.program_id,
-                    program_code: s.program_code,
-                    program_name: s.program_name,
-                    faculty_id: facultyId,
-                    faculty_name: detail?.faculty?.faculty_name || '',
-                    room: s.room,
-                    max_slots: Number(s.max_slots) || 40,
-                    enrolled_count: Number(s.enrolled_count) || 0,
-                    available_slots: Math.max(0, (Number(s.max_slots) || 40) - (Number(s.enrolled_count) || 0)),
-                    status: s.status || 'Open',
-                    is_active_academic_year: s.is_active_academic_year !== false,
-                    lecture_units: Number(s.lecture_units) || 0,
-                    lab_units: Number(s.laboratory_units) || 0,
-                    units: Number(s.units) || Number(s.total_units) || 3,
-                    schedules: (s.schedules || []).map((sch) => ({
-                        day_of_week: sch.day_of_week,
-                        time_start: sch.time_start,
-                        time_end: sch.time_end,
-                        room: sch.room || s.room || ''
-                    }))
-                };
-
-                setStagedSections((prev) => [...prev, newSection]);
-                setIsAssignPickerOpen(false);
-                showToast(`Section ${newSection.section_code} added to load (unsaved).`, 'info');
-            }
-        }
-        finally {
-            setIsLoading(false);
-        }
-    }
-
-    // Handler: Save all changes atomically
-    async function handleSave() {
-        if (!hasChanges) {
-            setIsReadOnly(true);
-            return;
-        }
-
-        setIsSaving(true);
-        try {
-            const assignments: FacultyLoadAssignmentInput[] = [];
-
-            // 1. Sections removed from this faculty member (now unassigned or reassigned)
-            const stagedMap = new Map(stagedSections.map((s) => [s.section_id, s]));
-            for (const initSec of initialSections) {
-                if (!stagedMap.has(initSec.section_id)) {
-                    // Removed
-                    assignments.push({
-                        section_id: initSec.section_id,
-                        faculty_id: null
-                    });
-                }
-            }
-
-            // 2. Sections in staged state (newly added or faculty changed)
-            const initMap = new Map(initialSections.map((s) => [s.section_id, s]));
-            for (const stagedSec of stagedSections) {
-                const init = initMap.get(stagedSec.section_id);
-                if (!init) {
-                    // Newly added to this faculty
-                    assignments.push({
-                        section_id: stagedSec.section_id,
-                        faculty_id: stagedSec.faculty_id || facultyId
-                    });
-                }
-                else if (init.faculty_id !== stagedSec.faculty_id) {
-                    // Faculty assignment changed
-                    assignments.push({
-                        section_id: stagedSec.section_id,
-                        faculty_id: stagedSec.faculty_id
-                    });
-                }
-            }
-
-            if (assignments.length > 0) {
-                const saveRes = await saveFacultyLoadAssignments(assignments);
-                if (saveRes.error) {
-                    showToast(saveRes.error.message || 'Failed to save assignments.', 'error');
-                    return;
-                }
-            }
-
-            showToast('Faculty load assignments saved successfully.', 'success');
-            onSuccess();
-            await loadDetail();
-            setIsReadOnly(true);
-        }
-        finally {
-            setIsSaving(false);
-        }
-    }
+    }, [sections, detail]);
 
     // Navigation between steps
     function handleNext() {
@@ -410,303 +172,161 @@ export default function FacultyLoadWizardModal({
         }
     }
 
-    const [isDiscardOpen, setIsDiscardOpen] = useState(false);
-
-    function handleCancel() {
-        // Revert staged to initial
-        setStagedSections(initialSections);
-        setIsReadOnly(true);
-    }
-
-    function handleRequestClose() {
-        if (!isReadOnly && hasChanges) {
-            setIsDiscardOpen(true);
-            return;
-        }
-        onClose();
-    }
-
-    function handleConfirmDiscard() {
-        setIsDiscardOpen(false);
-        setStagedSections(initialSections);
-        onClose();
-    }
-
     const currentStepConfig = FACULTY_LOAD_STEPS.find((s) => s.step === currentStep);
 
     return (
-        <>
-            <CommonModal
-                cardProps={{
-                    className: 'w-full max-w-4xl p-0 overflow-hidden flex flex-col max-h-[92vh]'
-                }}
-                fullWidth
-                maxWidth="lg"
-                open={open}
-                onClose={handleRequestClose}
-            >
-                {/* Stepper Top Header */}
-                <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
-                    <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-3 min-w-0 flex-1">
-                            <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 flex items-center justify-center shrink-0 mt-0.5">
-                                <ChalkboardTeacherIcon className="w-5 h-5" />
-                            </div>
-                            <div className="min-w-0 flex-1 sm:min-w-[260px]">
-                                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug">
-                                    {isReadOnly
-                                        ? 'Faculty Teaching Load Details'
-                                        : 'Edit Faculty Teaching Load'}
-                                    {detail?.faculty?.faculty_name
-                                        ? ` — ${detail.faculty.faculty_name}`
-                                        : ''}
-                                </h2>
-                                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                                    {isReadOnly
-                                        ? 'Review faculty workload, assigned sections, and schedule conflict analysis.'
-                                        : 'Update assigned faculty for sections, manage load commitments, and resolve conflicts.'}
-                                </p>
-                            </div>
+        <CommonModal
+            cardProps={{
+                className: 'w-full max-w-4xl p-0 overflow-hidden flex flex-col max-h-[92vh]'
+            }}
+            fullWidth
+            maxWidth="lg"
+            open={open}
+            onClose={onClose}
+        >
+            {/* Stepper Top Header */}
+            <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
+                <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                        <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 flex items-center justify-center shrink-0 mt-0.5">
+                            <ChalkboardTeacherIcon className="w-5 h-5" />
                         </div>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                            {/* Switch to Edit Mode in header (only while viewing, like the other wizards) */}
-                            {isReadOnly && (
-                                <CommonButton
-                                    className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
-                                    color="primary"
-                                    size="small"
-                                    startIcon={<PencilSimpleIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
-                                    variant="outlined"
-                                    onClick={handleRedirectToSectionManagement}
-                                >
-                                Edit Load
-                                </CommonButton>
-                            )}
-
-                            <button
-                                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                                title="Close"
-                                type="button"
-                                onClick={handleRequestClose}
-                            >
-                                <XIcon className="w-5 h-5" />
-                            </button>
+                        <div className="min-w-0 flex-1 sm:min-w-[260px]">
+                            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug">
+                                Faculty Teaching Load Details
+                                {detail?.faculty?.faculty_name
+                                    ? ` — ${detail.faculty.faculty_name}`
+                                    : ''}
+                            </h2>
+                            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                                Review faculty workload, assigned sections, and schedule conflicts.
+                            </p>
                         </div>
                     </div>
-                </div>
 
-                {/* Modal Stepper Header */}
-                <ModalStepperHeader
-                    currentStep={currentStep}
-                    readOnly={isReadOnly}
-                    steps={FACULTY_LOAD_STEPS}
-                    onStepClick={(step) => setCurrentStep(step)}
-                />
-
-                {/* Wizard Body */}
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/50 dark:bg-zinc-900/40">
-                    {isLoading && !detail
-                        ? (
-                            <div className="flex flex-col items-center justify-center py-20 gap-3">
-                                <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
-                                <p className="text-xs text-slate-500">Loading faculty load records...</p>
-                            </div>
-                        )
-                        : (detail && detail.faculty)
-                            ? (
-                                <>
-                                    {currentStep === 1 && (
-                                        <Step1FacultyLoadOverview
-                                            conflicts={activeConflicts}
-                                            faculty={detail.faculty}
-                                            sections={stagedSections}
-                                            termLabel={stagedSections[0]?.term_label || detail.sections?.[0]?.term_label}
-                                        />
-                                    )}
-
-                                    {currentStep === 2 && (
-                                        <Step2FacultyLoadSectionList
-                                            facultyName={detail.faculty.faculty_name}
-                                            facultyOptions={facultyOptions}
-                                            isReadOnly={isReadOnly}
-                                            sections={stagedSections}
-                                            onFacultyChange={handleFacultyChange}
-                                            onNavigateToSectionManagement={onClose}
-                                            onOpenAssignModal={handleOpenAssignModal}
-                                            onRequestDeleteSection={handleRemoveSection}
-                                        />
-                                    )}
-
-                                    {currentStep === 3 && (
-                                        <Step3FacultyLoadConflicts
-                                            conflicts={activeConflicts}
-                                            onNavigateToSectionManagement={onClose}
-                                        />
-                                    )}
-                                </>
-                            )
-                            : (
-                                <div className="text-center py-12 text-xs text-slate-500">
-                                    Faculty record could not be loaded.
-                                </div>
-                            )}
-                </div>
-
-                {/* Stepper Footer Action Bar */}
-                <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur shrink-0 flex items-center justify-between gap-3 safe-bottom z-10">
-                    {/* Back Button */}
-                    <CommonButton
-                        color="inherit"
-                        disabled={currentStep === 1 || isLoading || isSaving}
-                        size="medium"
-                        startIcon={<ArrowLeftIcon className="w-4 h-4" />}
-                        variant="outlined"
-                        onClick={handleBack}
-                    >
-                        Back
-                    </CommonButton>
-
-                    {/* Step indicator */}
-                    <div className="hidden sm:block text-xs font-medium text-slate-500">
-                        Step {currentStep} of 3 — {currentStepConfig?.title}
-                    </div>
-
-                    {/* Next / Save / Cancel Actions */}
-                    <div className="flex items-center gap-2">
-                        {!isReadOnly && hasChanges && (
-                            <CommonButton
-                                color="inherit"
-                                disabled={isSaving}
-                                size="medium"
-                                variant="text"
-                                onClick={handleCancel}
-                            >
-                                Revert Changes
-                            </CommonButton>
-                        )}
-
-                        {currentStep < 3
-                            ? (
-                                <CommonButton
-                                    color="primary"
-                                    disabled={isLoading || isSaving}
-                                    endIcon={<ArrowRightIcon className="w-4 h-4" />}
-                                    size="medium"
-                                    variant="contained"
-                                    onClick={handleNext}
-                                >
-                                Next Step
-                                </CommonButton>
-                            )
-                            : isReadOnly
-                                ? (
-                                    <CommonButton
-                                        color="primary"
-                                        size="medium"
-                                        variant="contained"
-                                        onClick={onClose}
-                                    >
-                                Close
-                                    </CommonButton>
-                                )
-                                : null}
-
-                        {/* Save Button (accessible in write mode) */}
-                        {!isReadOnly && (
-                            <CommonButton
-                                color="primary"
-                                disabled={isLoading || isSaving || !hasChanges}
-                                loading={isSaving}
-                                size="medium"
-                                startIcon={<FloppyDiskIcon className="w-4 h-4" />}
-                                variant="contained"
-                                onClick={handleSave}
-                            >
-                                {isSaving
-                                    ? 'Saving Changes...'
-                                    : 'Save Changes'}
-                            </CommonButton>
-                        )}
-                    </div>
-                </div>
-            </CommonModal>
-
-            {/* Simple Picker Modal for Assigning an Available Section to this Faculty */}
-            {isAssignPickerOpen && (
-                <CommonModal
-                    cardProps={{
-                        className: 'w-full max-w-md p-5 flex flex-col gap-4'
-                    }}
-                    open={isAssignPickerOpen}
-                    onClose={() => setIsAssignPickerOpen(false)}
-                >
-                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
-                        <div className="flex items-center gap-2">
-                            <PlusIcon
-                                className="w-5 h-5 text-brand-600"
-                                weight="bold"
-                            />
-                            <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                                Assign Section Offering
-                            </h3>
-                        </div>
-                        <button
-                            className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
-                            type="button"
-                            onClick={() => setIsAssignPickerOpen(false)}
+                    <div className="flex items-center gap-2 shrink-0">
+                        {/* Opens Section Management to create a section for this faculty member */}
+                        <CommonButton
+                            className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
+                            color="primary"
+                            size="small"
+                            startIcon={<PlusIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+                            variant="outlined"
+                            onClick={handleAssignNewSection}
                         >
-                            <XIcon className="w-4 h-4" />
+                            Assign New Section
+                        </CommonButton>
+
+                        <button
+                            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                            title="Close"
+                            type="button"
+                            onClick={onClose}
+                        >
+                            <XIcon className="w-5 h-5" />
                         </button>
                     </div>
+                </div>
+            </div>
 
-                    <div className="flex flex-col gap-2">
-                        {availableOfferings.length === 0
-                            ? (
-                                <span className="text-xs text-slate-500 italic py-2">
-                                No additional available sections found in this term.
-                                </span>
-                            )
-                            : (
-                                <ValidCommonSelect
-                                    control={assignMethods.control}
-                                    fullWidth
-                                    label="Section Offering to Assign"
-                                    name="section_id"
-                                    options={availableOfferings.map((off) => ({ label: off.label, value: off.id }))}
-                                    placeholder="Select a section offering"
-                                    rules={{ required: 'Please select a section offering' }}
-                                />
-                            )}
-                    </div>
-
-                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
-                        <CommonButton
-                            color="inherit"
-                            size="small"
-                            variant="outlined"
-                            onClick={() => setIsAssignPickerOpen(false)}
-                        >
-                            Cancel
-                        </CommonButton>
-                        <CommonButton
-                            color="primary"
-                            disabled={availableOfferings.length === 0}
-                            size="small"
-                            variant="contained"
-                            onClick={assignMethods.handleSubmit(handleAddSectionToLoad)}
-                        >
-                            Add to Load
-                        </CommonButton>
-                    </div>
-                </CommonModal>
-            )}
-
-            <DiscardChangesPromptModal
-                open={isDiscardOpen}
-                onContinueEditing={() => setIsDiscardOpen(false)}
-                onDiscard={handleConfirmDiscard}
+            {/* Modal Stepper Header */}
+            <ModalStepperHeader
+                currentStep={currentStep}
+                readOnly
+                steps={FACULTY_LOAD_STEPS}
+                onStepClick={(step) => setCurrentStep(step)}
             />
-        </>
+
+            {/* Wizard Body */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/50 dark:bg-zinc-900/40">
+                {isLoading && !detail
+                    ? (
+                        <div className="flex flex-col items-center justify-center py-20 gap-3">
+                            <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
+                            <p className="text-xs text-slate-500">Loading faculty load records...</p>
+                        </div>
+                    )
+                    : (detail && detail.faculty)
+                        ? (
+                            <>
+                                {currentStep === 1 && (
+                                    <Step1FacultyLoadOverview
+                                        conflicts={activeConflicts}
+                                        faculty={detail.faculty}
+                                        sections={sections}
+                                        termLabel={sections[0]?.term_label || detail.sections?.[0]?.term_label}
+                                    />
+                                )}
+
+                                {currentStep === 2 && (
+                                    <Step2FacultyLoadSectionList
+                                        facultyName={detail.faculty.faculty_name}
+                                        sections={sections}
+                                        onNavigateToSectionManagement={onClose}
+                                    />
+                                )}
+
+                                {currentStep === 3 && (
+                                    <Step3FacultyLoadConflicts
+                                        conflicts={activeConflicts}
+                                        onNavigateToSectionManagement={onClose}
+                                    />
+                                )}
+                            </>
+                        )
+                        : (
+                            <div className="text-center py-12 text-xs text-slate-500">
+                                Faculty record could not be loaded.
+                            </div>
+                        )}
+            </div>
+
+            {/* Stepper Footer Action Bar */}
+            <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur shrink-0 flex items-center justify-between gap-3 safe-bottom z-10">
+                {/* Back Button */}
+                <CommonButton
+                    color="inherit"
+                    disabled={currentStep === 1 || isLoading}
+                    size="medium"
+                    startIcon={<ArrowLeftIcon className="w-4 h-4" />}
+                    variant="outlined"
+                    onClick={handleBack}
+                >
+                    Back
+                </CommonButton>
+
+                {/* Step indicator */}
+                <div className="hidden sm:block text-xs font-medium text-slate-500">
+                    Step {currentStep} of 3 — {currentStepConfig?.title}
+                </div>
+
+                {/* Next / Close Actions */}
+                <div className="flex items-center gap-2">
+                    {currentStep < 3
+                        ? (
+                            <CommonButton
+                                color="primary"
+                                disabled={isLoading}
+                                endIcon={<ArrowRightIcon className="w-4 h-4" />}
+                                size="medium"
+                                variant="contained"
+                                onClick={handleNext}
+                            >
+                                Next Step
+                            </CommonButton>
+                        )
+                        : (
+                            <CommonButton
+                                color="primary"
+                                size="medium"
+                                variant="contained"
+                                onClick={onClose}
+                            >
+                                Close
+                            </CommonButton>
+                        )}
+                </div>
+            </div>
+        </CommonModal>
     );
 }

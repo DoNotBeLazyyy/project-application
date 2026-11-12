@@ -4,6 +4,7 @@ import CommonTableCard from '@components/table-card/CommonTableCard';
 import RegistrarLogDetailContent from '@pages/registrar/registrar-logs/components/RegistrarLogDetailContent';
 import FilterRegistrarLogForm from '@pages/registrar/registrar-logs/forms/FilterRegistrarLogForm';
 import { useRegistrarLogTableConfig } from '@pages/registrar/registrar-logs/hooks/use-registrar-log-table-config';
+import { formatActionLabel } from '@pages/registrar/registrar-logs/utils/registrar-log.util';
 import { listRegistrarLogs } from '@services/registrar-verification.service';
 import { SortStringDto } from '@type/http.type';
 import { RegistrarLogFilterValues, RegistrarLogRow } from '@type/registrar-verification.type';
@@ -23,12 +24,6 @@ const SORT_COLUMNS: SortColumn[] = [
     { field: 'student_name', label: 'Student Name' },
     { field: 'student_number', label: 'Student Number' }
 ];
-
-function formatActionLabel(action: string): string {
-    return action
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, (c) => c.toUpperCase());
-}
 
 export default function RegistrarLogsPage() {
     const [activeFilters, setActiveFilters] = useState<RegistrarLogFilterValues | null>(null);

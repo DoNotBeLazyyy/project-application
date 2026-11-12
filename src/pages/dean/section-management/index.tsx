@@ -2,6 +2,7 @@ import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
+import DeanNoDepartmentBanner from '@pages/dean/components/DeanNoDepartmentBanner';
 import SectionFilterForm from '@pages/dean/section-management/SectionFilterForm';
 import SectionGridCard from '@pages/dean/section-management/SectionGridCard';
 import SectionWizardModal from '@pages/dean/section-management/SectionWizardModal';
@@ -53,13 +54,13 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
         key: 'max_slots', label: 'Max Slots', hint: 'Optional whole number from 1 to 999, defaults to 40', sample: '40', required: false, aliases: ['capacity', 'slots']
     },
     {
-        key: 'schedule_days', label: 'Schedule Days', hint: 'Optional - days separated by commas, full or short names (Mon, Tue, Wed, Thu, Fri, Sat, Sun), e.g. Monday, Wednesday', sample: 'Monday, Wednesday', required: false, aliases: ['days', 'day']
+        key: 'schedule_days', label: 'Schedule Days', hint: 'Optional - full or short day names (Monday, Mon) or letters (M, T, W, Th, F, S, Su), separated by commas, slashes or spaces, or run together, e.g. Monday, Wednesday or MWF or TTh', sample: 'Monday, Wednesday', required: false, aliases: ['days', 'day']
     },
     {
-        key: 'schedule_time_start', label: 'Schedule Start Time', hint: 'Required with schedule days - 24-hour HH:MM, e.g. 08:00', sample: '08:00', required: false, aliases: ['start_time', 'time_start']
+        key: 'schedule_time_start', label: 'Schedule Start Time', hint: 'Required with schedule days - HH:MM (24-hour) or 12-hour, e.g. 08:00 or 8:00 AM', sample: '08:00', required: false, aliases: ['start_time', 'time_start']
     },
     {
-        key: 'schedule_time_end', label: 'Schedule End Time', hint: 'Required with schedule days - 24-hour HH:MM after the start time, e.g. 10:00', sample: '10:00', required: false, aliases: ['end_time', 'time_end']
+        key: 'schedule_time_end', label: 'Schedule End Time', hint: 'Required with schedule days - after the start time, e.g. 10:00 or 10:00 AM', sample: '10:00', required: false, aliases: ['end_time', 'time_end']
     },
     {
         key: 'schedule_room', label: 'Schedule Room', hint: 'Optional, defaults to Room', sample: 'Room 301', required: false
@@ -135,11 +136,7 @@ export default function SectionManagement() {
         setSelectedId(null);
     }
 
-    const { columnDefs, tableActionConfig } = useSectionTableConfig({
-        onEdit: handleOpenUpdate,
-        onRequestDeleteRow: function() {},
-        onView: handleOpenView
-    });
+    const { columnDefs } = useSectionTableConfig();
 
     async function fetchSections(
         page: number,
@@ -162,6 +159,8 @@ export default function SectionManagement() {
 
     return (
         <div className="flex flex-col gap-4 h-full">
+            <DeanNoDepartmentBanner />
+
             <CommonTableCard<SectionListRow>
                 cardHeaderProps={{
                     subheader: 'Manage sections and faculty assignments.',
@@ -215,7 +214,6 @@ export default function SectionManagement() {
                     );
                 }}
                 sortColumns={SORT_COLUMNS}
-                tableActionConfig={tableActionConfig}
                 tableProps={{
                     hasCheckbox: true,
                     leadingColumnDefs: columnDefs

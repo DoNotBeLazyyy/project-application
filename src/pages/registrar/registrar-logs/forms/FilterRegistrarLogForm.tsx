@@ -13,7 +13,8 @@ const ACTION_OPTIONS: CommonSelectOption[] = [
     { label: 'Profile Rejected', value: 'PROFILE_CHANGE_REJECTED' },
     { label: 'Rejected - False Information', value: 'PROFILE_REJECTED_FALSE_INFO' },
     { label: 'False Info Alert Sent', value: 'FALSE_INFO_NOTIFICATION_SENT' },
-    { label: 'Profile Manually Edited', value: 'PROFILE_MANUALLY_EDITED' }
+    { label: 'Profile Manually Edited', value: 'PROFILE_MANUALLY_EDITED' },
+    { label: 'Grades Returned to Faculty', value: 'GRADES_RETURNED_TO_FACULTY' }
 ];
 
 interface FilterRegistrarLogFormProps extends ComponentPropsForm {
@@ -39,6 +40,11 @@ export default function FilterRegistrarLogForm({
         {
             label: 'To',
             name: 'date_to',
+            rules: {
+                // Dates are YYYY-MM-DD, so they compare as text
+                validate: (value, formValues) => !value || !formValues.date_from || String(value) >= formValues.date_from
+                    || 'The To date cannot be earlier than the From date.'
+            },
             type: 'date'
         }
     ];

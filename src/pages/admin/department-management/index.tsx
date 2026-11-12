@@ -14,7 +14,6 @@ import {
     listDepartments,
     updateDepartment
 } from '@services/department.service';
-import { useToastStore } from '@stores/toast.store';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { DepartmentBulkRow, DepartmentFormValues, DepartmentListRow } from '@type/department.type';
 import { SortStringDto } from '@type/http.type';
@@ -138,11 +137,7 @@ export default function DepartmentManagement() {
         updateMethods.reset(DEFAULT_FORM_VALUES);
     }
 
-    const { columnDefs, tableActionConfig } = useDepartmentTableConfig({
-        onEdit: handleOpenUpdate,
-        onRequestDeleteRow: function() {},
-        onView: handleOpenView
-    });
+    const { columnDefs } = useDepartmentTableConfig();
 
     async function fetchDepartments(
         page: number,
@@ -162,13 +157,14 @@ export default function DepartmentManagement() {
                 name: values.name.trim()
             });
 
+            // The server's own success message is already shown
             if (!result.error) {
-                useToastStore.getState()
-                    .showToast('Department created successfully.', 'success');
                 createMethods.reset(DEFAULT_FORM_VALUES);
                 setIsCreateOpen(false);
                 refreshList();
+                return true;
             }
+            return false;
         }
         finally {
             setIsSaving(false);
@@ -177,7 +173,7 @@ export default function DepartmentManagement() {
 
     async function handleUpdateSubmit(values: DepartmentFormValues) {
         if (!selectedId) {
-            return;
+            return false;
         }
 
         setIsSaving(true);
@@ -189,14 +185,14 @@ export default function DepartmentManagement() {
             });
 
             if (!result.error) {
-                useToastStore.getState()
-                    .showToast('Department and assignments updated successfully.', 'success');
                 setIsUpdateOpen(false);
                 setSelectedId(null);
                 setWizardStep(1);
                 updateMethods.reset(DEFAULT_FORM_VALUES);
                 refreshList();
+                return true;
             }
+            return false;
         }
         finally {
             setIsSaving(false);
@@ -236,7 +232,6 @@ export default function DepartmentManagement() {
                     );
                 }}
                 sortColumns={SORT_COLUMNS}
-                tableActionConfig={tableActionConfig}
                 tableProps={{
                     hasCheckbox: true,
                     leadingColumnDefs: columnDefs
@@ -286,7 +281,9 @@ export default function DepartmentManagement() {
                 open={isViewOpen}
                 readOnly
                 onClose={handleCloseView}
-                onSubmit={function() {}}
+                onSubmit={async function() {
+                    return false;
+                }}
                 onSwitchToEdit={function(step) {
                     if (selectedId) {
                         handleSwitchToEdit(selectedId, step);

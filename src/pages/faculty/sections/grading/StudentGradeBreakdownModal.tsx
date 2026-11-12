@@ -1,5 +1,6 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
+import StatCard from '@components/card/StatCard';
 import CommonModal from '@components/modal/CommonModal';
 import CommonProgressBar from '@components/progress-bar/CommonProgressBar';
 import {
@@ -14,45 +15,13 @@ import {
 import { getFacultyStudentGradeBreakdown } from '@services/faculty.service';
 import { FacultyStudentGradeBreakdown } from '@type/faculty.type';
 import { formatShortDate } from '@utils/date.util';
-import { ReactNode, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface StudentGradeBreakdownModalProps {
     enrollmentId: string;
     gradingPeriodId: string;
     open: boolean;
     onClose: VoidFunction;
-}
-
-interface AuditStatCardProps {
-    hint: string;
-    icon: ReactNode;
-    iconBg: string;
-    iconColor: string;
-    label: string;
-    value: string;
-}
-
-function AuditStatCard({ hint, icon, iconBg, iconColor, label, value }: AuditStatCardProps) {
-    return (
-        <div className="bg-slate-50/70 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 flex items-center gap-3 p-3.5 rounded-2xl shadow-2xs min-w-0">
-            <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>
-                <span className={`flex items-center justify-center ${iconColor}`}>
-                    {icon}
-                </span>
-            </div>
-            <div className="flex flex-col gap-0.5 min-w-0 text-left">
-                <span className="font-bold text-lg sm:text-xl text-slate-900 dark:text-slate-100 truncate tracking-tight">
-                    {value}
-                </span>
-                <span className="font-medium text-xs text-slate-600 dark:text-slate-400 truncate">
-                    {label}
-                </span>
-                <span className="text-[11px] text-slate-400 dark:text-zinc-500 truncate">
-                    {hint}
-                </span>
-            </div>
-        </div>
-    );
 }
 
 export default function StudentGradeBreakdownModal({
@@ -76,9 +45,17 @@ export default function StudentGradeBreakdownModal({
         }
     }, [open, enrollmentId, gradingPeriodId]);
 
-    const rawPercentage = data?.components?.length
-        ? data.components.reduce((sum, c) => sum + ((c.percentage ?? 0) * Number(c.weight ?? 0)) / 100, 0)
-        : (data?.raw_grade ?? 0);
+    // Same formula as fn_calculate_final_grade: each component adds (earned / max) x weight,
+    // and the sum is divided by the total of all weights. A component with nothing counted adds 0.
+    const components = data?.components ?? [];
+    const totalWeight = components.reduce((sum, c) => sum + Number(c.weight ?? 0), 0);
+    const totalWeighted = components.reduce((sum, c) => sum + Number(c.weighted_score ?? 0), 0);
+    const computedRaw = totalWeight > 0
+        ? Math.min(100, Math.max(0, (totalWeighted / totalWeight) * 100))
+        : 0;
+    // The card shows the grade the server saved; the formula below shows how it is computed
+    const savedRaw = Number(data?.raw_grade ?? 0);
+    const isSavedStale = Boolean(data) && totalWeight > 0 && Math.abs(savedRaw - computedRaw) >= 0.01;
 
     return (
         <CommonModal
@@ -119,15 +96,15 @@ export default function StudentGradeBreakdownModal({
                 {/* The raw percentage is computed from the components shown below, so the card, the
                     formula and the itemization agree even before the grade sheet is calculated */}
                 <div className="gap-3 sm:gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                    <AuditStatCard
-                        hint="Weighted percentage sum"
+                    <StatCard
+                        hint="Weighted scores ÷ total weight"
                         icon={<CalculatorIcon size={22} />}
                         iconBg="bg-blue-50 dark:bg-blue-950/60"
                         iconColor="text-blue-600 dark:text-blue-400"
                         label="Raw Percentage"
-                        value={`${rawPercentage.toFixed(2)}%`}
+                        value={`${savedRaw.toFixed(2)}%`}
                     />
-                    <AuditStatCard
+                    <StatCard
                         hint="Transmuted institutional GPA"
                         icon={<GraduationCapIcon size={22} />}
                         iconBg="bg-purple-50 dark:bg-purple-950/60"
@@ -135,7 +112,7 @@ export default function StudentGradeBreakdownModal({
                         label="Transmuted Grade"
                         value={data?.transmuted_grade ?? '—'}
                     />
-                    <AuditStatCard
+                    <StatCard
                         hint="Special grade override"
                         icon={<SealCheckIcon size={22} />}
                         iconBg="bg-amber-50 dark:bg-amber-950/60"
@@ -143,7 +120,7 @@ export default function StudentGradeBreakdownModal({
                         label="Special Grade"
                         value={data?.special_grade ?? 'None'}
                     />
-                    <AuditStatCard
+                    <StatCard
                         hint="Passing mark on the 1.00 to 5.00 scale"
                         icon={<TargetIcon size={22} />}
                         iconBg="bg-emerald-50 dark:bg-emerald-950/60"
@@ -154,26 +131,36 @@ export default function StudentGradeBreakdownModal({
                     />
                 </div>
 
-                {/* Formula Breakdown Card */}
-                {data && data.components && data.components.length > 0 && (
+                {/* Formula Breakdown Card: shows the same arithmetic the server uses */}
+                {components.length > 0 && (
                     <div className="bg-slate-50 dark:bg-zinc-800/40 border border-slate-200/80 dark:border-zinc-800 flex flex-col gap-2 p-4 rounded-xl text-xs">
                         <span className="font-semibold text-slate-900 dark:text-slate-200 text-sm">
-                            Raw Grade Calculation Formula:
+                            How the raw grade is computed
                         </span>
-                        <div className="font-mono text-slate-600 dark:text-slate-300 flex flex-wrap gap-1.5 items-center leading-relaxed">
-                            <span className="font-bold">Raw Grade = </span>
-                            {data.components.map((c, idx) => (
-                                <span
-                                    className="bg-white dark:bg-zinc-800 px-2 py-0.5 rounded border border-slate-200/60 dark:border-zinc-700"
-                                    key={c.id}
-                                >
-                                    {idx > 0 && '+ '}
-                                    {c.name}: {(c.percentage ?? 0).toFixed(1)}% × {c.weight}%
+                        <div className="flex flex-col font-mono gap-1 leading-relaxed text-slate-600 dark:text-slate-300">
+                            {components.map((c) => (
+                                <span key={c.id}>
+                                    {c.name}:{' '}
+                                    {c.percentage === null
+                                        ? `no graded items yet, counts as 0% × ${c.weight} = 0.00`
+                                        : `${c.earned_points} / ${c.max_points} = ${c.percentage.toFixed(2)}% × ${c.weight} = ${Number(c.weighted_score)
+                                            .toFixed(2)}`}
                                 </span>
                             ))}
-                            <span className="font-bold text-blue-600 dark:text-blue-400">
-                                {' = '}{rawPercentage.toFixed(2)}%
+                            <span className="border-slate-200 dark:border-zinc-700 border-t mt-1 pt-1">
+                                Sum of weighted scores = {totalWeighted.toFixed(2)}
                             </span>
+                            <span>
+                                Raw Grade = {totalWeighted.toFixed(2)} ÷ {totalWeight} (total weight) × 100 ={' '}
+                                <strong className="text-blue-600 dark:text-blue-400">
+                                    {computedRaw.toFixed(2)}%
+                                </strong>
+                            </span>
+                            {isSavedStale && (
+                                <span className="font-sans text-amber-700 dark:text-amber-300">
+                                    The saved raw grade ({savedRaw.toFixed(2)}%) is from an earlier calculation. Click &quot;Calculate&quot; on the grade sheet to update it.
+                                </span>
+                            )}
                         </div>
                     </div>
                 )}
@@ -209,15 +196,18 @@ export default function StudentGradeBreakdownModal({
                                             </span>
                                         </div>
                                         <span className="text-slate-500 dark:text-slate-400 text-xs">
-                                            Earned {comp.earned_points} / {comp.max_points} pts ({pct.toFixed(2)}%)
+                                            {comp.percentage === null
+                                                ? 'No graded items yet, counts as 0%'
+                                                : `Earned ${comp.earned_points} / ${comp.max_points} pts (${pct.toFixed(2)}%)`}
                                         </span>
                                     </div>
                                     <div className="flex flex-col items-end">
                                         <span className="font-bold text-slate-900 dark:text-slate-100 text-sm">
-                                            +{comp.weighted_score.toFixed(2)} pts
+                                            +{Number(comp.weighted_score)
+                                                .toFixed(2)}
                                         </span>
                                         <span className="text-slate-400 text-[11px]">
-                                            towards final period mark
+                                            of {comp.weight} weight
                                         </span>
                                     </div>
                                 </div>

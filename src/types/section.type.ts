@@ -1,3 +1,5 @@
+import { BulkImportRowItem } from '@type/bulk-import.type';
+
 export type SectionStatus = 'Open' | 'Full' | 'Ongoing' | 'Closed' | 'Cancelled';
 
 export interface SectionListRow {
@@ -96,4 +98,16 @@ export interface SectionBulkRow {
     schedule_time_end?: string;
     schedule_room?: string;
     grading_periods?: string;
+}
+
+/** A section as loaded for the wizard, with its current grading. */
+export interface SectionDetail extends SectionFormValues {
+    /** True when the section uses its own grading instead of the term's default. */
+    is_grading_overridden?: boolean;
+    grading_periods?: SectionGradingPeriodOverride[];
+}
+
+/** A row fn_bulk_create_sections saved, with the id of the section it created or updated. */
+export interface SavedSectionRow extends BulkImportRowItem {
+    section_id?: string;
 }

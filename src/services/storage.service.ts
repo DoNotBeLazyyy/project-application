@@ -2,6 +2,7 @@ import { supabase } from '@services/supabase.client';
 import { callStorage } from '@services/supabase.wrapper';
 import { ServiceResult } from '@type/service.type';
 import { parseServiceError } from '@utils/error.util';
+import { buildStoragePath, getUploadFileError, UploadFileRules } from '@utils/file.util';
 
 export type StorageBucket = 'logos' | 'avatars' | 'materials' | 'submissions' | 'discussions' | 'announcements' | 'events';
 
@@ -55,6 +56,57 @@ export async function uploadFile({
 
         return { data: { url: data.signedUrl }, error: null };
     });
+}
+
+export interface UploadToFolderParams extends UploadFileRules {
+    bucket: StorageBucket;
+    file: File;
+    folder: string;
+}
+
+export interface UploadedFile {
+    file_name: string;
+    file_path: string;
+    file_size: number;
+    mime_type: string | null;
+    url: string;
+}
+
+/**
+ * Checks a file and uploads it under a folder with a safe, unique path. This is the one
+ * upload every feature uses, so size, type and name rules are the same everywhere.
+ *
+ * @param params - Bucket, folder, file and optional size/type rules.
+ * @returns The stored file details, or an error saying why it was refused.
+ */
+export async function uploadFileToFolder({
+    allowedExtensions,
+    bucket,
+    file,
+    folder,
+    maxSizeMb
+}: UploadToFolderParams): Promise<ServiceResult<UploadedFile>> {
+    const fileError = getUploadFileError(file, { allowedExtensions, maxSizeMb });
+    if (fileError) {
+        return { data: null, error: { code: 'INVALID_FILE', message: fileError, status: null } };
+    }
+
+    const path = buildStoragePath(folder, file.name);
+    const result = await uploadFile({ bucket, file, path });
+    if (!result.data) {
+        return { data: null, error: result.error };
+    }
+
+    return {
+        data: {
+            file_name: file.name,
+            file_path: path,
+            file_size: file.size,
+            mime_type: file.type || null,
+            url: result.data.url
+        },
+        error: null
+    };
 }
 
 /**

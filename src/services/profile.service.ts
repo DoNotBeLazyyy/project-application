@@ -1,13 +1,18 @@
 import { supabase } from '@services/supabase.client';
-import { callRpc } from '@services/supabase.wrapper';
+import { callRpc, CallRpcOptions } from '@services/supabase.wrapper';
 import { useLoadingStore } from '@stores/loading.store';
 import { useToastStore } from '@stores/toast.store';
 import { ChangePasswordFormValues, MyProfile, ProfileFormValues } from '@type/profile.type';
 import { ServiceResult } from '@type/service.type';
 import { parseServiceError } from '@utils/error.util';
 
-export async function getMyProfile(): Promise<ServiceResult<MyProfile>> {
-    return callRpc<MyProfile>('fn_get_my_profile');
+/**
+ * Loads the signed-in user's profile.
+ *
+ * @param options - Pass silent to load in the background without toasts.
+ */
+export async function getMyProfile(options?: CallRpcOptions): Promise<ServiceResult<MyProfile>> {
+    return callRpc<MyProfile>('fn_get_my_profile', undefined, options);
 }
 
 export interface CreateStudentProfileParams {

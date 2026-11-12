@@ -107,11 +107,7 @@ export default function CourseTypeManagement() {
         updateMethods.reset(defaultFormValues);
     }
 
-    const { columnDefs, tableActionConfig } = useCourseTypeTableConfig({
-        onEdit: handleOpenUpdate,
-        onRequestDeleteRow: function() {},
-        onView: handleOpenView
-    });
+    const { columnDefs } = useCourseTypeTableConfig();
 
     async function fetchCourseTypes(
         page: number,
@@ -212,7 +208,6 @@ export default function CourseTypeManagement() {
                     );
                 }}
                 sortColumns={SORT_COLUMNS}
-                tableActionConfig={tableActionConfig}
                 tableProps={{
                     leadingColumnDefs: columnDefs
                 }}

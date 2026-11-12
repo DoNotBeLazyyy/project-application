@@ -1,6 +1,6 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import { useTermOptions } from '@pages/dean/faculty-load/hooks/use-term-options';
+import { useTermOptions } from '@hooks/use-term-options';
 import { ComponentPropsForm } from '@type/common.type';
 import { FacultyLoadFilterValues } from '@type/faculty-load.type';
 import { Control } from 'react-hook-form';
@@ -13,7 +13,7 @@ export default function FacultyLoadFilterForm({
     control,
     ...formProps
 }: FacultyLoadFilterFormProps) {
-    const { termOptions } = useTermOptions();
+    const { termOptions } = useTermOptions({ hasAllOption: true });
 
     const fields: FormFieldConfig<FacultyLoadFilterValues>[] = [
         {

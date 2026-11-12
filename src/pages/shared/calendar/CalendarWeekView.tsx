@@ -1,3 +1,4 @@
+import { getVisibleHours } from '@pages/shared/calendar/calendar-hours';
 import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from '@pages/shared/calendar/calendar.types';
 import { useMemo } from 'react';
 
@@ -8,8 +9,6 @@ interface CalendarWeekViewProps {
     onSelectDate: (date: Date) => void;
     onSelectEvent: (event: UnifiedCalendarEvent) => void;
 }
-
-const HOURS = Array.from({ length: 15 }, (_, i) => i + 7); // 7 AM to 9 PM
 
 function isSameDay(d1: Date, d2: Date): boolean {
     return (
@@ -37,6 +36,7 @@ export function CalendarWeekView({
     onSelectEvent
 }: CalendarWeekViewProps) {
     const today = useMemo(() => new Date(), []);
+    const hours = useMemo(() => getVisibleHours(events), [events]);
 
     // Calculate the 7 days of the current week (Sunday to Saturday)
     const weekDays = useMemo(() => {
@@ -130,7 +130,7 @@ export function CalendarWeekView({
 
                 {/* Hourly Schedule Body */}
                 <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-neutral-200/60 dark:divide-neutral-800/60">
-                    {HOURS.map((hour) => {
+                    {hours.map((hour) => {
                         const hourLabel = `${hour % 12 === 0
                             ? 12
                             : hour % 12} ${hour >= 12

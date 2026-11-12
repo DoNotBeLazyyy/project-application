@@ -1,4 +1,4 @@
-import { callRpc } from '@services/supabase.wrapper';
+import { CallRpcOptions, callRpc } from '@services/supabase.wrapper';
 import { BulkImportResult } from '@type/bulk-import.type';
 import { CurriculumMapBulkRow, CurriculumMapEntry, CurriculumMapFormValues } from '@type/curriculum-map.type';
 import { ServiceResult } from '@type/service.type';
@@ -66,11 +66,12 @@ export async function updateCurriculumMapEntry(
 }
 
 export async function deleteCurriculumMapEntry(
-    curriculumMapId: string
+    curriculumMapId: string,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_delete_curriculum_map_entry', {
         p_curriculum_map_id: curriculumMapId
-    });
+    }, options);
 }
 
 const BOOLEAN_TEXTS = ['true', 'false', 'yes', 'no', 'y', 'n', '1', '0', 't', 'f', 'on', 'off'];

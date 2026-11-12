@@ -34,6 +34,8 @@ export interface SectionStudent {
     enrolled_at: string;
     risk_level?: string | null;
     gwa?: number | null;
+    // Server checks the school year's Dean's List rule
+    is_deans_list_candidate?: boolean | null;
 }
 
 export interface StudentEvaluationProfile {
@@ -184,6 +186,8 @@ export interface GradeCalculationResult {
     processed: number;
     succeeded: number;
     failed: number;
+    // Rows skipped because they were already submitted
+    locked?: number;
     failures: GradeCalculationFailure[];
 }
 

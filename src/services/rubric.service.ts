@@ -1,4 +1,4 @@
-import { callRpc } from '@services/supabase.wrapper';
+import { CallRpcOptions, callRpc } from '@services/supabase.wrapper';
 import {
     AssessmentRubricState, RubricCriterionInput, RubricDetail, RubricEvaluationInput, RubricListRow, SubmissionRubric
 } from '@type/rubric.type';
@@ -77,13 +77,14 @@ export async function getAssessmentRubric(
 export async function setAssessmentRubric(
     assessmentId: string,
     rubricId: string | null,
-    useScoring: boolean
+    useScoring: boolean,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_set_assessment_rubric', {
         p_assessment_id: assessmentId,
         p_rubric_id:     rubricId,
         p_use_scoring:   useScoring
-    });
+    }, options);
 }
 
 export async function getSubmissionRubric(

@@ -7,8 +7,9 @@ import DashboardHeader from '@components/dashboard/DashboardHeader';
 import EventsFeedCard from '@components/dashboard/EventsFeedCard';
 import InstitutionalIdentityCard from '@components/dashboard/InstitutionalIdentityCard';
 import StudentInsightSummaryCard from '@components/dashboard/StudentInsightSummaryCard';
-import StudentProfilePromptModal from '@components/modal/StudentProfilePromptModal';
+import { ASSESSMENT_TYPE_VARIANT } from '@constants/status-badge.constant';
 import useDashboardFeeds from '@hooks/use-dashboard-feeds';
+import { onStudentProfileSaved, openStudentProfilePrompt } from '@pages/student/student-profile-prompt';
 import {
     BookOpenIcon, CalendarCheckIcon, ClockIcon, GraduationCapIcon, UserFocusIcon
 } from '@phosphor-icons/react';
@@ -17,21 +18,11 @@ import { getMyProfile } from '@services/profile.service';
 import { getStudentDashboard } from '@services/student-portal.service';
 import { useAppStore } from '@stores/app.store';
 import { StudentInsight } from '@type/analytics.type';
-import { AssessmentType } from '@type/assessment.type';
 import { MyProfile } from '@type/profile.type';
 import { StudentDashboard as StudentDashboardData, UpcomingAssessment } from '@type/student-portal.type';
 import { resolveStatValue } from '@utils/dashboard.util';
 import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const ASSESSMENT_TYPE_VARIANT: Record<AssessmentType, 'success' | 'error' | 'warning' | 'info'> = {
-    Quiz: 'info',
-    Exam: 'error',
-    Activity: 'success',
-    Assignment: 'warning',
-    Project: 'info',
-    'Lab Report': 'warning'
-};
 
 type StudentStatKey = 'enrolled' | 'upcoming' | 'released';
 
@@ -99,7 +90,6 @@ export default function StudentDashboard() {
     const [dashboard, setDashboard] = useState<StudentDashboardData | null>(null);
     const [insight, setInsight] = useState<StudentInsight | null>(null);
     const [profile, setProfile] = useState<MyProfile | null>(null);
-    const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
 
     async function fetchStudentData() {
         const [dashboardResult, insightResult] = await Promise.all([
@@ -125,6 +115,11 @@ export default function StudentDashboard() {
     useEffect(function() {
         loadProfile();
     }, [userProfile?.profile_completed]);
+
+    // The prompt lives in StudentLayout; reload here once it saves the profile
+    useEffect(function() {
+        return onStudentProfileSaved(loadProfile);
+    }, []);
 
     function handleViewInsight() {
         navigate('/student/insight');
@@ -159,7 +154,7 @@ export default function StudentDashboard() {
                         size="small"
                         variant="contained"
                         onClick={function() {
-                            setIsPromptModalOpen(true);
+                            openStudentProfilePrompt();
                         }}
                     >
                         Set Up Student Profile
@@ -320,14 +315,6 @@ export default function StudentDashboard() {
 
             <InstitutionalIdentityCard />
 
-            <StudentProfilePromptModal
-                currentProfile={profile}
-                open={isPromptModalOpen}
-                onClose={function() {
-                    setIsPromptModalOpen(false);
-                }}
-                onSuccess={loadProfile}
-            />
         </div>
     );
 }
