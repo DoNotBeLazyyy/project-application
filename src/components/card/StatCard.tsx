@@ -33,10 +33,14 @@ export default function StatCard({
                 </span>
             </div>
             <div className="flex flex-col gap-0.5 text-left min-w-0">
-                <span className="font-bold text-xl sm:text-2xl text-[var(--mui-palette-text-primary)] truncate">
+                <span
+                    className="font-bold text-xl sm:text-2xl text-[var(--mui-palette-text-primary)] truncate"
+                    title={String(value)}
+                >
                     {value}
                 </span>
-                <span className="text-xs sm:text-sm text-[var(--mui-palette-text-secondary)] truncate">
+                {/* Wraps instead of truncating: in narrow cards "Period Weight" became "Period W…" */}
+                <span className="leading-snug text-xs sm:text-sm text-[var(--mui-palette-text-secondary)] break-words">
                     {label}
                 </span>
                 {hint && (

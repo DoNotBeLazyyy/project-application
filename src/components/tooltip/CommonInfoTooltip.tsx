@@ -49,7 +49,9 @@ export interface CommonInfoTooltipProps {
 
 const VARIANT_STYLES = {
     info: {
-        background: 'var(--mui-tokens-color-neutral-800)',
+        // Fixed slate rather than a theme token: neutral-800 flips to near-white in dark mode,
+        // which left white tooltip text on a white bubble
+        background: '#1E293B',
         icon: InfoIcon,
         idleClassName: 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-primary-main)',
         openClassName: 'text-(--mui-palette-primary-main)'
@@ -293,6 +295,8 @@ export default function CommonInfoTooltip({
                     tooltip: {
                         sx: {
                             backgroundColor: background,
+                            border: '1px solid rgba(148, 163, 184, 0.35)',
+                            color: '#F8FAFC',
                             borderRadius: 'var(--mui-tokens-radius-md)',
                             fontSize: 'var(--mui-tokens-fontSize-xs)',
                             fontWeight: 'var(--mui-tokens-fontWeight-normal)',

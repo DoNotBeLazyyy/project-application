@@ -1,7 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { generateReply } from './gemini.ts';
 import { buildSystemInstruction } from './prompt.ts';
-import { CONTEXT_TIMEOUT_MS, loadStaffOverview, withTimeout } from './staff-context.ts';
+import { CONTEXT_RETRY_CUTOFF_MS, CONTEXT_TIMEOUT_MS, loadStaffOverview, withTimeout } from './staff-context.ts';
 import { AssistantContext, AssistantRequestBody, AssistantTurn } from './types.ts';
 
 const CORS_HEADERS: Record<string, string> = {
@@ -112,11 +112,21 @@ Deno.serve(async (request: Request): Promise<Response> => {
         return failure('Your session has expired. Please sign in again.', 401);
     }
 
-    const contextResult = await withTimeout(client.rpc('fn_get_assistant_context', {
-        p_active_role: activeRole,
-        p_section_id: sanitizeUuid(body.sectionId),
-        p_term_id: sanitizeUuid(body.termId)
-    }), CONTEXT_TIMEOUT_MS);
+    function loadContext() {
+        return withTimeout(client.rpc('fn_get_assistant_context', {
+            p_active_role: activeRole,
+            p_section_id: sanitizeUuid(body.sectionId),
+            p_term_id: sanitizeUuid(body.termId)
+        }), CONTEXT_TIMEOUT_MS);
+    }
+
+    // The first call after the database has been idle can be slow or drop; one retry turns
+    // "records unavailable" into a real answer instead of making the user ask twice
+    let contextResult = await loadContext();
+
+    if ((!contextResult || contextResult.error) && Date.now() - requestStartedAt < CONTEXT_RETRY_CUTOFF_MS) {
+        contextResult = await loadContext();
+    }
 
     const loaded = contextResult && !contextResult.error
         ? contextResult.data as AssistantContext | null

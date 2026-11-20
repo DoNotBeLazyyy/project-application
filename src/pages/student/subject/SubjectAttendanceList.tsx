@@ -226,7 +226,7 @@ export default function SubjectAttendanceList({ attendance }: SubjectAttendanceL
                 </div>
             )}
 
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-80">
                 {attendance.length === 0
                     ? (
                         <div className="border border-slate-200 dark:border-zinc-800 flex flex-col gap-2 items-center justify-center p-8 rounded-2xl text-center bg-slate-50/50 dark:bg-zinc-900/50">

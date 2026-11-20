@@ -49,6 +49,10 @@ export default function GradingTab({
     sectionId
 }: GradingTabProps) {
     const [periods, setPeriods] = useState<GradingPeriod[]>([]);
+    // "No grading periods" is only true once the list has loaded; before that, or after a failed
+    // call, the tab says so instead of claiming the term has none
+    const [periodLoad, setPeriodLoad] = useState<'loading' | 'done' | 'failed'>('loading');
+    const [periodReloadKey, setPeriodReloadKey] = useState(0);
     const [activePeriodId, setActivePeriodId] = useState('');
     const [components, setComponents] = useState<GradingComponent[]>([]);
     const [calculationFailures, setCalculationFailures] = useState<GradeCalculationFailure[]>([]);
@@ -64,18 +68,34 @@ export default function GradingTab({
     const [mobileGradingView, setMobileGradingView] = useState<'sheet' | 'components'>('sheet');
 
     useEffect(function() {
+        let active = true;
+        setPeriodLoad('loading');
+
         async function fetchPeriods() {
             const result = await listGradingPeriodsBySection(sectionId);
 
-            if (result.data && result.data.length > 0) {
-                setPeriods(result.data);
-                setActivePeriodId(result.data[0].id);
+            if (!active) {
+                return;
             }
+
+            if (result.error) {
+                setPeriodLoad('failed');
+                return;
+            }
+
+            const loaded = result.data ?? [];
+            setPeriods(loaded);
+            setActivePeriodId(loaded[0]?.id ?? '');
+            setPeriodLoad('done');
         }
 
         fetchPeriods();
         fetchOverridableRules();
-    }, [sectionId]);
+
+        return function() {
+            active = false;
+        };
+    }, [sectionId, periodReloadKey]);
 
     useEffect(function() {
         if (!activePeriodId) return;
@@ -311,12 +331,25 @@ export default function GradingTab({
         return todayStr >= currentPeriod.grade_encoding_start_date && todayStr <= currentPeriod.grade_encoding_end_date;
     }, [currentPeriod]);
 
-    if (periods.length === 0) {
+    if (periodLoad !== 'done' || periods.length === 0) {
         return (
-            <div className="flex flex-1 items-center justify-center p-8">
+            <div className="flex flex-1 flex-col gap-3 items-center justify-center p-8">
                 <p className="text-slate-500 text-sm">
-                    No grading periods found for this section&apos;s term.
+                    {periodLoad === 'loading'
+                        ? 'Loading grading periods…'
+                        : periodLoad === 'failed'
+                            ? 'The grading periods could not be loaded.'
+                            : 'No grading periods found for this section’s term.'}
                 </p>
+                {periodLoad === 'failed' && (
+                    <CommonButton
+                        size="small"
+                        variant="outlined"
+                        onClick={() => setPeriodReloadKey((key) => key + 1)}
+                    >
+                        Try again
+                    </CommonButton>
+                )}
             </div>
         );
     }

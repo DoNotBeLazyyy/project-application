@@ -63,3 +63,28 @@ export function clearAuthUrlError(): void {
         );
     }
 }
+// How Supabase says a session was started: these all come from an emailed invite/reset link
+const LINK_AUTH_METHODS = ['otp', 'recovery', 'invite', 'magiclink', 'email/signup'];
+
+/**
+ * True when the session was started by an emailed link rather than a password sign-in.
+ * Read from the access token's `amr` claim; an unreadable token counts as not from a link.
+ */
+export function isLinkSession(accessToken: string | undefined | null): boolean {
+    if (!accessToken) {
+        return false;
+    }
+
+    try {
+        const payload = accessToken.split('.')[1] ?? '';
+        const json = atob(payload.replace(/-/g, '+')
+            .replace(/_/g, '/')
+            .padEnd(Math.ceil(payload.length / 4) * 4, '='));
+        const claims = JSON.parse(json) as { amr?: { method?: string }[] };
+
+        return (claims.amr ?? []).some((entry) => LINK_AUTH_METHODS.includes(entry.method ?? ''));
+    }
+    catch {
+        return false;
+    }
+}

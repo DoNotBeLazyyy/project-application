@@ -11,6 +11,8 @@ const STAFF_DASHBOARD: Record<string, { rpc: string; mode: AssistantMode }> = {
 
 // The reply still has to fit the client's timeout, so a slow database only costs the figures
 export const CONTEXT_TIMEOUT_MS = 5000;
+// A retry only starts if it can still finish with enough of the request budget left for the model
+export const CONTEXT_RETRY_CUTOFF_MS = 8000;
 
 export function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T | null> {
     return Promise.race([

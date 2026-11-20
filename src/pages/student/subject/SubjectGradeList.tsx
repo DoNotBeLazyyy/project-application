@@ -175,7 +175,7 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                     </div>
                 )
                 : (
-                    <div className="flex-1 min-h-0">
+                    <div className="flex-1 min-h-80">
                         <CommonTable
                             leadingColumnDefs={columnDefs}
                             rowData={grades}

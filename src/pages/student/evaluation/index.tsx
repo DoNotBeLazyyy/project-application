@@ -180,7 +180,9 @@ export default function StudentEvaluations() {
     const [refreshKey, setRefreshKey] = useState(0);
     const [loadError, setLoadError] = useState<string | null>(null);
     const draftKey = toDraftKey(enrollmentId, gradingPeriodId);
-    const { pendingCount, targetOptions, targets } = useEvaluationTargets(refreshKey);
+    const {
+        pendingCount, targetOptions, targets, targetStatus
+    } = useEvaluationTargets(refreshKey);
 
     const hasTarget = Boolean(enrollmentId && gradingPeriodId);
     const isStep2 = searchParams.get('step') === '2' && hasTarget;
@@ -495,6 +497,7 @@ export default function StudentEvaluations() {
                             selectedTarget={selectedTarget}
                             targetOptions={targetOptions}
                             targets={targets}
+                            targetStatus={targetStatus}
                             onProceed={handleProceed}
                             onSelectTarget={handleSelectTarget}
                         />

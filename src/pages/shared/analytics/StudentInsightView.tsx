@@ -159,7 +159,7 @@ export default function StudentInsightView({ studentId }: StudentInsightViewProp
     const isFine = performance.granularity === 'fine';
 
     return (
-        <div className="flex flex-col gap-6">
+        <div className="@container flex flex-col gap-6">
             <div className="flex flex-wrap gap-3 items-start justify-between">
                 <div className="flex flex-col">
                     <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl">
@@ -206,7 +206,7 @@ export default function StudentInsightView({ studentId }: StudentInsightViewProp
                 </div>
             )}
 
-            <div className="gap-3 grid grid-cols-2 md:grid-cols-6">
+            <div className="gap-3 grid grid-cols-2 @3xl:grid-cols-6">
                 <InsightStatTile
                     hint="All released grades"
                     label="Cumulative GWA"
@@ -277,7 +277,7 @@ export default function StudentInsightView({ studentId }: StudentInsightViewProp
                 </h2>
                 {insight.trajectory.length > 0
                     ? (
-                        <div className="gap-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+                        <div className="gap-3 grid grid-cols-1 @xl:grid-cols-2 @4xl:grid-cols-3">
                             {insight.trajectory.filter(function(item, idx, arr) {
                                 return arr.findIndex(function(t) {
                                     return t.code === item.code;
@@ -320,7 +320,7 @@ export default function StudentInsightView({ studentId }: StudentInsightViewProp
                 <GwaTrendChart points={insight.gwa_trend} />
             </div>
 
-            <div className="gap-6 grid grid-cols-1 lg:grid-cols-2">
+            <div className="gap-6 grid grid-cols-1 @4xl:grid-cols-2">
                 <div className="flex flex-col gap-3">
                     <h2 className="font-semibold text-(--mui-palette-text-primary) text-base">
                         Strengths

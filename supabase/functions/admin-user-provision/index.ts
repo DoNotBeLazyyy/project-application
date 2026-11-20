@@ -170,6 +170,22 @@ Deno.serve(async (request: Request): Promise<Response> => {
             if (targetUser?.status === 'Inactive') {
                 return failure('Reactivate this user first.', 400);
             }
+
+            // A user who never accepted the invite gets a fresh invite email, which also ends the
+            // old link. An account that is already set up falls through to a setup (reset) link.
+            if (targetUser?.status === 'Invited') {
+                const { error: reinviteError } = await adminClient.auth.admin.inviteUserByEmail(normalizedEmail, {
+                    redirectTo: defaultRedirect
+                });
+
+                if (!reinviteError) {
+                    return success({}, 'A new invitation link was sent. Only the newest link works.');
+                }
+
+                if (!/already been registered|already registered|already exists/i.test(reinviteError.message)) {
+                    return failure(describeInviteError(reinviteError.message), 400);
+                }
+            }
         }
 
         const { error: resetError } = await adminClient.auth.resetPasswordForEmail(normalizedEmail, {
@@ -177,7 +193,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
         });
 
         if (resetError) {
-            return failure(resetError.message, 400);
+            return failure(describeInviteError(resetError.message), 400);
         }
 
         const successMessage = action === 'resend_invite'

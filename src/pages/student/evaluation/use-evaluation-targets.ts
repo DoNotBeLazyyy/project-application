@@ -23,6 +23,8 @@ export function toTargetLabel(target: MyEvaluationRow): string {
 
 export function useEvaluationTargets(refreshKey = 0) {
     const [targets, setTargets] = useState<MyEvaluationRow[]>([]);
+    // Lets the page tell "still loading" and "could not load" apart from "nothing to evaluate"
+    const [targetStatus, setTargetStatus] = useState<'loading' | 'done' | 'failed'>('loading');
 
     useEffect(function() {
         let active = true;
@@ -30,8 +32,16 @@ export function useEvaluationTargets(refreshKey = 0) {
         async function fetchTargets() {
             const result = await listMyEvaluations(1, TARGET_FETCH_SIZE, '', [], '');
 
-            if (active && result.data) {
+            if (!active) {
+                return;
+            }
+
+            if (result.data) {
                 setTargets(result.data.content);
+                setTargetStatus('done');
+            }
+            else {
+                setTargetStatus('failed');
             }
         }
 
@@ -58,6 +68,6 @@ export function useEvaluationTargets(refreshKey = 0) {
     }, [targets]);
 
     return {
-        pendingCount, targetOptions, targets
+        pendingCount, targetOptions, targets, targetStatus
     };
 }

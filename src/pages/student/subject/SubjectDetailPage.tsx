@@ -245,8 +245,8 @@ export default function SubjectDetailPage() {
                     </div>
                 </div>
 
-                {/* Tab Content Panes */}
-                <div className="flex-1 min-h-0">
+                {/* Tab Content Panes: a flex column so a table pane gets a real height to fill */}
+                <div className="flex flex-1 flex-col min-h-0">
                     {activeTab === 'content' && subject?.section_id && (
                         <SectionContentPanel
                             canManage={false}

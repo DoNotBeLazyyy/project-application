@@ -103,7 +103,16 @@ export default function useBreadcrumbs(): BreadcrumbItem[] {
                 label = BREADCRUMB_SEGMENT_LABELS[segment.toLowerCase()];
             }
 
-            // 3. Fallback formatting
+            // 3. A student's grade page is grade/:enrollmentId/:gradingPeriodId; without this both
+            // ids fell back to "Detail" and the trail read "Detail > Detail"
+            if (!label && segments[index - 2] === 'grade' && UUID_PATTERN.test(segment)) {
+                label = 'Period Breakdown';
+            }
+            else if (!label && prevSegment === 'grade' && UUID_PATTERN.test(segment)) {
+                label = 'Subject Grades';
+            }
+
+            // 4. Fallback formatting
             if (!label) {
                 label = formatFallbackSegment(segment, prevSegment);
             }

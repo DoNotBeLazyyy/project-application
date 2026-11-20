@@ -201,8 +201,10 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
         return qualified.sort((a, b) => a.target_gwa - b.target_gwa)[0];
     }, [honorTrajectoryEval]);
 
+    // A size container: the AI assistant panel narrows this card without changing the viewport,
+    // so the grids below follow the card's own width (@ variants), not the screen's
     return (
-        <div className="border border-(--mui-palette-divider) flex flex-col gap-5 p-5 rounded-xl bg-white shadow-xs">
+        <div className="@container border border-(--mui-palette-divider) flex flex-col gap-5 p-5 rounded-xl bg-white shadow-xs">
             <div className="flex flex-wrap gap-3 items-center justify-between">
                 <div className="flex gap-2.5 items-center">
                     <div className="bg-(--mui-tokens-color-brand-100) p-2 rounded-lg text-(--mui-tokens-color-brand-900)">
@@ -240,7 +242,7 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
             </div>
 
             {/* Simulated GWA Metrics Cards */}
-            <div className="gap-3 grid grid-cols-1 sm:grid-cols-3">
+            <div className="gap-3 grid grid-cols-1 @2xl:grid-cols-3">
                 <div className="bg-(--mui-tokens-color-brand-50) border border-(--mui-tokens-color-brand-100) flex flex-col gap-1 p-3.5 rounded-lg">
                     <span className="text-(--mui-tokens-color-neutral-600) text-xs uppercase font-medium">
                         Simulated Cum. GWA
@@ -306,7 +308,7 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                 <span className="font-medium text-(--mui-palette-text-primary) text-sm">
                     Simulated Honor Qualification Radar
                 </span>
-                <div className="gap-2.5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                <div className="gap-2.5 grid grid-cols-1 @md:grid-cols-2 @4xl:grid-cols-4">
                     {honorTrajectoryEval.map(function(item) {
                         const isQual = item.is_currently_qualified;
                         return (
@@ -320,8 +322,8 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
                                 }`}
                                 key={item.code}
                             >
-                                <div className="flex items-center justify-between gap-2">
-                                    <span className="font-medium text-xs text-(--mui-palette-text-primary)">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <span className="font-medium min-w-0 text-xs text-(--mui-palette-text-primary)">
                                         {item.label}
                                     </span>
                                     <CommonBadgeStatus

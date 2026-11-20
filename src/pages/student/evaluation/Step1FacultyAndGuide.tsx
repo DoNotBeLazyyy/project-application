@@ -12,6 +12,7 @@ export interface Step1FacultyAndGuideProps {
     gradingPeriodId: string;
     targets: MyEvaluationRow[];
     targetOptions: CommonSelectOption[];
+    targetStatus: 'loading' | 'done' | 'failed';
     selectedTarget: MyEvaluationRow | null;
     pendingCount: number;
     isLoadingForm: boolean;
@@ -57,6 +58,7 @@ export default function Step1FacultyAndGuide({
     gradingPeriodId,
     targets,
     targetOptions,
+    targetStatus,
     selectedTarget,
     pendingCount,
     isLoadingForm,
@@ -176,7 +178,9 @@ export default function Step1FacultyAndGuide({
 
                 {targets.length === 0 && (
                     <div className="border border-(--mui-palette-divider) rounded-xl p-6 text-center text-(--mui-palette-text-secondary) text-sm">
-                        No faculty evaluations are available for your enrolled sections right now.
+                        {targetStatus === 'loading' && 'Loading your faculty evaluations…'}
+                        {targetStatus === 'failed' && 'Your faculty evaluations could not be loaded. Refresh the page to try again.'}
+                        {targetStatus === 'done' && 'No faculty evaluations are available for your enrolled sections right now.'}
                     </div>
                 )}
             </div>

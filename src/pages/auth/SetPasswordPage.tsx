@@ -4,8 +4,10 @@ import ValidCommonInput from '@components/input/ValidCommonInput';
 import { logout } from '@services/auth.service';
 import { supabase } from '@services/supabase.client';
 import { callRpc } from '@services/supabase.wrapper';
+import { useAppStore } from '@stores/app.store';
+import { Session } from '@supabase/supabase-js';
 import { SetPasswordFormValues } from '@type/user.type';
-import { clearAuthUrlError, parseAuthUrlError } from '@utils/auth-error.util';
+import { clearAuthUrlError, isLinkSession, parseAuthUrlError } from '@utils/auth-error.util';
 import { parseServiceError } from '@utils/error.util';
 import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useRef, useState } from 'react';
@@ -26,6 +28,10 @@ function getSubmitLabel(isRecovery: boolean, isPasswordSaved: boolean, isSubmitt
     return isPasswordSaved
         ? 'Try Activation Again'
         : 'Activate Account';
+}
+
+function canSetPassword(session: Session): boolean {
+    return isLinkSession(session.access_token) || useAppStore.getState().userProfile?.status === 'Invited';
 }
 
 export default function SetPasswordPage() {
@@ -62,6 +68,9 @@ export default function SetPasswordPage() {
             return;
         }
 
+        // Set when the link carries a token: its verification decides, not whoever is signed in already
+        let isVerifyingToken = false;
+
         // Support token_hash from query string or hash fragment
         if (typeof window !== 'undefined') {
             const searchParams = new URLSearchParams(window.location.search);
@@ -78,6 +87,7 @@ export default function SetPasswordPage() {
             setIsRecovery(tokenType === 'recovery');
 
             if (tokenHash) {
+                isVerifyingToken = true;
                 supabase.auth.verifyOtp({ token_hash: tokenHash, type: tokenType })
                     .then(({ data, error }) => {
                         if (mountedRef.current) {
@@ -93,6 +103,8 @@ export default function SetPasswordPage() {
                                 );
                             }
                             else if (data?.session) {
+                                setIsTimedOut(false);
+                                setSubmitError(null);
                                 setSessionReady(true);
                             }
                         }
@@ -100,16 +112,37 @@ export default function SetPasswordPage() {
             }
         }
 
-        supabase.auth.getSession()
-            .then(({ data: { session } }) => {
-                if (mountedRef.current && session) {
-                    setSessionReady(true);
-                }
-            });
+        /**
+         * Only a session opened by the emailed link (or an invited user finishing setup) may set a
+         * password here. Without this, an admin who opens an expired or used link in their own
+         * browser saw the form, and the "new user's" password was saved onto the admin account.
+         */
+        function acceptSession(session: Session | null) {
+            if (!session || !mountedRef.current) {
+                return;
+            }
+
+            if (canSetPassword(session)) {
+                setSessionReady(true);
+                return;
+            }
+
+            setIsTimedOut(true);
+            setSubmitError(`This link has expired or was already used, so it cannot set a password. You are still signed in as ${session.user.email ?? 'another account'}; that account was not changed. Ask your administrator for a new link and open it after signing out.`);
+        }
+
+        if (!isVerifyingToken) {
+            supabase.auth.getSession()
+                .then(({ data: { session } }) => {
+                    acceptSession(session);
+                });
+        }
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (session && (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY')) {
-                if (mountedRef.current) {
+                if (mountedRef.current && canSetPassword(session)) {
+                    setIsTimedOut(false);
+                    setSubmitError(null);
                     setSessionReady(true);
                     if (event === 'PASSWORD_RECOVERY') setIsRecovery(true);
                 }
@@ -136,6 +169,13 @@ export default function SetPasswordPage() {
 
     async function onSubmit(values: SetPasswordFormValues) {
         setSubmitError(null);
+
+        // Re-checked at submit: the session could have been swapped in another tab since the page loaded
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (!currentSession || !canSetPassword(currentSession)) {
+            setSubmitError('This page is no longer signed in through your setup link. Open the latest link from your email again.');
+            return;
+        }
 
         if (!isPasswordSaved) {
             const { error: updateError } = await supabase.auth.updateUser({ password: values.password });

@@ -92,6 +92,34 @@ function isSilentCall(options?: CallRpcOptions): boolean {
     return options?.silent === true;
 }
 
+const READ_RPC_PATTERN = /^fn_(get|list)_/;
+const READ_RETRY_DELAY_MS = 700;
+
+/**
+ * A dropped connection or a 5xx from an idle database is usually gone a moment later.
+ * Read-only RPCs (fn_get_* / fn_list_*) are retried once in that case so a screen does not
+ * open on an empty state; writes are never retried, and database errors are returned as-is.
+ */
+function isTransientFailure(status: number | undefined, error: unknown): boolean {
+    if (!error || isPostgresRpcError(error)) {
+        return false;
+    }
+
+    return !status || status >= 500;
+}
+
+async function runRpcWithReadRetry(fn: string, params?: Record<string, unknown>) {
+    const first = await supabase.rpc(fn, params);
+
+    if (!READ_RPC_PATTERN.test(fn) || !isTransientFailure(first.status, first.error)) {
+        return first;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, READ_RETRY_DELAY_MS));
+
+    return supabase.rpc(fn, params);
+}
+
 export async function callRpc<T>(
     fn: string,
     params?: Record<string, unknown>,
@@ -105,7 +133,7 @@ export async function callRpc<T>(
             .show();
     }
     try {
-        const { data, error, status } = await supabase.rpc(fn, params);
+        const { data, error, status } = await runRpcWithReadRetry(fn, params);
 
         if (error) {
             if (shouldRedirectToLogin(status, error)) {
