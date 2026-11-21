@@ -145,6 +145,17 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                         );
                     }
 
+                    // No grade row yet (the faculty hasn't calculated this period): nothing is pending release
+                    if (grade.status === null || grade.status === undefined) {
+                        return (
+                            <div className="flex h-full items-center">
+                                <span className="text-(--mui-palette-text-secondary) text-sm">
+                                    Not graded yet
+                                </span>
+                            </div>
+                        );
+                    }
+
                     return (
                         <div className="flex h-full items-center">
                             <CommonBadgeStatus

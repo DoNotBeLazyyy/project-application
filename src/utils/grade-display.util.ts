@@ -53,9 +53,11 @@ interface GradeReleaseInfo {
  * on the evaluation alone.
  */
 export function isGradeReleased(item: GradeReleaseInfo): boolean {
-    const isVisibleStatus = item.status === undefined || item.status === null
+    // A list that has no status field at all only holds visible rows; a row whose status is
+    // null has no grade yet (e.g. Midterm before it is calculated) and is not released
+    const isVisibleStatus = item.status === undefined
         ? true
-        : VISIBLE_STATUSES.includes(item.status);
+        : item.status !== null && VISIBLE_STATUSES.includes(item.status);
 
     return isVisibleStatus && item.evaluation_completed === true;
 }
