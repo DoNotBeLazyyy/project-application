@@ -140,6 +140,9 @@ export async function callRpc<T>(
                 await handleAuthFailure();
             }
             const parsed = parseServiceError(error);
+            if (parsed.status === null && typeof status === 'number') {
+                parsed.status = status;
+            }
             if (!isSilent) {
                 notify(parsed.message, 'error');
             }

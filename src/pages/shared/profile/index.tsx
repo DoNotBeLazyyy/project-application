@@ -163,7 +163,11 @@ export default function ProfilePage() {
 
             if (profileRes.data) {
                 setProfile(profileRes.data);
-                profileMethods.reset(toProfileFormValues(profileRes.data));
+
+                // A reload after an avatar change must not wipe profile edits not saved yet
+                if (!isProfileDirtyRef.current) {
+                    profileMethods.reset(toProfileFormValues(profileRes.data));
+                }
             }
         }
 

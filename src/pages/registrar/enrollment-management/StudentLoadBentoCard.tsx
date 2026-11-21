@@ -22,6 +22,8 @@ export interface StudentLoadCardItem {
     faculty_name: string;
     room?: string | null;
     status?: string;
+    // Set when the enrollment cannot be dropped; the Drop button is then replaced by this reason
+    drop_blocked_reason?: string | null;
     conflict_with?: string | null;
     unmet_prerequisites?: string | null;
 }
@@ -196,7 +198,7 @@ export default function StudentLoadBentoCard({
                         ? 'Will be enrolled upon saving'
                         : isDropped
                             ? 'Will be removed upon saving'
-                            : 'Currently enrolled'}
+                            : item.drop_blocked_reason ?? 'Currently enrolled'}
                 </span>
 
                 {isNew && (
@@ -233,7 +235,7 @@ export default function StudentLoadBentoCard({
                     </CommonButton>
                 )}
 
-                {isNormalEnrolled && (
+                {isNormalEnrolled && !item.drop_blocked_reason && (
                     <CommonButton
                         color="error"
                         size="small"

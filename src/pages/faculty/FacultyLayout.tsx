@@ -35,7 +35,8 @@ export default function FacultyLayout() {
             items: [
                 {
                     icon: <ChalkboardTeacherIcon size={18} />,
-                    isActive: pathname === '/faculty/sections',
+                    // Stays highlighted inside a section (content, grading, assessments)
+                    isActive: pathname === '/faculty/sections' || pathname.startsWith('/faculty/sections/'),
                     label: 'My Sections',
                     onClick: () => navigate('/faculty/sections')
                 },

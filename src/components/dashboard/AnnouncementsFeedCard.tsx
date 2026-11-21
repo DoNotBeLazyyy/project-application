@@ -9,6 +9,7 @@ import {
     WarningCircleIcon
 } from '@phosphor-icons/react';
 import { AnnouncementAudience, AnnouncementFeedRow } from '@type/announcement.type';
+import { toPlainTextPreview } from '@utils/communication.util';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -130,7 +131,7 @@ export default function AnnouncementsFeedCard({ announcements, error }: Announce
                                 </div>
                             </div>
                             <p className="line-clamp-2 m-0 text-(--mui-palette-text-secondary) text-xs">
-                                {announcement.content}
+                                {toPlainTextPreview(announcement.content)}
                             </p>
                             <div className="flex items-center justify-between gap-2 mt-0.5">
                                 <span className="text-(--mui-palette-text-disabled) text-xs">

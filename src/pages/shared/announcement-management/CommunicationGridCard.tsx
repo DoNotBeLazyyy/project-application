@@ -30,7 +30,8 @@ export default function CommunicationGridCard({
 }: CommunicationGridCardProps) {
     let status = 'Announcement';
     if (row.item_type === 'Event') {
-        const isUpcoming = new Date(row.start_at || row.date)
+        // An event is past only once it has ended, not when it starts
+        const isUpcoming = new Date(row.end_at || row.start_at || row.date)
             .getTime() >= Date.now();
         status = isUpcoming
             ? 'Upcoming Event'

@@ -31,7 +31,9 @@ import {
     EnrollmentStudentDetail
 } from '@type/enrollment.type';
 import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+    useCallback, useEffect, useMemo, useRef, useState
+} from 'react';
 import { FieldErrors, useForm, useWatch } from 'react-hook-form';
 
 interface EnrollmentOverrideValues {
@@ -124,15 +126,33 @@ export default function EnrollmentWorkspaceModal({
 
     const effectiveTermId = termId ?? defaultTermId;
 
+    // Subjects marked to drop are offered again, so a section switch fits in one save
+    const markedDropKey = useMemo(function() {
+        return Array.from(markedDropIds)
+            .sort()
+            .join(',');
+    }, [markedDropIds]);
+
+    // Only the latest load may update the screen, so a slow older load cannot show another term
+    const loadRequestRef = useRef(0);
+
     const loadWorkspace = useCallback(async function() {
         if (!studentId) return;
+
+        loadRequestRef.current += 1;
+        const requestId = loadRequestRef.current;
+        const pendingDropIds = markedDropKey
+            ? markedDropKey.split(',')
+            : [];
 
         setIsAvailableLoading(true);
         try {
             const [detailResult, sectionsResult] = await Promise.all([
                 getEnrollmentStudentDetail(studentId, effectiveTermId),
-                listEligibleSections(studentId, effectiveTermId, activeSearch, sectionFilters)
+                listEligibleSections(studentId, effectiveTermId, activeSearch, sectionFilters, pendingDropIds)
             ]);
+
+            if (requestId !== loadRequestRef.current) return;
 
             if (detailResult.data) {
                 setDetail(detailResult.data);
@@ -143,9 +163,11 @@ export default function EnrollmentWorkspaceModal({
             }
         }
         finally {
-            setIsAvailableLoading(false);
+            if (requestId === loadRequestRef.current) {
+                setIsAvailableLoading(false);
+            }
         }
-    }, [studentId, effectiveTermId, activeSearch, sectionFilters]);
+    }, [studentId, effectiveTermId, activeSearch, sectionFilters, markedDropKey]);
 
     useEffect(function() {
         if (open) {
@@ -210,6 +232,10 @@ export default function EnrollmentWorkspaceModal({
         if (enrolledSectionIds.has(section.section_id) || stagedSectionIds.has(section.section_id)) {
             return;
         }
+        // No slot override exists, so a full section would only fail on save
+        if (section.is_full || section.slots_taken >= section.max_slots) {
+            return;
+        }
         setStagedNewSections((prev) => [...prev, section]);
     }
 
@@ -231,6 +257,23 @@ export default function EnrollmentWorkspaceModal({
             next.delete(enrollmentId);
             return next;
         });
+
+        // The student keeps that subject, so a replacement section of it can no longer be added
+        const keptCourse = currentActiveLoad.find((row) => row.enrollment_id === enrollmentId)?.course_code;
+        if (keptCourse) {
+            setStagedNewSections((prev) => prev.filter((sec) => sec.course_code !== keptCourse));
+        }
+    }
+
+    // Staged items belong to the term they were picked in, so a term change starts over
+    function handleTermChange(nextTermId: string) {
+        if (nextTermId === effectiveTermId) return;
+
+        setStagedNewSections([]);
+        setMarkedDropIds(new Set());
+        overrideMethods.reset(defaultOverrideValues);
+        setSaveErrorMessage(null);
+        setTermId(nextTermId);
     }
 
     function handleResetAllChanges() {
@@ -244,6 +287,8 @@ export default function EnrollmentWorkspaceModal({
 
     function handleClose() {
         setIsDiscardOpen(false);
+        // Reopening starts from the page's term, not the one picked last time
+        setTermId(null);
         setDetail(null);
         setAvailableSections([]);
         setStagedNewSections([]);
@@ -430,7 +475,7 @@ export default function EnrollmentWorkspaceModal({
                                         options={termOptions}
                                         size="small"
                                         value={termId ?? ''}
-                                        onChange={(event) => setTermId(event.target.value)}
+                                        onChange={(event) => handleTermChange(String(event.target.value))}
                                     />
                                 </div>
                             </div>
@@ -584,7 +629,8 @@ export default function EnrollmentWorkspaceModal({
                                                     units: row.units,
                                                     schedule_label: row.schedule_label,
                                                     faculty_name: row.faculty_name,
-                                                    status: row.status
+                                                    status: row.status,
+                                                    drop_blocked_reason: row.drop_blocked_reason
                                                 };
 
                                                 return (

@@ -133,11 +133,15 @@ export default function AiAssistant() {
     const toggleOpen = useAssistantStore((s) => s.toggleOpen);
     const [isSending, setIsSending] = useState(false);
     const [draft, setDraft] = useState('');
-    const [messages, setMessages] = useState<AssistantMessage[]>(() => userId
-        ? loadAssistantChat(userId)
+    // One chat per user and role, so switching role does not carry another role's conversation
+    const chatKey = userId && activeRole
+        ? `${userId}:${activeRole}`
+        : null;
+    const [messages, setMessages] = useState<AssistantMessage[]>(() => chatKey
+        ? loadAssistantChat(chatKey)
         : []);
-    // The user whose chat is in `messages`, so a new sign-in never saves over another chat
-    const [chatUserId, setChatUserId] = useState<string | null>(userId);
+    // The user and role whose chat is in `messages`, so a new sign-in or role never saves over another chat
+    const [chatOwnerKey, setChatOwnerKey] = useState<string | null>(chatKey);
     const [usedSuggestions, setUsedSuggestions] = useState<string[]>([]);
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const role = activeRole ?? '';
@@ -158,22 +162,22 @@ export default function AiAssistant() {
         setUsedSuggestions([]);
     }, [activeRole]);
 
-    // Load the saved chat when a different user signs in
+    // Load the saved chat when a different user signs in or the role changes
     useEffect(function() {
-        if (userId === chatUserId) return;
+        if (chatKey === chatOwnerKey) return;
 
-        setMessages(userId
-            ? loadAssistantChat(userId)
+        setMessages(chatKey
+            ? loadAssistantChat(chatKey)
             : []);
-        setChatUserId(userId);
-    }, [userId, chatUserId]);
+        setChatOwnerKey(chatKey);
+    }, [chatKey, chatOwnerKey]);
 
     // Keep the chat so a page refresh does not lose it
     useEffect(function() {
-        if (chatUserId) {
-            saveAssistantChat(chatUserId, messages);
+        if (chatOwnerKey) {
+            saveAssistantChat(chatOwnerKey, messages);
         }
-    }, [chatUserId, messages]);
+    }, [chatOwnerKey, messages]);
 
     function handleSuggestionSelect(suggestion: string) {
         setUsedSuggestions((prev) => prev.includes(suggestion)

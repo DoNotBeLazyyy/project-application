@@ -6,7 +6,7 @@ import { useToastStore } from '@stores/toast.store';
 import { Session } from '@supabase/supabase-js';
 import { AuthContext, AuthSessionStatus } from '@type/app.type';
 import { VerifyEmailResult } from '@type/auth.type';
-import { ServiceResult } from '@type/service.type';
+import { ServiceErrorProps, ServiceResult } from '@type/service.type';
 import { cookieStorage } from '@utils/cookie.util';
 import { parseServiceError } from '@utils/error.util';
 import {
@@ -16,6 +16,7 @@ import {
 } from '@utils/session.util';
 
 export const INCOMPLETE_PROFILE_MESSAGE = 'Your account is not fully set up. Contact your administrator.';
+export const CONNECTION_PROBLEM_MESSAGE = 'We could not reach the server to load your account. Check your connection, then reload the page.';
 export const SUSPENDED_ACCOUNT_MESSAGE = 'Your account has been suspended. Please contact your administrator.';
 export const INACTIVE_ACCOUNT_MESSAGE = 'Your account is currently inactive. Please contact your administrator.';
 
@@ -205,6 +206,18 @@ export function getBlockedAccountMessage(status: string | null | undefined): str
     return null;
 }
 
+/**
+ * True for a network failure or a server (5xx) error, as opposed to an answer from the
+ * database such as "profile not found". Database errors carry a five-character SQLSTATE code.
+ *
+ * @param error - The failed call's error.
+ */
+function isConnectionProblem(error: ServiceErrorProps): boolean {
+    if (error.code && /^[0-9A-Z]{5}$/.test(error.code)) return false;
+
+    return !error.status || error.status >= 500;
+}
+
 export async function initAuthSession(): Promise<AuthSessionStatus> {
     if (isSessionExpiredDueToInactivity()) {
         await logout();
@@ -232,7 +245,18 @@ export async function initAuthSession(): Promise<AuthSessionStatus> {
 
     recordActivity();
 
-    const { data: context, error } = await getAuthContext();
+    // Silent: a failure is explained once below instead of showing the raw error text
+    const { data: context, error } = await callRpc<AuthContext>('fn_get_auth_context', undefined, { silent: true });
+
+    // The server could not be reached (or failed): keep the user signed in and say so
+    if (!context && error && isConnectionProblem(error)) {
+        useToastStore.getState()
+            .showToast(CONNECTION_PROBLEM_MESSAGE, 'error');
+
+        return store.userProfile?.id === session.user.id
+            ? 'authenticated'
+            : 'unauthenticated';
+    }
 
     if (!context || context.profile?.status === 'Suspended' || context.profile?.status === 'Inactive') {
         if (typeof window !== 'undefined' && window.location.pathname === '/set-password') {

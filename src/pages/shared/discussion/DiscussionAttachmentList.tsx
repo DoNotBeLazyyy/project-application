@@ -67,10 +67,14 @@ export default function DiscussionAttachmentList({ attachments }: DiscussionAtta
                     );
                 }
 
+                // Until its link loads, the file is shown but cannot be opened (href="#" opened the app)
                 return (
                     <a
-                        className="flex gap-2 items-center rounded-lg border border-(--mui-palette-divider) px-3 py-2 hover:bg-black/5"
-                        href={url ?? '#'}
+                        aria-disabled={!url}
+                        className={`flex gap-2 items-center rounded-lg border border-(--mui-palette-divider) px-3 py-2 ${url
+                            ? 'hover:bg-black/5'
+                            : 'cursor-wait opacity-60 pointer-events-none'}`}
+                        href={url}
                         key={attachment.id}
                         rel="noreferrer"
                         target="_blank"

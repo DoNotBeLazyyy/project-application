@@ -39,7 +39,7 @@ export default function AvailableSectionBentoCard({
                     : isStaged
                         ? 'bg-blue-50/60 dark:bg-blue-950/30 border-blue-500 ring-1 ring-blue-500/40 shadow-xs'
                         : isFull
-                            ? 'bg-(--mui-palette-background-paper) border-(--mui-palette-divider) opacity-80 hover:border-amber-400 cursor-pointer'
+                            ? 'bg-(--mui-palette-background-paper) border-(--mui-palette-divider) opacity-80 cursor-not-allowed'
                             : 'bg-(--mui-palette-background-paper) border-(--mui-palette-divider) hover:border-blue-500 hover:shadow-md cursor-pointer active:scale-[0.99]'
             }`}
             onClick={function() {
@@ -47,7 +47,8 @@ export default function AvailableSectionBentoCard({
                 if (isStaged) {
                     onUnstage(section.section_id);
                 }
-                else {
+                // A full section cannot be enrolled: there is no slot override
+                else if (!isFull) {
                     onSelect(section);
                 }
             }}
@@ -215,11 +216,12 @@ export default function AvailableSectionBentoCard({
                             <>
                                 <span className="text-[10px] text-(--mui-palette-text-disabled)">
                                     {isFull
-                                        ? 'Requires slot override'
+                                        ? 'Section is full'
                                         : 'Click card to stage'}
                                 </span>
                                 <CommonButton
                                     color="primary"
+                                    disabled={isFull}
                                     size="small"
                                     startIcon={(
                                         <PlusIcon

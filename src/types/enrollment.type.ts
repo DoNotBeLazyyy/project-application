@@ -16,6 +16,8 @@ export interface EnrollmentStudentRow {
     student_name: string;
     email: string;
     year_level: number;
+    // True when the registrar set the year level by hand
+    year_level_overridden?: boolean;
     status: StudentStatus;
     program_id: string | null;
     program_code: string;
@@ -46,6 +48,8 @@ export interface CurrentLoadRow {
     conflict_reason: string | null;
     faculty_name: string;
     schedule_label: string;
+    // Why the row cannot be dropped (term over, grade approved, not Enrolled); null when it can
+    drop_blocked_reason?: string | null;
 }
 
 export interface EnrollmentStudentDetail {

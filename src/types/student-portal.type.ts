@@ -8,6 +8,8 @@ export interface StudentDashboard {
     enrolled_count: number;
     upcoming_count: number;
     upcoming_assessments: UpcomingAssessment[];
+    // Every open, unsubmitted assessment with a due date (not capped), for the calendar
+    calendar_assessments?: UpcomingAssessment[];
     released_grades_count: number;
 }
 
@@ -67,6 +69,7 @@ export interface MySubjectListRow {
     lecture_units: number;
     laboratory_units: number;
     term_label: string;
+    term_start_date?: string | null;
     faculty_name: string | null;
     enrollment_status: EnrollmentStatus;
     total_count: number;
