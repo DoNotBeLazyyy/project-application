@@ -36,7 +36,7 @@ const FILTER_FORM_ID = 'filter-section-form';
 // Grading periods are applied afterwards through saveSectionGradingOverride.
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     {
-        key: 'term_label', label: 'Term Label', hint: 'Optional - "<Term Type> - <School Year>" of the active academic year, e.g. 1st Semester - Academic Year 2026-2027; defaults to the first active term', sample: '1st Semester - Academic Year 2026-2027', required: false, aliases: ['term', 'semester']
+        key: 'term_label', label: 'Term Label', hint: 'Optional - "<Term Type> - <School Year>" of the active academic year, e.g. 1st Semester - Academic Year 2026-2027; defaults to the current term', sample: '1st Semester - Academic Year 2026-2027', required: false, aliases: ['term', 'semester']
     },
     {
         key: 'course_code', label: 'Course Code', hint: 'Exact existing course code, e.g. COCS102', sample: 'COCS102', aliases: ['course', 'subject_code']
