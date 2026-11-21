@@ -1,23 +1,31 @@
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import ValidCommonSelect from '@components/select/ValidCommonSelect';
 import FileUploadAnswer from '@pages/student/assessment/FileUploadAnswer';
-import { StudentQuestion } from '@type/student-portal.type';
+import { StudentQuestion, SubmissionFileAttachment } from '@type/student-portal.type';
 import { Control } from 'react-hook-form';
 
 const REQUIRED_ANSWER_MESSAGE = 'This question is required.';
 
 interface AssessmentQuestionCardProps {
     control: Control<Record<string, string>>;
+    // Saved files of a File Upload question
+    files: SubmissionFileAttachment[];
+    // Shown under a required File Upload question that has no file yet
+    fileError?: string;
     index: number;
     question: StudentQuestion;
     submissionId: string;
+    onFilesChange: (questionId: string, files: SubmissionFileAttachment[]) => void;
 }
 
 export default function AssessmentQuestionCard({
     control,
+    files,
+    fileError,
     index,
     question,
-    submissionId
+    submissionId,
+    onFilesChange
 }: AssessmentQuestionCardProps) {
     const choiceOptions = question.choices.map((c) => ({
         label: c.choice_text,
@@ -70,9 +78,16 @@ export default function AssessmentQuestionCard({
             )}
             {question.question_type === 'File Upload' && (
                 <FileUploadAnswer
+                    files={files}
                     question={question}
                     submissionId={submissionId}
+                    onFilesChange={onFilesChange}
                 />
+            )}
+            {question.question_type === 'File Upload' && fileError && files.length === 0 && (
+                <span className="text-(--mui-palette-error-main) text-xs">
+                    {fileError}
+                </span>
             )}
         </div>
     );

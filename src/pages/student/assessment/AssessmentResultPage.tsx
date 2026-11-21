@@ -404,6 +404,8 @@ export default function AssessmentResultPage() {
     const canRetake = result
         ? canRetakeAssessment(result)
         : false;
+    const isInProgress = Boolean(result?.has_submission)
+        && (result?.status === 'In Progress' || result?.status === 'Not Started');
 
     const passed = result && result.has_submission && result.results_available
         && result.passing_points !== null && result.final_score !== null
@@ -458,7 +460,30 @@ export default function AssessmentResultPage() {
             {result && (
                 <div className="flex flex-1 flex-col gap-5 min-h-0 overflow-y-auto pr-1">
                     {/* Real-time Result Banner */}
-                    {(isJustSubmitted || result.has_submission) && (
+                    {/* An attempt that is still open is not a result yet: offer to resume it */}
+                    {isInProgress && (
+                        <div className="bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/80 flex flex-col md:flex-row gap-3 items-start md:items-center justify-between p-4 rounded-2xl">
+                            <div className="flex flex-col gap-0.5">
+                                <span className="font-bold text-amber-900 dark:text-amber-200 text-base">
+                                    Attempt in progress
+                                </span>
+                                <p className="m-0 text-amber-900 dark:text-amber-200 text-xs sm:text-sm">
+                                    This attempt has not been submitted yet. Resume it to finish and submit your answers.
+                                </p>
+                            </div>
+                            <CommonButton
+                                size="small"
+                                variant="contained"
+                                onClick={function() {
+                                    navigate(`/student/subjects/${result.enrollment_id || enrollmentId}/assessments/${assessmentId}`);
+                                }}
+                            >
+                                Resume Assessment
+                            </CommonButton>
+                        </div>
+                    )}
+
+                    {!isInProgress && (isJustSubmitted || result.has_submission) && (
                         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/30 border border-blue-200/80 dark:border-blue-800/80 flex flex-col md:flex-row gap-3 items-start md:items-center justify-between p-4 rounded-2xl shadow-2xs">
                             <div className="flex gap-3.5 items-center">
                                 <div className="bg-blue-600 dark:bg-blue-500 p-2.5 rounded-xl text-white shrink-0">
@@ -681,9 +706,11 @@ export default function AssessmentResultPage() {
                     {result.answers.length > 0 && (
                         <div className="flex flex-col gap-3">
                             <span className="font-bold text-slate-900 dark:text-slate-100 text-base">
-                                {result.has_submission
-                                    ? 'Your Submitted Responses'
-                                    : 'Assessment Questions'}
+                                {isInProgress
+                                    ? 'Your Saved Answers'
+                                    : result.has_submission
+                                        ? 'Your Submitted Responses'
+                                        : 'Assessment Questions'}
                             </span>
                             {result.answers.map(function(answer, index) {
                                 return (

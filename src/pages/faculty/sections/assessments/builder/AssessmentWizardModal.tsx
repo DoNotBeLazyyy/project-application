@@ -887,20 +887,28 @@ export default function AssessmentWizardModal({
             ])
     ];
 
+    /**
+     * Closes the builder. The assessment is already saved once step 1 is done (and questions
+     * save as they are added), so the list is refreshed to show it.
+     */
+    function closeBuilder() {
+        draftGuard.clearDraft();
+        if (activeAssessmentId) onSuccess();
+        onClose();
+    }
+
     function handleCloseModal() {
         if (isSaving) return;
         if (draftGuard.hasRealChanges) {
             setIsConfirmCloseOpen(true);
             return;
         }
-        draftGuard.clearDraft();
-        onClose();
+        closeBuilder();
     }
 
     function handleDiscardAndClose() {
         setIsConfirmCloseOpen(false);
-        draftGuard.clearDraft();
-        onClose();
+        closeBuilder();
     }
 
     return (

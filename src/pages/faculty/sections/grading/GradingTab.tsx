@@ -35,7 +35,9 @@ import {
 } from '@type/faculty.type';
 import { SectionOverridableRule, SpecialGradeFlag } from '@type/grading-config.type';
 import { toIsoDateKey } from '@utils/date.util';
-import { SyntheticEvent, useEffect, useMemo, useState } from 'react';
+import {
+    SyntheticEvent, useEffect, useMemo, useRef, useState
+} from 'react';
 
 interface GradingTabProps {
     courseCode?: string;
@@ -69,6 +71,10 @@ export default function GradingTab({
     const [isSubmittingGrades, setIsSubmittingGrades] = useState(false);
     const [isCalculating, setIsCalculating] = useState(false);
     const [mobileGradingView, setMobileGradingView] = useState<'sheet' | 'components'>('sheet');
+    // Only the newest period load may update the screen
+    const periodRequestRef = useRef(0);
+    // Periods the teacher emptied during this visit; they are not re-seeded with defaults
+    const clearedPeriodIdsRef = useRef<Set<string>>(new Set());
 
     useEffect(function() {
         let active = true;
@@ -102,7 +108,13 @@ export default function GradingTab({
 
     useEffect(function() {
         if (!activePeriodId) return;
-        fetchPeriodData();
+        // Clear the previous period's sheet so it never shows under the new period's tab
+        setComponents([]);
+        setGradeSheet([]);
+        setSpecialGradeFlags([]);
+        setCalculationFailures([]);
+        setIsLocked(false);
+        fetchPeriodData(true);
     }, [sectionId, activePeriodId]);
 
     async function fetchOverridableRules() {
@@ -110,30 +122,54 @@ export default function GradingTab({
         setOverridableRules(result.data ?? []);
     }
 
-    async function fetchPeriodData() {
+    /**
+     * Loads the active period's components, grade sheet, lock and flags. Only the latest call
+     * updates the screen, so a slow answer for a period the teacher already left is dropped.
+     *
+     * @param allowSeed - True when the period is opened: a period with no components gets the
+     * default ones. After the teacher deletes components, nothing is re-created.
+     */
+    async function fetchPeriodData(allowSeed = false) {
+        const requestId = periodRequestRef.current + 1;
+        periodRequestRef.current = requestId;
+        const periodId = activePeriodId;
+
+        function isStale() {
+            return periodRequestRef.current !== requestId;
+        }
+
         const [componentsResult, gradeSheetResult, lockedResult, flagsResult, assessmentsResult] = await Promise.all([
-            listGradingComponents(sectionId, activePeriodId),
-            listGradeSheet(sectionId, activePeriodId),
-            isSectionGradingLocked(sectionId, activePeriodId),
-            listSpecialGradeFlags(sectionId, activePeriodId),
+            listGradingComponents(sectionId, periodId),
+            listGradeSheet(sectionId, periodId),
+            isSectionGradingLocked(sectionId, periodId),
+            listSpecialGradeFlags(sectionId, periodId),
             listAssessments(sectionId)
         ]);
+
+        if (isStale()) return;
 
         if (assessmentsResult.data) setAssessments(assessmentsResult.data);
 
         let loadedComponents = componentsResult.data ?? [];
 
-        // If no components exist yet, automatically display inherited default components from section settings / program
-        if (loadedComponents.length === 0) {
-            await reseedSectionGrading(sectionId);
-            const refetched = await listGradingComponents(sectionId, activePeriodId);
+        // A period opened with no components shows the inherited defaults. A failed load, or a
+        // period the teacher emptied on purpose, is left as it is.
+        const canSeed = allowSeed
+            && !componentsResult.error
+            && !clearedPeriodIdsRef.current.has(periodId);
+
+        if (loadedComponents.length === 0 && canSeed) {
+            const silent = { silent: true };
+            await reseedSectionGrading(sectionId, silent);
+            const refetched = await listGradingComponents(sectionId, periodId);
+            if (isStale()) return;
 
             if (refetched.data && refetched.data.length > 0) {
                 loadedComponents = refetched.data;
             }
             else {
                 const sectionRes = await getSectionById(sectionId);
-                const currentPeriod = periods.find((p) => p.id === activePeriodId);
+                const currentPeriod = periods.find((p) => p.id === periodId);
                 const periodSeq = currentPeriod?.sequence ?? 1;
                 const periodName = currentPeriod?.name?.toLowerCase() ?? '';
 
@@ -150,13 +186,15 @@ export default function GradingTab({
                     ];
 
                 for (const comp of defaultsToSeed) {
-                    await createGradingComponent(sectionId, activePeriodId, {
+                    await createGradingComponent(sectionId, periodId, {
                         name: comp.name,
                         weight: String(comp.weight)
-                    });
+                    }, silent);
                 }
 
-                const finalComps = await listGradingComponents(sectionId, activePeriodId);
+                const finalComps = await listGradingComponents(sectionId, periodId);
+                if (isStale()) return;
+
                 if (finalComps.data && finalComps.data.length > 0) {
                     loadedComponents = finalComps.data;
                 }
@@ -171,8 +209,9 @@ export default function GradingTab({
         }
 
         setComponents(loadedComponents);
-        if (gradeSheetResult.data) setGradeSheet(gradeSheetResult.data);
-        if (flagsResult.data) setSpecialGradeFlags(flagsResult.data);
+        // A failed load clears the sheet instead of leaving the previous one on screen
+        setGradeSheet(gradeSheetResult.data ?? []);
+        setSpecialGradeFlags(flagsResult.data ?? []);
         setIsLocked(Boolean(lockedResult.data));
     }
 
@@ -196,9 +235,12 @@ export default function GradingTab({
         setActivePeriodId(value);
     }
 
-    async function handleCreate(values: GradingComponentFormValues) {
+    async function handleCreate(values: GradingComponentFormValues): Promise<boolean> {
         const result = await createGradingComponent(sectionId, activePeriodId, values);
-        if (!result.error) await fetchPeriodData();
+        if (result.error) return false;
+
+        await fetchPeriodData();
+        return true;
     }
 
     async function handleUpdate(componentId: string, values: GradingComponentFormValues) {
@@ -208,7 +250,13 @@ export default function GradingTab({
 
     async function handleDelete(componentId: string) {
         const result = await deleteGradingComponent(componentId);
-        if (!result.error) await fetchPeriodData();
+        if (result.error) return;
+
+        // The teacher emptied this period on purpose, so opening it again keeps it empty
+        if (components.every((c) => c.id === componentId)) {
+            clearedPeriodIdsRef.current.add(activePeriodId);
+        }
+        await fetchPeriodData();
     }
 
     /**
@@ -490,6 +538,8 @@ export default function GradingTab({
                 >
                     <GradingComponentPanel
                         components={components}
+                        // A new period gets a fresh panel, so edit mode never carries over
+                        key={activePeriodId}
                         locked={isLocked || !isEncodingOpen}
                         lockMessage={isLocked
                             ? 'Locked: grades for this period were submitted, so components can no longer be edited.'

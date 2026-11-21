@@ -6,34 +6,45 @@ import { StudentQuestion, SubmissionFileAttachment } from '@type/student-portal.
 import { useRef, useState } from 'react';
 
 interface FileUploadAnswerProps {
+    // The saved files, kept by the page so they survive paging back and forth
+    files: SubmissionFileAttachment[];
     question: StudentQuestion;
     submissionId: string;
+    onFilesChange: (questionId: string, files: SubmissionFileAttachment[]) => void;
 }
 
 export default function FileUploadAnswer({
+    files,
     question,
-    submissionId
+    submissionId,
+    onFilesChange
 }: FileUploadAnswerProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [files, setFiles] = useState<SubmissionFileAttachment[]>(
-        question.saved_answer?.file_attachments ?? []
-    );
     const [isBusy, setIsBusy] = useState(false);
     const [errorText, setErrorText] = useState('');
 
     const maxCount = question.max_file_count ?? 1;
 
     /**
-     * Saves the file list as the answer.
+     * Saves the file list as the answer. The list on screen only changes once the save worked.
      *
      * @param next - The files the answer should hold.
      * @returns Whether the save worked.
      */
     async function persist(next: SubmissionFileAttachment[]): Promise<boolean> {
-        setFiles(next);
         const result = await saveStudentAnswerFiles(submissionId, question.id, next);
 
-        return !result.error;
+        if (result.error) {
+            setErrorText(result.error.message || 'The files could not be saved. Try again.');
+            return false;
+        }
+
+        onFilesChange(question.id, next);
+        return true;
+    }
+
+    async function removeStoredFiles(stored: SubmissionFileAttachment[]) {
+        await Promise.all(stored.map((f) => deleteFile('submissions', f.path)));
     }
 
     async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -62,13 +73,16 @@ export default function FileUploadAnswer({
                 });
                 if (result.error || !result.data) {
                     setErrorText(result.error?.message ?? `Failed to upload ${file.name}.`);
+                    await removeStoredFiles(uploaded);
                     return;
                 }
 
                 uploaded.push(result.data);
             }
 
-            await persist([...files, ...uploaded]);
+            // Nothing points to the new files when the answer was not saved, so they are removed
+            const isSaved = await persist([...files, ...uploaded]);
+            if (!isSaved) await removeStoredFiles(uploaded);
         }
         finally {
             setIsBusy(false);
