@@ -188,7 +188,7 @@ export default function GradeSheetPanel({
                         )}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <div className="flex flex-wrap items-center gap-2 min-w-0">
                     <CommonButton
                         disabled={gradeSheet.length === 0}
                         size="small"
