@@ -88,11 +88,18 @@ export async function uploadFileToFolder({
 }: UploadToFolderParams): Promise<ServiceResult<UploadedFile>> {
     const fileError = getUploadFileError(file, { allowedExtensions, maxSizeMb });
     if (fileError) {
-        return { data: null, error: { code: 'INVALID_FILE', message: fileError, status: null } };
+        return {
+            data: null,
+            error: {
+                code: 'INVALID_FILE', message: fileError, status: null
+            }
+        };
     }
 
     const path = buildStoragePath(folder, file.name);
-    const result = await uploadFile({ bucket, file, path });
+    const result = await uploadFile({
+        bucket, file, path
+    });
     if (!result.data) {
         return { data: null, error: result.error };
     }
