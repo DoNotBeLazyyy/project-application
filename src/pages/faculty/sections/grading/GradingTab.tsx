@@ -5,6 +5,7 @@ import GradingComponentPanel from '@pages/faculty/sections/grading/GradingCompon
 import SectionThresholdModal from '@pages/faculty/sections/grading/SectionThresholdModal';
 import SpecialGradeFlagModal from '@pages/faculty/sections/grading/SpecialGradeFlagModal';
 import { CheckCircleIcon, SlidersHorizontalIcon, WarningCircleIcon } from '@phosphor-icons/react';
+import { listAssessments } from '@services/assessment.service';
 import {
     applySpecialGradeFlag,
     calculateAllGradesForPeriod,
@@ -24,6 +25,7 @@ import {
 } from '@services/faculty.service';
 import { getSectionById } from '@services/section.service';
 import { useToastStore } from '@stores/toast.store';
+import { AssessmentListRow } from '@type/assessment.type';
 import {
     GradeCalculationFailure,
     GradeSheetRow,
@@ -55,6 +57,7 @@ export default function GradingTab({
     const [periodReloadKey, setPeriodReloadKey] = useState(0);
     const [activePeriodId, setActivePeriodId] = useState('');
     const [components, setComponents] = useState<GradingComponent[]>([]);
+    const [assessments, setAssessments] = useState<AssessmentListRow[]>([]);
     const [calculationFailures, setCalculationFailures] = useState<GradeCalculationFailure[]>([]);
     const [gradeSheet, setGradeSheet] = useState<GradeSheetRow[]>([]);
     const [isLocked, setIsLocked] = useState(false);
@@ -108,12 +111,15 @@ export default function GradingTab({
     }
 
     async function fetchPeriodData() {
-        const [componentsResult, gradeSheetResult, lockedResult, flagsResult] = await Promise.all([
+        const [componentsResult, gradeSheetResult, lockedResult, flagsResult, assessmentsResult] = await Promise.all([
             listGradingComponents(sectionId, activePeriodId),
             listGradeSheet(sectionId, activePeriodId),
             isSectionGradingLocked(sectionId, activePeriodId),
-            listSpecialGradeFlags(sectionId, activePeriodId)
+            listSpecialGradeFlags(sectionId, activePeriodId),
+            listAssessments(sectionId)
         ]);
+
+        if (assessmentsResult.data) setAssessments(assessmentsResult.data);
 
         let loadedComponents = componentsResult.data ?? [];
 
@@ -169,6 +175,22 @@ export default function GradingTab({
         if (flagsResult.data) setSpecialGradeFlags(flagsResult.data);
         setIsLocked(Boolean(lockedResult.data));
     }
+
+    /**
+     * Components with no submitted work yet. They still count as 0% (a missed exam must not raise
+     * the grade), so the sheet labels the grade "in progress" and Calculate/Submit warn first.
+     */
+    const emptyComponentNames = useMemo(function() {
+        return components
+            .filter(function(component) {
+                return !assessments.some(function(assessment) {
+                    return assessment.grading_component_id === component.id
+                        && assessment.is_published
+                        && assessment.submission_count > 0;
+                });
+            })
+            .map((component) => component.name);
+    }, [components, assessments]);
 
     function handleTabChange(_: SyntheticEvent, value: string) {
         setActivePeriodId(value);
@@ -493,6 +515,7 @@ export default function GradingTab({
                         components={components}
                         courseCode={courseCode}
                         courseTitle={courseTitle}
+                        emptyComponentNames={emptyComponentNames}
                         gradeSheet={gradeSheet}
                         gradingPeriodId={activePeriodId}
                         isCalculating={isCalculating}

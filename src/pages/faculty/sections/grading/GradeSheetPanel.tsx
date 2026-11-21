@@ -39,6 +39,8 @@ interface GradeSheetPanelProps {
     calculationFailures?: GradeCalculationFailure[];
     courseCode?: string;
     courseTitle?: string;
+    // Components with no submitted work yet; they count as 0% until something is graded
+    emptyComponentNames?: string[];
     gradingPeriodId?: string;
     isEncodingOpen?: boolean;
     isCalculating?: boolean;
@@ -61,6 +63,7 @@ export default function GradeSheetPanel({
     calculationFailures,
     courseCode,
     courseTitle,
+    emptyComponentNames = [],
     gradingPeriodId,
     isEncodingOpen = true,
     isCalculating = false,
@@ -77,6 +80,12 @@ export default function GradeSheetPanel({
     onUpdateSpecialGrade
 }: GradeSheetPanelProps) {
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [isCalculateConfirmOpen, setIsCalculateConfirmOpen] = useState(false);
+    const hasEmptyComponents = emptyComponentNames.length > 0;
+    const emptyComponentList = emptyComponentNames.join(', ');
+    const emptyComponentVerb = emptyComponentNames.length === 1
+        ? 'has'
+        : 'have';
     const [auditEnrollmentId, setAuditEnrollmentId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [pendingSpecialGrade, setPendingSpecialGrade] = useState<PendingSpecialGrade | null>(null);
@@ -108,6 +117,16 @@ export default function GradeSheetPanel({
 
         await onUpdateSpecialGrade?.(pendingSpecialGrade.enrollmentId, pendingSpecialGrade.code);
         setPendingSpecialGrade(null);
+    }
+
+    // Calculating with an empty component is allowed, but only on purpose
+    function handleCalculateClick() {
+        if (hasEmptyComponents) {
+            setIsCalculateConfirmOpen(true);
+            return;
+        }
+
+        onCalculate();
     }
 
     function handleExportCsv() {
@@ -184,7 +203,7 @@ export default function GradeSheetPanel({
                             />
                         )}
                         variant="outlined"
-                        onClick={onCalculate}
+                        onClick={handleCalculateClick}
                     >
                         {isCalculating
                             ? 'Calculating...'
@@ -222,6 +241,24 @@ export default function GradeSheetPanel({
                     />
                     <span className="font-medium text-xs sm:text-sm">
                         Grade encoding for <strong>{periodName ?? 'this period'}</strong> is currently locked per the Academic Year Calendar schedule.
+                    </span>
+                </div>
+            )}
+
+            {/* In-progress banner: a component with no graded work still counts as 0% */}
+            {hasEmptyComponents && !isSubmitted && components.length > 0 && (
+                <div className="bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 flex gap-2.5 items-center p-3 rounded-2xl text-sky-900 dark:text-sky-200">
+                    <ChartLineUpIcon
+                        className="shrink-0 text-sky-600 dark:text-sky-400"
+                        size={20}
+                        weight="bold"
+                    />
+                    <span className="font-medium text-xs sm:text-sm">
+                        Grade in progress: <strong>{emptyComponentList}</strong> {emptyComponentVerb} no graded work yet and count{emptyComponentNames.length === 1
+                            ? 's'
+                            : ''} as 0% for now. Grades below will rise once {emptyComponentNames.length === 1
+                            ? 'it is'
+                            : 'they are'} graded.
                     </span>
                 </div>
             )}
@@ -474,13 +511,44 @@ export default function GradeSheetPanel({
                     }
                 }}
                 mainContent={{
-                    title: 'Submit Grades to Registrar?'
+                    title: hasEmptyComponents
+                        ? 'Submit with ungraded components?'
+                        : 'Submit Grades to Registrar?'
                 }}
                 open={isConfirmOpen}
                 subContent={{
-                    title: `Are you sure you want to submit official grades for ${periodName ?? 'this grading period'} ${sectionCode ?? ''} to the Registrar? Once submitted, the grade sheet will be locked for review.`
+                    title: hasEmptyComponents
+                        ? `${emptyComponentList} ${emptyComponentVerb} no graded work yet and will count as 0% in the official grade. Submit grades for ${periodName ?? 'this grading period'} ${sectionCode ?? ''} to the Registrar anyway? Once submitted, the grade sheet will be locked for review.`
+                        : `Are you sure you want to submit official grades for ${periodName ?? 'this grading period'} ${sectionCode ?? ''} to the Registrar? Once submitted, the grade sheet will be locked for review.`
                 }}
                 onClose={() => setIsConfirmOpen(false)}
+            />
+
+            {/* Confirm Calculate with empty components */}
+            <ConfirmPromptModal
+                formButtonsProps={{
+                    cancelProps: {
+                        children: 'Cancel',
+                        onClick: () => setIsCalculateConfirmOpen(false)
+                    },
+                    confirmProps: {
+                        children: 'Calculate Anyway',
+                        onClick: function() {
+                            setIsCalculateConfirmOpen(false);
+                            onCalculate();
+                        }
+                    }
+                }}
+                mainContent={{
+                    title: 'Some components have no graded work'
+                }}
+                open={isCalculateConfirmOpen}
+                subContent={{
+                    title: `${emptyComponentList} ${emptyComponentVerb} no graded work yet and will count as 0%, so these grades will be low until ${emptyComponentNames.length === 1
+                        ? 'it is'
+                        : 'they are'} graded. Calculate anyway?`
+                }}
+                onClose={() => setIsCalculateConfirmOpen(false)}
             />
 
             {/* Confirm Special Grade Modal */}

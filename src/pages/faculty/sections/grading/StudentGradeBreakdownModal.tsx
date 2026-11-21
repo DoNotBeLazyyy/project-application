@@ -77,6 +77,10 @@ export default function StudentGradeBreakdownModal({
     // The card shows the grade the server saved; the formula below shows how it is computed
     const savedRaw = Number(data?.raw_grade ?? 0);
     const isSavedStale = Boolean(data) && totalWeight > 0 && Math.abs(savedRaw - computedRaw) >= 0.01;
+    // Before submission, an ungraded component (e.g. an exam not yet taken) still counts as 0%
+    const ungradedNames = components.filter((c) => c.percentage === null)
+        .map((c) => c.name);
+    const isInProgress = data?.status === 'Draft' && ungradedNames.length > 0;
 
     return (
         <CommonModal
@@ -136,6 +140,18 @@ export default function StudentGradeBreakdownModal({
 
                 {data && (
                     <>
+                        {isInProgress && (
+                            <div className="bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 p-3 rounded-xl text-sky-900 dark:text-sky-200 text-xs sm:text-sm">
+                                <strong>Grade in progress:</strong> {ungradedNames.join(', ')} {ungradedNames.length === 1
+                                    ? 'has'
+                                    : 'have'} no graded items yet and count{ungradedNames.length === 1
+                                    ? 's'
+                                    : ''} as 0% for now, so this grade will rise once {ungradedNames.length === 1
+                                    ? 'it is'
+                                    : 'they are'} graded.
+                            </div>
+                        )}
+
                         {/* Metric Summary Cards Grid */}
                         {/* The raw percentage is computed from the components shown below, so the card, the
                     formula and the itemization agree even before the grade sheet is calculated */}
