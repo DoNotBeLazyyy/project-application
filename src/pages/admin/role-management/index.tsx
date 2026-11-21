@@ -11,11 +11,16 @@ import {
 import { SortStringDto } from '@type/http.type';
 import { CreateRoleFormValues, RoleListRow, UpdateRoleFormValues } from '@type/role.type';
 import { formErrors } from '@utils/form.util';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
 const CREATE_FORM_ID = 'create-role-form';
 const UPDATE_FORM_ID = 'update-role-form';
+const EMPTY_ROLE_VALUES: UpdateRoleFormValues = {
+    code: '',
+    description: '',
+    label: ''
+};
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'code', label: 'Code' },
     { field: 'label', label: 'Label' }
@@ -39,12 +44,10 @@ export default function RoleManagement() {
     });
 
     const updateMethods = useForm<UpdateRoleFormValues>({
-        defaultValues: {
-            code: '',
-            description: '',
-            label: ''
-        }
+        defaultValues: EMPTY_ROLE_VALUES
     });
+    // Only the newest load may fill the form; an older one finishing late is ignored
+    const loadRequestRef = useRef(0);
 
     const isUpdateRealDirty = useHasRealChanges(updateMethods.control);
 
@@ -52,46 +55,65 @@ export default function RoleManagement() {
         setRefreshKey((prev) => prev + 1);
     }
 
-    async function loadRoleIntoForm(roleId: string) {
+    /**
+     * Loads a role into the form. Returns true only when the load succeeded and is
+     * still the newest one, so a modal opens only on that role's data.
+     */
+    async function loadRoleIntoForm(roleId: string): Promise<boolean> {
+        loadRequestRef.current += 1;
+        const requestId = loadRequestRef.current;
         const result = await getRoleById(roleId);
 
-        if (result.data) {
-            updateMethods.reset({
-                code: result.data.code,
-                description: result.data.description ?? '',
-                label: result.data.label
-            });
+        if (requestId !== loadRequestRef.current || !result.data) {
+            return false;
         }
+
+        updateMethods.reset({
+            code: result.data.code,
+            description: result.data.description ?? '',
+            label: result.data.label
+        });
+        return true;
+    }
+
+    function clearSelectedRole() {
+        loadRequestRef.current += 1;
+        setSelectedRoleId(null);
+        updateMethods.reset(EMPTY_ROLE_VALUES);
     }
 
     async function handleOpenView(id: string) {
         setSelectedRoleId(id);
-        await loadRoleIntoForm(id);
-        setIsViewOpen(true);
+        if (await loadRoleIntoForm(id)) {
+            setIsViewOpen(true);
+        }
     }
 
     function handleCloseView() {
         setIsViewOpen(false);
-        setSelectedRoleId(null);
-        updateMethods.reset();
+        clearSelectedRole();
     }
 
     async function handleOpenUpdate(id: string) {
         setSelectedRoleId(id);
-        await loadRoleIntoForm(id);
-        setIsUpdateOpen(true);
+        if (await loadRoleIntoForm(id)) {
+            setIsUpdateOpen(true);
+        }
     }
 
     async function handleSwitchToEdit(id: string) {
         setIsViewOpen(false);
-        await loadRoleIntoForm(id);
-        setIsUpdateOpen(true);
+        if (await loadRoleIntoForm(id)) {
+            setIsUpdateOpen(true);
+        }
+        else {
+            clearSelectedRole();
+        }
     }
 
     function handleCloseUpdate() {
         setIsUpdateOpen(false);
-        setSelectedRoleId(null);
-        updateMethods.reset();
+        clearSelectedRole();
     }
 
     const { columnDefs } = useRoleTableConfig();

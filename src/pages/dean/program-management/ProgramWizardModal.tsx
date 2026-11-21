@@ -424,7 +424,15 @@ export default function ProgramWizardModal({
                         programId={programId}
                         readOnly={readOnly}
                         schoolYearId={activeSchoolYearId}
-                        onChangeEntries={(newEntries, pendingDeleted) => {
+                        onChangeEntries={(newEntries, pendingDeleted, isPristineLoad) => {
+                            // The curriculum loaded on open becomes the baseline, so opening Edit
+                            // is not a change and an untouched curriculum is not re-saved
+                            if (isPristineLoad) {
+                                methods.resetField('curriculum_entries', {
+                                    defaultValue: newEntries as unknown as ProgramFormValues['curriculum_entries']
+                                });
+                                return;
+                            }
                             setValue('curriculum_entries', newEntries as unknown as ProgramFormValues['curriculum_entries'], { shouldDirty: true });
                             if (pendingDeleted) {
                                 setValue('pending_deleted_curriculum_ids', pendingDeleted, { shouldDirty: true });

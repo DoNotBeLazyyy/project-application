@@ -56,9 +56,11 @@ export default function FacultyLoadManagement() {
             const result = await getActiveTerm();
             const termId = result.data?.term_id ?? '';
 
+            // Start on the active term, the same term the detail modal shows,
+            // so the list totals match the detail
             setActiveTermId(termId);
-            setLoadFilters({ term_id: '' });
-            resetLoadFilterForm({ term_id: '' });
+            setLoadFilters({ term_id: termId });
+            resetLoadFilterForm({ term_id: termId });
             setIsTermResolved(true);
         }
 

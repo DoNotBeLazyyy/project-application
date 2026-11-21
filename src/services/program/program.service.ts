@@ -397,6 +397,8 @@ export async function bulkCreatePrograms(
         sentRowNumbers.push(rowNumber);
     });
 
+    // Program codes (upper case) that were actually created; only their curriculum rows are imported
+    const createdProgramKeys = new Set<string>();
     let provisionedCount = 0;
     if (uniqueProgramRows.length > 0) {
         const result = await callRpc<ProgramBulkImportResult>('fn_bulk_create_programs', {
@@ -407,17 +409,38 @@ export async function bulkCreatePrograms(
             return { provisioned_count: 0, errors: [...errors, result.error.message] };
         }
 
+        const rejectedIndexes = new Set((result.data?.errors ?? []).map((error) => error.row - 1));
+        uniqueProgramRows.forEach(function(row, index) {
+            if (!rejectedIndexes.has(index) && row.code) {
+                createdProgramKeys.add(row.code.trim()
+                    .toUpperCase());
+            }
+        });
+
         errors.push(...(result.data?.errors ?? []).map((error) =>
             `Row ${sentRowNumbers[error.row - 1] ?? error.row} (${error.code || 'unknown'}): ${error.message}`));
         provisionedCount = result.data?.provisioned_count ?? 0;
     }
 
-    if (curriculumRows.length > 0) {
-        const currResult = await bulkCreateCurriculumMap(curriculumRows);
+    const acceptedCurriculumRows: CurriculumMapBulkRow[] = [];
+    const acceptedCurriculumRowNumbers: number[] = [];
+    curriculumRows.forEach(function(row, index) {
+        if (createdProgramKeys.has(row.program_code.trim()
+            .toUpperCase())) {
+            acceptedCurriculumRows.push(row);
+            acceptedCurriculumRowNumbers.push(curriculumRowNumbers[index]);
+        }
+        else {
+            errors.push(`Row ${curriculumRowNumbers[index]} curriculum (${row.course_code}): Skipped because program ${row.program_code || 'unknown'} was not created.`);
+        }
+    });
+
+    if (acceptedCurriculumRows.length > 0) {
+        const currResult = await bulkCreateCurriculumMap(acceptedCurriculumRows);
         if (currResult.errors && currResult.errors.length > 0) {
             errors.push(...currResult.errors.map((error) =>
                 error.replace(/^Row (\d+)/, (_match, row) =>
-                    `Row ${curriculumRowNumbers[Number(row) - 1] ?? row} curriculum`)));
+                    `Row ${acceptedCurriculumRowNumbers[Number(row) - 1] ?? row} curriculum`)));
         }
     }
 

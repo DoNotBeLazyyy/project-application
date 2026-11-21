@@ -102,6 +102,19 @@ Deno.serve(async (request: Request): Promise<Response> => {
         }
     });
 
+    // Role codes that fn_provision_single_user accepts (exact, case-sensitive match)
+    // Null when the roles could not be read
+    async function loadValidRoleCodes(): Promise<Set<string> | null> {
+        const { data: roleRows, error: roleError } = await adminClient
+            .from('roles')
+            .select('code')
+            .is('deleted_at', null);
+        if (roleError) {
+            return null;
+        }
+        return new Set((roleRows ?? []).map((row: { code: string }) => row.code));
+    }
+
     let body: RequestBody;
     try {
         body = await request.json();
@@ -118,6 +131,15 @@ Deno.serve(async (request: Request): Promise<Response> => {
         const { email, first_name, last_name, role_code } = body;
         if (!email || !first_name || !last_name || !role_code) {
             return failure('Missing required user fields (email, first_name, last_name, role_code).', 400);
+        }
+
+        // Check the role before any invitation email goes out
+        const validRoleCodes = await loadValidRoleCodes();
+        if (!validRoleCodes) {
+            return failure('Could not load the role list. Try again.', 500);
+        }
+        if (!validRoleCodes.has(role_code)) {
+            return failure(`Invalid role code: ${role_code}`, 400);
         }
 
         const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
@@ -140,10 +162,11 @@ Deno.serve(async (request: Request): Promise<Response> => {
             p_department_id: body.department_id || null
         });
 
-        if (provisionError) {
+        const provisionResult = provisionData as { success?: boolean; message?: string } | null;
+        if (provisionError || provisionResult?.success === false) {
             // Roll back created auth user on database failure
             await adminClient.auth.admin.deleteUser(authId);
-            return failure(provisionError.message, 400);
+            return failure(provisionError?.message ?? provisionResult?.message ?? 'User could not be provisioned.', 400);
         }
 
         return success({ data: provisionData }, 'User invited successfully.');
@@ -221,8 +244,21 @@ Deno.serve(async (request: Request): Promise<Response> => {
 
         const startedAt = Date.now();
         let stopReason: string | null = null;
+        // Rows are checked before any invitation email goes out, so a bad row never emails anyone
+        const validRoleCodes = await loadValidRoleCodes();
+        if (!validRoleCodes) {
+            return failure('Could not load the role list. Try again.', 500);
+        }
 
         for (const user of users) {
+            if (!user?.email || !user.first_name || !user.last_name || !user.role_code) {
+                errors.push(`${user?.email || '(no email)'}: Missing required user fields (email, first_name, last_name, role_code).`);
+                continue;
+            }
+            if (!validRoleCodes.has(user.role_code)) {
+                errors.push(`${user.email}: Invalid role code: ${user.role_code}`);
+                continue;
+            }
             // Once the email limit is hit or time runs short, the rest would fail too
             if (stopReason) {
                 errors.push(`${user.email}: Not sent. ${stopReason}`);
@@ -276,15 +312,24 @@ Deno.serve(async (request: Request): Promise<Response> => {
             p_users: provisionedUsers
         });
 
-        if (bulkError) {
+        const bulkResult = bulkData as {
+            success?: boolean;
+            message?: string;
+            failed_auth_ids?: string[];
+        } | null;
+        // {success:false} without per-row results means the whole call failed and nothing was saved
+        const bulkFailedOutright = bulkResult?.success === false && !Array.isArray(bulkResult.failed_auth_ids);
+
+        if (bulkError || bulkFailedOutright) {
             // Roll back all invited auth users
             for (const user of provisionedUsers) {
                 await adminClient.auth.admin.deleteUser(user.auth_id);
             }
-            return failure(bulkError.message, 400, { errors: [...errors, bulkError.message] });
+            const bulkMessage = bulkError?.message ?? bulkResult?.message ?? 'Bulk user provisioning failed.';
+            return failure(bulkMessage, 400, { errors: [...errors, bulkMessage] });
         }
 
-        const orphanedAuthIds: string[] = (bulkData as { failed_auth_ids?: string[] })?.failed_auth_ids ?? [];
+        const orphanedAuthIds: string[] = bulkResult?.failed_auth_ids ?? [];
         for (const orphanId of orphanedAuthIds) {
             await adminClient.auth.admin.deleteUser(orphanId);
         }

@@ -1,11 +1,12 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
-import { useCourseOptions } from '@pages/dean/course-management/use-course-options';
 import { useTermOptions } from '@hooks/use-term-options';
+import { useCourseOptions } from '@pages/dean/course-management/use-course-options';
 import { ChalkboardIcon } from '@phosphor-icons/react';
 import { getExistingSectionOfferings, SectionOfferingRecord } from '@services/section.service';
 import { getUsersByRoles } from '@services/user.service';
+import { useAppStore } from '@stores/app.store';
 import { SectionFormValues, SectionStatus } from '@type/section.type';
 import { useEffect, useMemo, useState } from 'react';
 import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
@@ -37,7 +38,15 @@ export default function Step1SectionOverview({
     const { termOptions } = useTermOptions({ isActiveYearOnly: Boolean(isCreate) });
     const [facultyOptions, setFacultyOptions] = useState<CommonSelectOption[]>([]);
     const [existingOfferings, setExistingOfferings] = useState<SectionOfferingRecord[]>([]);
-    const { courseOptions } = useCourseOptions({});
+    // A dean opens sections for their own department's courses; fn_get_courses no longer
+    // narrows to the dean's department by itself, so it is passed here
+    const activeRole = useAppStore((state) => state.activeRole);
+    const userDepartmentId = useAppStore((state) => state.userProfile?.department_id);
+    const { courseOptions } = useCourseOptions({
+        departmentId: activeRole === 'Dean'
+            ? (userDepartmentId || undefined)
+            : undefined
+    });
 
     const watchedTermId = useWatch({ control, name: 'term_id' });
     const watchedCourseId = useWatch({ control, name: 'course_id' });

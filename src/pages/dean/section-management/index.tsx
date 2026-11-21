@@ -116,6 +116,25 @@ export default function SectionManagement() {
         }
     });
 
+    // ?termId= (from the Dean dashboard cards) opens the list on that term
+    const paramTermId = searchParams.get('termId');
+    useEffect(() => {
+        if (!paramTermId) {
+            return;
+        }
+        const termFilters: SectionFilterValues = {
+            term_ids: [paramTermId],
+            program_ids: [],
+            course_ids: [],
+            statuses: []
+        };
+        filterMethods.reset(termFilters);
+        setActiveFilters(termFilters);
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.delete('termId');
+        setSearchParams(nextParams, { replace: true });
+    }, [paramTermId, searchParams, setSearchParams, filterMethods]);
+
     function handleOpenView(id: string) {
         setSelectedId(id);
         setIsViewOpen(true);
