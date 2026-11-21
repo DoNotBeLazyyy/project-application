@@ -27,6 +27,10 @@ export function useTableData<T extends FieldValues>({
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
+    // Message of the last failed page load, so the list can say it failed instead of "no records"
+    const [loadError, setLoadError] = useState<string | null>(null);
+    // Arguments of the last full-page load, replayed by retry()
+    const lastLoadArgsRef = useRef<[number, number, string, SortStringDto[]]>([1, DEFAULT_PAGINATION.rowsPerPage, '', []]);
 
     onFetchRef.current = onFetch;
 
@@ -39,15 +43,45 @@ export function useTableData<T extends FieldValues>({
     ) {
         if (!isAppending) {
             setIsLoading(true);
+            lastLoadArgsRef.current = [page, size, search, sort];
         }
         const seq = ++fetchSequenceRef.current;
         try {
-            const result = await onFetchRef.current?.(page, size, search, sort);
+            let result: ServiceResult<CommonListResDto<T>> | undefined;
+            try {
+                result = await onFetchRef.current?.(page, size, search, sort);
+            }
+            catch (error) {
+                result = {
+                    data: null,
+                    error: {
+                        code: null,
+                        message: error instanceof Error
+                            ? error.message
+                            : 'The list could not be loaded.',
+                        status: null
+                    }
+                };
+            }
             if (seq !== fetchSequenceRef.current) {
+                return;
+            }
+            if (result?.error && !isAppending) {
+                setLoadError(result.error.message || 'The list could not be loaded.');
+                setInternalRowData([]);
                 return;
             }
             if (result?.data) {
                 const incomingRows = (result.data.content ?? []) as T[];
+
+                // The page emptied (e.g. its last row was deleted): step back to the new last page
+                if (!isAppending && incomingRows.length === 0 && page > 1 && result.data.totalElements > 0) {
+                    const lastPage = Math.max(1, Math.min(page - 1, result.data.totalPages));
+                    await loadData(lastPage, size, search, sort);
+                    return;
+                }
+
+                setLoadError(null);
                 if (isAppending) {
                     setInternalRowData((prev) => [...prev, ...incomingRows]);
                 }
@@ -74,6 +108,11 @@ export function useTableData<T extends FieldValues>({
     useEffect(() => {
         loadData(1, pagination.rowsPerPage, activeSearchRef.current, internalSortRef.current);
     }, [...dependencies]);
+
+    function retry() {
+        const [page, size, search, sort] = lastLoadArgsRef.current;
+        loadData(page, size, search, sort);
+    }
 
     function setGridApi(api: GridApi | null) {
         gridApiRef.current = api;
@@ -157,8 +196,10 @@ export function useTableData<T extends FieldValues>({
         isLoading,
         isLoadingMore,
         loadData,
+        loadError,
         loadNextPage,
         pagination,
+        retry,
         searchQuery,
         setGridApi,
         setInternalRowData,

@@ -16,7 +16,7 @@ import {
     AttendanceSession,
     AttendanceStatus
 } from '@type/faculty.type';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface AttendanceTabProps {
     sectionId: string;
@@ -31,6 +31,15 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [mobileView, setMobileView] = useState<'sessions' | 'records'>('sessions');
     const [pendingSession, setPendingSession] = useState<AttendanceSession | null>(null);
+    const [isSessionsLoading, setIsSessionsLoading] = useState(true);
+    const [sessionsError, setSessionsError] = useState<string | null>(null);
+    const [isRecordsLoading, setIsRecordsLoading] = useState(false);
+    const [recordsError, setRecordsError] = useState<string | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+    // The session the user last picked; a slower response for an earlier pick is ignored
+    const selectedSessionIdRef = useRef<string | null>(null);
+    // The session the loaded records belong to, so a save never sends another session's marks
+    const recordsSessionIdRef = useRef<string | null>(null);
 
     const isDirty = useMemo(() => {
         if (draftRecords.length === 0 || records.length === 0) return false;
@@ -46,7 +55,14 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
     }, [sectionId]);
 
     async function fetchSessions() {
+        setIsSessionsLoading(true);
         const result = await listAttendanceSessions(sectionId);
+        setIsSessionsLoading(false);
+        if (result.error) {
+            setSessionsError(result.error.message || 'Sessions could not be loaded.');
+            return;
+        }
+        setSessionsError(null);
         if (result.data) {
             setSessions(result.data);
             // Default select the latest session if available and none selected yet
@@ -57,11 +73,29 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
     }
 
     async function handleSelectSession(session: AttendanceSession) {
+        selectedSessionIdRef.current = session.id;
+        recordsSessionIdRef.current = null;
         setSelectedSession(session);
         setMobileView('records');
+        // Drop the previous session's marks right away so they never show under the new date
+        setRecords([]);
+        setDraftRecords([]);
+        setRecordsError(null);
+        setIsRecordsLoading(true);
         const result = await getAttendanceRecords(session.id);
 
+        if (selectedSessionIdRef.current !== session.id) {
+            return;
+        }
+        setIsRecordsLoading(false);
+
+        if (result.error) {
+            setRecordsError(result.error.message || 'Attendance records could not be loaded.');
+            return;
+        }
+
         if (result.data) {
+            recordsSessionIdRef.current = session.id;
             setRecords(result.data);
             setDraftRecords(
                 result.data.map((r) => ({
@@ -109,6 +143,8 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
         const result = await deleteAttendanceSession(sessionId);
         if (!result.error) {
             if (selectedSession?.id === sessionId) {
+                selectedSessionIdRef.current = null;
+                recordsSessionIdRef.current = null;
                 setSelectedSession(null);
                 setRecords([]);
                 setDraftRecords([]);
@@ -131,9 +167,15 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
     }
 
     async function handleSave() {
-        if (!selectedSession) return;
-        const result = await saveAttendanceRecords(selectedSession.id, draftRecords);
-        if (!result.error) {
+        if (!selectedSession || isSaving) return;
+        const sessionId = selectedSession.id;
+        // Nothing loaded for this session yet (or it failed): saving would report success for zero rows
+        if (recordsSessionIdRef.current !== sessionId || draftRecords.length === 0) return;
+
+        setIsSaving(true);
+        const result = await saveAttendanceRecords(sessionId, draftRecords);
+        setIsSaving(false);
+        if (!result.error && selectedSessionIdRef.current === sessionId) {
             setRecords((prev) =>
                 prev.map((r) => {
                     const d = draftRecords.find((x) => x.id === r.id);
@@ -155,10 +197,13 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
                     : 'flex flex-1'}`}
             >
                 <AttendanceSessionList
+                    isLoading={isSessionsLoading}
+                    loadError={sessionsError}
                     selectedSessionId={selectedSession?.id}
                     sessions={sessions}
                     onCreateOpen={() => setIsCreateOpen(true)}
                     onDelete={async(sessionId: string) => setPendingDeleteId(sessionId)}
+                    onRetry={fetchSessions}
                     onSelectSession={handleSessionClick}
                 />
             </div>
@@ -173,11 +218,14 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
                     ? (
                         <AttendanceRecordList
                             draftRecords={draftRecords}
-                            isDirty={isDirty}
+                            isDirty={isDirty && !isSaving}
+                            isLoading={isRecordsLoading}
+                            loadError={recordsError}
                             records={records}
                             selectedSession={selectedSession}
                             onBackToSessions={() => setMobileView('sessions')}
                             onMarkAllPresent={handleMarkAllPresent}
+                            onRetry={() => handleSelectSession(selectedSession)}
                             onSave={handleSave}
                             onStatusChange={handleStatusChange}
                         />

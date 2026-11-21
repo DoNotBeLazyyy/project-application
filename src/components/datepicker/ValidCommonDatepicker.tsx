@@ -11,7 +11,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { PickersActionBarAction } from '@mui/x-date-pickers/PickersActionBar';
 import { classMerge } from '@utils/css.util';
 import {
-    blurActiveElementWithin, checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel
+    blurActiveElementWithin, checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel,
+    INVALID_DATE_MESSAGE, withValidDateRule
 } from '@utils/form.util';
 import { DateTime } from 'luxon';
 import {
@@ -398,12 +399,18 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
     ...props
 }: ValidCommonDatePickerProps<T>) {
     ensureSubmitValidationMode(control);
+    // A typed date that doesn't exist (e.g. 02/31): the form value is empty, the field keeps
+    // the typed text and stays invalid until fixed or cleared
+    const isInvalidInputRef = useRef(false);
+    const [invalidDate, setInvalidDate] = useState<DateTime | null>(null);
+    const [hasLeftInvalidInput, setHasLeftInvalidInput] = useState(false);
+    const lastEmittedValueRef = useRef<unknown>(undefined);
     const {
         field: { ref, value, onChange },
         fieldState,
         formState
     } = useController({
-        control, name, rules
+        control, name, rules: withValidDateRule(rules, isInvalidInputRef)
     });
     const containerRef = useRef<HTMLDivElement | null>(null);
     const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -427,12 +434,15 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
     const resolvedIsFirstError = isFirstError ?? Boolean(fieldState.error && firstErrorKey === name);
 
     const isNonInteractive = Boolean(disabled || readOnly);
-    const isError = errorProp ?? !!fieldState.error;
-    const resolvedErrorMessage = fieldState.error
-        ? (fieldState.error.message && fieldState.error.message.trim().length > 0
-            ? fieldState.error.message
-            : `${formatFieldLabel(name)} is required.`)
-        : helperTextProp;
+    const isShowingInvalidDate = Boolean(invalidDate) && (hasLeftInvalidInput || Boolean(fieldState.error));
+    const isError = errorProp ?? (!!fieldState.error || isShowingInvalidDate);
+    const resolvedErrorMessage = isShowingInvalidDate
+        ? INVALID_DATE_MESSAGE
+        : fieldState.error
+            ? (fieldState.error.message && fieldState.error.message.trim().length > 0
+                ? fieldState.error.message
+                : `${formatFieldLabel(name)} is required.`)
+            : helperTextProp;
     const labelErrorMessage = label && isError
         ? resolvedErrorMessage
         : undefined;
@@ -464,12 +474,29 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
         if (isNonInteractive) {
             return;
         }
-        onChange(
-            date
-                ? date.toISODate()
-                : ''
-        );
+        const isInvalid = Boolean(date && !date.isValid);
+        isInvalidInputRef.current = isInvalid;
+        setInvalidDate(isInvalid
+            ? date
+            : null);
+        if (!isInvalid) {
+            setHasLeftInvalidInput(false);
+        }
+        const nextValue = date && !isInvalid
+            ? date.toISODate()
+            : '';
+        lastEmittedValueRef.current = nextValue;
+        onChange(nextValue);
     }
+
+    // A value set from outside (form reset, loaded record) replaces a pending invalid entry
+    useEffect(() => {
+        if (value !== lastEmittedValueRef.current && isInvalidInputRef.current) {
+            isInvalidInputRef.current = false;
+            setInvalidDate(null);
+            setHasLeftInvalidInput(false);
+        }
+    }, [value]);
 
     function handleAccept(...args: Parameters<NonNullable<DatePickerProps['onAccept']>>) {
         blurPickerInput();
@@ -498,8 +525,14 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
         }
     }
 
+    // Take focus only right after a submit; fixing another field must not pull focus here
+    const seenSubmitCountRef = useRef(formState.submitCount);
+
     useEffect(() => {
-        if (resolvedIsFirstError && !isNonInteractive) {
+        const isNewSubmit = formState.submitCount !== seenSubmitCountRef.current;
+        seenSubmitCountRef.current = formState.submitCount;
+
+        if (resolvedIsFirstError && !isNonInteractive && isNewSubmit) {
             const timer = setTimeout(() => {
                 const element = document.querySelector<HTMLInputElement>(`[name="${name}"]`);
                 if (element) {
@@ -610,6 +643,12 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                                     : undefined),
                             label: '',
                             ...restTextFieldProps,
+                            onBlur: (e: FocusEvent<HTMLInputElement>) => {
+                                if (isInvalidInputRef.current) {
+                                    setHasLeftInvalidInput(true);
+                                }
+                                externalTextFieldProps?.onBlur?.(e);
+                            },
                             size: (resolvedSize === 'large'
                                 ? 'medium'
                                 : resolvedSize) as 'small' | 'medium' | undefined,
@@ -645,7 +684,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                             ]
                         }
                     }}
-                    value={resolvedValue}
+                    value={invalidDate ?? resolvedValue}
                     onAccept={handleAccept}
                     onChange={handleChange}
                     onClose={handleClose}

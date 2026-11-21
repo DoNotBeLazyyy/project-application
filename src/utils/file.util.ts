@@ -1,3 +1,5 @@
+import { generateId } from '@utils/uuid.util';
+
 const FILE_SIZE_UNITS = ['B', 'KB', 'MB', 'GB'];
 
 // Largest file anyone can upload, matching the default "max upload size" system setting
@@ -74,7 +76,8 @@ export function getUploadFileError(file: File, rules: UploadFileRules = {}): str
 export function buildStoragePath(folder: string, fileName: string): string {
     const safeName = fileName.replace(/[^\w.-]+/g, '_') || 'file';
 
-    return `${folder}/${crypto.randomUUID()}/${safeName}`;
+    // generateId falls back when crypto.randomUUID is missing (plain http on a LAN address)
+    return `${folder}/${generateId()}/${safeName}`;
 }
 
 export function formatFileSize(bytes: number | null): string {

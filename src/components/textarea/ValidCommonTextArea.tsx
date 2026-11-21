@@ -117,7 +117,7 @@ export default function ValidCommonTextarea<T extends FieldValues = FieldValues>
             inputRef={ref}
             isFirstError={props.isFirstError ?? isFirstError}
             isRequired={props.isRequired || Boolean(rules?.required)}
-            value={value}
+            value={value ?? ''}
             onChange={handleChange}
         />
     );

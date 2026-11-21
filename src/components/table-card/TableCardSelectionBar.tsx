@@ -19,23 +19,23 @@ export default function TableCardSelectionBar({
     }
 
     return (
-        <div className="bg-(--mui-palette-brand-50) border border-(--mui-palette-brand-200) flex flex-wrap gap-3 items-center justify-between px-3 py-2.5 rounded-xl transition-all">
+        <div className="bg-(--mui-tokens-color-brand-50) border border-(--mui-tokens-color-brand-200) flex flex-wrap gap-3 items-center justify-between px-3 py-2.5 rounded-xl transition-all">
             <div className="flex gap-3 items-center">
                 <div>
-                    <span className="block font-bold text-(--mui-palette-brand-900) text-xs">
+                    <span className="block font-bold text-(--mui-tokens-color-brand-900) text-xs">
                         {selectedCount} {entityName}{selectedCount > 1
                             ? 's'
                             : ''} Selected
                     </span>
-                    <span className="block text-(--mui-palette-brand-700) text-[11px] opacity-80">
+                    <span className="block text-(--mui-tokens-color-brand-700) text-[11px] opacity-80">
                         Bulk actions active
                     </span>
                 </div>
                 {onSelectAll && selectedCount < totalCount && (
                     <>
-                        <span className="bg-(--mui-palette-brand-200) h-5 hidden sm:block w-px" />
+                        <span className="bg-(--mui-tokens-color-brand-200) h-5 hidden sm:block w-px" />
                         <button
-                            className="cursor-pointer font-bold hover:underline text-(--mui-palette-brand-700) text-xs underline-offset-2"
+                            className="cursor-pointer font-bold hover:underline text-(--mui-tokens-color-brand-700) text-xs underline-offset-2"
                             type="button"
                             onClick={onSelectAll}
                         >

@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
+import ListStatusState from '@components/empty/ListStatusState';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import CommonModal from '@components/modal/CommonModal';
 import useBreakpoint from '@hooks/use-breakpoint';
@@ -413,6 +414,7 @@ export default function StudentSchedule() {
     const [hiddenSectionIds, setHiddenSectionIds] = useState<string[]>([]);
     const [colorTarget, setColorTarget] = useState<ScheduleSection | null>(null);
     const [hasLoaded, setHasLoaded] = useState(false);
+    const [loadError, setLoadError] = useState<string | null>(null);
     const [agendaDay, setAgendaDay] = useState<DayOfWeek>(getTodayName);
     const [nowMinutes, setNowMinutes] = useState(() => {
         const now = new Date();
@@ -428,27 +430,32 @@ export default function StudentSchedule() {
 
     const selectedColor = normalizeHexColor(colorMethods.watch('color')) ?? SCHEDULE_COLOR_PALETTE[0];
 
-    useEffect(function() {
-        async function fetchSchedule() {
-            const [result, colorResult] = await Promise.all([
-                getStudentSchedule(),
-                listMySectionColors()
-            ]);
+    async function fetchSchedule() {
+        setHasLoaded(false);
+        const [result, colorResult] = await Promise.all([
+            getStudentSchedule(),
+            listMySectionColors()
+        ]);
 
-            if (result.data) {
-                const savedColors = new Map(
-                    (colorResult.data ?? []).map((entry) => [entry.section_id, entry.color])
-                );
-                const colored = result.data.map((section, index) => ({
-                    ...section,
-                    color: resolveScheduleColor(savedColors.get(section.section_id), index)
-                }));
-                setSections(colored);
-            }
+        setLoadError(result.error
+            ? (result.error.message || 'Your schedule could not be loaded.')
+            : null);
 
-            setHasLoaded(true);
+        if (result.data) {
+            const savedColors = new Map(
+                (colorResult.data ?? []).map((entry) => [entry.section_id, entry.color])
+            );
+            const colored = result.data.map((section, index) => ({
+                ...section,
+                color: resolveScheduleColor(savedColors.get(section.section_id), index)
+            }));
+            setSections(colored);
         }
 
+        setHasLoaded(true);
+    }
+
+    useEffect(function() {
         fetchSchedule();
     }, []);
 
@@ -646,7 +653,17 @@ export default function StudentSchedule() {
                     </div>
                 )}
             </div>
-            {hasLoaded && sections.length === 0
+            {(sections.length === 0 && (!hasLoaded || loadError)
+                ? (
+                    <ListStatusState
+                        className="flex-1"
+                        error={loadError}
+                        isLoading={!hasLoaded}
+                        loadingText="Loading your schedule..."
+                        onRetry={fetchSchedule}
+                    />
+                )
+                : null) ?? (hasLoaded && sections.length === 0
                 ? (
                     <div className="flex flex-1 flex-col gap-2 items-center justify-center p-8 text-center">
                         <CalendarBlank
@@ -799,7 +816,7 @@ export default function StudentSchedule() {
                                 </div>
                             </div>
                         </div>
-                    )}
+                    ))}
             <CommonModal
                 cardProps={{
                     cardHeaderProps: {

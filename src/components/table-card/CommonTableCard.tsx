@@ -14,7 +14,9 @@ import { useTableSelection } from '@components/table-card/hooks/use-table-select
 import TableCardControls from '@components/table-card/TableCardControls';
 import TableCardSelectionBar from '@components/table-card/TableCardSelectionBar';
 import { DEFAULT_PAGINATION } from '@constants/table.constant';
-import { ArrowUpIcon, EyeIcon, TrashIcon } from '@phosphor-icons/react';
+import {
+    ArrowUpIcon, EyeIcon, FunnelIcon, TrashIcon, WarningCircleIcon
+} from '@phosphor-icons/react';
 import { ChangeEventInputTextarea, KeyboardEventDivElement } from '@type/common.type';
 import { SortStringDto } from '@type/http.type';
 import { CommonTableCardProps } from '@type/table-card.type';
@@ -29,6 +31,7 @@ export default function CommonTableCard<T extends FieldValues>({
     deleteModalProps,
     dependencies = [],
     filterModalProps,
+    hasActiveFilters = false,
     modeToggle,
     renderGridCard,
     selectionBarProps,
@@ -55,8 +58,10 @@ export default function CommonTableCard<T extends FieldValues>({
         isLoading,
         isLoadingMore,
         loadData,
+        loadError,
         loadNextPage,
         pagination,
+        retry,
         searchQuery,
         setGridApi,
         setSearchQuery,
@@ -477,6 +482,48 @@ export default function CommonTableCard<T extends FieldValues>({
     const hasNoData = !isLoading && internalRowData.length === 0;
     const hasActiveSearchOrFilter = Boolean(activeSearch || (searchQuery && searchQuery.trim()));
 
+    // A failed load or a filter that matches nothing must not read as "no records - add one"
+    let emptyStateOverride = null;
+    if (hasNoData && loadError) {
+        emptyStateOverride = (
+            <CommonEmptyState
+                action={(
+                    <CommonButton
+                        color="primary"
+                        size="small"
+                        variant="outlined"
+                        onClick={retry}
+                    >
+                        Try Again
+                    </CommonButton>
+                )}
+                description={loadError}
+                icon={(
+                    <WarningCircleIcon
+                        size={48}
+                        weight="duotone"
+                    />
+                )}
+                title="This list couldn't be loaded"
+            />
+        );
+    }
+    else if (hasNoData && hasActiveFilters && !hasActiveSearchOrFilter) {
+        emptyStateOverride = (
+            <CommonEmptyState
+                description="No records match the current filters. Adjust or reset the filters to see more."
+                icon={(
+                    <FunnelIcon
+                        size={48}
+                        weight="duotone"
+                    />
+                )}
+                isSearch
+                title="No matches for these filters"
+            />
+        );
+    }
+
     // A static description of the page belongs behind the header's info icon
     // rather than on a permanent second line, which costs vertical space on
     // every list. `showSubheader` opts out for headers carrying live status.
@@ -608,7 +655,7 @@ export default function CommonTableCard<T extends FieldValues>({
             className="flex flex-col h-full"
             infoContent={resolvedInfoContent}
         >
-            {hasNoData
+            {emptyStateOverride ?? (hasNoData
                 ? (
                     <CommonEmptyState
                         action={hasActiveSearchOrFilter
@@ -734,7 +781,7 @@ export default function CommonTableCard<T extends FieldValues>({
                             onSetSort={handleGridSort}
                         />
                     )
-            }
+            )}
 
             {!hasNoData && (activeViewMode === 'grid'
                 ? (

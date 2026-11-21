@@ -294,7 +294,7 @@ export default function ProfilePage() {
                 {activeTab === 'details' && (
                     <div className="flex flex-col gap-6 max-w-4xl">
                         {profile?.pending_profile_request && profile.pending_profile_request.status === 'Pending' && (
-                            <div className="border border-(--mui-palette-warning-main) bg-(--mui-palette-warning-light) p-4 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-(--mui-palette-text-primary)">
+                            <div className="border border-(--mui-palette-warning-main) bg-(--mui-palette-warning-main)/10 p-4 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-(--mui-palette-text-primary)">
                                 <div className="flex items-start gap-3">
                                     <HourglassIcon
                                         className="text-(--mui-palette-warning-main) shrink-0 mt-0.5"

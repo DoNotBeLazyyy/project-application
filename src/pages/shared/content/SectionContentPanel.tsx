@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import ListStatusState from '@components/empty/ListStatusState';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonProgressBar from '@components/progress-bar/CommonProgressBar';
 import DuplicateToSectionsModal from '@pages/shared/content/DuplicateToSectionsModal';
@@ -62,6 +63,8 @@ function moduleMatchesPeriod(mod: ContentModule, periodName: string): boolean {
 
 export default function SectionContentPanel({ sectionId, canManage: canManageProp }: SectionContentPanelProps) {
     const [content, setContent] = useState<SectionContent | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
     const [selectedPeriod, setSelectedPeriod] = useState<string>('All');
     const [gradingPeriodNames, setGradingPeriodNames] = useState<string[]>([]);
     const [materialModal, setMaterialModal] = useState<MaterialModalState | null>(null);
@@ -89,7 +92,12 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
         );
 
     async function loadContent() {
+        setIsLoading(true);
         const result = await getSectionContent(sectionId);
+        setIsLoading(false);
+        setLoadError(result.error
+            ? (result.error.message || 'Course content could not be loaded.')
+            : null);
         if (result.data) {
             setContent(result.data);
         }
@@ -270,8 +278,16 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
                 )}
             </div>
 
-            {/* Empty State */}
+            {/* Loading / failed load, then the empty state once the content is known */}
             {modules.length === 0 && (
+                <ListStatusState
+                    error={loadError}
+                    isLoading={isLoading}
+                    loadingText="Loading course content..."
+                    onRetry={loadContent}
+                />
+            )}
+            {modules.length === 0 && !isLoading && !loadError && (
                 <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
                     <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center">
                         <BookOpenIcon

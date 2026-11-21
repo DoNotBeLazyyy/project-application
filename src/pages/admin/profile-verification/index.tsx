@@ -227,6 +227,7 @@ export default function StaffProfileVerificationPage() {
                     },
                     onReset: handleFilterReset
                 }}
+                hasActiveFilters={activeFilters !== null}
                 renderGridCard={renderBentoCard}
                 sortColumns={SORT_COLUMNS}
                 tableProps={{

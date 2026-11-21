@@ -212,7 +212,7 @@ export default function NotifyStudentModal({
                 onClose={handleAttemptClose}
             >
                 <div className="flex flex-col gap-4 p-4 pt-0">
-                    <div className="border border-(--mui-palette-error-main) bg-(--mui-palette-error-light) p-3 rounded-lg flex items-start gap-3 text-xs text-(--mui-palette-text-primary)">
+                    <div className="border border-(--mui-palette-error-main) bg-(--mui-palette-error-main)/10 p-3 rounded-lg flex items-start gap-3 text-xs text-(--mui-palette-text-primary)">
                         <WarningCircleIcon
                             className="text-(--mui-palette-error-main) shrink-0 mt-0.5"
                             size={22}

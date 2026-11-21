@@ -387,9 +387,19 @@ export default function BulkImportModal<TPayload>({
         return (
             <div className="flex flex-col gap-4">
                 <div
-                    className="border-(--mui-palette-divider) border-2 border-dashed cursor-pointer flex flex-col gap-2 hover:bg-(--mui-palette-action-hover) hover:border-(--mui-palette-primary-main) items-center justify-center p-10 rounded-lg transition-colors"
+                    aria-label="Select a CSV file to import"
+                    className="border-(--mui-palette-divider) border-2 border-dashed cursor-pointer flex flex-col focus-visible:border-(--mui-palette-primary-main) focus-visible:outline-none gap-2 hover:bg-(--mui-palette-action-hover) hover:border-(--mui-palette-primary-main) items-center justify-center p-10 rounded-lg transition-colors"
+                    role="button"
+                    tabIndex={0}
                     onClick={function() {
                         fileInputRef.current?.click();
+                    }}
+                    onKeyDown={function(event) {
+                        // Keyboard users open the file picker the same way a click does
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            fileInputRef.current?.click();
+                        }
                     }}
                 >
                     <ArrowLineUpIcon
@@ -1012,14 +1022,17 @@ export default function BulkImportModal<TPayload>({
                     action: <ModalCloseIcon onClick={handleClose} />,
                     title: stepTitles[step]
                 },
+                // Never wider than the screen, and capped in height so the body scrolls and its buttons stay reachable
+                className: 'flex flex-col max-h-[100dvh] overflow-hidden sm:max-h-[90dvh] sm:max-w-5xl w-full',
                 defaultActionProps: {
                     onClick: handleClose
                 }
             }}
+            fullWidth
             open={open}
             onClose={handleClose}
         >
-            <div className="max-w-full sm:w-5xl w-full flex-1 flex flex-col min-h-0">
+            <div className="flex flex-1 flex-col min-h-0 overflow-y-auto w-full">
                 {step === 'upload' && renderUploadStep()}
                 {step === 'preview' && renderPreviewStep()}
                 {step === 'results' && Boolean(result?.warnings?.length) && (

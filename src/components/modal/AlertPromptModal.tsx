@@ -11,7 +11,7 @@ export default function AlertPromptModal({
             {...props}
             actionIconProps={{
                 icon: WarningIcon,
-                iconContainerClassName: 'bg-[var(--mui-tokens-color-200)] text-[var(--mui-tokens-color-500)]',
+                iconContainerClassName: 'bg-(--mui-tokens-color-state-warningLight) text-(--mui-tokens-color-state-warning)',
                 ...actionIconProps
             }}
             formButtonsProps={{

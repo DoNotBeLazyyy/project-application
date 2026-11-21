@@ -37,10 +37,13 @@ const STATUS_BUTTON_STYLES: Record<AttendanceStatus, { active: string; idle: str
 interface AttendanceRecordListProps {
     draftRecords: AttendanceRecordUpdate[];
     isDirty: boolean;
+    isLoading?: boolean;
+    loadError?: string | null;
     records: AttendanceRecord[];
     selectedSession: AttendanceSession;
     onBackToSessions?: VoidFunction;
     onMarkAllPresent?: VoidFunction;
+    onRetry?: VoidFunction;
     onSave: () => Promise<void>;
     onStatusChange: (recordId: string, status: AttendanceStatus) => void;
 }
@@ -48,10 +51,13 @@ interface AttendanceRecordListProps {
 export default function AttendanceRecordList({
     draftRecords,
     isDirty,
+    isLoading = false,
+    loadError = null,
     records,
     selectedSession,
     onBackToSessions,
     onMarkAllPresent,
+    onRetry,
     onSave,
     onStatusChange
 }: AttendanceRecordListProps) {
@@ -179,8 +185,23 @@ export default function AttendanceRecordList({
             <div className="flex-1 min-h-0 overflow-y-auto">
                 {filteredRecords.length === 0
                     ? (
-                        <div className="py-12 text-center text-slate-500 text-xs">
-                            No students match &ldquo;{searchQuery}&rdquo;.
+                        <div className="flex flex-col gap-3 items-center py-12 text-center text-slate-500 text-xs">
+                            {loadError
+                                ? `Attendance records couldn't be loaded. ${loadError}`
+                                : isLoading
+                                    ? 'Loading attendance records...'
+                                    : searchQuery.trim()
+                                        ? `No students match “${searchQuery}”.`
+                                        : 'No students are enrolled in this section.'}
+                            {loadError && onRetry && (
+                                <CommonButton
+                                    size="small"
+                                    variant="outlined"
+                                    onClick={onRetry}
+                                >
+                                    Try Again
+                                </CommonButton>
+                            )}
                         </div>
                     )
                     : (

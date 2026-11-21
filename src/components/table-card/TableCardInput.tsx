@@ -44,6 +44,7 @@ export default function TableCardInput({
         <CommonInput
             className="min-w-0"
             fullWidth
+            hasClearButton
             isRoundedFull
             placeholder="Search"
             size="small"

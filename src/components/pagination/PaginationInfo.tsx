@@ -17,7 +17,9 @@ export default function PaginationInfo({
         <div
             className={
                 classMerge(
-                    'min-w-max order-last text-(--mui-tokens-color-neutral-600) text-center tw_body_small w-full lg:absolute lg:right-4 lg:text-right lg:top-[50%] lg:translate-y-[-50%] lg:w-auto',
+                    // In normal flow so it never covers the controls; it moves beside them only
+                    // when the pagination bar itself is wide enough (e.g. not squeezed by the AI panel)
+                    'min-w-max order-last text-(--mui-tokens-color-neutral-600) text-center tw_body_small w-full @3xl:col-start-3 @3xl:justify-self-end @3xl:order-none @3xl:pr-4 @3xl:text-right @3xl:w-auto',
                     className
                 )
             }

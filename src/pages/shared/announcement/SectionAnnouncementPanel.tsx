@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import ListStatusState from '@components/empty/ListStatusState';
 import { AnnouncementDetailModal } from '@components/modal/AnnouncementDetailModal';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import { useAnnouncementBasePath } from '@pages/shared/announcement-management/use-announcement-base-path';
@@ -29,6 +30,8 @@ interface SectionAnnouncementPanelProps {
 
 export default function SectionAnnouncementPanel({ canManage = true, sectionId }: SectionAnnouncementPanelProps) {
     const [announcements, setAnnouncements] = useState<SectionAnnouncementRow[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
     // The list loads one page; the badge shows how many there are in all
     const [totalCount, setTotalCount] = useState(0);
     const [selectedAnnouncement, setSelectedAnnouncement] = useState<AnnouncementFeedRow | null>(null);
@@ -40,7 +43,12 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
     const currentUserId = useAppStore((s) => s.userProfile?.id || s.session?.user?.id);
 
     async function loadAnnouncements() {
+        setIsLoading(true);
         const result = await listSectionAnnouncements(sectionId);
+        setIsLoading(false);
+        setLoadError(result.error
+            ? (result.error.message || 'Announcements could not be loaded.')
+            : null);
         if (result.data) {
             setAnnouncements(result.data.content);
             setTotalCount(result.data.totalElements ?? result.data.content.length);
@@ -101,6 +109,18 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
         }
     }
 
+    // Loading or a failed load is not "nothing here yet"
+    const listStatus = announcements.length === 0 && (isLoading || loadError)
+        ? (
+            <ListStatusState
+                error={loadError}
+                isLoading={isLoading}
+                loadingText="Loading announcements..."
+                onRetry={loadAnnouncements}
+            />
+        )
+        : null;
+
     return (
         <div className="flex flex-col gap-4 h-full min-h-0">
             {/* Top Toolbar */}
@@ -133,7 +153,7 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
 
             {/* Content: Empty State or Bento Card Grid */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-                {announcements.length === 0
+                {listStatus ?? (announcements.length === 0
                     ? (
                         <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900/50">
                             <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center mb-3">
@@ -217,7 +237,7 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
                                 </div>
                             ))}
                         </div>
-                    )}
+                    ))}
             </div>
 
             {/* Read Modal: AnnouncementDetailModal */}

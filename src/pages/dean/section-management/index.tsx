@@ -220,6 +220,7 @@ export default function SectionManagement() {
                         setIsFilterOpen(false);
                     }
                 }}
+                hasActiveFilters={activeFilters !== null}
                 renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
                     return (
                         <SectionGridCard

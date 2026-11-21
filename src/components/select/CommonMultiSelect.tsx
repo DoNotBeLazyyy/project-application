@@ -5,7 +5,7 @@ import Chip from '@mui/material/Chip';
 import TextField from '@mui/material/TextField';
 import { CaretDownIcon, XIcon } from '@phosphor-icons/react';
 import { classMerge } from '@utils/css.util';
-import { ReactNode, SyntheticEvent, forwardRef } from 'react';
+import { ReactNode, Ref, SyntheticEvent, forwardRef } from 'react';
 
 export interface CommonMultiSelectProps {
     className?: string;
@@ -19,6 +19,8 @@ export interface CommonMultiSelectProps {
     defaultOpenErrorTooltip?: boolean;
     isFirstError?: boolean;
     name?: string;
+    // Ref to the text input, so a form can focus the field on error
+    inputRef?: Ref<HTMLInputElement>;
     placeholder?: string;
     disabled?: boolean;
     readOnly?: boolean;
@@ -40,10 +42,12 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
     exclusiveValue,
     fullWidth = true,
     helperText,
+    inputRef,
     isFirstError,
     isRequired,
     label,
     labelClassName,
+    name,
     options,
     placeholder,
     readOnly,
@@ -138,7 +142,9 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
                         helperText={label
                             ? undefined
                             : helperText}
+                        inputRef={inputRef}
                         label=""
+                        name={name}
                         placeholder={hasNoOptions
                             ? 'No option available'
                             : (selectedOptions.length === 0

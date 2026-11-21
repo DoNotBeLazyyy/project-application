@@ -334,13 +334,13 @@ export default function UserProfilePromptModal({
                 : onClose}
         >
             <div className="flex flex-1 flex-col gap-5 min-h-0 overflow-y-auto p-4 pb-6 pt-0 sm:p-6 sm:pt-0">
-                <div className="bg-(--mui-palette-primary-50) border border-(--mui-palette-primary-200) flex gap-3 items-start p-3.5 rounded-(--mui-tokens-radius-md)">
+                <div className="bg-(--mui-tokens-color-brand-50) border border-(--mui-tokens-color-brand-200) flex gap-3 items-start p-3.5 rounded-(--mui-tokens-radius-md)">
                     <UserCircleIcon
                         className="shrink-0 text-(--mui-palette-primary-main)"
                         size={24}
                     />
                     <div className="flex flex-col gap-1 text-xs">
-                        <p className="font-semibold text-(--mui-palette-primary-900) text-sm">
+                        <p className="font-semibold text-(--mui-tokens-color-brand-900) text-sm">
                             Welcome to AU-JAS!
                         </p>
                         <p className="text-(--mui-palette-text-secondary)">
@@ -350,7 +350,7 @@ export default function UserProfilePromptModal({
                 </div>
 
                 {isDean && (
-                    <div className="bg-(--mui-palette-secondary-50) border border-(--mui-palette-secondary-200) flex flex-col gap-2 p-4 rounded-(--mui-tokens-radius-md)">
+                    <div className="bg-(--mui-palette-secondary-main)/10 border border-(--mui-palette-secondary-main)/30 flex flex-col gap-2 p-4 rounded-(--mui-tokens-radius-md)">
                         <div className="flex font-semibold gap-2 items-center text-(--mui-palette-secondary-main) text-sm">
                             <BuildingsIcon size={20} />
                             <span>
@@ -366,7 +366,7 @@ export default function UserProfilePromptModal({
                 )}
 
                 {isStudent && (
-                    <div className="bg-(--mui-palette-info-50) border border-(--mui-palette-info-200) flex flex-col gap-2 p-4 rounded-(--mui-tokens-radius-md)">
+                    <div className="bg-(--mui-palette-info-main)/10 border border-(--mui-palette-info-main)/30 flex flex-col gap-2 p-4 rounded-(--mui-tokens-radius-md)">
                         <div className="flex font-semibold gap-2 items-center text-(--mui-palette-info-main) text-sm">
                             <GraduationCapIcon size={20} />
                             <span>

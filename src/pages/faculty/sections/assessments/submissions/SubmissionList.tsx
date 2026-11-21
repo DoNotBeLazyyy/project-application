@@ -7,11 +7,12 @@ import { RowClickedEvent } from 'ag-grid-community';
 import { useMemo } from 'react';
 
 interface SubmissionListProps {
+    isLoading?: boolean;
     submissions: SubmissionListRow[];
     onSelect: (submissionId: string) => Promise<void>;
 }
 
-export default function SubmissionList({ submissions, onSelect }: SubmissionListProps) {
+export default function SubmissionList({ isLoading = false, submissions, onSelect }: SubmissionListProps) {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         // Shares the page with the grading panel, so columns stay few: student (name + number),
         // status (already says "Late"), score, and when it was submitted
@@ -80,6 +81,7 @@ export default function SubmissionList({ submissions, onSelect }: SubmissionList
         <div className="flex flex-col min-h-0 w-full h-full">
             <CommonTable
                 leadingColumnDefs={columnDefs}
+                loading={isLoading && submissions.length === 0}
                 rowData={submissions}
                 onRowClicked={function(e: RowClickedEvent<SubmissionListRow>) {
                     if (e.data) {

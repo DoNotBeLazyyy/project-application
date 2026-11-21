@@ -98,7 +98,8 @@ export default function FileAttachmentList({
     attachments,
     bucket = 'materials'
 }: FileAttachmentListProps) {
-    const [downloadingIndex, setDownloadingIndex] = useState<number | null>(null);
+    // Keyed per file: images and documents number from 0 separately, so an index would spin two cards
+    const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
     const [previewModalIndex, setPreviewModalIndex] = useState<number | null>(null);
 
     const { getUrl } = useAttachmentUrls(attachments, bucket);
@@ -116,19 +117,19 @@ export default function FileAttachmentList({
         url: getUrl(att) || ''
     }));
 
-    async function handleDownload(attachment: AttachmentInputDto, index: number) {
-        if (downloadingIndex !== null) {
+    async function handleDownload(attachment: AttachmentInputDto, key: string) {
+        if (downloadingKey !== null) {
             return;
         }
 
         const directUrl = getUrl(attachment);
         if (directUrl) {
-            setDownloadingIndex(index);
+            setDownloadingKey(key);
             try {
                 await triggerFileDownload(directUrl, attachment.file_name);
             }
             finally {
-                setDownloadingIndex(null);
+                setDownloadingKey(null);
             }
             return;
         }
@@ -137,7 +138,7 @@ export default function FileAttachmentList({
             return;
         }
 
-        setDownloadingIndex(index);
+        setDownloadingKey(key);
         try {
             const result = await getFileUrl(bucket, attachment.file_path);
             if (result.data?.url) {
@@ -145,7 +146,7 @@ export default function FileAttachmentList({
             }
         }
         finally {
-            setDownloadingIndex(null);
+            setDownloadingKey(null);
         }
     }
 
@@ -162,7 +163,7 @@ export default function FileAttachmentList({
                                 disabled
                                 key={attachment.file_path || `img-${imgIndex}`}
                                 previewUrl={previewUrl}
-                                onDownload={() => handleDownload(attachment, imgIndex)}
+                                onDownload={() => handleDownload(attachment, `img-${imgIndex}`)}
                                 onPreview={() => setPreviewModalIndex(imgIndex)}
                             />
                         );
@@ -174,7 +175,7 @@ export default function FileAttachmentList({
             {otherAttachments.length > 0 && (
                 <div className="flex flex-wrap gap-3 w-full">
                     {otherAttachments.map(function(attachment, fileIndex) {
-                        const isDownloading = downloadingIndex === fileIndex;
+                        const isDownloading = downloadingKey === `doc-${fileIndex}`;
 
                         return (
                             <div
@@ -187,11 +188,11 @@ export default function FileAttachmentList({
                                     tabIndex={0}
                                     title={`Download ${attachment.file_name}`}
                                     onClick={function() {
-                                        handleDownload(attachment, fileIndex);
+                                        handleDownload(attachment, `doc-${fileIndex}`);
                                     }}
                                     onKeyDown={function(e) {
                                         if (e.key === 'Enter' || e.key === ' ') {
-                                            handleDownload(attachment, fileIndex);
+                                            handleDownload(attachment, `doc-${fileIndex}`);
                                         }
                                     }}
                                 >
@@ -217,7 +218,7 @@ export default function FileAttachmentList({
                                     title="Download file"
                                     type="button"
                                     onClick={function() {
-                                        handleDownload(attachment, fileIndex);
+                                        handleDownload(attachment, `doc-${fileIndex}`);
                                     }}
                                 >
                                     {isDownloading

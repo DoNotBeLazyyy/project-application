@@ -3,26 +3,36 @@ import { CalendarDotsIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { AttendanceSession } from '@type/faculty.type';
 
 interface AttendanceSessionListProps {
+    isLoading?: boolean;
+    loadError?: string | null;
     selectedSessionId?: string | null;
     sessions: AttendanceSession[];
     onCreateOpen: VoidFunction;
     onDelete: (sessionId: string) => Promise<void>;
+    onRetry?: VoidFunction;
     onSelectSession: (session: AttendanceSession) => Promise<void>;
 }
 
 export default function AttendanceSessionList({
+    isLoading = false,
+    loadError = null,
     selectedSessionId,
     sessions,
     onCreateOpen,
     onDelete,
+    onRetry,
     onSelectSession
 }: AttendanceSessionListProps) {
+    // "No sessions yet" is only true once the list has actually loaded
+    const isUnavailable = sessions.length === 0 && (isLoading || Boolean(loadError));
 
     return (
         <div className="flex flex-col flex-shrink-0 gap-3 w-full md:w-80 h-full min-h-0">
             <div className="flex items-center justify-between pb-1">
                 <span className="font-bold text-slate-900 dark:text-slate-100 text-sm">
-                    Class Sessions ({sessions.length})
+                    Class Sessions{isUnavailable
+                        ? ''
+                        : ` (${sessions.length})`}
                 </span>
                 <CommonButton
                     size="small"
@@ -48,8 +58,22 @@ export default function AttendanceSessionList({
                                 size={32}
                             />
                             <p className="text-xs text-slate-500">
-                            No attendance sessions recorded yet. Click &ldquo;New Session&rdquo; to begin.
+                                {loadError
+                                    ? `Sessions couldn't be loaded. ${loadError}`
+                                    : isLoading
+                                        ? 'Loading sessions...'
+                                        : 'No attendance sessions recorded yet. Click “New Session” to begin.'}
                             </p>
+                            {loadError && onRetry && (
+                                <CommonButton
+                                    className="mt-3"
+                                    size="small"
+                                    variant="outlined"
+                                    onClick={onRetry}
+                                >
+                                    Try Again
+                                </CommonButton>
+                            )}
                         </div>
                     )
                     : (

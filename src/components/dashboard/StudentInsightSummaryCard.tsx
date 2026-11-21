@@ -47,10 +47,10 @@ export default function StudentInsightSummaryCard({
 
     const riskLevel = insight?.risk.risk_level;
     const riskBg = riskLevel === 'High'
-        ? 'bg-(--mui-palette-error-light)'
+        ? 'bg-(--mui-palette-error-main)/15'
         : riskLevel === 'Moderate'
-            ? 'bg-(--mui-palette-warning-light)'
-            : 'bg-(--mui-palette-success-light)';
+            ? 'bg-(--mui-palette-warning-main)/15'
+            : 'bg-(--mui-palette-success-main)/15';
     const riskColor = riskLevel === 'High'
         ? 'text-(--mui-palette-error-main)'
         : riskLevel === 'Moderate'
@@ -60,7 +60,7 @@ export default function StudentInsightSummaryCard({
     const statItems: InsightStatItem[] = [
         {
             icon: <GraduationCapIcon size={22} />,
-            iconBg: 'bg-(--mui-palette-primary-light)',
+            iconBg: 'bg-(--mui-palette-primary-main)/15',
             iconColor: 'text-(--mui-palette-primary-main)',
             label: 'Cumulative GWA',
             value: (
@@ -71,7 +71,7 @@ export default function StudentInsightSummaryCard({
         },
         {
             icon: <TargetIcon size={22} />,
-            iconBg: 'bg-(--mui-palette-info-light)',
+            iconBg: 'bg-(--mui-palette-info-main)/15',
             iconColor: 'text-(--mui-palette-info-main)',
             label: 'Average Score',
             value: (
@@ -82,7 +82,7 @@ export default function StudentInsightSummaryCard({
         },
         {
             icon: <CalendarCheckIcon size={22} />,
-            iconBg: 'bg-(--mui-palette-success-light)',
+            iconBg: 'bg-(--mui-palette-success-main)/15',
             iconColor: 'text-(--mui-palette-success-main)',
             label: 'Attendance',
             value: (
@@ -131,8 +131,8 @@ export default function StudentInsightSummaryCard({
             }}
             className="flex flex-col"
         >
-            <div className="flex flex-col gap-3 p-4 pt-0">
-                <div className="gap-3 grid grid-cols-2 lg:grid-cols-4">
+            <div className="@container flex flex-col gap-3 p-4 pt-0">
+                <div className="@3xl:grid-cols-4 gap-3 grid grid-cols-2">
                     {statItems.map((item) => (
                         <div
                             className="border border-(--mui-palette-divider) flex items-center gap-3 p-3 rounded-lg min-w-0"
@@ -159,7 +159,7 @@ export default function StudentInsightSummaryCard({
 
                 {topFocus && (
                     <div className="border border-(--mui-palette-divider) flex gap-3 items-center p-3 rounded-lg">
-                        <div className="bg-(--mui-palette-primary-light) flex h-9 w-9 items-center justify-center rounded-lg shrink-0">
+                        <div className="bg-(--mui-palette-primary-main)/15 flex h-9 w-9 items-center justify-center rounded-lg shrink-0">
                             <TargetIcon
                                 className="text-(--mui-palette-primary-main)"
                                 size={18}
@@ -182,7 +182,7 @@ export default function StudentInsightSummaryCard({
                         <span className="font-medium text-(--mui-palette-text-primary) text-sm">
                             Weakest Areas
                         </span>
-                        <div className="gap-2 sm:gap-3 grid grid-cols-1 sm:grid-cols-3">
+                        <div className="@xl:gap-3 @xl:grid-cols-3 gap-2 grid grid-cols-1">
                             {weaknesses.map((entry) => (
                                 <div
                                     className="border border-(--mui-palette-divider) flex gap-3 items-center justify-between p-3 rounded-lg min-w-0"

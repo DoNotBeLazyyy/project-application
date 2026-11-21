@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import ListStatusState from '@components/empty/ListStatusState';
 import AlertPromptModal from '@components/modal/AlertPromptModal';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import AssessmentWizardModal from '@pages/faculty/sections/assessments/builder/AssessmentWizardModal';
@@ -56,6 +57,8 @@ export default function AssessmentsTab({ initialView = 'assessments', sectionId 
     const navigate = useNavigate();
     const [activeView, setActiveView] = useState<'assessments' | 'rubrics'>(initialView);
     const [assessments, setAssessments] = useState<AssessmentListRow[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
     const [duplicating, setDuplicating] = useState<AssessmentListRow | null>(null);
     const [pendingDelete, setPendingDelete] = useState<AssessmentListRow | null>(null);
     const [pendingUnpublish, setPendingUnpublish] = useState<AssessmentListRow | null>(null);
@@ -76,7 +79,12 @@ export default function AssessmentsTab({ initialView = 'assessments', sectionId 
     }, [sectionId]);
 
     async function fetchAssessments() {
+        setIsLoading(true);
         const result = await listAssessments(sectionId);
+        setIsLoading(false);
+        setLoadError(result.error
+            ? (result.error.message || 'Assessments could not be loaded.')
+            : null);
         if (result.data) {
             setAssessments(result.data);
         }
@@ -131,6 +139,18 @@ export default function AssessmentsTab({ initialView = 'assessments', sectionId 
         setIsWizardOpen(true);
     }
 
+    // Loading or a failed load is not "nothing here yet"
+    const listStatus = assessments.length === 0 && (isLoading || loadError)
+        ? (
+            <ListStatusState
+                error={loadError}
+                isLoading={isLoading}
+                loadingText="Loading assessments..."
+                onRetry={fetchAssessments}
+            />
+        )
+        : null;
+
     return (
         <div className="flex flex-col gap-4 h-full min-h-0">
             {/* Top Toolbar */}
@@ -184,7 +204,7 @@ export default function AssessmentsTab({ initialView = 'assessments', sectionId 
                 )
                 : (
                     <div className="flex-1 min-h-0 overflow-y-auto">
-                        {assessments.length === 0
+                        {listStatus ?? (assessments.length === 0
                             ? (
                                 <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
                                     <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center">
@@ -392,7 +412,7 @@ export default function AssessmentsTab({ initialView = 'assessments', sectionId 
                                         );
                                     })}
                                 </div>
-                            )}
+                            ))}
 
                         {duplicating && (
                             <DuplicateToSectionsModal

@@ -260,15 +260,25 @@ export default function FileAttachmentUploader({
             {/* Drag and Drop Zone - Only in Edit/Create Mode */}
             {!disabled && (
                 <div
-                    className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors cursor-pointer ${
+                    aria-disabled={isUploading}
+                    aria-label="Choose files to upload, or drop them here"
+                    className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-(--mui-palette-primary-main) ${
                         isDragging
                             ? 'border-(--mui-tokens-color-brand-900) bg-(--mui-tokens-color-brand-50)'
                             : 'border-(--mui-palette-divider) hover:border-(--mui-palette-text-secondary) bg-(--mui-palette-background-paper)'
                     }`}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => fileInputRef.current?.click()}
                     onDragLeave={handleDragLeave}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
+                    onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            fileInputRef.current?.click();
+                        }
+                    }}
                 >
                     <div className="flex flex-col gap-1.5 items-center pointer-events-none">
                         {isUploading

@@ -28,7 +28,7 @@ const TOAST_VARIANTS: Record<ToastVariant, ToastVariantConfig> = {
     success: {
         bg: 'var(--mui-tokens-color-state-successLight)',
         border: 'var(--mui-tokens-color-state-success)',
-        color: 'var(--mui-tokens-color-state-success)',
+        color: 'var(--app-toast-success-text)',
         icon: (
             <CheckFatIcon
                 size={18}
@@ -39,7 +39,7 @@ const TOAST_VARIANTS: Record<ToastVariant, ToastVariantConfig> = {
     warning: {
         bg: 'var(--mui-tokens-color-state-warningLight)',
         border: 'var(--mui-tokens-color-state-warning)',
-        color: 'var(--mui-tokens-color-state-warning)',
+        color: 'var(--app-toast-warning-text)',
         icon: (
             <WarningIcon
                 size={18}

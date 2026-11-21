@@ -62,7 +62,7 @@ export default function PendingChangesModal({
             onClose={onClose}
         >
             <div className="flex flex-col gap-4 p-4 pt-0 max-h-[75vh] overflow-y-auto">
-                <div className="border border-(--mui-palette-warning-main) bg-(--mui-palette-warning-light) p-3 rounded-lg flex items-start gap-3 text-xs text-(--mui-palette-text-primary)">
+                <div className="border border-(--mui-palette-warning-main) bg-(--mui-palette-warning-main)/10 p-3 rounded-lg flex items-start gap-3 text-xs text-(--mui-palette-text-primary)">
                     <ClockCountdownIcon
                         className="text-(--mui-palette-warning-main) shrink-0 mt-0.5"
                         size={22}

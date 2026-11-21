@@ -194,6 +194,7 @@ export default function EnrollmentManagement() {
                         setIsFilterOpen(false);
                     }
                 }}
+                hasActiveFilters={activeFilters !== null}
                 renderGridCard={function(item, isSelected, onToggleSelect) {
                     return (
                         <EnrollmentStudentGridCard

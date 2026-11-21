@@ -229,6 +229,7 @@ export default function AuditLogManagement() {
                     },
                     onReset: handleFilterReset
                 }}
+                hasActiveFilters={activeFilters !== null}
                 renderGridCard={function(item) {
                     return renderAuditBentoCard(item);
                 }}

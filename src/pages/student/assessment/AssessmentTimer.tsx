@@ -69,7 +69,7 @@ export default function AssessmentTimer({ expiresAt, onExpire }: AssessmentTimer
             className="flex gap-2 items-center px-3 py-1.5 rounded-lg"
             style={{
                 backgroundColor: isWarning
-                    ? 'var(--mui-palette-error-light)'
+                    ? 'color-mix(in srgb, var(--mui-palette-error-main) 15%, transparent)'
                     : 'var(--mui-palette-action-hover)'
             }}
         >

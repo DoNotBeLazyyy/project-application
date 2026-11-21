@@ -211,27 +211,16 @@ export default function CommonPagination({
     }
 
     /**
-     * Generates styling properties for navigation buttons based on their active state.
+     * Builds a navigation button's props, disabling it at the boundary or while loading.
      *
-     * @param condition - Determines if the button should appear disabled.
+     * @param condition - Determines if the button should be disabled.
      * @param onClick - Callback executed when the button is clicked.
      * @returns
      */
     function handleButtonNavigationProps(condition: boolean, onClick: VoidFunction) {
         return {
-            className: 'h-11 p-(--mui-tokens-spacing-3) text-(--mui-tokens-color-neutral-500) w-11',
-            style: {
-                cursor: isLoading || condition
-                    ? 'default'
-                    : 'pointer',
-                opacity: isLoading || condition
-                    ? 0.4
-                    : 1
-            },
-            weight: 'bold' as const,
-            onClick: isLoading || condition
-                ? undefined
-                : onClick
+            disabled: isLoading || condition,
+            onClick
         };
     }
 
@@ -243,66 +232,68 @@ export default function CommonPagination({
         <div
             className={
                 classMerge(
-                    'flex flex-wrap gap-x-4 gap-y-2 items-center justify-center relative w-full',
+                    '@container w-full',
                     className
                 )
             }
             {...props}
         >
-            <div
-                className={
-                    classMerge(
-                        'flex flex-wrap gap-(--mui-tokens-spacing-5) items-center justify-center',
-                        navigationContainerClassName
-                    )
-                }
-            >
-                <PaginationNavigations
-                    inputProps={
-                        hasNavigationInput
-                            ? {
-                                totalPages,
-                                inputProps: {
-                                    inputProps: {
-                                        min: 1,
-                                        step: 1
-                                    },
-                                    value: pageInput,
-                                    disabled: isLoading,
-                                    onBlur: handlePageInputOnBlur,
-                                    onChange: handlePageInputChange,
-                                    onKeyDown: handlePageInputKeyDown
-                                }
-                            }
-                            : undefined
+            <div className="@3xl:grid @3xl:grid-cols-[1fr_auto_1fr] flex flex-wrap gap-x-4 gap-y-2 items-center justify-center w-full">
+                <div
+                    className={
+                        classMerge(
+                            '@3xl:col-start-2 flex flex-wrap gap-(--mui-tokens-spacing-5) items-center justify-center',
+                            navigationContainerClassName
+                        )
                     }
-                    navigationButtonProps={{
-                        firstButtonProps: hasFirstButton
-                            ? handleButtonNavigationProps(isFirstPage, navigateToFirstPage)
-                            : undefined,
-                        lastButtonProps: hasLastButton
-                            ? handleButtonNavigationProps(isLastPage, navigateToLastPage)
-                            : undefined,
-                        nextButtonProps: handleButtonNavigationProps(isLastPage, navigateToNextPage),
-                        prevButtonProps: handleButtonNavigationProps(isFirstPage, navigateToPreviousPage)
-                    }}
-                />
-                {hasPaginationSelect && (
-                    <PaginationSelect
-                        disabled={isLoading}
-                        options={resolvedRowsPerPageOptions}
-                        value={rowsPerPage}
-                        onChange={handleRowsPerPageChange}
+                >
+                    <PaginationNavigations
+                        inputProps={
+                            hasNavigationInput
+                                ? {
+                                    totalPages,
+                                    inputProps: {
+                                        inputProps: {
+                                            min: 1,
+                                            step: 1
+                                        },
+                                        value: pageInput,
+                                        disabled: isLoading,
+                                        onBlur: handlePageInputOnBlur,
+                                        onChange: handlePageInputChange,
+                                        onKeyDown: handlePageInputKeyDown
+                                    }
+                                }
+                                : undefined
+                        }
+                        navigationButtonProps={{
+                            firstButtonProps: hasFirstButton
+                                ? handleButtonNavigationProps(isFirstPage, navigateToFirstPage)
+                                : undefined,
+                            lastButtonProps: hasLastButton
+                                ? handleButtonNavigationProps(isLastPage, navigateToLastPage)
+                                : undefined,
+                            nextButtonProps: handleButtonNavigationProps(isLastPage, navigateToNextPage),
+                            prevButtonProps: handleButtonNavigationProps(isFirstPage, navigateToPreviousPage)
+                        }}
+                    />
+                    {hasPaginationSelect && (
+                        <PaginationSelect
+                            disabled={isLoading}
+                            options={resolvedRowsPerPageOptions}
+                            value={rowsPerPage}
+                            onChange={handleRowsPerPageChange}
+                        />
+                    )}
+                </div>
+                {hasPaginationRowsInfo && (
+                    <PaginationInfo
+                        endRow={end}
+                        startRow={start}
+                        totalElements={totalElements}
                     />
                 )}
             </div>
-            {hasPaginationRowsInfo && (
-                <PaginationInfo
-                    endRow={end}
-                    startRow={start}
-                    totalElements={totalElements}
-                />
-            )}
         </div>
     );
 }

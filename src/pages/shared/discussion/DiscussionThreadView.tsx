@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import ListStatusState from '@components/empty/ListStatusState';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonTextarea from '@components/textarea/CommonTextarea';
 import DiscussionAttachmentList from '@pages/shared/discussion/DiscussionAttachmentList';
@@ -42,6 +43,7 @@ export default function DiscussionThreadView({
     const myId = useAppStore((s) => s.userProfile?.id);
     const showToast = useToastStore((s) => s.showToast);
     const [thread, setThread] = useState<DiscussionThreadDetail | null>(null);
+    const [loadError, setLoadError] = useState<string | null>(null);
     const [replyBody, setReplyBody] = useState('');
     const [replyFiles, setReplyFiles] = useState<File[]>([]);
     const [isUploading, setIsUploading] = useState(false);
@@ -49,7 +51,13 @@ export default function DiscussionThreadView({
     const [pendingDeletePostId, setPendingDeletePostId] = useState<string | null>(null);
 
     async function loadThread() {
+        setLoadError(null);
         const result = await getDiscussionThread(threadId);
+
+        if (result.error) {
+            setLoadError(result.error.message || 'This discussion could not be loaded.');
+            return;
+        }
 
         if (result.data) {
             setThread(result.data);
@@ -207,9 +215,12 @@ export default function DiscussionThreadView({
 
     if (!thread) {
         return (
-            <p className="py-8 text-(--mui-palette-text-secondary) text-center text-sm">
-                Loading discussion...
-            </p>
+            <ListStatusState
+                error={loadError}
+                isLoading
+                loadingText="Loading discussion..."
+                onRetry={loadThread}
+            />
         );
     }
 

@@ -274,7 +274,7 @@ export function useFormDraft<T extends FieldValues>({
 
     const effectiveEnabled = enabled && !hasParentControlOwner;
 
-    const { isSubmitSuccessful, isSubmitting } = useFormState({ control });
+    const { isSubmitting } = useFormState({ control });
     const currentValues = useWatch({ control });
 
     const defaultVals = (control as unknown as { _defaultValues?: Record<string, unknown> })._defaultValues;
@@ -383,19 +383,12 @@ export function useFormDraft<T extends FieldValues>({
         }
     }, [currentValues, effectiveEnabled, resolvedKey, control, isPromptOpen, pendingDraft]);
 
-    // Automatically remove draft when form is successfully submitted
-    useEffect(() => {
-        if (isSubmitSuccessful && resolvedKey) {
-            try {
-                sessionStorage.removeItem(resolvedKey);
-            }
-            catch {
-                // Ignore
-            }
-            hasWrittenDraftRef.current = false;
-            setPendingDraft(null);
-        }
-    }, [isSubmitSuccessful, resolvedKey]);
+    /*
+     * No auto-delete on submit: services report failures as a result instead of throwing,
+     * so react-hook-form marks a failed save as successful too. The draft goes only through
+     * clearDraft() after a confirmed save, closing the hosting CommonFormModal, or a reset
+     * back to the saved values (the effect above).
+     */
 
     // Warn on reload if form has real unsaved modifications
     useEffect(() => {

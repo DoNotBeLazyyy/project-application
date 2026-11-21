@@ -97,9 +97,9 @@ export default function ValidCommonMultiSelect<T extends FieldValues = FieldValu
                     ? (resolvedErrorMessage ?? helperTextProp)
                     : undefined
             }
+            inputRef={ref}
             isFirstError={props.isFirstError ?? isFirstError}
             isRequired={props.isRequired || Boolean(rules?.required)}
-            ref={ref}
             value={Array.isArray(value)
                 ? value
                 : []}

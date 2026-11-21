@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import ListStatusState from '@components/empty/ListStatusState';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
@@ -63,6 +64,8 @@ interface SectionDiscussionPanelProps {
 
 export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionPanelProps) {
     const [threads, setThreads] = useState<DiscussionThreadRow[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
     const [loadedPages, setLoadedPages] = useState(1);
     const [totalThreads, setTotalThreads] = useState(0);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -104,7 +107,12 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
      * @param pageCount - How many pages to load.
      */
     async function loadThreads(pageCount = loadedPages) {
+        setIsLoading(true);
         const result = await listSectionThreads(sectionId, 1, THREAD_PAGE_SIZE * pageCount, '', []);
+        setIsLoading(false);
+        setLoadError(result.error
+            ? (result.error.message || 'Discussions could not be loaded.')
+            : null);
         if (result.data) {
             setThreads(result.data.content);
             setTotalThreads(result.data.totalElements);
@@ -250,6 +258,18 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
 
     const FILTER_OPTIONS: ('All' | 'Pinned' | 'Unanswered' | 'Resolved')[] = ['All', 'Pinned', 'Unanswered', 'Resolved'];
 
+    // Loading or a failed load is not "nothing here yet"
+    const listStatus = threads.length === 0 && (isLoading || loadError)
+        ? (
+            <ListStatusState
+                error={loadError}
+                isLoading={isLoading}
+                loadingText="Loading discussions..."
+                onRetry={() => loadThreads()}
+            />
+        )
+        : null;
+
     return (
         <div className="flex flex-col gap-4 h-full min-h-0">
             {/* Top Toolbar */}
@@ -290,7 +310,7 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
 
             {/* Discussion Threads Bento Grid */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-                {filteredThreads.length === 0
+                {listStatus ?? (filteredThreads.length === 0
                     ? (
                         <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900/50">
                             <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center mb-3">
@@ -380,7 +400,7 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                                 </div>
                             ))}
                         </div>
-                    )}
+                    ))}
 
                 {/* Filters only look at the threads loaded so far, so say so */}
                 {hasMoreThreads && (

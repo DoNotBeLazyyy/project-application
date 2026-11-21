@@ -162,6 +162,7 @@ export default function SchoolYearManagement() {
                         setIsFilterOpen(false);
                     }
                 }}
+                hasActiveFilters={activeFilters !== null}
                 renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
                     return (
                         <SchoolYearGridCard

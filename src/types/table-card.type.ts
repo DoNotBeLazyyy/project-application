@@ -53,6 +53,8 @@ export interface CommonTableCardProps<T extends FieldValues> {
     modeToggle?: TableCardModeToggleProps;
     createModalProps?: CommonFormModalProps;
     filterModalProps?: CommonFormModalProps;
+    // Whether filters narrow the list, so an empty result reads "no matches" instead of "no records"
+    hasActiveFilters?: boolean;
     updateModalProps?: CommonFormModalProps;
     viewModalProps?: CommonFormModalProps;
     deleteModalProps?: CommonTableCardDeleteModalProps;

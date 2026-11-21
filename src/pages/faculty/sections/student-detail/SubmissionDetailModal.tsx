@@ -127,15 +127,22 @@ export default function SubmissionDetailModal({ assessment, onClose }: Submissio
             return;
         }
 
+        // A slower answer for a submission the faculty already left must not replace the open one
+        let isCancelled = false;
+
         async function fetchSubmission(submissionId: string) {
             const result = await getSubmissionForGrading(submissionId);
 
-            if (result.data) {
+            if (!isCancelled && result.data) {
                 setSubmission(result.data);
             }
         }
 
         fetchSubmission(assessment.submission_id);
+
+        return function() {
+            isCancelled = true;
+        };
     }, [assessment]);
 
     if (!assessment) {

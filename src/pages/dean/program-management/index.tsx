@@ -315,6 +315,7 @@ export default function ProgramManagement() {
                         setIsFilterOpen(false);
                     }
                 }}
+                hasActiveFilters={activeFilters !== null}
                 renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
                     return (
                         <ProgramGridCard

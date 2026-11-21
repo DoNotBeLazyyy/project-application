@@ -7,6 +7,7 @@ import DashboardHeader from '@components/dashboard/DashboardHeader';
 import EventsFeedCard from '@components/dashboard/EventsFeedCard';
 import InstitutionalIdentityCard from '@components/dashboard/InstitutionalIdentityCard';
 import StudentInsightSummaryCard from '@components/dashboard/StudentInsightSummaryCard';
+import ListStatusState from '@components/empty/ListStatusState';
 import { ASSESSMENT_TYPE_VARIANT } from '@constants/status-badge.constant';
 import useDashboardFeeds from '@hooks/use-dashboard-feeds';
 import { onStudentProfileSaved, openStudentProfilePrompt } from '@pages/student/student-profile-prompt';
@@ -38,7 +39,7 @@ interface StudentStatCard {
 const STAT_CARDS: StudentStatCard[] = [
     {
         icon: <BookOpenIcon size={24} />,
-        iconBg: 'bg-(--mui-palette-primary-light)',
+        iconBg: 'bg-(--mui-palette-primary-main)/15',
         iconColor: 'text-(--mui-palette-primary-main)',
         label: 'Enrolled Subjects',
         statKey: 'enrolled',
@@ -46,7 +47,7 @@ const STAT_CARDS: StudentStatCard[] = [
     },
     {
         icon: <CalendarCheckIcon size={24} />,
-        iconBg: 'bg-(--mui-palette-warning-light)',
+        iconBg: 'bg-(--mui-palette-warning-main)/15',
         iconColor: 'text-(--mui-palette-warning-main)',
         label: 'Upcoming Assessments',
         statKey: 'upcoming',
@@ -54,7 +55,7 @@ const STAT_CARDS: StudentStatCard[] = [
     },
     {
         icon: <GraduationCapIcon size={24} />,
-        iconBg: 'bg-(--mui-palette-info-light)',
+        iconBg: 'bg-(--mui-palette-info-main)/15',
         iconColor: 'text-(--mui-palette-info-main)',
         label: 'Grades to View',
         statKey: 'released',
@@ -98,12 +99,19 @@ export default function StudentDashboard() {
     const [dashboard, setDashboard] = useState<StudentDashboardData | null>(null);
     const [insight, setInsight] = useState<StudentInsight | null>(null);
     const [profile, setProfile] = useState<MyProfile | null>(null);
+    const [isDashboardLoading, setIsDashboardLoading] = useState(true);
+    const [dashboardError, setDashboardError] = useState<string | null>(null);
 
     async function fetchStudentData() {
+        setIsDashboardLoading(true);
         const [dashboardResult, insightResult] = await Promise.all([
             getStudentDashboard(),
             getStudentInsight()
         ]);
+        setIsDashboardLoading(false);
+        setDashboardError(dashboardResult.error
+            ? (dashboardResult.error.message || 'Your dashboard could not be loaded.')
+            : null);
         if (dashboardResult.data) setDashboard(dashboardResult.data);
         if (insightResult.data?.success) setInsight(insightResult.data);
     }
@@ -117,6 +125,9 @@ export default function StudentDashboard() {
         // banner already covers that state, so skip them until the record exists.
         if (!result.data || result.data.student) {
             fetchStudentData();
+        }
+        else {
+            setIsDashboardLoading(false);
         }
     }
 
@@ -258,6 +269,15 @@ export default function StudentDashboard() {
             >
                 <div className="flex flex-col gap-2.5 p-4 pt-0">
                     {!dashboard?.upcoming_assessments?.length && (
+                        <ListStatusState
+                            className="py-8"
+                            error={dashboardError}
+                            isLoading={isDashboardLoading}
+                            loadingText="Loading upcoming assessments..."
+                            onRetry={fetchStudentData}
+                        />
+                    )}
+                    {!dashboard?.upcoming_assessments?.length && !isDashboardLoading && !dashboardError && (
                         <div className="py-8 text-center text-slate-500 dark:text-slate-400 text-sm italic">
                             No upcoming assessments at this time.
                         </div>

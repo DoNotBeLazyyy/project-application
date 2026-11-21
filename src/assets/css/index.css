@@ -24,6 +24,10 @@
 
 :root {
     color-scheme: light dark;
+
+    /* Toast text: darker than the state colour so it reads on the pale light-mode fill */
+    --app-toast-success-text: #166534;
+    --app-toast-warning-text: #92400E;
 }
 
 :root:has(> head > meta[name="color-scheme"][content="dark"]),
@@ -478,6 +482,9 @@ html:not(.dark) {
    Dark Theme Token Overrides & Consistency
    ========================================================================== */
 html.dark {
+    --app-toast-success-text: var(--mui-tokens-color-state-success);
+    --app-toast-warning-text: var(--mui-tokens-color-state-warning);
+
     /* Core surfaces */
     --mui-tokens-color-common-white: #FFFFFF;
     --mui-tokens-color-common-black: #09090B;

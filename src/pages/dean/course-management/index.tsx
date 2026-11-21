@@ -306,6 +306,7 @@ export default function CourseManagement() {
                         setIsFilterOpen(false);
                     }
                 }}
+                hasActiveFilters={activeFilters !== null}
                 renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
                     return (
                         <CourseGridCard

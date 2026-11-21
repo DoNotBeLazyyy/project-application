@@ -77,8 +77,8 @@ export default function CalendarActionMenu({
                 size="small"
                 sx={{
                     backgroundColor: isMenuOpen
-                        ? 'var(--mui-tokens-color-brand-100)'
-                        : 'var(--mui-tokens-color-common-white, #ffffff)',
+                        ? 'color-mix(in srgb, var(--mui-palette-primary-main) 15%, transparent)'
+                        : 'var(--mui-palette-background-paper)',
                     borderColor: 'var(--mui-palette-primary-main)',
                     borderWidth: '1px',
                     boxShadow: 'none',
@@ -91,13 +91,13 @@ export default function CalendarActionMenu({
                     width: '2.25rem',
                     '&:hover': {
                         backgroundColor: isMenuOpen
-                            ? 'var(--mui-tokens-color-brand-100)'
-                            : 'var(--mui-palette-grey-100)',
+                            ? 'color-mix(in srgb, var(--mui-palette-primary-main) 15%, transparent)'
+                            : 'var(--mui-palette-action-hover)',
                         borderColor: 'var(--mui-palette-primary-dark)',
                         color: 'var(--mui-palette-primary-dark)'
                     },
                     '&:active': {
-                        backgroundColor: 'var(--mui-palette-grey-200)'
+                        backgroundColor: 'var(--mui-palette-action-selected)'
                     }
                 }}
                 variant="outlined"

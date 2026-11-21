@@ -1,4 +1,5 @@
 import CommonCard from '@components/card/CommonCard';
+import ListStatusState from '@components/empty/ListStatusState';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import SectionAnnouncementPanel from '@pages/shared/announcement/SectionAnnouncementPanel';
 import SectionContentPanel from '@pages/shared/content/SectionContentPanel';
@@ -61,6 +62,9 @@ export default function SubjectDetailPage() {
     const [assessments, setAssessments] = useState<SubjectAssessmentItem[] | null>(null);
     const [attendance, setAttendance] = useState<StudentSubjectAttendanceItem[] | null>(null);
     const [grades, setGrades] = useState<SubjectGradeItem[] | null>(null);
+    // A tab whose load failed shows the error (with a retry) instead of "nothing here"
+    const [tabError, setTabError] = useState<{ message: string; tab: string } | null>(null);
+    const [tabReloadKey, setTabReloadKey] = useState(0);
 
     const effectiveEnrollmentId = subject?.enrollment_id || enrollmentId;
 
@@ -70,6 +74,7 @@ export default function SubjectDetailPage() {
         setAssessments(null);
         setAttendance(null);
         setGrades(null);
+        setTabError(null);
     }, [enrollmentId]);
 
     useEffect(function() {
@@ -108,6 +113,7 @@ export default function SubjectDetailPage() {
 
         async function fetchAssessments() {
             const result = await getSubjectAssessments(effectiveEnrollmentId);
+            reportTabError('assessments', result.error?.message);
             if (result.data) {
                 setAssessments(result.data);
             }
@@ -118,6 +124,7 @@ export default function SubjectDetailPage() {
 
         async function fetchAttendance() {
             const result = await getSubjectAttendance(effectiveEnrollmentId);
+            reportTabError('attendance', result.error?.message);
             if (result.data) {
                 setAttendance(result.data);
             }
@@ -128,6 +135,7 @@ export default function SubjectDetailPage() {
 
         async function fetchGrades() {
             const result = await getSubjectGrades(effectiveEnrollmentId);
+            reportTabError('grades', result.error?.message);
             if (result.data) {
                 setGrades(result.data);
             }
@@ -139,7 +147,42 @@ export default function SubjectDetailPage() {
         if (activeTab === 'assessments') fetchAssessments();
         if (activeTab === 'attendance' && attendance === null) fetchAttendance();
         if (activeTab === 'grades') fetchGrades();
-    }, [activeTab, attendance, effectiveEnrollmentId]);
+    }, [activeTab, attendance, effectiveEnrollmentId, tabReloadKey]);
+
+    function reportTabError(tab: string, message?: string) {
+        setTabError(function(previous) {
+            if (message !== undefined) {
+                return { message: message || 'This tab could not be loaded.', tab };
+            }
+            return previous?.tab === tab
+                ? null
+                : previous;
+        });
+    }
+
+    function handleRetryTab() {
+        setTabError(null);
+        if (activeTab === 'assessments') setAssessments(null);
+        if (activeTab === 'attendance') setAttendance(null);
+        if (activeTab === 'grades') setGrades(null);
+        setTabReloadKey((key) => key + 1);
+    }
+
+    // Shown instead of a tab's list while it loads (null) or after its load failed
+    function renderTabStatus(tab: string, data: unknown[] | null) {
+        if (tabError?.tab === tab) {
+            return (
+                <ListStatusState
+                    error={tabError.message}
+                    onRetry={handleRetryTab}
+                />
+            );
+        }
+        if (data === null) {
+            return <ListStatusState isLoading />;
+        }
+        return null;
+    }
 
     function handleTabChange(_: SyntheticEvent, value: string) {
         setSearchParams({ tab: value }, { replace: true });
@@ -253,21 +296,21 @@ export default function SubjectDetailPage() {
                             sectionId={subject.section_id}
                         />
                     )}
-                    {activeTab === 'assessments' && (
+                    {activeTab === 'assessments' && (renderTabStatus('assessments', assessments) ?? (
                         <SubjectAssessmentList
                             assessments={assessments ?? []}
                             enrollmentId={effectiveEnrollmentId}
                         />
-                    )}
-                    {activeTab === 'grades' && (
+                    ))}
+                    {activeTab === 'grades' && (renderTabStatus('grades', grades) ?? (
                         <SubjectGradeList
                             enrollmentId={effectiveEnrollmentId}
                             grades={grades ?? []}
                         />
-                    )}
-                    {activeTab === 'attendance' && (
+                    ))}
+                    {activeTab === 'attendance' && (renderTabStatus('attendance', attendance) ?? (
                         <SubjectAttendanceList attendance={attendance ?? []} />
-                    )}
+                    ))}
                     {activeTab === 'discussion' && subject?.section_id && (
                         <SectionDiscussionPanel sectionId={subject.section_id} />
                     )}

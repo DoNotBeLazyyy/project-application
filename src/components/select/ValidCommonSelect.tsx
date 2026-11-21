@@ -147,7 +147,7 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
                     onFocus: handleFocus
                 }
             }}
-            value={value}
+            value={value ?? ''}
             onChange={handleChange}
         />
     );

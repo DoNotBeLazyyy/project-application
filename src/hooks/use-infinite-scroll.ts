@@ -42,7 +42,9 @@ export function useInfiniteScroll(totalCount: number, step: number): InfiniteScr
         return function() {
             observer.disconnect();
         };
-    }, [hasMore, step, totalCount]);
+        // Re-observing after each reveal makes a sentinel still on screen (tall screens) report
+        // again; an observer only calls back when the intersection changes
+    }, [hasMore, step, totalCount, visibleCount]);
 
     const reset = useCallback(function() {
         setVisibleCount(step);

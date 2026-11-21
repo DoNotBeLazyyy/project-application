@@ -70,7 +70,7 @@ export default function FilterSortModal({
             formContent={(
                 <div className="flex flex-col gap-5 w-full">
                     <div className="flex flex-col gap-3 w-full">
-                        <span className="font-bold text-(--mui-palette-brand-700) text-xs tracking-wider uppercase">
+                        <span className="font-bold text-(--mui-tokens-color-brand-700) text-xs tracking-wider uppercase">
                             Filter Options
                         </span>
                         {formContent}

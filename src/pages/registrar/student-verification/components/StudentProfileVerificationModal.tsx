@@ -455,7 +455,7 @@ export default function StudentProfileVerificationModal({
                     {/* Pending Instructions / Status alert */}
                     {isPending
                         ? (
-                            <div className="border border-(--mui-palette-info-main) bg-(--mui-palette-info-light) p-2.5 sm:p-3 rounded-lg flex items-start gap-2.5 text-xs text-(--mui-palette-text-primary) shrink-0">
+                            <div className="border border-(--mui-palette-info-main) bg-(--mui-palette-info-main)/10 p-2.5 sm:p-3 rounded-lg flex items-start gap-2.5 text-xs text-(--mui-palette-text-primary) shrink-0">
                                 <PencilSimpleIcon
                                     className="text-(--mui-palette-info-main) shrink-0 mt-0.5"
                                     size={18}
@@ -699,7 +699,7 @@ export default function StudentProfileVerificationModal({
 
                     {/* Rejection Drawer / Form */}
                     {isRejectOpen && (
-                        <div className="border border-(--mui-palette-error-main) bg-(--mui-palette-error-light) p-3 sm:p-4 rounded-lg flex flex-col gap-3 shrink-0">
+                        <div className="border border-(--mui-palette-error-main) bg-(--mui-palette-error-main)/10 p-3 sm:p-4 rounded-lg flex flex-col gap-3 shrink-0">
                             <div className="flex items-center gap-2 text-(--mui-palette-error-main) font-semibold text-sm">
                                 <WarningCircleIcon size={20} />
                                 <span>Reject Profile Change Request</span>

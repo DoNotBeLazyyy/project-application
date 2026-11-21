@@ -105,7 +105,9 @@ export default function GradeRelease() {
 
     // Section Grade Submissions state
     const [sectionRows, setSectionRows] = useState<SectionGradeSubmissionRow[]>([]);
-    const [isSectionsLoading, setIsSectionsLoading] = useState(false);
+    // Starts true: until the first term loads, an empty list means "not known yet"
+    const [isSectionsLoading, setIsSectionsLoading] = useState(true);
+    const [sectionsError, setSectionsError] = useState<string | null>(null);
     const [sectionSearch, setSectionSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState<StatusFilterTab>('ALL');
     const [inspectedSection, setInspectedSection] = useState<SectionGradeSubmissionRow | null>(null);
@@ -123,23 +125,36 @@ export default function GradeRelease() {
             setSelectedPeriodId('');
             activePeriodRequestIdRef.current = '';
             setSectionRows([]);
+            setSectionsError(null);
+            setIsSectionsLoading(false);
             return;
         }
 
         setIsSectionsLoading(true);
+        setSectionsError(null);
+        // The period this load fills; a period picked meanwhile owns the list instead
+        let loadedPeriodId = '';
         try {
             const periodsResult = await listGradeReleaseSchedule(termId);
             if (activeTermRequestIdRef.current !== termId) return;
 
+            if (periodsResult.error) {
+                setSectionsError(periodsResult.error.message || 'Grading periods could not be loaded.');
+            }
             const periodsList = periodsResult.data ?? [];
             setPeriods(periodsList);
             const initialPeriodId = periodsList[0]?.grading_period_id ?? '';
             setSelectedPeriodId(initialPeriodId);
             activePeriodRequestIdRef.current = initialPeriodId;
+            loadedPeriodId = initialPeriodId;
 
             if (initialPeriodId) {
                 const sectionsResult = await listSectionGradeSubmissions(termId, initialPeriodId);
-                if (activeTermRequestIdRef.current !== termId) return;
+                // The registrar may have picked another period while this one was loading
+                if (activeTermRequestIdRef.current !== termId || activePeriodRequestIdRef.current !== initialPeriodId) return;
+                setSectionsError(sectionsResult.error
+                    ? (sectionsResult.error.message || 'Section submissions could not be loaded.')
+                    : null);
                 setSectionRows(sectionsResult.data ?? []);
             }
             else {
@@ -149,13 +164,14 @@ export default function GradeRelease() {
         catch (err) {
             if (activeTermRequestIdRef.current === termId) {
                 captureException(err, { context: 'Failed to load term grade release data' });
+                setSectionsError('Grade release data could not be loaded.');
                 setPeriods([]);
                 setSelectedPeriodId('');
                 setSectionRows([]);
             }
         }
         finally {
-            if (activeTermRequestIdRef.current === termId) {
+            if (activeTermRequestIdRef.current === termId && activePeriodRequestIdRef.current === loadedPeriodId) {
                 setIsSectionsLoading(false);
             }
         }
@@ -173,15 +189,21 @@ export default function GradeRelease() {
         }
 
         setIsSectionsLoading(true);
+        setSectionsError(null);
         try {
-            const sectionsResult = await listSectionGradeSubmissions(selectedTermId, periodId);
-            if (activePeriodRequestIdRef.current === periodId) {
+            const termId = selectedTermId;
+            const sectionsResult = await listSectionGradeSubmissions(termId, periodId);
+            if (activePeriodRequestIdRef.current === periodId && activeTermRequestIdRef.current === termId) {
+                setSectionsError(sectionsResult.error
+                    ? (sectionsResult.error.message || 'Section submissions could not be loaded.')
+                    : null);
                 setSectionRows(sectionsResult.data ?? []);
             }
         }
         catch (err) {
             if (activePeriodRequestIdRef.current === periodId) {
                 captureException(err, { context: 'Failed to load section submissions for period' });
+                setSectionsError('Section submissions could not be loaded.');
                 setSectionRows([]);
             }
         }
@@ -194,15 +216,25 @@ export default function GradeRelease() {
 
     const refreshCurrentData = useCallback(async function() {
         if (!selectedTermId) return;
+        const termId = selectedTermId;
+        const periodId = selectedPeriodId;
+
+        // Drop the answer if the registrar moved to another term or period meanwhile
+        function isStale() {
+            return activeTermRequestIdRef.current !== termId || activePeriodRequestIdRef.current !== periodId;
+        }
 
         try {
-            const periodsResult = await listGradeReleaseSchedule(selectedTermId);
+            const periodsResult = await listGradeReleaseSchedule(termId);
+            if (isStale()) return;
             if (periodsResult.data) {
                 setPeriods(periodsResult.data);
             }
-            if (selectedPeriodId) {
-                const sectionsResult = await listSectionGradeSubmissions(selectedTermId, selectedPeriodId);
+            if (periodId) {
+                const sectionsResult = await listSectionGradeSubmissions(termId, periodId);
+                if (isStale()) return;
                 if (sectionsResult.data) {
+                    setSectionsError(null);
                     setSectionRows(sectionsResult.data);
                     setInspectedSection((prev) => {
                         if (!prev) return null;
@@ -217,6 +249,9 @@ export default function GradeRelease() {
     }, [selectedTermId, selectedPeriodId]);
 
     useEffect(function() {
+        if (isTermsLoaded && termOptions.length === 0) {
+            setIsSectionsLoading(false);
+        }
         if (!isTermsLoaded || termOptions.length === 0) return;
 
         async function selectInitialTerm() {
@@ -621,9 +656,24 @@ export default function GradeRelease() {
                         : filteredSections.length === 0
                             ? (
                                 <div className="p-8 text-center text-(--mui-palette-text-secondary) text-sm">
-                                    {sectionRows.length === 0
-                                        ? 'No sections found for this academic term.'
-                                        : 'No section submissions match the selected filter.'}
+                                    {sectionsError && sectionRows.length === 0
+                                        ? `Section submissions couldn't be loaded. ${sectionsError}`
+                                        : sectionRows.length === 0
+                                            ? (periods.length === 0
+                                                ? 'This term has no grading periods, so there is nothing to release yet.'
+                                                : 'No sections are scheduled for this term and grading period.')
+                                            : 'No section submissions match the selected filter.'}
+                                    {sectionsError && sectionRows.length === 0 && (
+                                        <div className="mt-3">
+                                            <CommonButton
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() => loadTermData(selectedTermId)}
+                                            >
+                                                Try Again
+                                            </CommonButton>
+                                        </div>
+                                    )}
                                 </div>
                             )
                             : (

@@ -62,6 +62,8 @@ export default function GradingTab({
     const [assessments, setAssessments] = useState<AssessmentListRow[]>([]);
     const [calculationFailures, setCalculationFailures] = useState<GradeCalculationFailure[]>([]);
     const [gradeSheet, setGradeSheet] = useState<GradeSheetRow[]>([]);
+    const [isSheetLoading, setIsSheetLoading] = useState(false);
+    const [sheetError, setSheetError] = useState<string | null>(null);
     const [isLocked, setIsLocked] = useState(false);
     const [specialGradeFlags, setSpecialGradeFlags] = useState<SpecialGradeFlag[]>([]);
     const [flagPendingDismissal, setFlagPendingDismissal] = useState<SpecialGradeFlag | null>(null);
@@ -138,6 +140,9 @@ export default function GradingTab({
             return periodRequestRef.current !== requestId;
         }
 
+        setIsSheetLoading(true);
+        setSheetError(null);
+
         const [componentsResult, gradeSheetResult, lockedResult, flagsResult, assessmentsResult] = await Promise.all([
             listGradingComponents(sectionId, periodId),
             listGradeSheet(sectionId, periodId),
@@ -147,6 +152,11 @@ export default function GradingTab({
         ]);
 
         if (isStale()) return;
+
+        setIsSheetLoading(false);
+        setSheetError(gradeSheetResult.error
+            ? (gradeSheetResult.error.message || 'The grade sheet could not be loaded.')
+            : null);
 
         if (assessmentsResult.data) setAssessments(assessmentsResult.data);
 
@@ -571,7 +581,9 @@ export default function GradingTab({
                         isCalculating={isCalculating}
                         isEncodingOpen={isEncodingOpen}
                         isFlagBusy={isFlagBusy}
+                        isLoading={isSheetLoading}
                         isSubmittingGrades={isSubmittingGrades}
+                        loadError={sheetError}
                         periodName={periods.find((p) => p.id === activePeriodId)?.name}
                         sectionCode={sectionCode}
                         specialGradeFlags={specialGradeFlags}
@@ -579,6 +591,7 @@ export default function GradingTab({
                         onCalculate={handleCalculate}
                         onDismissFailures={handleDismissFailures}
                         onDismissFlag={handleRequestDismissFlag}
+                        onRetry={() => fetchPeriodData()}
                         onSubmitGrades={handleSubmitGrades}
                         onUpdateSpecialGrade={handleUpdateSpecialGrade}
                     />

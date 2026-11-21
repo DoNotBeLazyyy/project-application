@@ -119,7 +119,36 @@ export function getCookie(key: string): string | null {
 }
 
 /**
- * Writes a value to cookie storage, chunking across multiple cookies if length exceeds threshold.
+ * Splits a value into pieces whose URI-encoded form is at most `maxEncodedLength` characters.
+ * Splits between code points, so an emoji or other surrogate pair is never cut in half.
+ */
+export function splitByEncodedLength(value: string, maxEncodedLength: number): string[] {
+    const chunks: string[] = [];
+    let current = '';
+    let currentLength = 0;
+
+    for (const char of value) {
+        const charLength = encodeURIComponent(char).length;
+
+        if (current && currentLength + charLength > maxEncodedLength) {
+            chunks.push(current);
+            current = '';
+            currentLength = 0;
+        }
+
+        current += char;
+        currentLength += charLength;
+    }
+
+    if (current) {
+        chunks.push(current);
+    }
+
+    return chunks;
+}
+
+/**
+ * Writes a value to cookie storage, chunking across multiple cookies if its encoded length exceeds the threshold.
  */
 export function setCookie(key: string, value: string, options?: CookieOptions): void {
     const manifestKey = `${key}${CHUNK_MANIFEST_SUFFIX}`;
@@ -136,14 +165,14 @@ export function setCookie(key: string, value: string, options?: CookieOptions): 
         removeRawCookie(manifestKey, options);
     }
 
-    if (value.length > CHUNK_SIZE) {
-        const chunkCount = Math.ceil(value.length / CHUNK_SIZE);
-        setRawCookie(manifestKey, String(chunkCount), options);
+    // Measured encoded: quotes, braces and non-ASCII grow up to 9x, and browsers drop a cookie over ~4 KB
+    if (encodeURIComponent(value).length > CHUNK_SIZE) {
+        const chunks = splitByEncodedLength(value, CHUNK_SIZE);
+        setRawCookie(manifestKey, String(chunks.length), options);
 
-        for (let i = 0; i < chunkCount; i++) {
-            const chunk = value.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+        chunks.forEach(function(chunk, i) {
             setRawCookie(`${key}${CHUNK_PREFIX}${i}`, chunk, options);
-        }
+        });
 
         // Also remove legacy single cookie if it exists
         removeRawCookie(key, options);

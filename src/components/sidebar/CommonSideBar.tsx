@@ -241,13 +241,14 @@ export default function CommonSideBar({
         );
     }
 
+    // Only pinning reserves the wide rail; hover expands the panel over the page without reflowing it
     return (
         <SideBarContext.Provider value={contextValue}>
             <div
                 className={
                     classMerge(
                         'relative h-full shrink-0 transition-[width,min-width] duration-300 ease-in-out',
-                        isExpanded
+                        isOpen
                             ? SIDEBAR_WIDTH_EXPANDED
                             : SIDEBAR_WIDTH_COLLAPSED
                     )

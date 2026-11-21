@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import ListStatusState from '@components/empty/ListStatusState';
 import CommonModal from '@components/modal/CommonModal';
 import { CheckCircleIcon, CircleIcon } from '@phosphor-icons/react';
 import { listMyTeachingSections } from '@services/content.service';
@@ -26,6 +27,8 @@ export default function DuplicateToSectionsModal({
     onDuplicated
 }: DuplicateToSectionsModalProps) {
     const [sections, setSections] = useState<TeachingSection[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -37,7 +40,12 @@ export default function DuplicateToSectionsModal({
     }, [open, sectionId]);
 
     async function loadSections() {
+        setIsLoading(true);
         const result = await listMyTeachingSections(sectionId);
+        setIsLoading(false);
+        setLoadError(result.error
+            ? (result.error.message || 'Your sections could not be loaded.')
+            : null);
 
         if (result.data) {
             setSections(result.data);
@@ -82,6 +90,15 @@ export default function DuplicateToSectionsModal({
             </div>
             <div className="flex flex-col gap-1 max-h-80 overflow-y-auto">
                 {sections.length === 0 && (
+                    <ListStatusState
+                        className="py-6"
+                        error={loadError}
+                        isLoading={isLoading}
+                        loadingText="Loading your sections..."
+                        onRetry={loadSections}
+                    />
+                )}
+                {sections.length === 0 && !isLoading && !loadError && (
                     <p className="py-6 text-(--mui-palette-text-secondary) text-center text-sm">
                         You are not assigned to any other section.
                     </p>

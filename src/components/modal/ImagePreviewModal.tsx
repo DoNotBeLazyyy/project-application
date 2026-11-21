@@ -649,6 +649,8 @@ export default function ImagePreviewModal({
                             type="button"
                             onClick={(e) => {
                                 e.stopPropagation();
+                                // The shown image is already loaded; it won't fire onLoad again
+                                if (idx === currentIndex) return;
                                 setCurrentIndex(idx);
                                 resetTransform();
                                 setIsLoading(true);

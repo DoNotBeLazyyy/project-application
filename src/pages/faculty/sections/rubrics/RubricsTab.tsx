@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import ListStatusState from '@components/empty/ListStatusState';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import DuplicateToSectionsModal from '@pages/shared/content/DuplicateToSectionsModal';
 import {
@@ -20,6 +21,8 @@ interface RubricsTabProps {
 export default function RubricsTab({ sectionId }: RubricsTabProps) {
     const navigate = useNavigate();
     const [rubrics, setRubrics] = useState<RubricListRow[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
     const [duplicating, setDuplicating] = useState<RubricListRow | null>(null);
     const [pendingDelete, setPendingDelete] = useState<RubricListRow | null>(null);
 
@@ -28,7 +31,12 @@ export default function RubricsTab({ sectionId }: RubricsTabProps) {
     }, [sectionId]);
 
     async function fetchRubrics() {
+        setIsLoading(true);
         const result = await listRubrics(sectionId);
+        setIsLoading(false);
+        setLoadError(result.error
+            ? (result.error.message || 'Rubrics could not be loaded.')
+            : null);
         if (result.data) {
             setRubrics(result.data);
         }
@@ -44,6 +52,18 @@ export default function RubricsTab({ sectionId }: RubricsTabProps) {
             await fetchRubrics();
         }
     }
+
+    // Loading or a failed load is not "nothing here yet"
+    const listStatus = rubrics.length === 0 && (isLoading || loadError)
+        ? (
+            <ListStatusState
+                error={loadError}
+                isLoading={isLoading}
+                loadingText="Loading rubrics..."
+                onRetry={fetchRubrics}
+            />
+        )
+        : null;
 
     return (
         <div className="flex flex-col gap-4 h-full min-h-0">
@@ -71,7 +91,7 @@ export default function RubricsTab({ sectionId }: RubricsTabProps) {
             </div>
 
             <div className="flex-1 min-h-0 overflow-y-auto">
-                {rubrics.length === 0
+                {listStatus ?? (rubrics.length === 0
                     ? (
                         <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
                             <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center">
@@ -192,7 +212,7 @@ export default function RubricsTab({ sectionId }: RubricsTabProps) {
                                 </div>
                             ))}
                         </div>
-                    )}
+                    ))}
             </div>
 
             {duplicating && (

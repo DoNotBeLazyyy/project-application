@@ -458,6 +458,7 @@ export default function UserManagement() {
                     },
                     onReset: handleFilterReset
                 }}
+                hasActiveFilters={Boolean(activeFilters && (activeFilters.city || activeFilters.province || activeFilters.role_code !== 'All' || activeFilters.status !== 'Active_Invited'))}
                 renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
                     return (
                         <UserGridCard

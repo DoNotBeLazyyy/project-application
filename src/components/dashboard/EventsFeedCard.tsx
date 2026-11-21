@@ -110,7 +110,7 @@ export default function EventsFeedCard({ events, error }: EventsFeedCardProps) {
                             type="button"
                             onClick={() => setDetailEvent(event)}
                         >
-                            <div className="bg-(--mui-palette-primary-light) flex h-9 items-center justify-center rounded-lg shrink-0 w-9">
+                            <div className="bg-(--mui-palette-primary-main)/15 flex h-9 items-center justify-center rounded-lg shrink-0 w-9">
                                 <CalendarBlankIcon
                                     className="text-(--mui-palette-primary-main)"
                                     size={18}

@@ -79,6 +79,35 @@ export function getFieldErrorMessage(errors: FieldErrors, name: string): string 
 
 export const FORM_ERROR_EVENT = 'app:form-error';
 
+export const INVALID_DATE_MESSAGE = 'Enter a valid date';
+
+type ValidateRule = ((value: unknown, formValues: unknown) => unknown) | Record<string, (value: unknown, formValues: unknown) => unknown>;
+
+/**
+ * Adds a validate rule that fails while the picker holds a typed date that doesn't
+ * exist (e.g. 02/31). The field value is empty then, so without this an optional
+ * field would submit as blank. `isInvalidRef` is read at validation time.
+ */
+export function withValidDateRule<R extends { validate?: unknown } | undefined>(
+    rules: R,
+    isInvalidRef: { current: boolean }
+): R {
+    const validate = rules?.validate as ValidateRule | undefined;
+
+    function validDate() {
+        return isInvalidRef.current
+            ? INVALID_DATE_MESSAGE
+            : true;
+    }
+
+    return {
+        ...rules,
+        validate: typeof validate === 'function'
+            ? { validDate, custom: validate }
+            : { validDate, ...validate }
+    } as R;
+}
+
 // Philippine mobile number: 09XX XXX XXXX or +639XX XXX XXXX (spaces or dashes allowed)
 export const MOBILE_NUMBER_RULE = {
     value: /^(\+63|0)9\d{2}[\s-]?\d{3}[\s-]?\d{4}$/,

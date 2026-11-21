@@ -45,7 +45,9 @@ interface GradeSheetPanelProps {
     isEncodingOpen?: boolean;
     isCalculating?: boolean;
     isFlagBusy?: boolean;
+    isLoading?: boolean;
     isSubmittingGrades?: boolean;
+    loadError?: string | null;
     periodName?: string;
     sectionCode?: string;
     specialGradeFlags?: SpecialGradeFlag[];
@@ -53,6 +55,7 @@ interface GradeSheetPanelProps {
     onCalculate: () => Promise<void>;
     onDismissFailures?: VoidFunction;
     onDismissFlag?: (flag: SpecialGradeFlag) => void;
+    onRetry?: VoidFunction;
     onSubmitGrades?: () => Promise<void>;
     onUpdateSpecialGrade?: (enrollmentId: string, specialGrade: string | null) => Promise<void>;
 }
@@ -68,7 +71,9 @@ export default function GradeSheetPanel({
     isEncodingOpen = true,
     isCalculating = false,
     isFlagBusy,
+    isLoading = false,
     isSubmittingGrades,
+    loadError = null,
     periodName,
     sectionCode,
     specialGradeFlags,
@@ -76,6 +81,7 @@ export default function GradeSheetPanel({
     onCalculate,
     onDismissFailures,
     onDismissFlag,
+    onRetry,
     onSubmitGrades,
     onUpdateSpecialGrade
 }: GradeSheetPanelProps) {
@@ -351,8 +357,23 @@ export default function GradeSheetPanel({
                     ? (
                         <div className="py-12 text-center text-slate-500 text-xs border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900">
                             {gradeSheet.length === 0
-                                ? 'No grade records generated for this period yet. Click "Calculate" to compute.'
+                                ? (loadError
+                                    ? `The grade sheet couldn't be loaded. ${loadError}`
+                                    : isLoading
+                                        ? 'Loading grade sheet...'
+                                        : 'No grade records generated for this period yet. Click "Calculate" to compute.')
                                 : `No students match "${searchQuery}".`}
+                            {gradeSheet.length === 0 && loadError && onRetry && (
+                                <div className="mt-3">
+                                    <CommonButton
+                                        size="small"
+                                        variant="outlined"
+                                        onClick={onRetry}
+                                    >
+                                        Try Again
+                                    </CommonButton>
+                                </div>
+                            )}
                         </div>
                     )
                     : (

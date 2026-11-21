@@ -249,6 +249,7 @@ export default function StudentGrades() {
                             setIsFilterOpen(false);
                         }
                     }}
+                    hasActiveFilters={activeFilters !== null}
                     sortColumns={SORT_COLUMNS}
                     tableProps={{
                         leadingColumnDefs: columnDefs

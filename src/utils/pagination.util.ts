@@ -21,14 +21,18 @@ export function calculateRowRange(currentPage: number, rowsPerPage: number, tota
 }
 
 /**
- * Clamps a page number within the valid range of 1 to totalPages.
+ * Rounds a page number to a whole page and clamps it within 1 to totalPages.
  *
- * @param page - Requested page number.
+ * @param page - Requested page number (a typed 1.5 becomes 2).
  * @param totalPages - Maximum available pages.
  * @returns
  */
 export function clampPage(page: number, totalPages: number): number {
-    return Math.min(Math.max(page, 1), Math.max(1, totalPages));
+    const wholePage = Number.isFinite(page)
+        ? Math.round(page)
+        : 1;
+
+    return Math.min(Math.max(wholePage, 1), Math.max(1, totalPages));
 }
 
 /**

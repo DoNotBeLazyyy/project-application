@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
+import ListStatusState from '@components/empty/ListStatusState';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import { MANUAL_GRADE_TYPES } from '@pages/faculty/sections/assessments/submissions/answerPoints';
 import GradingPanel from '@pages/faculty/sections/assessments/submissions/GradingPanel';
@@ -28,6 +29,8 @@ export default function SubmissionsPage() {
     const navigate = useNavigate();
 
     const [submissions, setSubmissions] = useState<SubmissionListRow[]>([]);
+    const [isListLoading, setIsListLoading] = useState(true);
+    const [listError, setListError] = useState<string | null>(null);
     const [selectedSubmission, setSelectedSubmission] = useState<SubmissionForGrading | null>(null);
     const [draftAnswers, setDraftAnswers] = useState<GradeAnswerUpdate[]>([]);
     const [rubric, setRubric] = useState<SubmissionRubric | null>(null);
@@ -49,7 +52,12 @@ export default function SubmissionsPage() {
     }, [assessmentId]);
 
     async function fetchSubmissions() {
+        setIsListLoading(true);
         const result = await listSubmissions(assessmentId);
+        setIsListLoading(false);
+        setListError(result.error
+            ? (result.error.message || 'Submissions could not be loaded.')
+            : null);
         if (result.data) setSubmissions(result.data);
     }
 
@@ -203,9 +211,13 @@ export default function SubmissionsPage() {
                         Submissions
                         </h1>
                         <p className="text-(--mui-palette-text-secondary) text-sm">
-                            {submissions.length} submission{submissions.length !== 1
-                                ? 's'
-                                : ''}
+                            {listError && submissions.length === 0
+                                ? 'Submissions couldn\'t be loaded'
+                                : isListLoading && submissions.length === 0
+                                    ? 'Loading submissions...'
+                                    : `${submissions.length} submission${submissions.length !== 1
+                                        ? 's'
+                                        : ''}`}
                         </p>
                     </div>
                 </div>
@@ -215,10 +227,21 @@ export default function SubmissionsPage() {
                             ? 'hidden md:flex md:w-2/5'
                             : 'flex flex-1 md:w-2/5'}`}
                     >
-                        <SubmissionList
-                            submissions={submissions}
-                            onSelect={handleRequestSelect}
-                        />
+                        {listError && submissions.length === 0
+                            ? (
+                                <ListStatusState
+                                    className="w-full"
+                                    error={listError}
+                                    onRetry={fetchSubmissions}
+                                />
+                            )
+                            : (
+                                <SubmissionList
+                                    isLoading={isListLoading}
+                                    submissions={submissions}
+                                    onSelect={handleRequestSelect}
+                                />
+                            )}
                     </div>
                     <div
                         className={`flex-1 h-full min-h-0 ${!selectedSubmission

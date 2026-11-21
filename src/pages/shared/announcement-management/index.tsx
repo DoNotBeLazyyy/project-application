@@ -906,6 +906,7 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                     },
                     open: isFilterOpen
                 }}
+                hasActiveFilters={activeFilters !== null}
                 modeToggle={isManagementRole
                     ? {
                         mode,

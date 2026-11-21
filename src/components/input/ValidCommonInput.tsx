@@ -99,7 +99,7 @@ export default function ValidCommonInput<T extends FieldValues = FieldValues>({
             isRequired={props.isRequired || Boolean(rules?.required)}
             name={name}
             type={type}
-            value={value}
+            value={value ?? ''}
             onChange={handleChange}
         />
     );
