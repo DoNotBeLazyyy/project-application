@@ -8,6 +8,8 @@
 --   * fn_calculate_all_grades_for_period, fn_submit_section_grades,
 --     fn_set_enrollment_special_grade: return {success:false,message} outside the window.
 -- Every function below is the live definition with only this check added.
+-- Runs after 20261121100003, which also redefines fn_calculate_all_grades_for_period and
+-- fn_submit_section_grades; its enrollment-status change (#12) is merged in here.
 -- Idempotent: CREATE OR REPLACE only, same signatures and return shapes.
 -- ====================================================================
 BEGIN;
@@ -100,7 +102,8 @@ BEGIN
     INNER JOIN public.students st ON st.id = e.student_id AND st.deleted_at IS NULL
     INNER JOIN public.users u ON u.id = st.user_id AND u.deleted_at IS NULL
     WHERE e.section_id  = p_section_id
-      AND e.status      = 'Enrolled'
+      -- Merged with 20261121100003 (audit #12): same students as the grade sheet
+      AND e.status NOT IN ('Dropped', 'Withdrawn')
       AND e.deleted_at  IS NULL
     ORDER BY u.last_name ASC, u.first_name ASC
   LOOP
@@ -222,7 +225,8 @@ BEGIN
     FROM public.enrollments e
     INNER JOIN public.students st ON st.id = e.student_id AND st.deleted_at IS NULL
     WHERE e.section_id = p_section_id
-      AND e.status = 'Enrolled'
+      -- Merged with 20261121100003 (audit #12): same students as the grade sheet and Calculate
+      AND e.status NOT IN ('Dropped', 'Withdrawn')
       AND e.deleted_at IS NULL
       AND NOT EXISTS (
           SELECT 1 FROM public.section_final_grades sfg
