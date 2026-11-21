@@ -63,6 +63,15 @@ export default function Step2TermsConfig({
     });
 
     const watchedTerms = useWatch({ control, name: 'terms' }) || [];
+    const syStartDate = useWatch({ control, name: 'start_date' });
+    const syEndDate = useWatch({ control, name: 'end_date' });
+
+    // A term must sit inside the school year's own start and end dates
+    function isOutsideSchoolYear(date?: string | null) {
+        if (!date) return false;
+        return Boolean((syStartDate && new Date(date) < new Date(syStartDate))
+            || (syEndDate && new Date(date) > new Date(syEndDate)));
+    }
 
     useEffect(() => {
         let isMounted = true;
@@ -195,6 +204,10 @@ export default function Step2TermsConfig({
                         && new Date(currentTerm.end_date) <= new Date(currentTerm.start_date)
                     );
 
+                    // Check the term stays inside the school year dates
+                    const hasSchoolYearRangeError = isOutsideSchoolYear(currentTerm.start_date)
+                        || isOutsideSchoolYear(currentTerm.end_date);
+
                     const diffMark = diffMarks?.[`term:${index}`];
 
                     return (
@@ -202,7 +215,7 @@ export default function Step2TermsConfig({
                             className={`p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-800/80 border shadow-sm space-y-4 transition-all ${
                                 diffMark
                                     ? HISTORY_DIFF_HIGHLIGHT_CLASS
-                                    : otherTermsHaveThisType || hasPrecedingConflict || hasDateOrderError
+                                    : otherTermsHaveThisType || hasPrecedingConflict || hasDateOrderError || hasSchoolYearRangeError
                                         ? 'border-amber-300 dark:border-amber-700/70'
                                         : 'border-slate-200 dark:border-zinc-700/60'
                             }`}
@@ -299,6 +312,15 @@ export default function Step2TermsConfig({
                                     </div>
                                 )}
 
+                                {hasSchoolYearRangeError && (
+                                    <div className="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 text-xs flex items-center gap-2">
+                                        <WarningCircleIcon className="w-4 h-4 shrink-0" />
+                                        <span>
+                                        Date Conflict: {currentTerm.term_type_label || `Term #${index + 1}`} must fall within the school year ({syStartDate} to {syEndDate}).
+                                        </span>
+                                    </div>
+                                )}
+
                                 {/* Term Inputs Responsive Grid */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {/* Term Type Input: resolved to terms.term_type_id (NOT NULL, unique per school year) on save */}
@@ -361,7 +383,9 @@ export default function Step2TermsConfig({
                                             label="Term Start Date"
                                             name={`terms.${index}.start_date`}
                                             rules={{
-                                                required: 'Term start date is required'
+                                                required: 'Term start date is required',
+                                                validate: (val) => !isOutsideSchoolYear(val as string)
+                                                    || 'Start date must be within the school year dates'
                                             }}
                                         />
                                     </div>
@@ -381,6 +405,9 @@ export default function Step2TermsConfig({
                                                     const start = watchedTerms[index]?.start_date;
                                                     if (val && start && new Date(val as string) <= new Date(start)) {
                                                         return 'End date must be after start date';
+                                                    }
+                                                    if (isOutsideSchoolYear(val as string)) {
+                                                        return 'End date must be within the school year dates';
                                                     }
                                                     return true;
                                                 }
