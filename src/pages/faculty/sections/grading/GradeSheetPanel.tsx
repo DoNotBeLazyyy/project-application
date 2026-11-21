@@ -17,6 +17,7 @@ import {
 import { GradeCalculationFailure, GradeSheetRow, GradingComponent } from '@type/faculty.type';
 import { SpecialGradeFlag } from '@type/grading-config.type';
 import { exportCsvFile } from '@utils/file.util';
+import { formatGrade } from '@utils/grade-display.util';
 import { generateGradeSheetCsv } from '@utils/grading.util';
 import { useMemo, useState } from 'react';
 
@@ -433,9 +434,8 @@ export default function GradeSheetPanel({
                                                     Transmuted
                                                 </span>
                                                 <span className="font-extrabold text-sm text-blue-700 dark:text-blue-300 block mt-0.5">
-                                                    {row.transmuted_grade != null
-                                                        ? String(row.transmuted_grade)
-                                                        : '—'}
+                                                    {/* Same "5.00" / "INC" format as every other grade screen */}
+                                                    {formatGrade(row.transmuted_grade, row.special_grade)}
                                                 </span>
                                             </div>
 
@@ -459,7 +459,7 @@ export default function GradeSheetPanel({
                                                     <option
                                                         className="text-slate-700 dark:text-slate-200 bg-white dark:bg-zinc-900"
                                                         value=""
-                                                    >— None —</option>
+                                                    >None</option>
                                                     <option
                                                         className="text-amber-700 dark:text-amber-300 bg-white dark:bg-zinc-900"
                                                         value="INC"

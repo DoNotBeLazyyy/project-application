@@ -67,13 +67,15 @@ export default function StudentGrades() {
             {
                 field: 'course_code',
                 flex: 1,
+                minWidth: 130,
                 headerName: 'Course Code',
                 mobileCard: 'subtitle',
                 sortable: true
             },
             {
                 field: 'course_title',
-                flex: 3,
+                flex: 2,
+                minWidth: 180,
                 headerName: 'Course Title',
                 mobileCard: 'title',
                 sortable: true
@@ -81,6 +83,7 @@ export default function StudentGrades() {
             {
                 field: 'section_code',
                 flex: 1,
+                minWidth: 160,
                 headerName: 'Section',
                 mobileCard: 'hidden',
                 sortable: true
@@ -88,6 +91,7 @@ export default function StudentGrades() {
             {
                 field: 'term_label',
                 flex: 2,
+                minWidth: 290,
                 headerName: 'Term',
                 mobileCard: 'hidden',
                 sortable: true
@@ -95,6 +99,7 @@ export default function StudentGrades() {
             {
                 field: 'faculty_name',
                 flex: 2,
+                minWidth: 160,
                 headerName: 'Faculty',
                 mobileCard: 'hidden',
                 sortable: true
@@ -103,12 +108,14 @@ export default function StudentGrades() {
                 colId: 'grading_period_sequence',
                 field: 'grading_period_name',
                 flex: 1,
+                minWidth: 100,
                 headerName: 'Period',
                 sortable: true
             },
             {
                 field: 'raw_grade',
                 flex: 1,
+                minWidth: 90,
                 headerName: 'Raw',
                 sortable: false,
                 valueFormatter: (params) => formatGradeCell(params.data, params.value, params.data?.special_grade ?? null)
@@ -116,6 +123,7 @@ export default function StudentGrades() {
             {
                 field: 'final_grade',
                 flex: 1,
+                minWidth: 90,
                 headerName: 'Final',
                 sortable: false,
                 valueFormatter: (params) => formatGradeCell(params.data, params.value, params.data?.special_grade ?? null)
@@ -123,12 +131,14 @@ export default function StudentGrades() {
             {
                 field: 'transmuted_grade',
                 flex: 1,
+                minWidth: 130,
                 headerName: 'Transmuted',
                 sortable: false,
                 valueFormatter: (params) => formatGradeCell(params.data, params.value, params.data?.special_grade ?? null)
             },
             {
                 flex: 2,
+                minWidth: 150,
                 headerName: 'Evaluation',
                 sortable: false,
                 cellRenderer: (params: { data: MyGradeListRow }) => (
