@@ -415,7 +415,7 @@ export default function GradeRelease() {
                     <span className="font-medium text-(--mui-palette-text-secondary) text-xs whitespace-nowrap">
                         Term:
                     </span>
-                    <div className="w-full sm:w-64">
+                    <div className="w-full sm:w-80">
                         <CommonSelect
                             fullWidth
                             options={termOptions}
