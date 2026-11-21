@@ -160,4 +160,66 @@ describe('SubjectGradeList', () => {
         expect(dashes.length)
             .toBe(3); // Raw, Final, Transmuted
     });
+
+    it('keeps an Approved grade locked until the Registrar releases it, even after the evaluation', () => {
+        const approvedGrades: SubjectGradeItem[] = [
+            {
+                grading_period_id: 'gp-4',
+                grading_period_name: 'Midterm',
+                sequence: 2,
+                raw_grade: 88,
+                final_grade: 88,
+                transmuted_grade: 1.75,
+                special_grade: null,
+                status: 'Approved',
+                is_visible: true,
+                evaluation_completed: true
+            }
+        ];
+
+        render(
+            <BrowserRouter>
+                <SubjectGradeList
+                    enrollmentId="enrollment-1"
+                    grades={approvedGrades}
+                />
+            </BrowserRouter>
+        );
+
+        expect(screen.getByText('Pending Registrar Release'))
+            .toBeInTheDocument();
+        expect(screen.queryByText('1.75'))
+            .not.toBeInTheDocument();
+        expect(screen.queryByText('Evaluate to view'))
+            .not.toBeInTheDocument();
+    });
+
+    it('shows the special grade instead of 0 for Raw and Final', () => {
+        const specialGrades: SubjectGradeItem[] = [
+            {
+                grading_period_id: 'gp-5',
+                grading_period_name: 'Finals',
+                sequence: 3,
+                raw_grade: 0,
+                final_grade: 0,
+                transmuted_grade: null,
+                special_grade: 'INC',
+                status: 'Released',
+                is_visible: true,
+                evaluation_completed: true
+            }
+        ];
+
+        render(
+            <BrowserRouter>
+                <SubjectGradeList
+                    enrollmentId="enrollment-1"
+                    grades={specialGrades}
+                />
+            </BrowserRouter>
+        );
+
+        expect(screen.getAllByText('INC').length)
+            .toBe(3); // Raw, Final, Transmuted
+    });
 });

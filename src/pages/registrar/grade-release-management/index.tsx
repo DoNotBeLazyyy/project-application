@@ -321,7 +321,8 @@ export default function GradeRelease() {
     const filteredSections = useMemo(function() {
         return sectionRows.filter(function(row) {
             // Status Tab Filter
-            if (statusFilter === 'SUBMITTED' && row.submission_status !== 'Submitted') {
+            // Approved sections are still waiting on the Registrar, so they stay with Submitted
+            if (statusFilter === 'SUBMITTED' && row.submission_status !== 'Submitted' && row.submission_status !== 'Approved') {
                 return false;
             }
             if (statusFilter === 'DRAFT' && row.submission_status !== 'Draft' && row.submission_status !== 'Not Calculated') {
@@ -352,7 +353,7 @@ export default function GradeRelease() {
     // Section Summary Counts
     const submissionCounts = useMemo(function() {
         const total = sectionRows.length;
-        const submitted = sectionRows.filter((r) => r.submission_status === 'Submitted').length;
+        const submitted = sectionRows.filter((r) => r.submission_status === 'Submitted' || r.submission_status === 'Approved').length;
         const released = sectionRows.filter((r) => r.submission_status === 'Released').length;
         const draftOrNone = sectionRows.filter((r) => r.submission_status === 'Draft' || r.submission_status === 'Not Calculated').length;
 
@@ -761,7 +762,7 @@ export default function GradeRelease() {
                 open={!!releaseTarget}
                 subContent={{
                     title: releaseTarget
-                        ? `${releaseTarget.grading_period_name} grades for all sections will become visible to compliant students immediately. Students with a pending faculty evaluation stay blocked until they submit it.`
+                        ? `Approved ${releaseTarget.grading_period_name} grades for all sections will become visible to compliant students immediately. Submitted grades you have not approved yet, and sections with an unresolved special grade flag, are not released. Students with a pending faculty evaluation stay blocked until they submit it.`
                         : ''
                 }}
                 onClose={() => setReleaseTarget(null)}
@@ -792,7 +793,7 @@ export default function GradeRelease() {
                 open={!!sectionToRelease}
                 subContent={{
                     title: sectionToRelease
-                        ? 'Grades will be published to enrolled students who have submitted their faculty evaluation. Students with pending evaluations remain blocked until completed.'
+                        ? 'Grades will be published to enrolled students who have submitted their faculty evaluation. Students with pending evaluations remain blocked until completed. If a release date is scheduled for this period, the grades are approved now and published on that date.'
                         : ''
                 }}
                 onClose={() => setSectionToRelease(null)}

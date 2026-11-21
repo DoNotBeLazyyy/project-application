@@ -94,7 +94,8 @@ export default function SectionGradeSheetModal({
 
     const stats = useMemo(function() {
         const total = students.length;
-        const withGrades = students.filter((s) => s.final_grade !== null);
+        // Special grades (INC, DRP, ...) are stored as 0 and are not numbers, so they stay out
+        const withGrades = students.filter((s) => s.final_grade !== null && !s.special_grade);
         const avg = withGrades.length > 0
             ? (withGrades.reduce((sum, s) => sum + (s.final_grade ?? 0), 0) / withGrades.length).toFixed(1)
             : '—';

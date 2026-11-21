@@ -71,21 +71,27 @@ function TrajectoryCard({ trajectory }: TrajectoryCardProps) {
                             Your cumulative GWA already meets this target. Keep it up.
                         </span>
                     )
-                    : trajectory.required_avg_on_remaining !== null
+                    : trajectory.is_attainable === false
                         ? (
                             <span className="text-(--mui-palette-text-secondary) text-xs">
-                                You need to average{' '}
-                                <span className="font-medium text-(--mui-palette-text-primary)">
-                                    {formatGwa(trajectory.required_avg_on_remaining)}
-                                </span>{' '}
-                                across your remaining units to reach it.
+                                This target can no longer be reached with your remaining units, even with a 1.00 average.
                             </span>
                         )
-                        : (
-                            <span className="text-(--mui-palette-text-secondary) text-xs">
-                                Not enough released grades yet to project this target.
-                            </span>
-                        )}
+                        : trajectory.required_avg_on_remaining !== null
+                            ? (
+                                <span className="text-(--mui-palette-text-secondary) text-xs">
+                                    You need to average{' '}
+                                    <span className="font-medium text-(--mui-palette-text-primary)">
+                                        {formatGwa(trajectory.required_avg_on_remaining)}
+                                    </span>{' '}
+                                    across your remaining units to reach it.
+                                </span>
+                            )
+                            : (
+                                <span className="text-(--mui-palette-text-secondary) text-xs">
+                                    Not enough released grades yet to project this target.
+                                </span>
+                            )}
         </div>
     );
 }

@@ -26,11 +26,14 @@ const SORT_COLUMNS: SortColumn[] = [
 const FILTER_FORM_ID = 'filter-my-grades-form';
 
 /**
- * Grade text for a My Grades cell: "Locked" until the grade is released to the student.
+ * Grade text for a My Grades cell: "Locked" until the evaluation is done, then "Pending
+ * release" until the Registrar releases the grade.
  */
 function formatGradeCell(row: MyGradeListRow | undefined, value: number | null, specialGrade: string | null = null): string {
     if (!row || !isGradeReleased(row)) {
-        return 'Locked';
+        return row?.evaluation_completed
+            ? 'Pending release'
+            : 'Locked';
     }
 
     return formatGrade(value, specialGrade);
@@ -108,14 +111,14 @@ export default function StudentGrades() {
                 flex: 1,
                 headerName: 'Raw',
                 sortable: false,
-                valueFormatter: (params) => formatGradeCell(params.data, params.value)
+                valueFormatter: (params) => formatGradeCell(params.data, params.value, params.data?.special_grade ?? null)
             },
             {
                 field: 'final_grade',
                 flex: 1,
                 headerName: 'Final',
                 sortable: false,
-                valueFormatter: (params) => formatGradeCell(params.data, params.value)
+                valueFormatter: (params) => formatGradeCell(params.data, params.value, params.data?.special_grade ?? null)
             },
             {
                 field: 'transmuted_grade',

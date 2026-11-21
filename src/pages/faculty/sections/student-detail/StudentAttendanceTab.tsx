@@ -50,8 +50,9 @@ export default function StudentAttendanceTab({ enrollmentId, summary, onChanged 
         fetchRows();
     }, [enrollmentId]);
 
+    // Same formula on every screen: excused counts as attended and late as present
     const rate = summary.recorded > 0
-        ? Math.round(((summary.present + summary.late) / summary.recorded) * 100)
+        ? Math.round(((summary.recorded - summary.absent) / summary.recorded) * 100)
         : 0;
 
     return (

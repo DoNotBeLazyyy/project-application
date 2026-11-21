@@ -143,7 +143,7 @@ export default function ReleaseScheduleForm({
                         control={control}
                         disabled={isSaving}
                         hasHelper
-                        helperText="Grades stay hidden from students until this moment. A student who has not yet submitted their faculty evaluation stays blocked until they do."
+                        helperText="At this moment, grades you have approved become visible to students. Grades not yet approved are never released automatically, and a student who has not submitted their faculty evaluation stays blocked until they do."
                         label="Release date and time"
                         name="release_at"
                         rules={{

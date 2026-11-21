@@ -11,10 +11,20 @@ export interface TransmutationStep {
 
 /**
  * Turns the raw table rows into numeric steps, best grade first.
- * Rows without a numeric grade or minimum percentage are skipped.
+ * Special-grade rows (INC, DRP, ...) and rows without a numeric grade or minimum
+ * percentage are skipped, since they are not steps of the scale.
  */
 export function toTransmutationSteps(rows: TransmutationRow[]): TransmutationStep[] {
     return rows
+        .filter(function(row) {
+            return !row.special_code
+                && row.transmuted_grade !== null
+                && row.transmuted_grade !== undefined
+                && row.transmuted_grade !== ''
+                && row.min_percentage !== null
+                && row.min_percentage !== undefined
+                && row.min_percentage !== '';
+        })
         .map(function(row) {
             const max = row.max_percentage === null || row.max_percentage === undefined
                 ? null
@@ -35,13 +45,20 @@ export function toTransmutationSteps(rows: TransmutationRow[]): TransmutationSte
 
 /**
  * Finds the configured grade step for a percentage, or null when no step covers it.
+ * Matches the database (fn_calculate_final_grade): the step with the highest minimum
+ * percentage at or below the score, so a score between two bands (97.5 when one band
+ * ends at 97 and the next starts at 98) falls into the lower band.
  */
 export function findTransmutationStep(steps: TransmutationStep[], percentage: number): TransmutationStep | null {
-    return steps.find(function(step) {
-        return percentage >= step.minPercentage
-            && (step.maxPercentage === null || percentage <= step.maxPercentage + 0.009);
-    })
-        ?? null;
+    let match: TransmutationStep | null = null;
+
+    for (const step of steps) {
+        if (percentage >= step.minPercentage && (match === null || step.minPercentage > match.minPercentage)) {
+            match = step;
+        }
+    }
+
+    return match;
 }
 
 /**

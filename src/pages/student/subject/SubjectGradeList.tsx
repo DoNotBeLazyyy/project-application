@@ -13,8 +13,11 @@ interface SubjectGradeListProps {
     grades: SubjectGradeItem[];
 }
 
-// Raw and final grades are percentages, so they keep their own plain format
-function formatRawGrade(value: number | null): string {
+// Raw and final grades are percentages, so they keep their own plain format. A special
+// grade (INC, DRP, ...) is stored as 0, so its code is shown instead.
+function formatRawGrade(value: number | null, specialGrade: string | null): string {
+    if (specialGrade) return specialGrade;
+
     return value != null
         ? String(value)
         : '—';
@@ -45,7 +48,7 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                 valueFormatter: (params) => {
                     const grade = params.data as SubjectGradeItem;
                     if (isReleased(grade)) {
-                        return formatRawGrade(params.value);
+                        return formatRawGrade(params.value, grade.special_grade);
                     }
                     if (grade.is_visible || grade.status === 'Approved') {
                         return 'Locked';
@@ -62,7 +65,7 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                 valueFormatter: (params) => {
                     const grade = params.data as SubjectGradeItem;
                     if (isReleased(grade)) {
-                        return formatRawGrade(params.value);
+                        return formatRawGrade(params.value, grade.special_grade);
                     }
                     if (grade.is_visible || grade.status === 'Approved') {
                         return 'Locked';
@@ -96,7 +99,9 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                 cellRenderer: (params: { data: SubjectGradeItem }) => {
                     const grade = params.data;
                     const released = isReleased(grade);
-                    const needsEvaluation = !released && (grade.is_visible || grade.status === 'Approved');
+                    const needsEvaluation = !released
+                        && !grade.evaluation_completed
+                        && (grade.is_visible || grade.status === 'Approved');
 
                     if (released) {
                         return (

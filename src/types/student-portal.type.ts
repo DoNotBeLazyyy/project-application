@@ -283,6 +283,7 @@ export interface MyGradeListRow {
     grading_period_name: string;
     grading_period_sequence: number;
     evaluation_completed: boolean;
+    status?: GradeStatus | null;
     raw_grade: number | null;
     final_grade: number | null;
     transmuted_grade: number | null;

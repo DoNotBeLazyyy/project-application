@@ -1,6 +1,7 @@
 // One way to show a period or course grade on every screen.
 
-const VISIBLE_STATUSES = ['Approved', 'Released'];
+// Students see a grade only once the Registrar has Released it; Approved stays hidden
+const VISIBLE_STATUSES = ['Released'];
 
 /**
  * Text for a grade. A special grade (INC, DRP, W, ...) wins over the number, and numbers
@@ -48,8 +49,8 @@ interface GradeReleaseInfo {
 
 /**
  * Whether the student may see a period grade, matching fn_list_my_grades: the grade is
- * Approved or Released and the student finished the faculty evaluation. Rows without a
- * status (My Grades only returns Approved or Released rows) depend on the evaluation alone.
+ * Released and the student finished the faculty evaluation. Rows without a status depend
+ * on the evaluation alone.
  */
 export function isGradeReleased(item: GradeReleaseInfo): boolean {
     const isVisibleStatus = item.status === undefined || item.status === null

@@ -60,6 +60,8 @@ export default function GradeBreakdownPage() {
     const transmutedDisplay = breakdown
         ? formatGrade(breakdown.transmuted_grade, breakdown.special_grade)
         : '—';
+    // A special grade (INC, DRP, ...) is stored as 0, so its numbers mean nothing
+    const specialGrade = breakdown?.special_grade ?? null;
     const isPassing = breakdown?.transmuted_grade !== null
         && breakdown?.transmuted_grade !== undefined
         && breakdown.passing_grade !== null
@@ -154,7 +156,7 @@ export default function GradeBreakdownPage() {
                             iconBg="bg-blue-50 dark:bg-blue-950/60"
                             iconColor="text-blue-600 dark:text-blue-400"
                             label="Raw Grade"
-                            value={formatScore(breakdown.raw_grade)}
+                            value={specialGrade ?? formatScore(breakdown.raw_grade)}
                         />
                         <StatCard
                             hint="After faculty adjustments"
@@ -162,7 +164,7 @@ export default function GradeBreakdownPage() {
                             iconBg="bg-emerald-50 dark:bg-emerald-950/60"
                             iconColor="text-emerald-600 dark:text-emerald-400"
                             label="Final Grade"
-                            value={formatScore(breakdown.final_grade)}
+                            value={specialGrade ?? formatScore(breakdown.final_grade)}
                         />
                         <StatCard
                             hint={breakdown.passing_grade !== null
@@ -184,7 +186,7 @@ export default function GradeBreakdownPage() {
                         />
                     </div>
 
-                    {breakdown.transmuted_grade !== null && breakdown.passing_grade !== null && (
+                    {!specialGrade && breakdown.transmuted_grade !== null && breakdown.passing_grade !== null && (
                         <div className="flex flex-wrap gap-2 items-center px-1">
                             <CommonBadgeStatus
                                 label={isPassing

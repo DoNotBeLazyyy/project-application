@@ -66,8 +66,9 @@ export default function SubjectAttendanceList({ attendance }: SubjectAttendanceL
         const late = attendance.filter((item) => item.status === 'Late').length;
         const absent = attendance.filter((item) => item.status === 'Absent').length;
         const excused = attendance.filter((item) => item.status === 'Excused').length;
+        // Same formula on every screen: excused counts as attended and late as present
         const rate = total > 0
-            ? Math.round(((present + late) / total) * 100)
+            ? Math.round(((total - absent) / total) * 100)
             : 100;
 
         return {
