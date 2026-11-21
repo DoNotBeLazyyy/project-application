@@ -11,6 +11,7 @@ const ACTION_OPTIONS: CommonSelectOption[] = [
     { label: 'Profile Approved', value: 'PROFILE_CHANGE_APPROVED' },
     { label: 'Profile Edited & Approved', value: 'PROFILE_CHANGE_EDITED_APPROVED' },
     { label: 'Profile Rejected', value: 'PROFILE_CHANGE_REJECTED' },
+    { label: 'Profile Request Cancelled', value: 'PROFILE_CHANGE_CANCELLED' },
     { label: 'Rejected - False Information', value: 'PROFILE_REJECTED_FALSE_INFO' },
     { label: 'False Info Alert Sent', value: 'FALSE_INFO_NOTIFICATION_SENT' },
     { label: 'Profile Manually Edited', value: 'PROFILE_MANUALLY_EDITED' },

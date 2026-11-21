@@ -2,7 +2,7 @@ import { callFunction } from '@services/supabase.wrapper';
 import { AssistantMessage, AssistantReply, AssistantTurn } from '@type/assistant.type';
 import { ServiceResult } from '@type/service.type';
 
-// Chat history is kept per browser tab, under this prefix plus the user id
+// Chat history is kept per browser tab, under this prefix plus "<user id>:<role>"
 export const ASSISTANT_CHAT_STORAGE_PREFIX = 'au-jas-assistant-chat:';
 
 // Older turns are dropped so the saved chat stays small

@@ -147,6 +147,14 @@ export default function CalendarPage() {
         setSelectedEvent(null);
     }
 
+    // Day view moves only selectedDate, so leaving it keeps the other views on that day
+    function handleSelectViewMode(mode: CalendarViewMode) {
+        if (viewMode === 'day' && mode !== 'day') {
+            setCurrentDate(selectedDate);
+        }
+        setViewMode(mode);
+    }
+
     function handleDayViewJump(date: Date) {
         setSelectedDate(date);
         setCurrentDate(date);
@@ -273,7 +281,7 @@ export default function CalendarPage() {
                             onCreateEvent={() => handleCreateEvent()}
                             onReload={reload}
                             onSelectAllCategories={handleSelectAllCategories}
-                            onSelectViewMode={setViewMode}
+                            onSelectViewMode={handleSelectViewMode}
                             onToggleCategory={toggleCategory}
                         />
                     </div>
@@ -361,7 +369,7 @@ export default function CalendarPage() {
                                     : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
                             }`}
                             type="button"
-                            onClick={() => setViewMode('month')}
+                            onClick={() => handleSelectViewMode('month')}
                         >
                             <GridFourIcon size={15} />
                             Month
@@ -373,7 +381,7 @@ export default function CalendarPage() {
                                     : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
                             }`}
                             type="button"
-                            onClick={() => setViewMode('week')}
+                            onClick={() => handleSelectViewMode('week')}
                         >
                             <CalendarDotsIcon size={15} />
                             Week
@@ -385,7 +393,7 @@ export default function CalendarPage() {
                                     : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
                             }`}
                             type="button"
-                            onClick={() => setViewMode('day')}
+                            onClick={() => handleSelectViewMode('day')}
                         >
                             <ClockIcon size={15} />
                             Day
@@ -397,7 +405,7 @@ export default function CalendarPage() {
                                     : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
                             }`}
                             type="button"
-                            onClick={() => setViewMode('agenda')}
+                            onClick={() => handleSelectViewMode('agenda')}
                         >
                             <ListBulletsIcon size={15} />
                             Agenda
@@ -504,6 +512,7 @@ export default function CalendarPage() {
                             {viewMode === 'agenda' && (
                                 <CalendarAgendaView
                                     events={filteredEvents}
+                                    monthDate={currentDate}
                                     onSelectEvent={handleOpenEventModal}
                                 />
                             )}

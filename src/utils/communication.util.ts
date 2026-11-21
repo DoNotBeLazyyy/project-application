@@ -44,3 +44,28 @@ export function canManageCommunication(
 
     return false;
 }
+
+/**
+ * Turns announcement markdown into plain text for one- or two-line previews, so a card shows
+ * "Exam moved" instead of "**Exam** moved" or an image's "![photo](https://...)".
+ *
+ * @param content - Markdown from the announcement editor.
+ * @returns The readable text, on one line.
+ */
+export function toPlainTextPreview(content: string | null | undefined): string {
+    if (!content) return '';
+
+    return content
+        // Images are dropped; links keep their text
+        .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+        .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+        .replace(/<[^>]+>/g, ' ')
+        // Code fences, headings, quotes and list markers at the start of a line
+        .replace(/```[^\n]*/g, ' ')
+        .replace(/^\s{0,3}(#{1,6}|>+|[-*+]|\d+[.)])\s+/gm, '')
+        // Bold, italic, strike-through and inline code marks
+        .replace(/(\*\*|__|~~|`)/g, '')
+        .replace(/(^|[\s(])[*_]([^*_\n]+)[*_](?=[\s).,!?:;]|$)/g, '$1$2')
+        .replace(/\s+/g, ' ')
+        .trim();
+}

@@ -55,10 +55,10 @@ const TARGET_MODE_OPTIONS = [
     { label: 'Exclude selected programs (show to all others)', value: 'EXCLUDE' }
 ];
 
-// Mirrors the `evaluation_question_type` enum. Only Rating questions carry a scale.
+// Only Rating questions carry a scale. "Multiple Choice" is left out: evaluation questions have
+// no stored choices, so students could only answer it in a text box.
 const QUESTION_TYPE_OPTIONS = [
     { label: 'Rating', value: 'Rating' },
-    { label: 'Multiple Choice', value: 'Multiple Choice' },
     { label: 'Open Ended', value: 'Open Ended' }
 ];
 

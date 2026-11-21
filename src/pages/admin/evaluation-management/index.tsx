@@ -58,7 +58,7 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
         key: 'question_text', label: 'Question Text', hint: 'e.g. Explains concepts clearly', sample: 'Explains concepts clearly and provides practical examples', required: true, aliases: ['question', 'prompt']
     },
     {
-        key: 'question_type', label: 'Question Type', hint: 'Rating, Multiple Choice, or Open Ended', sample: 'Rating', aliases: ['type']
+        key: 'question_type', label: 'Question Type', hint: 'Rating or Open Ended', sample: 'Rating', aliases: ['type']
     },
     {
         key: 'is_required', label: 'Required', hint: 'TRUE or FALSE (optional, defaults TRUE)', sample: 'TRUE', required: false, aliases: ['required']
@@ -71,7 +71,8 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     }
 ];
 
-const QUESTION_TYPE_VALUES: EvaluationQuestionType[] = ['Rating', 'Multiple Choice', 'Open Ended'];
+// Multiple Choice has no stored choices for students to pick from, so it is not offered
+const QUESTION_TYPE_VALUES: EvaluationQuestionType[] = ['Rating', 'Open Ended'];
 
 // The DB casts question_type to its enum and is_active / is_required to boolean, both of which
 // are case- and spelling-sensitive; normalise the common spellings before sending.

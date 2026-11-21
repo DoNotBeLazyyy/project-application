@@ -91,11 +91,14 @@ export function formatHumanReadableDbError(raw: Record<string, unknown>): string
             }
         }
 
-        // Specific humanization for sections
-        const isSection = /section/i.test(constraintName) || /section/i.test(rawMessage);
+        // Only the section-code index means a duplicate section code; other tables mention "section" too
+        const isSection = /uidx_sections_code_term/i.test(constraintName || rawMessage);
         if (isSection) {
-            return valueFromDetails
-                ? `A section with code "${valueFromDetails}" already exists.`
+            // Details read "Key (section_code, term_id)=(BSCS-1A, <term id>)": show the code only
+            const sectionCode = valueFromDetails.split(',')[0]
+                .trim();
+            return sectionCode
+                ? `A section with code "${sectionCode}" already exists in this term.`
                 : 'A section with this code already exists. Please use a unique section code.';
         }
 

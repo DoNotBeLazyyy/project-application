@@ -201,6 +201,7 @@ describe('Calendar Component Rendering Tests', () => {
         render(
             <CalendarAgendaView
                 events={[mockEvent]}
+                monthDate={new Date(2026, 3, 1)}
                 onSelectEvent={onSelectEvent}
             />
         );
@@ -215,6 +216,19 @@ describe('Calendar Component Rendering Tests', () => {
 
         expect(screen.getByText('No scheduled items found'))
             .toBeInTheDocument();
+    });
+
+    it('lists only the selected month in CalendarAgendaView', () => {
+        render(
+            <CalendarAgendaView
+                events={[mockEvent]}
+                monthDate={new Date(2026, 4, 1)}
+                onSelectEvent={vi.fn()}
+            />
+        );
+
+        expect(screen.queryByText('CS 101 Midterm Examination'))
+            .not.toBeInTheDocument();
     });
 
     it('renders CalendarEventDetailModal with details and closes when requested', () => {

@@ -10,6 +10,8 @@ export interface RecordStudent {
     full_name: string;
     email?: string;
     year_level: number;
+    // True when the registrar set the year level by hand
+    year_level_overridden?: boolean;
     status: StudentStatus;
     admitted_at: string | null;
 }

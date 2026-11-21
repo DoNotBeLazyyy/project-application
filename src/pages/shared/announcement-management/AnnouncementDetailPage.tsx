@@ -11,6 +11,7 @@ import { AnnouncementAudience, CommunicationFormValues, CommunicationItemType, C
 import { EventFormValues } from '@type/event.type';
 import { ServiceResult } from '@type/service.type';
 import { canManageCommunication } from '@utils/communication.util';
+import { toIsoDateKey } from '@utils/date.util';
 import { sanitizeUuidArray } from '@utils/uuid.util';
 import { useCallback, useMemo, useState } from 'react';
 import {
@@ -36,7 +37,12 @@ function toEventDateInput(value: string | null | undefined, allDay = false): str
         return '';
     }
     if (allDay) {
-        return value.slice(0, 10);
+        // The local (Manila) date: slicing the UTC timestamp shows the previous day before 8 AM
+        if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+        const parsed = new Date(value);
+        return Number.isNaN(parsed.getTime())
+            ? value.slice(0, 10)
+            : toIsoDateKey(parsed);
     }
     return value;
 }
@@ -442,7 +448,7 @@ export default function AnnouncementDetailPage() {
                         control={control}
                         disabled={disabled}
                         id={id}
-                        isTypeDisabled={isEventUrl}
+                        isTypeDisabled={isEventUrl && !routeId}
                         onSubmit={onSubmit}
                     />
                 );

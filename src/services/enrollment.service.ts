@@ -57,9 +57,14 @@ export async function listEligibleSections(
     studentId: string,
     termId: string | null,
     search: string,
-    filters: EligibleSectionFilterValues
+    filters: EligibleSectionFilterValues,
+    pendingDropEnrollmentIds: string[] = []
 ): Promise<ServiceResult<EligibleSectionResult>> {
     return callRpc<EligibleSectionResult>('fn_list_eligible_sections', {
+        // Subjects about to be dropped are offered again, so the student can switch sections
+        p_pending_drop_enrollment_ids: pendingDropEnrollmentIds.length > 0
+            ? pendingDropEnrollmentIds
+            : null,
         p_student_id: studentId,
         p_term_id: termId,
         p_search: search || null,

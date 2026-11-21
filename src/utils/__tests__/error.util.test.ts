@@ -29,6 +29,30 @@ describe('error.util', () => {
                 .toBe('A department with code "CCS" already exists. Please choose a different code.');
         });
 
+        it('names the section code only for the section-code index', () => {
+            const rawError = {
+                code: '23505',
+                details: 'Key (section_code, term_id)=(BSCS-1A, 6f1c2d34-0000-0000-0000-000000000000) already exists.',
+                hint: null,
+                message: 'duplicate key value violates unique constraint "uidx_sections_code_term"'
+            };
+
+            expect(formatHumanReadableDbError(rawError))
+                .toBe('A section with code "BSCS-1A" already exists in this term.');
+        });
+
+        it('does not call another duplicate that mentions a section a duplicate section code', () => {
+            const rawError = {
+                code: '23505',
+                details: 'Key (section_id, title)=(abc, Essay Rubric) already exists.',
+                hint: null,
+                message: 'duplicate key value violates unique constraint "uidx_rubrics_section_title"'
+            };
+
+            expect(formatHumanReadableDbError(rawError))
+                .not.toMatch(/A section with code/);
+        });
+
         it('transforms email unique constraint violation into user-friendly message', () => {
             const rawError = {
                 code: '23505',

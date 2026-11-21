@@ -491,6 +491,7 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
                 currentProgramId={audit.program.id}
                 currentProgramName={`${audit.program.code} · ${audit.program.name}`}
                 currentYearLevel={audit.student.year_level}
+                currentYearLevelOverridden={Boolean(audit.student.year_level_overridden)}
                 open={isChangeModalOpen}
                 studentId={studentId}
                 onClose={function() {

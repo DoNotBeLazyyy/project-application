@@ -14,6 +14,7 @@ import { deleteAnnouncement, listSectionAnnouncements } from '@services/announce
 import { supabase } from '@services/supabase.client';
 import { useAppStore } from '@stores/app.store';
 import { AnnouncementFeedRow } from '@type/announcement.type';
+import { toPlainTextPreview } from '@utils/communication.util';
 import { formatShortDate } from '@utils/date.util';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -28,6 +29,8 @@ interface SectionAnnouncementPanelProps {
 
 export default function SectionAnnouncementPanel({ canManage = true, sectionId }: SectionAnnouncementPanelProps) {
     const [announcements, setAnnouncements] = useState<SectionAnnouncementRow[]>([]);
+    // The list loads one page; the badge shows how many there are in all
+    const [totalCount, setTotalCount] = useState(0);
     const [selectedAnnouncement, setSelectedAnnouncement] = useState<AnnouncementFeedRow | null>(null);
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -40,6 +43,7 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
         const result = await listSectionAnnouncements(sectionId);
         if (result.data) {
             setAnnouncements(result.data.content);
+            setTotalCount(result.data.totalElements ?? result.data.content.length);
         }
     }
 
@@ -106,7 +110,7 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
                         Announcements
                     </span>
                     <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-400">
-                        {announcements.length}
+                        {totalCount}
                     </span>
                 </div>
 
@@ -195,7 +199,7 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
 
                                         {/* Body preview */}
                                         <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed mb-3">
-                                            {item.content}
+                                            {toPlainTextPreview(item.content)}
                                         </p>
                                     </div>
 

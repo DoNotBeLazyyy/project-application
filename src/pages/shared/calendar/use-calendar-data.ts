@@ -319,9 +319,10 @@ export function useCalendarData(focusDate: Date) {
                     }
                 }
 
-                // Add Upcoming Assessments
-                if (dashRes.data?.upcoming_assessments) {
-                    for (const a of dashRes.data.upcoming_assessments) {
+                // Add Upcoming Assessments: the uncapped list, not the dashboard's top five
+                const calendarAssessments = dashRes.data?.calendar_assessments ?? dashRes.data?.upcoming_assessments;
+                if (calendarAssessments) {
+                    for (const a of calendarAssessments) {
                         if (a.due_at) {
                             const due = new Date(a.due_at);
                             loadedEvents.push({

@@ -1,7 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import ValidCommonInput from '@components/input/ValidCommonInput';
-import { logout } from '@services/auth.service';
+import { getMyAccountStatus, logout } from '@services/auth.service';
 import { supabase } from '@services/supabase.client';
 import { callRpc } from '@services/supabase.wrapper';
 import { useAppStore } from '@stores/app.store';
@@ -186,7 +186,12 @@ export default function SetPasswordPage() {
         }
 
         if (isRecovery) {
-            // A reset must not change the account status (it would reactivate a suspended account)
+            // A reset must not change the account status (it would reactivate a suspended account),
+            // except for an invited user: the new password is their first one, so they are activated
+            // now instead of being asked to set a password again after signing in
+            if (await getMyAccountStatus() === 'Invited') {
+                await callRpc('fn_activate_user', undefined, { silent: true });
+            }
             await logout();
             navigate('/login', { state: { passwordResetSuccess: true } });
             return;

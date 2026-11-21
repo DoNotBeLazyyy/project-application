@@ -13,7 +13,8 @@ import { useNavigate } from 'react-router-dom';
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'course_code', label: 'Course Code' },
     { field: 'course_title', label: 'Course Title' },
-    { field: 'term_label', label: 'Term' },
+    // Terms sort by start date (newest first when descending), not alphabetically by label
+    { field: 'term_start_date', label: 'Term' },
     { field: 'faculty_name', label: 'Faculty' }
 ];
 
@@ -52,6 +53,8 @@ export default function StudentSubjects() {
                 sortable: false
             },
             {
+                // Sorting the Term column orders by the term's start date
+                colId: 'term_start_date',
                 field: 'term_label',
                 flex: 2,
                 headerName: 'Term',

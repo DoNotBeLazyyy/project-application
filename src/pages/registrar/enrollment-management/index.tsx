@@ -249,6 +249,7 @@ export default function EnrollmentManagement() {
                     currentProgramId={assignModalStudent.program_id}
                     currentProgramName={assignModalStudent.program_name}
                     currentYearLevel={assignModalStudent.year_level}
+                    currentYearLevelOverridden={Boolean(assignModalStudent.year_level_overridden)}
                     open={Boolean(assignModalStudent)}
                     studentId={assignModalStudent.id}
                     onClose={() => setAssignModalStudent(null)}

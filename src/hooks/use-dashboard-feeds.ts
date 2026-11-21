@@ -35,7 +35,9 @@ export default function useDashboardFeeds(): UseDashboardFeedsResult {
 
         lastFetchTimeRef.current = now;
 
+        // From the start of today, so today's all-day and earlier-today events still show
         const from = new Date();
+        from.setHours(0, 0, 0, 0);
         const to = new Date();
         to.setDate(to.getDate() + EVENT_WINDOW_DAYS);
 

@@ -9,6 +9,8 @@ import { useMemo, useState } from 'react';
 
 interface CalendarAgendaViewProps {
     events: UnifiedCalendarEvent[];
+    // The agenda lists only this date's month; the loaded data also covers the months around it
+    monthDate: Date;
     onSelectEvent: (event: UnifiedCalendarEvent) => void;
 }
 
@@ -26,6 +28,7 @@ function formatDateKey(d: Date): string {
 
 export function CalendarAgendaView({
     events,
+    monthDate,
     onSelectEvent
 }: CalendarAgendaViewProps) {
     const [searchQuery, setSearchQuery] = useState('');
@@ -34,10 +37,20 @@ export function CalendarAgendaView({
         return new Map(CALENDAR_CATEGORIES.map((c) => [c.id, c]));
     }, []);
 
+    const monthYear = monthDate.getFullYear();
+    const monthIndex = monthDate.getMonth();
+
+    const monthEvents = useMemo(() => {
+        const monthStart = new Date(monthYear, monthIndex, 1);
+        const nextMonthStart = new Date(monthYear, monthIndex + 1, 1);
+
+        return events.filter((ev) => ev.start < nextMonthStart && ev.end >= monthStart);
+    }, [events, monthYear, monthIndex]);
+
     const filteredEvents = useMemo(() => {
-        if (!searchQuery.trim()) return events;
+        if (!searchQuery.trim()) return monthEvents;
         const q = searchQuery.toLowerCase();
-        return events.filter(
+        return monthEvents.filter(
             (ev) =>
                 ev.title.toLowerCase()
                     .includes(q)
@@ -48,7 +61,7 @@ export function CalendarAgendaView({
                 || ev.metadata?.courseCode?.toLowerCase()
                     .includes(q)
         );
-    }, [events, searchQuery]);
+    }, [monthEvents, searchQuery]);
 
     // Group events by date key
     const groupedEvents = useMemo(() => {

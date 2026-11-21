@@ -2,7 +2,7 @@ import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import { EMAIL_PATTERN } from '@constants/validation.constant';
-import { login, LOGIN_ALREADY_NOTIFIED_CODE, logout } from '@services/auth.service';
+import { getBlockedAccountMessage, login, LOGIN_ALREADY_NOTIFIED_CODE, logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
 import { useToastStore } from '@stores/toast.store';
 import { UserRole } from '@type/app.type';
@@ -77,6 +77,11 @@ export default function LoginPage() {
         }
 
         const profile = useAppStore.getState().userProfile;
+        // A suspended or inactive account is being signed out: stay here so its message stays visible
+        if (getBlockedAccountMessage(profile?.status)) {
+            logout();
+            return;
+        }
         if (profile?.status === 'Invited') {
             navigate('/set-password', { replace: true });
             return;
