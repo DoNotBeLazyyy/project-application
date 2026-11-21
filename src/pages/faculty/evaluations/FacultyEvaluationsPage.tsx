@@ -191,17 +191,22 @@ export default function FacultyEvaluationsPage() {
             { label: 'All Sections', value: '' },
             ...secs.map((s) => ({
                 label: `${s.section_code} (${s.course_code})`,
-                value: s.section_code
+                // By id: two courses can share the same block code
+                value: s.section_id
             }))
         ];
     }, [summary, draftCourse]);
+
+    const selectedSectionRow = useMemo(() => {
+        return summary?.sections?.find((s) => s.section_id === selectedSection) ?? null;
+    }, [summary, selectedSection]);
 
     // Filtered data sets
     const filteredSections = useMemo(() => {
         if (!summary?.sections) return [];
         return summary.sections.filter((sec) => {
             if (selectedCourse && sec.course_code !== selectedCourse) return false;
-            if (selectedSection && sec.section_code !== selectedSection) return false;
+            if (selectedSection && sec.section_id !== selectedSection) return false;
 
             if (selectedRating !== 'ALL' && sec.avg_rating !== null && !isRatingInFilter(sec.avg_rating, selectedRating)) {
                 return false;
@@ -227,7 +232,15 @@ export default function FacultyEvaluationsPage() {
         if (!summary?.comments) return [];
         return summary.comments.filter((comment) => {
             if (selectedCourse && comment.course_code !== selectedCourse) return false;
-            if (selectedSection && comment.section_code !== selectedSection) return false;
+            if (selectedSection) {
+                // Older summaries have no section_id on comments; match code and course then
+                const isSameSection = comment.section_id
+                    ? comment.section_id === selectedSection
+                    : Boolean(selectedSectionRow
+                        && comment.section_code === selectedSectionRow.section_code
+                        && comment.course_code === selectedSectionRow.course_code);
+                if (!isSameSection) return false;
+            }
 
             if (searchQuery.trim()) {
                 const q = searchQuery.toLowerCase()
@@ -243,7 +256,7 @@ export default function FacultyEvaluationsPage() {
 
             return true;
         });
-    }, [summary, selectedCourse, selectedSection, searchQuery]);
+    }, [summary, selectedCourse, selectedSection, selectedSectionRow, searchQuery]);
 
     const filteredQuestions = useMemo(() => {
         if (!summary?.questions) return [];
@@ -434,7 +447,9 @@ export default function FacultyEvaluationsPage() {
                         )}
                         {selectedSection && (
                             <Chip
-                                label={`Section: ${selectedSection}`}
+                                label={`Section: ${selectedSectionRow
+                                    ? `${selectedSectionRow.section_code} (${selectedSectionRow.course_code})`
+                                    : selectedSection}`}
                                 size="small"
                                 onDelete={() => setSelectedSection('')}
                             />
@@ -625,7 +640,7 @@ export default function FacultyEvaluationsPage() {
                             </div>
                         )}
                         {filteredSections.map((sec) => {
-                            const isCurrentSelected = selectedSection === sec.section_code;
+                            const isCurrentSelected = selectedSection === sec.section_id;
                             const scorePct = sec.avg_rating !== null
                                 ? (sec.avg_rating / 5) * 100
                                 : 0;
@@ -668,7 +683,7 @@ export default function FacultyEvaluationsPage() {
                                                     size="small"
                                                     onClick={() => setSelectedSection(isCurrentSelected
                                                         ? ''
-                                                        : sec.section_code)}
+                                                        : sec.section_id)}
                                                 >
                                                     <FunnelIcon
                                                         size={14}

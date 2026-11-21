@@ -334,7 +334,8 @@ interface EvaluationWizardModalProps {
     isSaving?: boolean;
     methods: UseFormReturn<EvaluationTemplateForm>;
     onClose: VoidFunction;
-    onSubmit: (values: EvaluationTemplateForm) => void;
+    // Resolves true once saved, so the wizard can drop its draft
+    onSubmit: (values: EvaluationTemplateForm) => unknown;
     onSwitchToEdit?: (step?: number) => void;
 }
 
@@ -441,7 +442,15 @@ export default function EvaluationWizardModal({
             return;
         }
 
-        await handleSubmit(onSubmit, handleEvaluationErrors)();
+        // Taken now: the draft hook is switched off while saving, so its later clearDraft has no key
+        const clearDraftAfterSave = draftGuard.clearDraft;
+        await handleSubmit(async function(values) {
+            // A saved section leaves no draft behind, so the next New does not offer "Restore draft?"
+            const isSaved = await onSubmit(values);
+            if (isSaved === true) {
+                clearDraftAfterSave();
+            }
+        }, handleEvaluationErrors)();
     }
 
     function handleBack() {

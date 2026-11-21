@@ -239,8 +239,18 @@ export default function ProgramManagement() {
 
         setIsSaving(true);
         try {
+            // Only curriculum entries that were added or changed are written back, so untouched
+            // entries keep following their course's units instead of being frozen (#45)
+            const loadedEntries = updateMethods.formState.defaultValues?.curriculum_entries ?? [];
+            const loadedById = new Map(loadedEntries.map((entry) => [entry?.id, JSON.stringify(entry)]));
+            const changedEntries = (values.curriculum_entries ?? []).filter((entry) =>
+                !entry.id
+                || entry.id.startsWith('temp-')
+                || loadedById.get(entry.id) !== JSON.stringify(entry));
+
             const result = await updateProgram(selectedId, {
                 ...values,
+                curriculum_entries: changedEntries,
                 code: values.code.trim(),
                 name: values.name.trim(),
                 description: values.description

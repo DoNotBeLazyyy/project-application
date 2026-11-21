@@ -34,6 +34,13 @@ import { useForm } from 'react-hook-form';
 import { useSearchParams } from 'react-router-dom';
 
 const UPDATE_FORM_ID = 'update-user-form';
+const EMPTY_UPDATE_VALUES: UpdateUserFormValues = {
+    email: '',
+    first_name: '',
+    last_name: '',
+    role_codes: [],
+    department_id: ''
+};
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     {
         key: 'first_name',
@@ -144,59 +151,74 @@ export default function UserManagement() {
     }, [roleParam, statusParam, filterMethods]);
 
     const updateMethods = useForm<UpdateUserFormValues>({
-        defaultValues: {
-            email: '',
-            first_name: '',
-            last_name: '',
-            role_codes: [],
-            department_id: ''
-        }
+        defaultValues: EMPTY_UPDATE_VALUES
     });
+    // Only the newest load may fill the form; an older one finishing late is ignored
+    const loadRequestRef = useRef(0);
 
     const isUpdateRealDirty = useHasRealChanges(updateMethods.control);
 
-    async function loadUserIntoForm(userId: string) {
+    /**
+     * Loads a user into the form. Returns true only when the load succeeded and is
+     * still the newest one, so a modal opens only on that user's data.
+     */
+    async function loadUserIntoForm(userId: string): Promise<boolean> {
+        loadRequestRef.current += 1;
+        const requestId = loadRequestRef.current;
         const result = await getUserById(userId);
 
-        if (result.data) {
-            updateMethods.reset({
-                email: result.data.email,
-                first_name: result.data.first_name,
-                last_name: result.data.last_name,
-                role_codes: result.data.role_codes ?? [],
-                department_id: result.data.department_id ?? ''
-            });
+        if (requestId !== loadRequestRef.current || !result.data) {
+            return false;
         }
+
+        updateMethods.reset({
+            email: result.data.email,
+            first_name: result.data.first_name,
+            last_name: result.data.last_name,
+            role_codes: result.data.role_codes ?? [],
+            department_id: result.data.department_id ?? ''
+        });
+        return true;
+    }
+
+    function clearSelectedUser() {
+        loadRequestRef.current += 1;
+        setSelectedUserId(null);
+        updateMethods.reset(EMPTY_UPDATE_VALUES);
     }
 
     function handleCloseView() {
         setIsViewOpen(false);
-        setSelectedUserId(null);
-        updateMethods.reset();
+        clearSelectedUser();
     }
 
     async function handleOpenView(id: string) {
         setSelectedUserId(id);
-        await loadUserIntoForm(id);
-        setIsViewOpen(true);
+        if (await loadUserIntoForm(id)) {
+            setIsViewOpen(true);
+        }
     }
 
     async function handleOpenUpdate(id: string) {
         setSelectedUserId(id);
-        await loadUserIntoForm(id);
-        setIsUpdateOpen(true);
+        if (await loadUserIntoForm(id)) {
+            setIsUpdateOpen(true);
+        }
     }
 
     async function handleSwitchToEdit(id: string) {
         setIsViewOpen(false);
-        await loadUserIntoForm(id);
-        setIsUpdateOpen(true);
+        if (await loadUserIntoForm(id)) {
+            setIsUpdateOpen(true);
+        }
+        else {
+            clearSelectedUser();
+        }
     }
 
     function handleCloseUpdate() {
         setIsUpdateOpen(false);
-        setSelectedUserId(null);
-        updateMethods.reset();
+        clearSelectedUser();
     }
 
     /**

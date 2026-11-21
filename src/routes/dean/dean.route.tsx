@@ -15,11 +15,13 @@ export const deanRoutes: RouteObject[] = [
                 }),
                 index: true
             },
+            // Departments are managed by the Admin only; an old Dean link lands on the Dean dashboard
+            // instead of an admin page the Dean cannot open
             {
                 element: (
                     <Navigate
                         replace
-                        to="/admin/departments"
+                        to="/dean"
                     />
                 ),
                 path: 'department-management'
@@ -28,7 +30,7 @@ export const deanRoutes: RouteObject[] = [
                 element: (
                     <Navigate
                         replace
-                        to="/admin/departments"
+                        to="/dean"
                     />
                 ),
                 path: 'departments'

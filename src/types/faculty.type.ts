@@ -210,6 +210,8 @@ export interface FacultyEvaluationQuestionSummary {
 
 export interface FacultyEvaluationComment {
     response_id: string;
+    // Sent by fn_get_faculty_evaluation_summary since 20261121300012
+    section_id?: string;
     section_code: string;
     course_code: string;
     response_text: string;

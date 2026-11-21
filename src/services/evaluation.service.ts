@@ -144,6 +144,8 @@ function mapQuestions(template: EvaluationTemplateForm) {
         const questionType = question.question_type || 'Rating';
 
         return {
+            // fn_update_evaluation_template updates a question with an id in place, keeping its answers
+            id: question.id || null,
             question_text: question.question_text,
             question_type: questionType,
             is_required: question.is_required ?? true,

@@ -29,6 +29,8 @@ interface DeanStatCard {
     label: string;
     statKey: keyof DeanDashboardStats;
     to?: string;
+    // The target list opens on the dashboard's term
+    withTerm?: boolean;
 }
 
 const STAT_CARDS: DeanStatCard[] = [
@@ -54,7 +56,8 @@ const STAT_CARDS: DeanStatCard[] = [
         iconColor: 'text-[var(--mui-palette-success-main)]',
         label: 'Sections This Term',
         statKey: 'sections_this_term',
-        to: '/dean/section-management'
+        to: '/dean/section-management',
+        withTerm: true
     },
     {
         icon: <UsersThreeIcon size={24} />,
@@ -62,7 +65,8 @@ const STAT_CARDS: DeanStatCard[] = [
         iconColor: 'text-[var(--mui-palette-primary-main)]',
         label: 'Enrolled Students',
         statKey: 'enrolled_students',
-        to: '/dean/section-management'
+        to: '/dean/section-management',
+        withTerm: true
     },
     {
         icon: <ChalkboardTeacherIcon size={24} />,
@@ -76,9 +80,10 @@ const STAT_CARDS: DeanStatCard[] = [
         icon: <UserMinusIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-warning-50)]',
         iconColor: 'text-[var(--mui-palette-warning-main)]',
+        // The section list cannot narrow to unassigned sections, so the card does not link;
+        // the "Needs a Faculty Assignment" list below opens each one
         label: 'Unassigned Sections',
-        statKey: 'unassigned_sections',
-        to: '/dean/section-management'
+        statKey: 'unassigned_sections'
     },
     {
         icon: <WarningIcon size={24} />,
@@ -92,9 +97,10 @@ const STAT_CARDS: DeanStatCard[] = [
         icon: <WarningCircleIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-error-50)]',
         iconColor: 'text-[var(--mui-palette-error-main)]',
+        // No list shows at-risk students for a term, so the card does not link;
+        // the "Insight Highlights" list below shows the sections
         label: 'At-Risk Students',
-        statKey: 'at_risk_students',
-        to: '/dean/section-management'
+        statKey: 'at_risk_students'
     }
 ];
 
@@ -140,7 +146,9 @@ export default function DeanDashboard() {
                         iconColor={card.iconColor}
                         key={card.label}
                         label={card.label}
-                        to={card.to}
+                        to={card.to && card.withTerm && dashboard?.term?.term_id
+                            ? `${card.to}?termId=${encodeURIComponent(dashboard.term.term_id)}`
+                            : card.to}
                         value={resolveStatValue(dashboard?.stats?.[card.statKey])}
                     />
                 ))}

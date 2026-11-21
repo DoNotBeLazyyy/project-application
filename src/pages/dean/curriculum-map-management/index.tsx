@@ -93,7 +93,8 @@ interface CurriculumMapManagementProps {
     readOnly?: boolean;
     hideProgramSelect?: boolean;
     initialEntries?: CurriculumMapEntry[];
-    onChangeEntries?: (entries: CurriculumMapEntry[], pendingDeletedIds?: string[]) => void;
+    // isPristineLoad: the entries are exactly what was just loaded, with nothing staged or edited
+    onChangeEntries?: (entries: CurriculumMapEntry[], pendingDeletedIds?: string[], isPristineLoad?: boolean) => void;
 }
 
 export default function CurriculumMapManagement({
@@ -119,6 +120,10 @@ export default function CurriculumMapManagement({
     const [isDeleteSingleModalOpen, setIsDeleteSingleModalOpen] = useState(false);
     const [deleteTargetEntry, setDeleteTargetEntry] = useState<CurriculumMapEntry | null>(null);
     const [pendingDeletedIds, setPendingDeletedIds] = useState<string[]>([]);
+    // Read by fetchCurriculum, so a reload (e.g. a revision change) keeps staged deletes and edits
+    const pendingDeletedIdsRef = useRef<string[]>([]);
+    pendingDeletedIdsRef.current = pendingDeletedIds;
+    const editedEntryIdsRef = useRef<Set<string>>(new Set());
     const [selectedEntry, setSelectedEntry] = useState<CurriculumMapEntry | null>(null);
     const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -305,8 +310,19 @@ export default function CurriculumMapManagement({
 
         if (result.data) {
             setEntries((prevEntries) => {
+                const pendingDeleted = new Set(pendingDeletedIdsRef.current);
+                const editedIds = editedEntryIdsRef.current;
+                const prevById = new Map(prevEntries.map((e) => [e.id, e]));
                 const stagedTempEntries = prevEntries.filter((e) => e.id?.startsWith('temp-'));
-                const merged = [...(result.data ?? [])];
+                // Entries staged for deletion stay hidden, and unsaved edits win over the loaded copy
+                const merged = (result.data ?? [])
+                    .filter((m) => !pendingDeleted.has(m.id))
+                    .map((m) => (editedIds.has(m.id) && prevById.get(m.id)) || m);
+                for (const edited of prevEntries) {
+                    if (editedIds.has(edited.id) && !merged.some((m) => m.id === edited.id)) {
+                        merged.push(edited);
+                    }
+                }
                 for (const temp of stagedTempEntries) {
                     const exists = merged.some(
                         (m) => (m.course_id && m.course_id === temp.course_id)
@@ -316,7 +332,8 @@ export default function CurriculumMapManagement({
                         merged.push(temp);
                     }
                 }
-                onChangeEntriesRef.current?.(merged);
+                const isPristineLoad = stagedTempEntries.length === 0 && editedIds.size === 0 && pendingDeleted.size === 0;
+                onChangeEntriesRef.current?.(merged, undefined, isPristineLoad);
                 return merged;
             });
         }
@@ -498,12 +515,16 @@ export default function CurriculumMapManagement({
                 term_type_code: (termTypeObj as { code?: string })?.code ?? termTypeObj?.label ?? nextEntries[existingIndex].term_type_code,
                 lecture_units: lecUnits,
                 laboratory_units: labUnits,
-                units: customUnits,
+                // Lecture/lab courses save lec + lab, so a changed unit count sticks after reload
+                units: totalCalculated,
                 type_units: typeUnits,
                 total_units: totalCalculated,
                 sequence: Number(values.sequence),
                 is_elective: values.is_elective
             };
+            if (onChangeEntries && !nextEntries[existingIndex].id.startsWith('temp-')) {
+                editedEntryIdsRef.current.add(nextEntries[existingIndex].id);
+            }
             updateEntriesState(nextEntries);
             if (!onChangeEntries && selectedProgramId && nextEntries[existingIndex].id && !nextEntries[existingIndex].id.startsWith('temp-')) {
                 await updateCurriculumMapEntry(
@@ -512,7 +533,7 @@ export default function CurriculumMapManagement({
                         ...values,
                         lecture_units: String(lecUnits),
                         laboratory_units: String(labUnits),
-                        units: String(customUnits),
+                        units: String(totalCalculated),
                         type_units: typeUnits
                     },
                     selectedSchoolYearId
@@ -531,7 +552,8 @@ export default function CurriculumMapManagement({
                 course_type_label: course?.course_type_label || '',
                 lecture_units: lecUnits,
                 laboratory_units: labUnits,
-                units: customUnits,
+                // Lecture/lab courses save lec + lab, so a changed unit count sticks after reload
+                units: totalCalculated,
                 type_units: typeUnits,
                 total_units: totalCalculated,
                 year_level: Number(values.year_level),
@@ -553,7 +575,7 @@ export default function CurriculumMapManagement({
                         ...values,
                         lecture_units: String(lecUnits),
                         laboratory_units: String(labUnits),
-                        units: String(customUnits),
+                        units: String(totalCalculated),
                         type_units: typeUnits
                     },
                     selectedSchoolYearId
@@ -573,7 +595,7 @@ export default function CurriculumMapManagement({
     }
 
     async function handleUpdateSubmit(values: CurriculumMapFormValues) {
-        if (!selectedEntry) return;
+        if (!selectedEntry || readOnly) return;
 
         const [listRes, optRes] = await Promise.all([
             listCourses(1, 1000, '', [], effectiveDepartmentId
@@ -657,7 +679,9 @@ export default function CurriculumMapManagement({
             ...(values.type_units || {})
         };
         if (lecUnits > 0) typeUnits['LEC'] = lecUnits;
+        else delete typeUnits['LEC'];
         if (labUnits > 0) typeUnits['LAB'] = labUnits;
+        else delete typeUnits['LAB'];
         const currentTypeCode = (course?.course_type_code || selectedEntry.course_type_code)?.toUpperCase()
             .trim();
         if (isCustomType && currentTypeCode && customUnits > 0) {
@@ -673,7 +697,8 @@ export default function CurriculumMapManagement({
                 course_title: course?.title ?? entry.course_title,
                 lecture_units: lecUnits,
                 laboratory_units: labUnits,
-                units: customUnits,
+                // Lecture/lab courses save lec + lab, so a changed unit count sticks after reload
+                units: totalCalculated,
                 type_units: typeUnits,
                 total_units: totalCalculated,
                 year_level: Number(values.year_level),
@@ -685,6 +710,9 @@ export default function CurriculumMapManagement({
             };
         });
 
+        if (onChangeEntries && selectedEntry.id && !selectedEntry.id.startsWith('temp-')) {
+            editedEntryIdsRef.current.add(selectedEntry.id);
+        }
         updateEntriesState(updatedEntries);
 
         if (!onChangeEntries && selectedEntry.id && !selectedEntry.id.startsWith('temp-')) {
@@ -694,7 +722,7 @@ export default function CurriculumMapManagement({
                     ...values,
                     lecture_units: String(lecUnits),
                     laboratory_units: String(labUnits),
-                    units: String(customUnits),
+                    units: String(totalCalculated),
                     type_units: typeUnits
                 },
                 selectedSchoolYearId
@@ -1302,16 +1330,19 @@ export default function CurriculumMapManagement({
                         >
                             Close
                         </CommonButton>
-                        <CommonButton
-                            size="small"
-                            variant="contained"
-                            onClick={function() {
-                                setIsViewOpen(false);
-                                setIsUpdateOpen(true);
-                            }}
-                        >
-                            Edit
-                        </CommonButton>
+                        {/* A read-only curriculum (View Program) has nowhere to save an edit */}
+                        {!readOnly && (
+                            <CommonButton
+                                size="small"
+                                variant="contained"
+                                onClick={function() {
+                                    setIsViewOpen(false);
+                                    setIsUpdateOpen(true);
+                                }}
+                            >
+                                Edit
+                            </CommonButton>
+                        )}
                     </div>
                 </div>
             </CommonModal>

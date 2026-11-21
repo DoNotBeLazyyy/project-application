@@ -259,7 +259,8 @@ export default function EvaluationManagement() {
         updateMethods.reset(DEFAULT_FORM_VALUES);
     }
 
-    async function handleCreateSubmit(values: EvaluationTemplateForm) {
+    // Resolves true once saved, so the wizard drops its draft
+    async function handleCreateSubmit(values: EvaluationTemplateForm): Promise<boolean> {
         setIsSaving(true);
         try {
             const sanitizedValues: EvaluationTemplateForm = {
@@ -285,15 +286,17 @@ export default function EvaluationManagement() {
             if (!res.error) {
                 handleCloseCreate();
                 triggerRefresh();
+                return true;
             }
+            return false;
         }
         finally {
             setIsSaving(false);
         }
     }
 
-    async function handleUpdateSubmit(values: EvaluationTemplateForm) {
-        if (!selectedId) return;
+    async function handleUpdateSubmit(values: EvaluationTemplateForm): Promise<boolean> {
+        if (!selectedId) return false;
         setIsSaving(true);
         try {
             const sanitizedValues: EvaluationTemplateForm = {
@@ -318,7 +321,9 @@ export default function EvaluationManagement() {
             if (!res.error) {
                 handleCloseUpdate();
                 triggerRefresh();
+                return true;
             }
+            return false;
         }
         finally {
             setIsSaving(false);
