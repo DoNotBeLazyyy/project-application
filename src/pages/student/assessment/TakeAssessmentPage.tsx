@@ -27,7 +27,7 @@ import {
     submitAssessment
 } from '@services/student-portal.service';
 import { useToastStore } from '@stores/toast.store';
-import { StudentAssessment, StudentQuestion } from '@type/student-portal.type';
+import { StudentAssessment, StudentQuestion, SubmissionFileAttachment } from '@type/student-portal.type';
 import { DEFAULT_FORM_OPTIONS } from '@utils/form.util';
 import { holdIdleTimeout, releaseIdleTimeout } from '@utils/session.util';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -38,6 +38,7 @@ const REQUIRED_ANSWER_MESSAGE = 'This question is required.';
 const CHOICE_TYPES = ['Multiple Choice', 'True or False', 'Matching'];
 const TEXT_SAVE_DELAY_MS = 1500;
 const HEARTBEAT_INTERVAL_MS = 30000;
+const MAX_TIMEOUT_MS = 2147483647;
 const SAVE_FAILED_MESSAGE = 'Some answers could not be saved, so the assessment was not submitted. Your answers are still on this page. Check your connection and try again.';
 const PAGE_SAVE_FAILED_MESSAGE = 'Some answers on this page could not be saved. Check your connection and try again.';
 const TIME_UP_MESSAGE = 'Time is up. Your saved answers were submitted automatically.';
@@ -126,7 +127,16 @@ export default function TakeAssessmentPage() {
     const [isTimeUp, setIsTimeUp] = useState(false);
     const [isConfirmSubmitOpen, setIsConfirmSubmitOpen] = useState(false);
     const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+    // Saved files per File Upload question; kept here so they survive paging back and forth
+    const [fileAnswers, setFileAnswers] = useState<Record<string, SubmissionFileAttachment[]>>({});
+    // Required File Upload questions that were submitted without a file
+    const [missingFileIds, setMissingFileIds] = useState<string[]>([]);
     const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    // Set once the time-up submit ran, so the timer and the expiry check never send it twice
+    const hasAutoSubmittedRef = useRef(false);
+    const handleSubmitRef = useRef<(isAutoSubmit: boolean) => Promise<void>>(async function() {
+        // Replaced by the real submit handler after the first render
+    });
     // Question ids whose latest value has not reached the server yet
     const dirtyIdsRef = useRef<Set<string>>(new Set());
     const saveTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
@@ -283,13 +293,26 @@ export default function TakeAssessmentPage() {
 
         setQuestions(qResult.data);
         const initialValues: Record<string, string> = {};
+        const initialFiles: Record<string, SubmissionFileAttachment[]> = {};
         qResult.data.forEach((q) => {
             const isChoice = CHOICE_TYPES.includes(q.question_type);
             initialValues[`answer_${q.id}`] = isChoice
                 ? (q.saved_answer?.choice_id ?? '')
                 : (q.saved_answer?.answer_text ?? '');
+            if (q.question_type === 'File Upload') {
+                initialFiles[q.id] = q.saved_answer?.file_attachments ?? [];
+            }
         });
         methods.reset(initialValues);
+        setFileAnswers(initialFiles);
+        setMissingFileIds([]);
+    }
+
+    /**
+     * Keeps the saved file list of a File Upload question once its save worked.
+     */
+    function handleFilesChange(questionId: string, files: SubmissionFileAttachment[]) {
+        setFileAnswers((prev) => ({ ...prev, [questionId]: files }));
     }
 
     async function handleStart() {
@@ -443,15 +466,22 @@ export default function TakeAssessmentPage() {
     function validateRequiredAnswers(): boolean {
         const values = methods.getValues();
         const missing = questions.filter(function(q) {
-            return q.is_required
-                && q.question_type !== 'File Upload'
-                && !String(values[`answer_${q.id}`] ?? '')
-                    .trim();
+            if (!q.is_required) return false;
+            // A required File Upload question needs at least one saved file
+            if (q.question_type === 'File Upload') return (fileAnswers[q.id] ?? []).length === 0;
+
+            return !String(values[`answer_${q.id}`] ?? '')
+                .trim();
         });
+
+        setMissingFileIds(missing
+            .filter((q) => q.question_type === 'File Upload')
+            .map((q) => q.id));
 
         if (missing.length === 0) return true;
 
         missing.forEach(function(q) {
+            if (q.question_type === 'File Upload') return;
             methods.setError(`answer_${q.id}`, { message: REQUIRED_ANSWER_MESSAGE, type: 'required' });
         });
 
@@ -467,16 +497,25 @@ export default function TakeAssessmentPage() {
 
     async function handleSubmit(isAutoSubmit: boolean) {
         if (!submissionId || isSubmitting || isTimeUp) return;
-        // Never send an empty attempt when the questions did not load
-        if (questions.length === 0) return;
+        // Never send an empty attempt by hand when the questions did not load. When the time is
+        // up the attempt ends anyway, with the answers saved so far.
+        if (questions.length === 0 && !isAutoSubmit) return;
 
         if (!isAutoSubmit && !validateRequiredAnswers()) return;
 
         setIsSubmitting(true);
         try {
-            const isAllSaved = await saveAnswers(questions, SAVE_FAILED_MESSAGE);
-            // A failed save would be graded as a blank answer, so keep the student here
-            if (!isAllSaved) return;
+            const saveErrors = await Promise.all(questions.map((q) => saveQuestion(q.id)));
+            const failedSaves = saveErrors.filter((error): error is string => Boolean(error));
+            const isTimeOver = failedSaves.some(isAttemptEndedMessage);
+
+            // A failed save would be graded as a blank answer, so keep the student here, unless
+            // the time is up: then waiting can't save anything, so the attempt ends now
+            if (failedSaves.length > 0 && !isAutoSubmit && !isTimeOver) {
+                useToastStore.getState()
+                    .showToast(SAVE_FAILED_MESSAGE, 'error');
+                return;
+            }
 
             const result = await submitAssessment(submissionId);
             if (!result.error) {
@@ -486,7 +525,7 @@ export default function TakeAssessmentPage() {
                 return;
             }
 
-            if (isAutoSubmit || isAttemptEndedMessage(result.error.message)) {
+            if (isAutoSubmit || isTimeOver || isAttemptEndedMessage(result.error.message)) {
                 handleAttemptEnded();
             }
         }
@@ -494,6 +533,35 @@ export default function TakeAssessmentPage() {
             setIsSubmitting(false);
         }
     }
+
+    useEffect(function() {
+        handleSubmitRef.current = handleSubmit;
+    });
+
+    /**
+     * Sends the time-up submit once, whichever fires first: the on-screen timer or the expiry
+     * check below (which also runs while the questions are loading or failed to load).
+     */
+    const handleTimeUp = useCallback(function() {
+        if (hasAutoSubmittedRef.current) return;
+        hasAutoSubmittedRef.current = true;
+        handleSubmitRef.current(true);
+    }, []);
+
+    useEffect(function() {
+        if (!isStarted || !expiresAt || isTimeUp) return;
+
+        const delay = new Date(expiresAt)
+            .getTime() - Date.now();
+        // setTimeout can't wait longer than about 24 days; the on-screen timer covers that case
+        if (delay > MAX_TIMEOUT_MS) return;
+
+        const timer = setTimeout(handleTimeUp, Math.max(0, delay));
+
+        return function() {
+            clearTimeout(timer);
+        };
+    }, [expiresAt, handleTimeUp, isStarted, isTimeUp]);
 
     /**
      * Moves to another page of questions after saving the visible ones.
@@ -609,11 +677,19 @@ export default function TakeAssessmentPage() {
             ? 1
             : 0);
         const canRetake = finishedAttempts < maxAttempts && isWindowOpen(assessment);
-        const startLabel = assessment.has_active_submission && !isActiveAttemptExpired
-            ? 'Resume Assessment'
-            : wasAutoSubmitted || attemptsUsed > 0
-                ? `Retake (attempt ${finishedAttempts + 1} of ${maxAttempts})`
-                : 'Start Assessment Now';
+        // Before the opening time the server refuses to start, so the button says when it opens
+        const isNotYetOpen = !assessment.has_active_submission
+            && Boolean(assessment.opens_at)
+            && new Date(assessment.opens_at ?? '')
+                .getTime() > Date.now();
+        const startLabel = isNotYetOpen
+            ? `Opens ${new Date(assessment.opens_at ?? '')
+                .toLocaleString()}`
+            : assessment.has_active_submission && !isActiveAttemptExpired
+                ? 'Resume Assessment'
+                : wasAutoSubmitted || attemptsUsed > 0
+                    ? `Retake (attempt ${finishedAttempts + 1} of ${maxAttempts})`
+                    : 'Start Assessment Now';
 
         return (
             <CommonCard className="flex flex-col gap-6 h-full p-4 sm:p-8 w-full max-w-4xl mx-auto shadow-sm">
@@ -635,9 +711,11 @@ export default function TakeAssessmentPage() {
                         Back to Subject
                     </CommonButton>
                     <CommonBadgeStatus
-                        label={assessment.has_active_submission && !isActiveAttemptExpired
-                            ? 'In Progress'
-                            : 'Ready to Take'}
+                        label={isNotYetOpen
+                            ? 'Not Yet Open'
+                            : assessment.has_active_submission && !isActiveAttemptExpired
+                                ? 'In Progress'
+                                : 'Ready to Take'}
                         variant={assessment.has_active_submission && !isActiveAttemptExpired
                             ? 'warning'
                             : 'info'}
@@ -785,7 +863,7 @@ export default function TakeAssessmentPage() {
                             <CommonButton
                                 className="px-8 py-2.5 text-base font-semibold shadow-md"
                                 color="primary"
-                                disabled={isStarting || (isActiveAttemptExpired && !canRetake)}
+                                disabled={isStarting || isNotYetOpen || (isActiveAttemptExpired && !canRetake)}
                                 loading={isStarting}
                                 size="medium"
                                 startIcon={(
@@ -850,9 +928,7 @@ export default function TakeAssessmentPage() {
                     <SaveIndicator status={saveStatus} />
                     <AssessmentTimer
                         expiresAt={expiresAt}
-                        onExpire={function() {
-                            handleSubmit(true);
-                        }}
+                        onExpire={handleTimeUp}
                     />
                 </div>
             </div>
@@ -862,12 +938,17 @@ export default function TakeAssessmentPage() {
                 {visibleQuestions.map((question, index) => (
                     <AssessmentQuestionCard
                         control={methods.control}
+                        fileError={missingFileIds.includes(question.id)
+                            ? REQUIRED_ANSWER_MESSAGE
+                            : undefined}
+                        files={fileAnswers[question.id] ?? []}
                         index={assessment.show_all_questions
                             ? index
                             : currentPage * questionsPerPage + index}
                         key={question.id}
                         question={question}
                         submissionId={submissionId}
+                        onFilesChange={handleFilesChange}
                     />
                 ))}
             </div>

@@ -193,11 +193,12 @@ export async function isSectionGradingLocked(
 }
 
 export async function reseedSectionGrading(
-    sectionId: string
+    sectionId: string,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_reseed_section_grading', {
         p_section_id: sectionId
-    });
+    }, options);
 }
 export async function listSpecialGradeFlags(
     sectionId: string,

@@ -4,6 +4,7 @@ import { FormFieldConfig } from '@components/form/FormField';
 import CommonInput from '@components/input/CommonInput';
 import CommonNumberInput from '@components/input/CommonNumberInput';
 import CommonModal from '@components/modal/CommonModal';
+import DeletePromptModal from '@components/modal/DeletePromptModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import { useFormDraft } from '@hooks/use-form-draft';
@@ -71,7 +72,8 @@ interface GradingComponentPanelProps {
     lockMessage?: string;
     periodName?: string;
     periodWeight?: number;
-    onCreate: (values: GradingComponentFormValues) => Promise<void>;
+    // Resolves true once the component was saved
+    onCreate: (values: GradingComponentFormValues) => Promise<boolean>;
     onDelete: (componentId: string) => Promise<void>;
     onReseed: () => Promise<void>;
     onUpdate: (componentId: string, values: GradingComponentFormValues) => Promise<void>;
@@ -98,6 +100,22 @@ export default function GradingComponentPanel({
     const [draftRows, setDraftRows] = useState<DraftRow[]>([]);
     const [deletedIds, setDeletedIds] = useState<string[]>([]);
     const [isSaving, setIsSaving] = useState(false);
+    // The component waiting for the delete confirmation
+    const [pendingDelete, setPendingDelete] = useState<GradingComponent | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    async function handleConfirmDelete() {
+        if (!pendingDelete || isDeleting) return;
+
+        setIsDeleting(true);
+        try {
+            await onDelete(pendingDelete.id);
+        }
+        finally {
+            setIsDeleting(false);
+            setPendingDelete(null);
+        }
+    }
 
     // Standalone Create Modal
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -267,7 +285,10 @@ export default function GradingComponentPanel({
 
     // Modal Create
     async function handleCreateSubmit(values: GradingComponentFormValues) {
-        await onCreate(values);
+        const isSaved = await onCreate(values);
+        // Keep the modal and what was typed when the save failed
+        if (!isSaved) return;
+
         createDraft.clearDraft();
         setIsDiscardCreateOpen(false);
         createMethods.reset(defaultFormValues);
@@ -547,7 +568,7 @@ export default function GradingComponentPanel({
                                                         className="p-1 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                                                         title="Delete Component"
                                                         type="button"
-                                                        onClick={() => onDelete(component.id)}
+                                                        onClick={() => setPendingDelete(component)}
                                                     >
                                                         <TrashIcon
                                                             size={14}
@@ -607,6 +628,31 @@ export default function GradingComponentPanel({
                     </div>
                 </div>
             </CommonModal>
+
+            <DeletePromptModal
+                formButtonsProps={{
+                    cancelProps: {
+                        disabled: isDeleting,
+                        onClick: () => setPendingDelete(null)
+                    },
+                    confirmProps: {
+                        disabled: isDeleting,
+                        loading: isDeleting,
+                        onClick: handleConfirmDelete
+                    }
+                }}
+                isOpen={Boolean(pendingDelete)}
+                mainContent={{
+                    title: 'Delete Grading Component?'
+                }}
+                open={Boolean(pendingDelete)}
+                subContent={{
+                    title: `Delete "${pendingDelete?.name ?? ''}" (${pendingDelete?.weight ?? 0}%)? A component that still has assessments cannot be deleted; move or delete those assessments first.`
+                }}
+                onClose={() => {
+                    if (!isDeleting) setPendingDelete(null);
+                }}
+            />
 
             <DiscardChangesPromptModal
                 open={isDiscardCreateOpen}

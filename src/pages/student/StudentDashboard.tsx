@@ -62,6 +62,14 @@ const STAT_CARDS: StudentStatCard[] = [
     }
 ];
 
+/**
+ * Tells whether an upcoming assessment has not opened yet, so it can't be taken right now.
+ */
+function isNotYetOpen(assessment: UpcomingAssessment): boolean {
+    return Boolean(assessment.opens_at) && new Date(assessment.opens_at ?? '')
+        .getTime() > Date.now();
+}
+
 function resolveStudentStatValue(dashboard: StudentDashboardData | null, statKey: StudentStatKey): number | string {
     if (!dashboard) {
         return '—';
@@ -243,7 +251,7 @@ export default function StudentDashboard() {
 
             <CommonCard
                 cardHeaderProps={{
-                    subheader: 'Assessments that are open and not yet submitted.',
+                    subheader: 'Assessments that are open or opening soon, and not yet submitted.',
                     title: 'Upcoming Assessments'
                 }}
                 className="flex flex-col"
@@ -275,6 +283,16 @@ export default function StudentDashboard() {
                                     </span>
                                     <span>·</span>
                                     <span>Section {assessment.section_code}</span>
+                                    {isNotYetOpen(assessment) && (
+                                        <>
+                                            <span>·</span>
+                                            <span className="flex items-center gap-1">
+                                                <ClockIcon size={13} />
+                                                Opens {new Date(assessment.opens_at ?? '')
+                                                    .toLocaleString()}
+                                            </span>
+                                        </>
+                                    )}
                                     {assessment.due_at && (
                                         <>
                                             <span>·</span>
@@ -290,12 +308,16 @@ export default function StudentDashboard() {
                             <CommonButton
                                 color="primary"
                                 size="small"
-                                variant="contained"
+                                variant={isNotYetOpen(assessment)
+                                    ? 'outlined'
+                                    : 'contained'}
                                 onClick={function() {
                                     navigate(`/student/subjects/${assessment.enrollment_id}/assessments/${assessment.id}`);
                                 }}
                             >
-                                Take Assessment
+                                {isNotYetOpen(assessment)
+                                    ? 'View Details'
+                                    : 'Take Assessment'}
                             </CommonButton>
                         </div>
                     ))}

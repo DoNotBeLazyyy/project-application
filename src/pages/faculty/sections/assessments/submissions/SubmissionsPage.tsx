@@ -1,6 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
+import { MANUAL_GRADE_TYPES } from '@pages/faculty/sections/assessments/submissions/answerPoints';
 import GradingPanel from '@pages/faculty/sections/assessments/submissions/GradingPanel';
 import RubricGradingPanel from '@pages/faculty/sections/assessments/submissions/RubricGradingPanel';
 import SubmissionList from '@pages/faculty/sections/assessments/submissions/SubmissionList';
@@ -84,9 +85,13 @@ export default function SubmissionsPage() {
         if (!result.data) return;
 
         const feedback = result.data.feedback ?? '';
+        // An ungraded essay or short answer starts empty (NaN), so Save Grade asks for the points
+        // instead of quietly saving 0
         const answers = result.data.answers.map((a) => ({
             id: a.id,
-            points_earned: a.points_earned ?? 0,
+            points_earned: a.points_earned ?? (MANUAL_GRADE_TYPES.includes(a.question_type)
+                ? Number.NaN
+                : 0),
             grader_notes: a.grader_notes ?? ''
         }));
 

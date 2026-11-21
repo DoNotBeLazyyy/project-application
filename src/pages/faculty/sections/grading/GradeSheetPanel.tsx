@@ -97,6 +97,11 @@ export default function GradeSheetPanel({
             (r) => r.status === 'Submitted' || r.status === 'Approved' || r.status === 'Released'
         );
 
+    // A row that left Draft is locked on the server, so its flag can't change either
+    function isRowLocked(row: GradeSheetRow): boolean {
+        return row.status === 'Submitted' || row.status === 'Approved' || row.status === 'Released';
+    }
+
     /**
      * Clearing a special grade applies right away; setting one asks first because it
      * replaces the computed grade and locks the student's components.
@@ -425,7 +430,7 @@ export default function GradeSheetPanel({
                                                 <select
                                                     aria-label={`Special grade flag for ${row.full_name || 'student'}`}
                                                     className="w-full text-xs font-bold text-center bg-transparent border-0 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded cursor-pointer mt-0.5 truncate"
-                                                    disabled={isSubmitted || !isEncodingOpen || isFlagBusy}
+                                                    disabled={isSubmitted || isRowLocked(row) || !isEncodingOpen || isFlagBusy}
                                                     title="Select special grade flag (INC, DRP, FA, UW)"
                                                     value={row.special_grade || ''}
                                                     onChange={(e) => handleSpecialGradeChange(row, e.target.value)}
