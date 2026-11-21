@@ -1,18 +1,52 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonTable from '@components/table/CommonTable';
 import { SUBMISSION_STATUS_VARIANT } from '@constants/status-badge.constant';
+import { IntegritySubmission } from '@type/analytics.type';
 import { SubmissionListRow } from '@type/assessment.type';
 import { MobileCardColDef } from '@type/table.type';
 import { RowClickedEvent } from 'ag-grid-community';
 import { useMemo } from 'react';
 
 interface SubmissionListProps {
+    // Integrity signals by submission id; optional so the list works without the report
+    integrityById?: Record<string, IntegritySubmission>;
     isLoading?: boolean;
     submissions: SubmissionListRow[];
     onSelect: (submissionId: string) => Promise<void>;
 }
 
-export default function SubmissionList({ isLoading = false, submissions, onSelect }: SubmissionListProps) {
+/**
+ * Small flag under a student's name: red when they shared a network with another student
+ * during the attempt, amber when they left the quiz screen.
+ */
+function IntegrityBadge({ integrity }: { integrity: IntegritySubmission | undefined }) {
+    if (!integrity) return null;
+
+    if (integrity.shared_with.length > 0) {
+        return (
+            <span className="font-semibold text-[11px] text-rose-600 dark:text-rose-400 truncate">
+                Same network as {integrity.shared_with[0].full_name}
+                {integrity.shared_with.length > 1
+                    ? ` +${integrity.shared_with.length - 1}`
+                    : ''}
+            </span>
+        );
+    }
+
+    if (integrity.focus_lost_count > 0) {
+        return (
+            <span className="font-semibold text-[11px] text-amber-600 dark:text-amber-400 truncate">
+                Left screen {integrity.focus_lost_count}×
+            </span>
+        );
+    }
+
+    return null;
+}
+
+export default function SubmissionList({
+    integrityById = {}, isLoading = false, submissions, onSelect
+}: SubmissionListProps) {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         // Shares the page with the grading panel, so columns stay few: student (name + number),
         // status (already says "Late"), score, and when it was submitted
@@ -27,6 +61,7 @@ export default function SubmissionList({ isLoading = false, submissions, onSelec
                                 ? ` · Attempt ${params.data.attempt_number}`
                                 : ''}
                         </span>
+                        <IntegrityBadge integrity={integrityById[params.data.id]} />
                     </div>
                 ),
                 field: 'full_name',
@@ -75,7 +110,7 @@ export default function SubmissionList({ isLoading = false, submissions, onSelec
                     : '—'
             }
         ];
-    }, []);
+    }, [integrityById]);
 
     return (
         <div className="flex flex-col min-h-0 w-full h-full">

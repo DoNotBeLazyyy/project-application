@@ -4,14 +4,16 @@ import ListStatusState from '@components/empty/ListStatusState';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import { MANUAL_GRADE_TYPES } from '@pages/faculty/sections/assessments/submissions/answerPoints';
 import GradingPanel from '@pages/faculty/sections/assessments/submissions/GradingPanel';
+import IntegrityNotice from '@pages/faculty/sections/assessments/submissions/IntegrityNotice';
 import RubricGradingPanel from '@pages/faculty/sections/assessments/submissions/RubricGradingPanel';
 import SubmissionList from '@pages/faculty/sections/assessments/submissions/SubmissionList';
 import { ArrowLeftIcon } from '@phosphor-icons/react';
-import { getSubmissionForGrading, gradeSubmission, listSubmissions } from '@services/assessment.service';
+import { getAssessmentIntegrityReport, getSubmissionForGrading, gradeSubmission, listSubmissions } from '@services/assessment.service';
 import { getSubmissionRubric, gradeSubmissionRubric } from '@services/rubric.service';
+import { AssessmentIntegrityReport, IntegritySubmission } from '@type/analytics.type';
 import { GradeAnswerUpdate, SubmissionForGrading, SubmissionListRow } from '@type/assessment.type';
 import { RubricEvaluationInput, SubmissionRubric } from '@type/rubric.type';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 function buildGradeDraftKey(
@@ -29,6 +31,7 @@ export default function SubmissionsPage() {
     const navigate = useNavigate();
 
     const [submissions, setSubmissions] = useState<SubmissionListRow[]>([]);
+    const [integrity, setIntegrity] = useState<AssessmentIntegrityReport | null>(null);
     const [isListLoading, setIsListLoading] = useState(true);
     const [listError, setListError] = useState<string | null>(null);
     const [selectedSubmission, setSelectedSubmission] = useState<SubmissionForGrading | null>(null);
@@ -40,6 +43,14 @@ export default function SubmissionsPage() {
     const [isSaving, setIsSaving] = useState(false);
     // undefined: no prompt; null: leave the open submission; string: open that submission
     const [pendingSelection, setPendingSelection] = useState<string | null | undefined>(undefined);
+
+    const integrityById = useMemo(function() {
+        const map: Record<string, IntegritySubmission> = {};
+        (integrity?.submissions ?? []).forEach(function(row) {
+            map[row.submission_id] = row;
+        });
+        return map;
+    }, [integrity]);
 
     const isGradeDirty = buildGradeDraftKey(draftFeedback, draftAnswers, draftEvaluations)
         !== savedGradeDraft;
@@ -53,6 +64,13 @@ export default function SubmissionsPage() {
 
     async function fetchSubmissions() {
         setIsListLoading(true);
+        // Integrity signals load alongside; the list never waits on them
+        getAssessmentIntegrityReport(assessmentId)
+            .then(function(report) {
+                setIntegrity(report.data?.success
+                    ? report.data
+                    : null);
+            });
         const result = await listSubmissions(assessmentId);
         setIsListLoading(false);
         setListError(result.error
@@ -219,6 +237,16 @@ export default function SubmissionsPage() {
                                         ? 's'
                                         : ''}`}
                         </p>
+                        {integrity && integrity.summary.submission_count > 0 && (
+                            <p className="text-(--mui-palette-text-secondary) text-xs">
+                                Integrity: {integrity.summary.focus_flagged_count} of {integrity.summary.submission_count} left the quiz screen
+                                {integrity.summary.shared_ip_count > 0 && (
+                                    <span className="font-semibold text-rose-600 dark:text-rose-400">
+                                        {' '}· {integrity.summary.shared_ip_count} shared a network with another student
+                                    </span>
+                                )}
+                            </p>
+                        )}
                     </div>
                 </div>
                 <div className="flex flex-col md:flex-row flex-1 gap-4 min-h-0">
@@ -237,6 +265,7 @@ export default function SubmissionsPage() {
                             )
                             : (
                                 <SubmissionList
+                                    integrityById={integrityById}
                                     isLoading={isListLoading}
                                     submissions={submissions}
                                     onSelect={handleRequestSelect}
@@ -265,6 +294,9 @@ export default function SubmissionsPage() {
                                     Back to Submissions
                                 </CommonButton>
                             </div>
+                        )}
+                        {selectedSubmission && (
+                            <IntegrityNotice integrity={integrityById[selectedSubmission.id]} />
                         )}
                         {selectedSubmission && selectedSubmission.use_rubric_scoring && rubric
                             ? (

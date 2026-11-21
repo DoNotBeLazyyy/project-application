@@ -1,5 +1,6 @@
 import { deleteFile, getFileUrl, uploadFileToFolder } from '@services/storage.service';
 import { CallRpcOptions, callRpc } from '@services/supabase.wrapper';
+import { AssessmentIntegrityReport } from '@type/analytics.type';
 import {
     AssessmentFormValues, AssessmentListRow, AssessmentQuestion, GradeAnswerUpdate, QuestionBulkRow, QuestionFormValues, SubmissionForGrading, SubmissionListRow
 } from '@type/assessment.type';
@@ -280,6 +281,19 @@ export async function listSubmissions(
     return callRpc<SubmissionListRow[]>('fn_list_submissions', {
         p_assessment_id: assessmentId
     });
+}
+
+/**
+ * Per-submission integrity signals for faculty: how often the student left the quiz screen,
+ * time away, and whether they shared a network with another student during the attempt.
+ * Silent: the page still works when the report can't load.
+ */
+export async function getAssessmentIntegrityReport(
+    assessmentId: string
+): Promise<ServiceResult<AssessmentIntegrityReport>> {
+    return callRpc<AssessmentIntegrityReport>('fn_get_assessment_integrity_report', {
+        p_assessment_id: assessmentId
+    }, { background: true, silent: true });
 }
 
 export async function getSubmissionForGrading(
