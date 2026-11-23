@@ -16,6 +16,7 @@ import { useSchoolYearOptions } from '@pages/admin/school-year-management/use-sc
 import { useTermTypeOptions } from '@pages/admin/term-management/type/use-term-type-options';
 import DeanNoDepartmentBanner from '@pages/dean/components/DeanNoDepartmentBanner';
 import CurriculumMapForm from '@pages/dean/curriculum-map-management/CurriculumMapForm';
+import CurriculumPrintSheet from '@pages/dean/curriculum-map-management/CurriculumPrintSheet';
 import CurriculumTermTable from '@pages/dean/curriculum-map-management/CurriculumTermTable';
 import { useActiveTermOptions } from '@pages/dean/curriculum-map-management/use-active-term-options';
 import { useCurriculumMapGrouped } from '@pages/dean/curriculum-map-management/use-curriculum-map-grouped';
@@ -1137,28 +1138,19 @@ export default function CurriculumMapManagement({
                                     </div>
                                 )
                                 : (
-                                    <div className="flex flex-col gap-6 pb-8 print-area">
-                                        <div className="flex flex-col gap-1 print-only">
-                                            <p className="font-bold text-center text-sm">
-                                            Arellano University
-                                            </p>
-                                            <p className="text-center text-xs">
-                                            Jose Abad Santos Campus
-                                            </p>
-                                            <p className="font-semibold mt-2 text-center text-sm">
-                                                {selectedProgram?.label}
-                                            </p>
-                                            {selectedSchoolYear && (
-                                                <p className="text-center text-xs">
-                                                Effective SY {selectedSchoolYear.label}
-                                                </p>
-                                            )}
+                                    <div className="flex flex-col gap-6 pb-8">
+                                        <div className="print-area print-only">
+                                            <CurriculumPrintSheet
+                                                grouped={grouped}
+                                                programLabel={selectedProgram?.label}
+                                                schoolYearLabel={selectedSchoolYear?.label}
+                                            />
                                         </div>
 
                                         {grouped.map(function({ key, label, terms }) {
                                             return (
                                                 <div
-                                                    className="flex flex-col gap-3"
+                                                    className="flex flex-col gap-3 no-print"
                                                     key={key}
                                                 >
                                                     <h2 className="font-bold text-(--mui-palette-text-primary) text-center text-sm tracking-widest uppercase">
@@ -1438,4 +1430,4 @@ export default function CurriculumMapManagement({
             </CommonModal>
         </CommonCard>
     );
-}
+}

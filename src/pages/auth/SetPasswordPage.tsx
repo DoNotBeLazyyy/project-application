@@ -1,6 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import ValidCommonInput from '@components/input/ValidCommonInput';
+import InstitutionLogo from '@components/logo/InstitutionLogo';
 import { getMyAccountStatus, logout } from '@services/auth.service';
 import { supabase } from '@services/supabase.client';
 import { callRpc } from '@services/supabase.wrapper';
@@ -254,6 +255,10 @@ export default function SetPasswordPage() {
     return (
         <div className="flex h-full items-center justify-center p-4 sm:p-6 w-full">
             <CommonCard className="flex flex-col gap-6 max-w-sm p-8 w-full">
+                <InstitutionLogo
+                    className="self-center"
+                    size={64}
+                />
                 <div className="flex flex-col gap-1">
                     <h2 className="font-bold text-(--mui-palette-text-primary) text-xl">
                         {isRecovery

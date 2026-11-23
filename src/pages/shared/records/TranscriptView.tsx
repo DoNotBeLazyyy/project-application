@@ -1,8 +1,8 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
+import InstitutionLogo from '@components/logo/InstitutionLogo';
 import {
     CalendarDotsIcon,
-    CertificateIcon,
     GraduationCapIcon,
     PrinterIcon,
     StudentIcon
@@ -106,12 +106,10 @@ export default function TranscriptView({ studentId }: TranscriptViewProps) {
             <div className="flex flex-col gap-5 print-area">
                 {/* Academic Header Banner */}
                 <div className="bg-slate-50/90 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 flex flex-col items-center p-5 rounded-2xl text-center shadow-2xs gap-1.5">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 mb-1">
-                        <CertificateIcon
-                            size={26}
-                            weight="bold"
-                        />
-                    </div>
+                    <InstitutionLogo
+                        className="mb-1"
+                        size={64}
+                    />
                     <span className="font-bold text-slate-900 dark:text-slate-100 text-base sm:text-lg uppercase tracking-wide">
                         {transcript.institution.name ?? 'Arellano University'}
                     </span>

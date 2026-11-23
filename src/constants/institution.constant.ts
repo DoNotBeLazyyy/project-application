@@ -2,6 +2,10 @@ export const INSTITUTION_NAME = 'Arellano University';
 
 export const INSTITUTION_CAMPUS = 'Jose Abad Santos Campus';
 
+export const INSTITUTION_ADDRESS = '3058 Taft Avenue, Pasay City';
+
+export const INSTITUTION_LOGO_SRC = '/au-logo.png';
+
 export const INSTITUTION_VISION = 'To be a model institution of learning where relevant knowledge is acquired and skills are developed in response to the needs of the global community.';
 
 export const INSTITUTION_MISSION = 'To provide equitable access to learning through relevant, innovative, industry-sensitive and environment-conscious academic programs and services.';

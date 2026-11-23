@@ -1,5 +1,6 @@
 import CommonBreadcrumbs from '@components/breadcrumb/CommonBreadcrumbs';
 import PageLoadingFallback from '@components/loading/PageLoadingFallback';
+import InstitutionLogo from '@components/logo/InstitutionLogo';
 import AiAssistantButton from '@components/navbar/AiAssistantButton';
 import CommonNavbar from '@components/navbar/CommonNavbar';
 import ThemeToggleButton from '@components/navbar/ThemeToggleButton';
@@ -71,6 +72,7 @@ export default function RoleShell({
         <div className="flex h-full overflow-hidden w-full">
             <CommonSideBar
                 headerProps={{
+                    logo: <InstitutionLogo className="bg-white" />,
                     subtitle: resolvePanelLabel(activeRole, fallbackRoleLabel),
                     title: 'AU-JAS LMS'
                 }}

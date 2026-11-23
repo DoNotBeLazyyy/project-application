@@ -1,6 +1,8 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import ValidCommonInput from '@components/input/ValidCommonInput';
+import InstitutionLogo from '@components/logo/InstitutionLogo';
+import { INSTITUTION_CAMPUS, INSTITUTION_NAME } from '@constants/institution.constant';
 import { EMAIL_PATTERN } from '@constants/validation.constant';
 import { CheckCircleIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { requestPasswordReset, verifyUserEmail } from '@services/auth.service';
@@ -140,7 +142,11 @@ export default function ForgotPasswordPage() {
     return (
         <div className="flex h-full items-center justify-center p-4 sm:p-6 w-full">
             <CommonCard
-                cardHeaderProps={{ title: 'AU-JAS LMS' }}
+                cardHeaderProps={{
+                    avatar: <InstitutionLogo size={44} />,
+                    subheader: `${INSTITUTION_NAME} — ${INSTITUTION_CAMPUS}`,
+                    title: 'AU-JAS LMS'
+                }}
                 className="max-w-md w-full"
                 variant="outlined"
             >

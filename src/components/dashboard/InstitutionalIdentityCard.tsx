@@ -1,4 +1,5 @@
 import CommonCard from '@components/card/CommonCard';
+import InstitutionLogo from '@components/logo/InstitutionLogo';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import {
     INSTITUTION_CAMPUS,
@@ -117,6 +118,7 @@ export default function InstitutionalIdentityCard() {
     return (
         <CommonCard
             cardHeaderProps={{
+                avatar: <InstitutionLogo size={40} />,
                 subheader: `${INSTITUTION_NAME} — ${INSTITUTION_CAMPUS}`,
                 title: 'Our Identity'
             }}
