@@ -1,3 +1,4 @@
+import InstitutionLogo from '@components/logo/InstitutionLogo';
 import { INSTITUTION_ADDRESS, INSTITUTION_CAMPUS, INSTITUTION_NAME } from '@constants/institution.constant';
 import { CurriculumMapEntry, CurriculumMapGrouped } from '@type/curriculum-map.type';
 import { classMerge } from '@utils/css.util';
@@ -172,6 +173,10 @@ export default function CurriculumPrintSheet({
     return (
         <div className="curriculum-print-sheet flex flex-col gap-3 text-[8pt] text-black">
             <div className="flex flex-col items-center leading-snug text-center">
+                <InstitutionLogo
+                    className="mb-1"
+                    size={56}
+                />
                 <p className="font-semibold m-0 text-[9pt]">
                     {INSTITUTION_NAME}
                 </p>
