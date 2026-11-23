@@ -437,6 +437,12 @@ html:not(.dark) {
         overflow: visible !important;
     }
 
+    /* Paper is white even when the app is in dark mode */
+    html,
+    body {
+        background: #FFFFFF !important;
+    }
+
     body:has(.print-area) * {
         visibility: hidden;
     }

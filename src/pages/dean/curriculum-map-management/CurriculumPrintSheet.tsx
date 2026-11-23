@@ -12,6 +12,12 @@ interface CurriculumPrintSheetProps {
 
 type PrintTerm = CurriculumMapGrouped['terms'][number];
 
+const PAPER_STYLE = { backgroundColor: '#FFFFFF', color: '#000000' };
+
+// Blank mark, Code, Description, Lec, Lab, Pre-req. (Description takes the rest)
+const HALF_COLUMN_WIDTHS = ['3%', '17%', undefined, '7%', '7%', '14%'];
+const WIDE_COLUMN_WIDTHS = ['3%', '13%', undefined, '7%', '7%', '20%'];
+
 const CELL = 'border border-black px-1 py-px align-middle';
 const HEAD_CELL = `${CELL} font-semibold text-center`;
 
@@ -25,8 +31,14 @@ function formatPrerequisites(entry: CurriculumMapEntry): string {
         : 'None';
 }
 
-function formatUnits(value: number): string {
-    return Number(value) > 0
+// Same source order as the on-screen table: the entry's per-type units first, then the course's
+function getUnits(entry: CurriculumMapEntry, typeCodes: string[], fallback: number): string {
+    const typeCode = typeCodes.find((code) => entry.type_units?.[code] !== undefined);
+    const value = Number(typeCode
+        ? entry.type_units?.[typeCode]
+        : fallback);
+
+    return value > 0
         ? String(value)
         : '';
 }
@@ -61,42 +73,14 @@ function TermTable({ term, isWide = false }: { term: PrintTerm; isWide?: boolean
             )}
             <table className="border-collapse table-fixed w-full">
                 <colgroup>
-                    <col
-                        style={{
-                            width: isWide
-                                ? '7%'
-                                : '9%'
-                        }}
-                    />
-                    <col
-                        style={{
-                            width: isWide
-                                ? '13%'
-                                : '16%'
-                        }}
-                    />
-                    <col />
-                    <col
-                        style={{
-                            width: isWide
-                                ? '8%'
-                                : '6%'
-                        }}
-                    />
-                    <col
-                        style={{
-                            width: isWide
-                                ? '8%'
-                                : '6%'
-                        }}
-                    />
-                    <col
-                        style={{
-                            width: isWide
-                                ? '22%'
-                                : '14%'
-                        }}
-                    />
+                    {(isWide
+                        ? WIDE_COLUMN_WIDTHS
+                        : HALF_COLUMN_WIDTHS).map((width, index) => (
+                        <col
+                            key={index}
+                            style={{ width }}
+                        />
+                    ))}
                 </colgroup>
                 <thead>
                     <tr>
@@ -115,10 +99,10 @@ function TermTable({ term, isWide = false }: { term: PrintTerm; isWide?: boolean
                         return (
                             <tr key={entry.id}>
                                 <td className={CELL} />
-                                <td className={CELL}>{entry.course_code}</td>
+                                <td className={`${CELL} whitespace-nowrap`}>{entry.course_code}</td>
                                 <td className={CELL}>{entry.course_title}</td>
-                                <td className={`${CELL} text-center`}>{formatUnits(entry.lecture_units)}</td>
-                                <td className={`${CELL} text-center`}>{formatUnits(entry.laboratory_units)}</td>
+                                <td className={`${CELL} text-center`}>{getUnits(entry, ['LEC', 'LECTURE'], entry.lecture_units)}</td>
+                                <td className={`${CELL} text-center`}>{getUnits(entry, ['LAB', 'LABORATORY'], entry.laboratory_units)}</td>
                                 <td
                                     className={
                                         classMerge(
@@ -181,11 +165,15 @@ export default function CurriculumPrintSheet({
             .filter((title) => !/^elective\s*\d*$/i.test(title.trim()));
 
     return (
-        <div className="curriculum-print-sheet flex flex-col gap-3 text-[8pt] text-black">
+        <div
+            className="curriculum-print-sheet flex flex-col gap-2 text-[8pt]"
+            // Inline so dark mode's remapping of bg-white / text-black can't turn the paper dark
+            style={PAPER_STYLE}
+        >
             <div className="flex flex-col items-center leading-snug text-center">
                 <InstitutionLogo
                     className="mb-1"
-                    size={56}
+                    size={44}
                 />
                 <p className="font-semibold m-0 text-[9pt]">
                     {INSTITUTION_NAME}
@@ -196,7 +184,7 @@ export default function CurriculumPrintSheet({
                 <p className="italic m-0">
                     {INSTITUTION_ADDRESS}
                 </p>
-                <p className="font-semibold m-0 mt-3 text-[9pt]">
+                <p className="font-semibold m-0 mt-2 text-[9pt]">
                     {programLabel}
                 </p>
                 {schoolYearLabel && (
@@ -206,7 +194,7 @@ export default function CurriculumPrintSheet({
                 )}
             </div>
 
-            <div className="grid gap-x-16 gap-y-3 grid-cols-2 text-[9pt]">
+            <div className="grid gap-x-16 gap-y-2 grid-cols-2 text-[9pt]">
                 <SignatureLine label="STUDENT NO.:" />
                 <SignatureLine label="DATE EVALUATED:" />
                 <SignatureLine label="NAME:" />
@@ -251,7 +239,7 @@ export default function CurriculumPrintSheet({
             })}
 
             {(electives.length > 0 || electiveTracks.length > 0) && (
-                <div className="border border-black break-inside-avoid flex flex-col gap-2 mt-3 mx-auto px-2 py-1.5 w-[70%]">
+                <div className="border border-black break-inside-avoid flex flex-col gap-1 mt-2 mx-auto px-2 py-1 w-[70%]">
                     <p className="font-semibold italic m-0 underline">
                         ELECTIVES: ({electiveUnits} units)
                     </p>
