@@ -183,12 +183,17 @@ Deno.serve(async (request: Request): Promise<Response> => {
 
         // A deactivated account must be reactivated on purpose, not by a new invite
         if (action === 'resend_invite') {
-            const { data: targetUser } = await adminClient
+            const { data: targetUser, error: targetError } = await adminClient
                 .from('users')
                 .select('status')
                 .ilike('email', normalizedEmail)
                 .is('deleted_at', null)
                 .maybeSingle();
+
+            // Without the status, an invited user would get a reset email instead of a new invite
+            if (targetError) {
+                return failure('Could not look up this user. Try again.', 500, targetError.message);
+            }
 
             if (targetUser?.status === 'Inactive') {
                 return failure('Reactivate this user first.', 400);
