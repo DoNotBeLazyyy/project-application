@@ -169,3 +169,13 @@ export async function bulkCreateCurriculumMap(
         ]
     };
 }
+export async function getProgramElectiveTracks(programId: string): Promise<ServiceResult<string[]>> {
+    return callRpc<string[]>('fn_get_program_elective_tracks', { p_program_id: programId }, { background: true, silent: true });
+}
+
+export async function setProgramElectiveTracks(programId: string, tracks: string[]): Promise<ServiceResult<null>> {
+    return callRpc<null>('fn_set_program_elective_tracks', {
+        p_program_id: programId,
+        p_tracks: tracks
+    });
+}

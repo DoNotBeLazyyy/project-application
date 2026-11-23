@@ -18,11 +18,13 @@ import DeanNoDepartmentBanner from '@pages/dean/components/DeanNoDepartmentBanne
 import CurriculumMapForm from '@pages/dean/curriculum-map-management/CurriculumMapForm';
 import CurriculumPrintSheet from '@pages/dean/curriculum-map-management/CurriculumPrintSheet';
 import CurriculumTermTable from '@pages/dean/curriculum-map-management/CurriculumTermTable';
+import ElectiveTracksModal from '@pages/dean/curriculum-map-management/ElectiveTracksModal';
 import { useActiveTermOptions } from '@pages/dean/curriculum-map-management/use-active-term-options';
 import { useCurriculumMapGrouped } from '@pages/dean/curriculum-map-management/use-curriculum-map-grouped';
+import { useElectiveTracks } from '@pages/dean/curriculum-map-management/use-elective-tracks';
 import { useProgramOptions } from '@pages/dean/program-management/use-program-options';
 import {
-    DotsThreeVerticalIcon, PlusIcon, PrinterIcon, TrashIcon, UploadSimpleIcon
+    DotsThreeVerticalIcon, ListBulletsIcon, PlusIcon, PrinterIcon, TrashIcon, UploadSimpleIcon
 } from '@phosphor-icons/react';
 import { getCourses, listCourses } from '@services/course/course.service';
 import { createCurriculumMapEntry, deleteCurriculumMapEntry, getCurriculumMap, updateCurriculumMapEntry } from '@services/curriculum-map.service';
@@ -117,6 +119,7 @@ export default function CurriculumMapManagement({
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+    const [isElectiveTracksOpen, setIsElectiveTracksOpen] = useState(false);
     const [isClearModalOpen, setIsClearModalOpen] = useState(false);
     const [isDeleteSingleModalOpen, setIsDeleteSingleModalOpen] = useState(false);
     const [deleteTargetEntry, setDeleteTargetEntry] = useState<CurriculumMapEntry | null>(null);
@@ -975,6 +978,7 @@ export default function CurriculumMapManagement({
     }
 
     const selectedProgram = programOptions.find((option) => option.value === selectedProgramId);
+    const { electiveTracks, fetchElectiveTracks } = useElectiveTracks(selectedProgramId);
     const selectedSchoolYear = schoolYearOptions.find((option) => option.value === selectedSchoolYearId);
 
     function renderCurriculumTable(term: {
@@ -1077,6 +1081,18 @@ export default function CurriculumMapManagement({
                                     <ListItemText>Upload CSV</ListItemText>
                                 </MenuItem>
                             )}
+                            {!readOnly && selectedProgramId && (
+                                <MenuItem
+                                    onClick={() => {
+                                        handleCloseMenu(); setIsElectiveTracksOpen(true);
+                                    }}
+                                >
+                                    <ListItemIcon>
+                                        <ListBulletsIcon size={18} />
+                                    </ListItemIcon>
+                                    <ListItemText>Elective Tracks</ListItemText>
+                                </MenuItem>
+                            )}
                             <MenuItem
                                 onClick={() => {
                                     handleCloseMenu(); window.print();
@@ -1141,6 +1157,7 @@ export default function CurriculumMapManagement({
                                     <div className="flex flex-col gap-6 pb-8">
                                         <div className="print-area print-only">
                                             <CurriculumPrintSheet
+                                                electiveTracks={electiveTracks}
                                                 grouped={grouped}
                                                 programLabel={selectedProgram?.label}
                                                 schoolYearLabel={selectedSchoolYear?.label}
@@ -1428,6 +1445,14 @@ export default function CurriculumMapManagement({
                     </div>
                 </div>
             </CommonModal>
+
+            <ElectiveTracksModal
+                open={isElectiveTracksOpen}
+                programId={selectedProgramId}
+                tracks={electiveTracks}
+                onClose={() => setIsElectiveTracksOpen(false)}
+                onSaved={fetchElectiveTracks}
+            />
         </CommonCard>
     );
 }

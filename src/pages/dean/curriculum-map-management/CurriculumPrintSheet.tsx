@@ -4,6 +4,7 @@ import { CurriculumMapEntry, CurriculumMapGrouped } from '@type/curriculum-map.t
 import { classMerge } from '@utils/css.util';
 
 interface CurriculumPrintSheetProps {
+    electiveTracks?: string[];
     grouped: CurriculumMapGrouped[];
     programLabel?: string;
     schoolYearLabel?: string;
@@ -157,6 +158,7 @@ function TermTable({ term, isWide = false }: { term: PrintTerm; isWide?: boolean
  *  <CurriculumPrintSheet grouped={grouped} programLabel="BS Computer Science" schoolYearLabel="2018-2019" />
  */
 export default function CurriculumPrintSheet({
+    electiveTracks = [],
     grouped,
     programLabel,
     schoolYearLabel
@@ -166,9 +168,12 @@ export default function CurriculumPrintSheet({
         .flatMap((term) => term.entries)
         .filter((entry) => entry.is_elective);
     const electiveUnits = electives.reduce((sum, entry) => sum + (Number(entry.total_units) || 0), 0);
-    // "Elective 1", "Elective 2"... are slot placeholders; only real elective titles are listed
-    const electiveTitles = Array.from(new Set(electives.map((entry) => entry.course_title)))
-        .filter((title) => !/^elective\s*\d*$/i.test(title.trim()));
+    // The program's saved tracks are listed; without them, real elective titles stand in
+    // ("Elective 1", "Elective 2"... are slot placeholders, not names)
+    const electiveTitles = electiveTracks.length > 0
+        ? electiveTracks
+        : Array.from(new Set(electives.map((entry) => entry.course_title)))
+            .filter((title) => !/^elective\s*\d*$/i.test(title.trim()));
 
     return (
         <div className="curriculum-print-sheet flex flex-col gap-3 text-[8pt] text-black">
@@ -240,7 +245,7 @@ export default function CurriculumPrintSheet({
                 );
             })}
 
-            {electives.length > 0 && (
+            {(electives.length > 0 || electiveTracks.length > 0) && (
                 <div className="border border-black break-inside-avoid flex flex-col gap-2 mt-3 mx-auto px-2 py-1.5 w-[70%]">
                     <p className="font-semibold italic m-0 underline">
                         ELECTIVES: ({electiveUnits} units)
