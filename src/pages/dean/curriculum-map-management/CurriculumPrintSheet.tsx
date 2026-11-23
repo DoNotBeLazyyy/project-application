@@ -35,6 +35,11 @@ function stripSummerSuffix(label: string): string {
     return label.replace(/\s+—\s+SUMMER$/, '');
 }
 
+// School-year labels read like "Academic Year 2026-2027"; the sheet prints only the year range
+function formatSchoolYear(label: string): string {
+    return label.match(/\d{4}\s*[-–]\s*\d{4}/)?.[0] ?? label;
+}
+
 function SignatureLine({ label }: { label: string }) {
     return (
         <div className="flex items-end gap-2">
@@ -196,7 +201,7 @@ export default function CurriculumPrintSheet({
                 </p>
                 {schoolYearLabel && (
                     <p className="m-0">
-                        Effective SY {schoolYearLabel}
+                        Effective SY {formatSchoolYear(schoolYearLabel)}
                     </p>
                 )}
             </div>
